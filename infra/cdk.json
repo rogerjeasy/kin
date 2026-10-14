@@ -18,9 +18,17 @@
       "role/github-actions-wick-*",
       "role/hold*",
       "role/Hold*",
+      "role/carecircle-*",
+      "role/zeitzeuge-*",
       "role/cdk-hnb659fds-*",
       "user/carecircle-*",
       "user/zeitzeuge-*"
+    ],
+    "kin:neighbourProjects": [
+      "wick",
+      "hold",
+      "carecircle",
+      "zeitzeuge"
     ],
     "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
     "@aws-cdk/aws-apigateway:authorizerChangeDeploymentLogicalId": true,

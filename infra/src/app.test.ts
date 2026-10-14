@@ -18,6 +18,7 @@ const config: InfraConfig = {
   webOrigins: ["http://localhost:3000"],
   githubDeploySubject: "repo:owner@1/kin@2:ref:refs/heads/main",
   neighbourPrincipalPatterns: ["role/wick-*", "user/carecircle-*"],
+  neighbourProjects: ["wick", "carecircle"],
 };
 
 const stacks = buildKin(new App(), config);
@@ -65,6 +66,7 @@ describe("Kin's place in the shared account", () => {
       "DBClusterIdentifier",
       "BudgetName",
       "AliasName",
+      "ManagedPolicyName",
       "Name",
     ];
     for (const template of all) {
@@ -262,6 +264,73 @@ describe("deployment from GitHub", () => {
         ],
       },
     });
+  });
+});
+
+describe("the deployment guardrails", () => {
+  const statements = (): { Sid: string; Effect: string; [key: string]: unknown }[] =>
+    Object.values(ci.findResources("AWS::IAM::ManagedPolicy"))[0]?.["Properties"]["PolicyDocument"]["Statement"] ?? [];
+  const statement = (sid: string) => statements().find((each) => each.Sid === sid);
+
+  it("are a named policy of denies only", () => {
+    ci.hasResourceProperties("AWS::IAM::ManagedPolicy", {
+      ManagedPolicyName: "kin-deploy-guardrails",
+    });
+    expect(statements().length).toBeGreaterThan(0);
+    expect(statements().every((each) => each.Effect === "Deny")).toBe(true);
+  });
+
+  it("deny everything tagged as another project, under either spelling of the tag", () => {
+    for (const [sid, key] of [
+      ["DenyResourcesTaggedAsAnotherProject", "project"],
+      ["DenyResourcesTaggedAsAnotherProjectCapitalised", "Project"],
+    ] as const) {
+      expect(statement(sid)).toMatchObject({
+        Action: "*",
+        Resource: "*",
+        Condition: { StringEquals: { [`aws:ResourceTag/${key}`]: ["wick", "carecircle"] } },
+      });
+    }
+  });
+
+  it("deny the other projects' buckets and the default bootstrap's", () => {
+    expect(statement("DenyOtherProjectsBuckets")?.["Resource"]).toEqual([
+      "arn:aws:s3:::wick*",
+      "arn:aws:s3:::wick*/*",
+      "arn:aws:s3:::carecircle*",
+      "arn:aws:s3:::carecircle*/*",
+      "arn:aws:s3:::cdk-hnb659fds*",
+      "arn:aws:s3:::cdk-hnb659fds*/*",
+    ]);
+  });
+
+  it("deny IAM changes to any principal that is not Kin's", () => {
+    const iamDeny = statement("DenyIamOutsideKin");
+    expect(iamDeny?.["Action"]).toEqual(
+      expect.arrayContaining(["iam:Create*", "iam:Put*", "iam:Attach*", "iam:PassRole"]),
+    );
+    expect(iamDeny?.["NotResource"]).toEqual([
+      "arn:aws:iam::123456789012:role/Kin*",
+      "arn:aws:iam::123456789012:role/kin-*",
+      "arn:aws:iam::123456789012:policy/kin-*",
+      "arn:aws:iam::123456789012:instance-profile/Kin*",
+      "arn:aws:iam::123456789012:role/aws-service-role/*",
+    ]);
+  });
+
+  it("leave room for every role Kin's stacks create", () => {
+    const allowed = [/^Kin/, /^kin-/];
+    for (const stack of Object.values(stacks)) {
+      expect(stack.stackName).toMatch(/^Kin/);
+    }
+    for (const template of all) {
+      for (const role of Object.values(template.findResources("AWS::IAM::Role"))) {
+        const name = role["Properties"]["RoleName"];
+        if (typeof name === "string") {
+          expect(allowed.some((pattern) => pattern.test(name))).toBe(true);
+        }
+      }
+    }
   });
 });
 

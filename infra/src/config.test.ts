@@ -9,6 +9,7 @@ const context: Record<string, unknown> = {
   "kin:webOrigins": ["http://localhost:3000"],
   "kin:githubDeploySubject": "repo:owner@1/kin@2:ref:refs/heads/main",
   "kin:neighbourPrincipalPatterns": ["role/wick-*"],
+  "kin:neighbourProjects": ["wick"],
 };
 
 const env = { CDK_DEFAULT_ACCOUNT: "123456789012", KIN_ALERT_EMAIL: "a@example.com" };

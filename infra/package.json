@@ -9,7 +9,7 @@
     "test": "vitest run",
     "synth": "cdk synth --quiet",
     "diff": "cdk diff",
-    "bootstrap": "cdk bootstrap \"aws://$(aws sts get-caller-identity --query Account --output text)/us-east-1\" --app '' --qualifier kin --toolkit-stack-name KinCDKToolkit --termination-protection",
+    "bootstrap": "ACCOUNT=$(aws sts get-caller-identity --query Account --output text) && cdk bootstrap \"aws://$ACCOUNT/us-east-1\" --app '' --qualifier kin --toolkit-stack-name KinCDKToolkit --termination-protection --cloudformation-execution-policies \"arn:aws:iam::aws:policy/AdministratorAccess,arn:aws:iam::$ACCOUNT:policy/kin-deploy-guardrails\"",
     "deploy": "cdk deploy --all --require-approval broadening"
   },
   "dependencies": {

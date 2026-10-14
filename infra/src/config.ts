@@ -22,6 +22,12 @@ export type InfraConfig = {
    * denies them explicitly, whatever their own policies allow.
    */
   readonly neighbourPrincipalPatterns: readonly string[];
+  /**
+   * The other projects' names, as they tag their resources (`project` or
+   * `Project`) and begin their bucket names. Kin's deployments may not touch
+   * them.
+   */
+  readonly neighbourProjects: readonly string[];
 };
 
 export class InfraConfigError extends Error {
@@ -53,6 +59,7 @@ export function readConfig({ context, env }: Source): InfraConfig {
     webOrigins: texts(context("kin:webOrigins"), "kin:webOrigins"),
     githubDeploySubject: text(context("kin:githubDeploySubject"), "kin:githubDeploySubject"),
     neighbourPrincipalPatterns: texts(context("kin:neighbourPrincipalPatterns"), "kin:neighbourPrincipalPatterns"),
+    neighbourProjects: texts(context("kin:neighbourProjects"), "kin:neighbourProjects"),
   };
 }
 

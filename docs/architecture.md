@@ -1225,9 +1225,12 @@ Separate names are not enough on their own. Some of the other projects' principa
 | Network | Kin's own VPC. The database admits only the `kin-services` security group, on port 5432, from isolated subnets with no internet route. |
 | Sign-in | Kin's own Cognito pool, `kin-people`. Nobody signs in across projects. |
 | Deployment | Kin's own CDK bootstrap, qualifier `kin`, stack `KinCDKToolkit`. The GitHub role `kin-github-deploy` trusts one repository and one branch, and may assume only `cdk-kin-*` roles. |
+| Deployment guardrails | CloudFormation deploys Kin with AdministratorAccess plus `kin-deploy-guardrails`, a policy of denies kept in `KinCi`: nothing tagged or named as another project (`kin:neighbourProjects`), no IAM change outside `Kin*` and `kin-*` roles and `kin-*` policies, and no account-wide change. A deployment cannot reach the neighbours or mint itself a way out. |
 | Cost | The budget `kin-monthly` counts only resources tagged `project=kin`. |
 
-**What the deny cannot cover.** Cognito user pools, Lambda functions, log groups and ECR repositories have no resource policy that a deny can sit in, or none that covers management actions. Wick's deploy role can change any of them. Closing that needs wick's role narrowed to `wick*` resources, in wick's repository. The account's Lambda concurrency quota is 10 and is shared, so Kin adds one function, the deploy-time custom resource that locks the VPC's default security group.
+**Order in a fresh account.** The bootstrap names the guardrail policy, so it must exist first: bootstrap without `--cloudformation-execution-policies`, deploy `KinCi`, then run the bootstrap script, which attaches the guardrails.
+
+**What the deny cannot cover.** Kin's bootstrap roles trust the whole account, as every CDK bootstrap does, so a principal with rights to assume any role can still use them. The guardrails limit what such a deployment can do. Cognito user pools, Lambda functions, log groups and ECR repositories have no resource policy that a deny can sit in, or none that covers management actions. Wick's deploy role can change any of them. Closing that needs wick's role narrowed to `wick*` resources, in wick's repository. The account's Lambda concurrency quota is 10 and is shared, so Kin adds one function, the deploy-time custom resource that locks the VPC's default security group.
 
 The stacks are `KinOps` (alerts and budget, deployed first), `KinNetwork`, `KinData` and `KinCi`, in `infra/`. Compute, the load balancer and the Fargate services, follows when the apps have images. Aurora's capacity is `kin:databaseCapacityAcu` in `cdk.json`: a minimum of 0 lets it pause while nobody is using it, and it is raised above zero for judging.
 
