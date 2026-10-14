@@ -1,0 +1,609 @@
+{
+  "meta": {
+    "home": {
+      "title": "Kin: niente sui soldi della mamma senza la mamma",
+      "description": "Kin permette a una famiglia di dividere i costi dell’assistenza a un genitore in modo equo e trasparente, e dà al genitore voce in ogni decisione sul proprio denaro."
+    },
+    "howItWorks": {
+      "title": "Come funziona · Kin",
+      "description": "Un mese con una famiglia: l’accordo, le bollette, l’assistente familiare, una richiesta falsa scoperta e il conguaglio finale."
+    },
+    "safety": {
+      "title": "Sicurezza · Kin",
+      "description": "L’IA propone, le persone approvano e fa fede il registro di PayPal. Come Kin protegge il denaro di un genitore."
+    },
+    "caregivers": {
+      "title": "Per assistenti familiari · Kin",
+      "description": "Detta le tue ore, ricevi il pagamento in giornata e conserva lo storico di tutto ciò che guadagni."
+    },
+    "pricing": {
+      "title": "Prezzi · Kin",
+      "description": "Gratis per il genitore e per l’assistente familiare, sempre. Le famiglie pagano un’unica tariffa mensile fissa per cerchia."
+    },
+    "start": {
+      "title": "Crea una cerchia · Kin",
+      "description": "Kin è in fase di sviluppo per il PayPal AI Hackathon 2026. Le cerchie non sono ancora aperte."
+    },
+    "signIn": {
+      "title": "Accedi · Kin",
+      "description": "Kin è in fase di sviluppo per il PayPal AI Hackathon 2026. L’accesso non è ancora aperto."
+    }
+  },
+  "common": {
+    "skipToContent": "Vai al contenuto",
+    "brandHome": "Kin, pagina iniziale",
+    "nav": {
+      "label": "Principale",
+      "howItWorks": "Come funziona",
+      "safety": "Sicurezza",
+      "caregivers": "Per assistenti familiari",
+      "pricing": "Prezzi",
+      "signIn": "Accedi",
+      "start": "Crea una cerchia",
+      "startLong": "Crea una cerchia familiare",
+      "seeMonth": "Guarda un mese con Kin",
+      "menuOpen": "Apri il menu",
+      "menuClose": "Chiudi il menu",
+      "menuTitle": "Menu"
+    },
+    "language": {
+      "label": "Lingua"
+    },
+    "theme": {
+      "label": "Tema",
+      "light": "Chiaro",
+      "dark": "Scuro",
+      "system": "Sistema",
+      "switchToDark": "Passa al tema scuro",
+      "switchToLight": "Passa al tema chiaro"
+    },
+    "example": {
+      "sandbox": "Esempio · sandbox PayPal",
+      "waiting": "In attesa di approvazione"
+    },
+    "people": {
+      "rose": "Rose",
+      "elena": "Elena",
+      "marcus": "Marcus",
+      "ana": "Ana",
+      "amara": "Amara",
+      "kin": "Kin"
+    },
+    "footer": {
+      "tagline": "Uno spazio condiviso per il denaro delle famiglie che si prendono cura di un genitore anziano.",
+      "product": "Prodotto",
+      "people": "Persone",
+      "forFamilies": "Per le famiglie",
+      "disclaimer": "Kin non è una banca, uno studio legale o un fornitore di assistenza. Non detiene fondi. Questa versione funziona nella sandbox di PayPal con denaro di prova, per il PayPal AI Hackathon 2026.",
+      "photos": "Le fotografie ritraggono modelli, non una famiglia reale. Gli importi sono esempi."
+    }
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Per le famiglie che assistono un genitore anziano",
+      "titleLead": "Niente sui soldi della mamma",
+      "titleEmphasis": "senza la mamma.",
+      "lede": "Fratelli e sorelle versano in un’unica cassa comune. Da lì Kin paga le bollette e l’assistente familiare, fa il conguaglio ogni mese e dice a voce a tua madre o a tuo padre dove va ogni dollaro.",
+      "circleNames": "Elena, Marcus, Ana e Amara",
+      "circleNote": "La cerchia di Rose: i suoi tre figli e la sua assistente familiare.",
+      "portraitAlt": "Una donna anziana seduta sul letto, lo sguardo rivolto alla finestra",
+      "pinTitle": "Rose, 81 anni",
+      "pinNote": "Gli acquisti sopra {limit} richiedono il suo sì a voce.",
+      "captionTime": "Kin, ore 9:02",
+      "spoken": "Buongiorno Rose. La sua bolletta della luce di {amount} è stata pagata stamattina dalla cassa comune della famiglia.",
+      "spokenAmount": "84 dollari",
+      "play": "Ascolta cosa ha detto Kin a Rose",
+      "stop": "Ferma"
+    },
+    "proof": {
+      "label": "Il problema in tre numeri",
+      "items": [
+        {
+          "value": "63 milioni",
+          "text": "gli americani che assistono un familiare.",
+          "source": "AARP e National Alliance for Caregiving, 2025"
+        },
+        {
+          "value": "7.242 $",
+          "text": "spesi di tasca propria ogni anno, in media, da chi assiste un familiare.",
+          "source": "AARP, 2021"
+        },
+        {
+          "value": "4,9 miliardi di dollari",
+          "text": "le perdite per frode denunciate nel 2024 dagli americani con più di 60 anni.",
+          "source": "FBI Internet Crime Complaint Center"
+        }
+      ]
+    },
+    "circle": {
+      "eyebrow": "La cerchia familiare",
+      "titleLead": "Una cassa comune, divisa",
+      "titleEmphasis": "come avete deciso.",
+      "lede": "Marcus vive all’estero e guadagna bene. Elena abita a venti minuti e si occupa di quasi tutto. Ana ha meno soldi e mette il suo tempo. Si sono accordati su 50, 30 e 20, e sul fatto che anche un’ora di assistenza conta.",
+      "ringAlt": "Rose al centro della sua cerchia. Marcus sostiene il 50 per cento dei costi, Elena il 30 per cento e Ana il 20 per cento.",
+      "roseNote": "decide sopra {limit}",
+      "steps": [
+        {
+          "title": "Concordato una volta",
+          "text": "La famiglia stabilisce le quote, i limiti e quanto vale un’ora di assistenza. Kin scrive l’accordo in parole semplici e tutti lo accettano."
+        },
+        {
+          "title": "Misurato ogni mese",
+          "text": "Kin confronta ciò che ciascuno ha dato davvero, in denaro e in ore, con ciò che era stato concordato."
+        },
+        {
+          "title": "Saldato con un pagamento vero",
+          "text": "La differenza viene pagata, non solo segnalata."
+        }
+      ],
+      "settlement": "Marcus versa {elena} a Elena e {ana} ad Ana",
+      "ticker": "Amara ha ricevuto {amount} per tre visite.",
+      "tickerNote": "Approvato da Elena. Pagato in giornata."
+    },
+    "voice": {
+      "eyebrow": "La voce del genitore",
+      "title": "Può chiedere, decidere e verificare. Senza schermo.",
+      "aside": "Rose ha la degenerazione maculare e non riesce più a leggere gli estratti conto. A decidere è ancora lei.",
+      "ask": {
+        "label": "Chiedere",
+        "rose": "Amara è stata pagata?",
+        "kin": "Sì. Amara ha ricevuto {amount} martedì per tre visite.",
+        "kinAmount": "264 dollari"
+      },
+      "decide": {
+        "label": "Decidere",
+        "kin": "È il momento di riordinare il suo farmaco. Costa {amount}. Procedo?",
+        "kinAmount": "42 dollari",
+        "rose": "Sì, procedi pure."
+      },
+      "check": {
+        "label": "Verificare",
+        "rose": "Ha chiamato un uomo per la bolletta del gas. È vero?",
+        "kin": "Non risulta nessuna bolletta del gas da pagare. La sua è stata pagata il 2. La prego, non paghi chi l’ha chiamata."
+      }
+    },
+    "month": {
+      "eyebrow": "Un mese con Kin",
+      "title": "Trenta giorni, sei momenti.",
+      "link": "Scopri come funziona",
+      "listLabel": "Sei momenti del mese. Scorri di lato per vederli tutti.",
+      "moments": {
+        "bill": {
+          "day": "Giorno 3",
+          "title": "Rose sente che una bolletta è stata pagata",
+          "quote": "La sua bolletta della luce di 84 dollari è stata pagata stamattina.",
+          "alt": "Una donna anziana al lavello della cucina"
+        },
+        "caregiver": {
+          "day": "Giorno 6",
+          "title": "Amara manda il conto a voce e viene pagata",
+          "quote": "Tre visite, quattro ore ciascuna. Inviato alla famiglia.",
+          "alt": "Un’assistente familiare ride insieme all’anziana di cui si prende cura"
+        },
+        "refill": {
+          "day": "Giorno 9",
+          "title": "Rose approva il riordino del farmaco",
+          "quote": "Costa 42 dollari. Procedo?",
+          "alt": "Un flacone di medicinali su un tavolo di legno"
+        },
+        "letter": {
+          "day": "Giorno 12",
+          "title": "Una lettera letta ad alta voce",
+          "quote": "Viene dall’azienda dell’acqua. Ci sono 61 dollari da pagare entro il 30.",
+          "alt": "Una busta su un tavolo di legno"
+        },
+        "call": {
+          "day": "Giorno 15",
+          "title": "Scoperta una richiesta falsa",
+          "quote": "Non risulta nessuna bolletta del gas da pagare. La prego, non paghi chi l’ha chiamata.",
+          "alt": "Una donna anziana con il telefono all’orecchio"
+        },
+        "settled": {
+          "day": "Giorno 30",
+          "title": "Si chiudono i conti del mese",
+          "quote": "A Elena spettano 126 dollari e ad Ana 40. È tutto in ordine.",
+          "alt": "Tre paia di mani strette insieme"
+        }
+      }
+    },
+    "safety": {
+      "eyebrow": "Sicurezza",
+      "title": "L’IA propone. Le persone approvano. Il registro fa fede.",
+      "lede": "L’IA di Kin legge, spiega e suggerisce. Non muove mai denaro e non fa mai i calcoli. Ciò che è accaduto si ricava dai registri di PayPal.",
+      "link": "Come Kin protegge il denaro",
+      "safeguards": [
+        {
+          "title": "Nessuno può svuotare la cassa",
+          "text": "Il denaro esce solo verso fornitori approvati, assistenti approvati e membri della cerchia."
+        },
+        {
+          "title": "Due approvazioni per gli importi elevati",
+          "text": "Sopra il limite fissato dalla tua famiglia, devono essere d’accordo due membri."
+        },
+        {
+          "title": "Un pulsante di pausa",
+          "text": "Qualsiasi membro può bloccare i pagamenti in uscita per 24 ore."
+        },
+        {
+          "title": "Kin non chiede mai dati segreti",
+          "text": "Nessuna password, nessun numero di carta, nessun codice. Kin informa. Non chiede."
+        }
+      ]
+    },
+    "audience": {
+      "caregivers": {
+        "eyebrow": "Per assistenti familiari",
+        "title": "Detta le tue ore. Ricevi il pagamento in giornata.",
+        "text": "Manda il conto a voce, ricevi il pagamento appena la famiglia approva e conserva lo storico di ogni visita come prova di reddito.",
+        "link": "Kin per assistenti familiari",
+        "imageAlt": "Un’assistente familiare ride insieme all’anziana di cui si prende cura"
+      },
+      "pricing": {
+        "eyebrow": "Prezzi",
+        "title": "Gratis per il genitore e per l’assistente. Sempre.",
+        "text": "La famiglia paga un’unica tariffa mensile fissa per cerchia, ripartita con le stesse quote di ogni altra spesa.",
+        "link": "Vedi i prezzi",
+        "rows": [
+          {
+            "name": "Genitore e assistente familiare",
+            "price": "Gratis"
+          },
+          {
+            "name": "Cerchia familiare",
+            "price": "Una tariffa mensile fissa"
+          },
+          {
+            "name": "Professionisti dell’assistenza",
+            "price": "Per cliente"
+          }
+        ]
+      }
+    },
+    "closing": {
+      "title": "Comincia da una conversazione con la tua famiglia."
+    }
+  },
+  "trace": {
+    "label": "Come un pagamento diventa una frase detta a voce",
+    "recordLabel": "Registro PayPal",
+    "biller": "City Power",
+    "checkLabel": "Controllo dei numeri",
+    "check": "«{spoken}» corrisponde a {amount}",
+    "thenLabel": "Poi, e solo allora",
+    "then": "Detto a Rose e mostrato alla famiglia."
+  },
+  "howItWorks": {
+    "hero": {
+      "eyebrow": "Come funziona",
+      "title": "Un mese con la famiglia di Rose.",
+      "lede": "Il modo più semplice per capire Kin è vederlo al lavoro. Ecco un mese in una famiglia, dal primo accordo al conguaglio finale."
+    },
+    "timeline": {
+      "label": "Il mese, giorno per giorno",
+      "entries": [
+        {
+          "day": "Giorno 1",
+          "title": "La famiglia si accorda",
+          "text": "Elena crea una cerchia per sua madre Rose e invita Marcus e Ana. Concordano le quote: Marcus 50 per cento, Elena 30 per cento, Ana 20 per cento. Contano anche le ore di assistenza diretta, a una tariffa scelta insieme. Rose entra con il ruolo «decide»: gli acquisti sopra i 50 dollari richiedono il suo sì a voce.",
+          "speaker": "",
+          "quote": ""
+        },
+        {
+          "day": "Giorno 3",
+          "title": "Rose sente che una bolletta è stata pagata",
+          "text": "Il telefono di Rose squilla: è la voce calma di Kin. Non deve aprire nulla.",
+          "speaker": "Kin",
+          "quote": "Buongiorno Rose. La sua bolletta della luce di 84 dollari è stata pagata stamattina dalla cassa comune della famiglia. Questa settimana non c’è altro da pagare."
+        },
+        {
+          "day": "Giorno 6",
+          "title": "Amara manda il conto a voce e viene pagata",
+          "text": "Amara conclude la terza visita della settimana e dice a Kin le sue ore. Kin prepara il conto e glielo rilegge. Elena lo approva con un tocco. Il telefono di Amara conferma il pagamento prima che lei arrivi alla macchina.",
+          "speaker": "Amara",
+          "quote": "Manda il conto alla famiglia per questa settimana: tre visite, quattro ore ciascuna."
+        },
+        {
+          "day": "Giorno 9",
+          "title": "Rose approva il riordino del farmaco",
+          "text": "Il farmaco di Rose per la pressione sta per finire. Lei dice sì. Kin fa l’ordine e le dice quando arriverà.",
+          "speaker": "Kin",
+          "quote": "È il momento di riordinare il suo farmaco. Costa 42 dollari. Procedo?"
+        },
+        {
+          "day": "Giorno 12",
+          "title": "Una lettera letta ad alta voce",
+          "text": "Arriva una lettera. Rose la tiene davanti al telefono e Kin gliela legge.",
+          "speaker": "Kin",
+          "quote": "Viene dall’azienda dell’acqua. Dice che ci sono 61 dollari da pagare entro il 30. L’ho aggiunta all’elenco della famiglia. Elena la vedrà oggi."
+        },
+        {
+          "day": "Giorno 15",
+          "title": "Scoperta una richiesta falsa",
+          "text": "Un uomo telefona a Rose e dice che la sua bolletta del gas è scaduta e che deve pagare 300 dollari oggi stesso. Rose chiede a Kin. La famiglia viene avvisata in pochi secondi.",
+          "speaker": "Kin",
+          "quote": "Non risulta nessuna bolletta del gas da pagare. La sua bolletta del gas di 57 dollari è stata pagata il 2. La prego, non paghi chi l’ha chiamata. Ho avvisato Elena e Marcus."
+        },
+        {
+          "day": "Giorno 20",
+          "title": "Una grossa riparazione, divisa tra tutti",
+          "text": "Il montascale ha bisogno di una riparazione da 900 dollari, più di quanto c’è in cassa. Kin propone due opzioni: un versamento straordinario ripartito secondo le quote concordate, oppure la spesa distribuita su più mesi. I fratelli scelgono, Rose è d’accordo e la riparazione viene prenotata.",
+          "speaker": "",
+          "quote": ""
+        },
+        {
+          "day": "Giorno 30",
+          "title": "Si chiudono i conti del mese",
+          "text": "Elena ha pagato di tasca sua 180 dollari in farmacia. Ana ha accompagnato Rose in macchina a quattro appuntamenti. Kin calcola che a Elena spettano 126 dollari e ad Ana 40, propone il conguaglio e, una volta approvato, invia il denaro. Ogni fratello riceve lo stesso rendiconto di una pagina.",
+          "speaker": "Kin",
+          "quote": "Questo mese tutto ciò che c’era da pagare è stato pagato, e ognuno è tornato alla quota concordata. È tutto in ordine."
+        }
+      ]
+    },
+    "paypal": {
+      "eyebrow": "Basato su PayPal",
+      "title": "PayPal muove ogni dollaro e tiene il registro di cui Kin si fida.",
+      "lede": "Alla famiglia non servono un nuovo conto in banca né una nuova carta. Kin non detiene mai il denaro.",
+      "needHeader": "Di cosa ha bisogno la famiglia",
+      "capabilityHeader": "Funzione di PayPal",
+      "rows": [
+        {
+          "need": "Ogni fratello versa una quota mensile",
+          "capability": "Abbonamenti"
+        },
+        {
+          "need": "Un fratello fa un versamento straordinario",
+          "capability": "Checkout, con Pay Later per le spese elevate"
+        },
+        {
+          "need": "A un fratello viene chiesto un versamento o un conguaglio",
+          "capability": "Fatturazione"
+        },
+        {
+          "need": "L’assistente familiare riceve il pagamento in giornata",
+          "capability": "Payouts"
+        },
+        {
+          "need": "Un fratello che ha pagato troppo viene rimborsato",
+          "capability": "Payouts"
+        },
+        {
+          "need": "L’agente acquista ciò che serve al genitore, dopo la conferma di una persona",
+          "capability": "Un metodo di pagamento salvato presso un esercente convenzionato"
+        },
+        {
+          "need": "Una consegna viene seguita fino alla porta",
+          "capability": "Tracciamento delle spedizioni"
+        },
+        {
+          "need": "Un addebito sbagliato viene contestato",
+          "capability": "Contestazioni"
+        },
+        {
+          "need": "Kin sa che cosa è accaduto davvero",
+          "capability": "Notifiche di pagamento e registri delle transazioni"
+        }
+      ]
+    },
+    "ai": {
+      "eyebrow": "L’IA",
+      "title": "Capire è compito dell’IA. La certezza no.",
+      "doesTitle": "L’IA fa il lavoro che richiede comprensione",
+      "does": [
+        "Legge bollette cartacee, lettere e ricevute da una fotografia.",
+        "Trasforma una frase detta a voce in un conto, un’approvazione o una domanda.",
+        "Trasforma un pagamento in una frase chiara, detta a voce nella lingua giusta.",
+        "Risponde alle domande sul denaro della famiglia a partire dal registro.",
+        "Spiega chi è avanti o indietro, e perché, in parole semplici.",
+        "Nota ciò che non torna: bollette doppie, importi insoliti, beneficiari sconosciuti."
+      ],
+      "doesNotTitle": "Non fa il lavoro che richiede certezza",
+      "doesNot": [
+        "Non fa i calcoli. Quote e conguagli sono calcolati con esattezza, ogni volta allo stesso modo.",
+        "Non decide che un pagamento è avvenuto. Fa fede il registro di PayPal.",
+        "Non muove denaro da sola. Ogni movimento è confermato da una persona.",
+        "Non dà consulenza legale, fiscale, medica o sugli investimenti."
+      ],
+      "closing": "Questa divisione è voluta. È ciò che permette a una famiglia di affidare a un’IA qualcosa di delicato come il denaro di un genitore."
+    }
+  },
+  "safetyPage": {
+    "hero": {
+      "eyebrow": "Sicurezza",
+      "title": "L’IA propone. Le persone approvano. Il registro fa fede.",
+      "lede": "Kin gestisce il denaro di una persona vulnerabile. La fiducia è il prodotto."
+    },
+    "limits": {
+      "eyebrow": "Tutele",
+      "title": "Limiti che nessuno può aggirare a parole.",
+      "items": [
+        {
+          "title": "Nessuno può svuotare la cassa",
+          "text": "Il denaro esce solo verso fornitori approvati, assistenti approvati e membri della cerchia, e mai oltre i limiti dell’accordo di famiglia senza una seconda approvazione."
+        },
+        {
+          "title": "Due approvazioni per gli importi elevati",
+          "text": "Sopra una soglia fissata dalla famiglia, devono essere d’accordo due membri. Nessun membro è l’unico ad approvare un pagamento a proprio favore."
+        },
+        {
+          "title": "Ogni modifica viene annunciata",
+          "text": "Un nuovo fornitore, una quota modificata o un nuovo membro vengono comunicati a tutta la cerchia."
+        },
+        {
+          "title": "Un pulsante di pausa",
+          "text": "Qualsiasi membro può bloccare i pagamenti in uscita per 24 ore se qualcosa non torna."
+        },
+        {
+          "title": "Protezione dalle pressioni",
+          "text": "Le situazioni insolite, come un nuovo beneficiario improvviso o richieste ripetute al genitore, vengono segnalate a tutta la cerchia, non a una sola persona."
+        },
+        {
+          "title": "Nulla viene mai cancellato",
+          "text": "Una correzione si aggiunge come nuova voce: la cronologia resta intatta e ogni riga conserva la sua ricevuta e la sua approvazione."
+        }
+      ]
+    },
+    "guard": {
+      "eyebrow": "Il controllo dei numeri",
+      "title": "Ogni importo è verificato prima di essere pronunciato.",
+      "text": "L’IA formula la frase. Non sceglie mai il numero. Prima che qualcosa venga detto o mostrato, del normale codice confronta ogni importo, data e nome della frase con il registro. Se qualcosa non coincide, la frase viene scartata e se ne usa una fissa. Tua madre o tuo padre non potrà mai sentire un importo che il registro non contiene."
+    },
+    "scam": {
+      "eyebrow": "Il controllo antitruffa",
+      "title": "Una protezione dalle frodi fondata sui fatti.",
+      "text": "Kin non prova a indovinare se chi chiama sembra sospetto. Verifica se la bolletta esiste e se è stata pagata, lo dice con chiarezza al genitore e avvisa la famiglia.",
+      "roseLine": "Ha chiamato un uomo per la bolletta del gas. Dice che devo pagare 300 dollari oggi. È vero?",
+      "kinLine": "Non risulta nessuna bolletta del gas da pagare. La sua bolletta del gas di 57 dollari è stata pagata il 2. La prego, non paghi chi l’ha chiamata. Ho avvisato Elena e Marcus.",
+      "rule": "La famiglia insegna una sola regola: Kin informa, Kin non chiede mai dati segreti. Non chiede mai una password, un numero di carta o un codice."
+    },
+    "trust": {
+      "eyebrow": "Fiducia e riservatezza",
+      "title": "Pensato per la persona a cui il denaro appartiene.",
+      "items": [
+        {
+          "title": "Prima viene il consenso",
+          "text": "Una cerchia non è attiva finché il genitore, o chi ha l’autorità legale per agire in suo nome, non ha accettato la cerchia e il proprio ruolo al suo interno."
+        },
+        {
+          "title": "Rispetto delle capacità",
+          "text": "Il ruolo del genitore può cambiare nel tempo. Per cambiarlo serve l’accordo della cerchia, e la modifica viene registrata."
+        },
+        {
+          "title": "L’autorità legale si registra, non si presume",
+          "text": "Se qualcuno ha una procura o una tutela, Kin ne prende nota. Kin non conferisce autorità a nessuno."
+        },
+        {
+          "title": "Protezione dalla famiglia, oltre che dagli estranei",
+          "text": "Gli abusi finanziari sugli anziani sono commessi il più delle volte da persone a loro vicine. I limiti, le doppie approvazioni, la piena visibilità e il pulsante di pausa esistono per questo."
+        },
+        {
+          "title": "Dati ridotti al minimo",
+          "text": "Kin conserva registri finanziari e ricevute. Non conserva cartelle cliniche, diagnosi o note mediche."
+        },
+        {
+          "title": "Le informazioni del genitore appartengono al genitore",
+          "text": "Il genitore, o chi lo rappresenta, può vedere tutto ciò che è conservato sul suo conto e può chiudere la cerchia."
+        },
+        {
+          "title": "Onesto su ciò che è",
+          "text": "Kin non è una banca, uno studio legale o un fornitore di assistenza. Non detiene fondi e non offre consulenza legale, fiscale o medica."
+        },
+        {
+          "title": "Un’IA che ammette il dubbio",
+          "text": "Quando Kin non è sicuro di cosa dica un documento o se una richiesta sia vera, lo dice e chiede a una persona."
+        }
+      ]
+    }
+  },
+  "caregiversPage": {
+    "hero": {
+      "eyebrow": "Per assistenti familiari",
+      "title": "Detta le tue ore. Ricevi il pagamento in giornata.",
+      "lede": "Assistenti domiciliari, addetti alle pulizie, autisti e infermieri a domicilio vengono troppo spesso pagati in ritardo e in contanti. Kin ti offre un modo affidabile per presentare il conto a una famiglia, e lo storico di tutto ciò che guadagni.",
+      "imageAlt": "Un’assistente familiare ride insieme all’anziana di cui si prende cura"
+    },
+    "features": {
+      "eyebrow": "Il tuo lato di Kin",
+      "title": "Pagamenti puntuali, e uno storico che li documenta.",
+      "items": [
+        {
+          "title": "Il conto a voce",
+          "text": "Indica a voce le visite e le ore. Kin prepara il conto e te lo rilegge."
+        },
+        {
+          "title": "Pagamento in giornata",
+          "text": "Appena la famiglia approva, il pagamento viene inviato al tuo conto PayPal e ti viene confermato subito."
+        },
+        {
+          "title": "Uno storico dei guadagni",
+          "text": "Conservi lo storico di ogni visita messa in conto e di ogni pagamento ricevuto. Puoi usarlo come prova di reddito."
+        },
+        {
+          "title": "Spese rimborsate",
+          "text": "Se compri qualcosa per la persona che assisti, fotografa lo scontrino. Ti viene rimborsato insieme al compenso."
+        }
+      ]
+    },
+    "exchange": {
+      "eyebrow": "Come si presenta un conto",
+      "title": "Una frase a fine settimana.",
+      "amaraLine": "Manda il conto alla famiglia per questa settimana: tre visite, quattro ore ciascuna.",
+      "kinLine": "Tre visite da quattro ore ciascuna, dodici ore in tutto. Il totale è {amount}. Lo invio alla famiglia?",
+      "kinAmount": "264 dollari",
+      "note": "Elena approva con un tocco. Il pagamento viene confermato sul telefono di Amara prima che lei arrivi alla macchina."
+    },
+    "privacy": {
+      "title": "I tuoi conti e i tuoi pagamenti, e nient’altro.",
+      "text": "Vedi solo ciò che ti riguarda. Le finanze della famiglia restano alla famiglia."
+    },
+    "free": {
+      "title": "Gratis per gli assistenti familiari. Sempre.",
+      "text": "Non paghi mai per usare il tuo lato di Kin."
+    }
+  },
+  "pricingPage": {
+    "hero": {
+      "eyebrow": "Prezzi",
+      "title": "Gratis per il genitore e per l’assistente. Sempre.",
+      "lede": "La famiglia paga un’unica tariffa mensile fissa per cerchia, ripartita con le stesse quote di ogni altra spesa."
+    },
+    "notice": {
+      "title": "Nessun prezzo è ancora stato fissato.",
+      "text": "Questi piani sono proposte che saranno messe alla prova con famiglie pilota. Oggi Kin funziona nella sandbox di PayPal con denaro di prova, e a nessuno viene addebitato nulla."
+    },
+    "plans": {
+      "label": "Piani proposti",
+      "whoPays": "Chi paga",
+      "whatTheyGet": "Cosa ottiene",
+      "price": "Prezzo proposto",
+      "items": [
+        {
+          "name": "Famiglia",
+          "whoPays": "La cerchia, con la stessa ripartizione di ogni altra spesa",
+          "whatTheyGet": "Tutto ciò che fa Kin, per una cerchia",
+          "price": "Una tariffa mensile fissa per cerchia"
+        },
+        {
+          "name": "Genitore e assistente familiare",
+          "whoPays": "Nessuno",
+          "whatTheyGet": "Uso completo del proprio lato di Kin",
+          "price": "Gratis, sempre"
+        },
+        {
+          "name": "Professionisti",
+          "whoPays": "Coordinatori dell’assistenza, avvocati e tutori",
+          "whatTheyGet": "Più cerchie, report per cliente ed esportazioni pronte per il tribunale",
+          "price": "Per cliente, al mese"
+        },
+        {
+          "name": "Agenzia",
+          "whoPays": "Agenzie di assistenza domiciliare",
+          "whatTheyGet": "Conti e pagamento in giornata per i loro assistenti, in molte famiglie",
+          "price": "Per assistente attivo"
+        },
+        {
+          "name": "Benefit aziendale",
+          "whoPays": "Datori di lavoro",
+          "whatTheyGet": "Kin offerto ai dipendenti che assistono un familiare",
+          "price": "Per dipendente iscritto"
+        }
+      ]
+    },
+    "split": {
+      "title": "Anche il prezzo di Kin si divide come tutto il resto.",
+      "text": "Il piano Famiglia viene pagato dalla cassa comune tramite un abbonamento PayPal. Quindi se Marcus sostiene il 50 per cento dei costi dell’assistenza, sostiene il 50 per cento del costo di Kin."
+    }
+  },
+  "notOpen": {
+    "eyebrow": "Non ancora aperto",
+    "startTitle": "Le cerchie non sono ancora aperte.",
+    "signInTitle": "L’accesso non è ancora aperto.",
+    "text": "Kin è in fase di sviluppo per il PayPal AI Hackathon 2026 e funziona nella sandbox di PayPal con denaro di prova. Gli account apriranno con la dimostrazione.",
+    "link": "Scopri come funziona Kin"
+  },
+  "notFound": {
+    "eyebrow": "Pagina non trovata",
+    "title": "Questa pagina non esiste.",
+    "text": "L’indirizzo potrebbe essere scritto male, oppure la pagina è stata spostata.",
+    "link": "Torna alla pagina iniziale"
+  }
+}

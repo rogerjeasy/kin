@@ -21,3 +21,10 @@ test-results/
 .DS_Store
 .idea/
 .vscode/
+
+# Brainstorm mockups from the design sessions
+.superpowers/
+.playwright-mcp/
+
+# Next.js generated types
+next-env.d.ts
