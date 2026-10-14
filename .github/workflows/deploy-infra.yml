@@ -1,0 +1,46 @@
+name: Deploy infrastructure
+
+# Deploys Kin's stacks to the shared AWS account (docs/architecture.md section
+# 14.8) when infrastructure changes reach main. The role kin-github-deploy
+# trusts only this repository's main branch, so a run from any other ref is
+# refused by AWS.
+on:
+  push:
+    branches: [main]
+    paths:
+      - infra/**
+      - packages/auth/**
+      - pnpm-lock.yaml
+      - .github/workflows/deploy-infra.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# One deployment at a time, and never cancel one half way.
+concurrency:
+  group: deploy-infra
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Kin's stacks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter @kin/infra test
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/kin-github-deploy
+          aws-region: us-east-1
+      # Security changes were reviewed in the pull request that brought them.
+      # KinGuardrails is left out on purpose: it holds the boundary this
+      # deployment runs under, so only a person may change it.
+      - run: pnpm --filter @kin/infra exec cdk deploy KinOps KinNetwork KinData KinCi --require-approval never
+        env:
+          KIN_ALERT_EMAIL: ${{ secrets.KIN_ALERT_EMAIL }}

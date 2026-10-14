@@ -6,6 +6,19 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run",
+    "synth": "cdk synth --quiet",
+    "diff": "cdk diff",
+    "bootstrap": "ACCOUNT=$(aws sts get-caller-identity --query Account --output text) && cdk bootstrap \"aws://$ACCOUNT/us-east-1\" --app '' --qualifier kin --toolkit-stack-name KinCDKToolkit --termination-protection --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess --custom-permissions-boundary kin-deploy-boundary",
+    "deploy": "cdk deploy --all --require-approval broadening"
+  },
+  "dependencies": {
+    "@kin/auth": "workspace:*",
+    "aws-cdk-lib": "2.273.0",
+    "constructs": "10.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "aws-cdk": "2.1145.0"
   }
 }

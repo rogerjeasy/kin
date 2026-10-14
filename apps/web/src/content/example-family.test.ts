@@ -1,4 +1,4 @@
-import type { Money } from "@kin/domain";
+import { rosesMonth, type Money } from "@kin/domain";
 import { describe, expect, it } from "vitest";
 
 import { getDictionary } from "../i18n/dictionary";
@@ -15,6 +15,28 @@ describe("the example family", () => {
   it("has shares that add up to the whole cost", () => {
     const total = exampleFamily.shares.reduce((sum, share) => sum + share.percent, 0);
     expect(total).toBe(100);
+  });
+
+  it("has the shares of Rose's agreement in the money core", () => {
+    expect(
+      exampleFamily.shares.map(({ member, percent }) => ({
+        memberId: member,
+        bps: percent * 100,
+      })),
+    ).toEqual(rosesMonth.agreement.shares);
+  });
+
+  it("shows only amounts that Rose's ledger records", () => {
+    const recorded = new Set(
+      rosesMonth.ledger.entries.flatMap((entry) =>
+        entry.lines.map((line) => line.cents),
+      ),
+    );
+    const { electricityBill, gasBill, caregiverPay, refill } = exampleFamily;
+
+    for (const amount of [electricityBill, gasBill, caregiverPay, refill]) {
+      expect(recorded).toContain(amount.cents);
+    }
   });
 });
 

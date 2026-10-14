@@ -1,0 +1,10 @@
+# Actions are pinned to commit SHAs, so they need a bot to move them forward.
+# Package upgrades are proposed by people (AGENTS.md section 12).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories: ["/", "/.github/actions/*"]
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
