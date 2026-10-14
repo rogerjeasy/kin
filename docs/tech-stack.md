@@ -1,0 +1,339 @@
+# Kin: technology stack
+
+Recommended tools and services for building Kin for the PayPal AI Hackathon 2026. Draft 1, 13 October 2026.
+
+This document says what to build with and why. It is not a design or an implementation plan. See `project-description.md` for the product.
+
+---
+
+## 1. The stack at a glance
+
+| Layer | Choice |
+|---|---|
+| Language | TypeScript everywhere, on the 6.0 release line |
+| Repository | One pnpm workspace: `apps/*`, `packages/*` and `infra` |
+| Lint | ESLint with typescript-eslint, strict preset |
+| Web app | Next.js, React, Tailwind CSS, shadcn/ui, installable to the home screen |
+| Data grid | AG Grid for the family ledger and audit screens |
+| Checkout | PayPal JavaScript SDK v6 |
+| PayPal server side | PayPal Agent Toolkit and sandbox MCP server, plus direct REST calls |
+| AI model | Claude Opus 5.5 (`claude-opus-5-5`) through the Anthropic TypeScript SDK |
+| Speech | A speech-to-text and a text-to-speech service |
+| Phone calls | Twilio voice |
+| Containers | Docker, one image for all three services, Docker Compose locally |
+| Compute | AWS ECS on Fargate, behind an Application Load Balancer |
+| Database | Amazon Aurora Serverless v2, PostgreSQL-compatible |
+| Authentication and authorization | Amazon Cognito |
+| File storage | Amazon S3 |
+| Background work | Amazon SQS and EventBridge Scheduler |
+| Secrets | AWS Secrets Manager |
+| Infrastructure as code | AWS CDK in TypeScript |
+| Build and deploy | GitHub Actions, Amazon ECR |
+| Monitoring | Amazon CloudWatch |
+| Tests | Vitest, Playwright, PayPal webhook simulator and negative testing |
+
+---
+
+## 2. What the hackathon requires
+
+- **Required:** the PayPal developer platform in the free sandbox, and an AI tool, model or platform of your choice. PayPal must be central to the project.
+- **Optional:** sponsor tools from AG Grid, APIMatic, Astropods, Bryntum, Channel3, Elastic, KERNEL, Postman, Render and Zapier.
+- **Not restricted:** language, framework, database and hosting. AWS is permitted.
+- **Submission needs:** a public open-source repository with a visible license, a working build that judges can reach free of charge until 15 December 2026, and a video under three minutes.
+
+---
+
+## 3. How the pieces fit
+
+```
+  Siblings (laptop/phone)   Parent (phone call or phone browser)   Caregiver (phone)
+            |                          |                                  |
+            |                     Twilio voice                            |
+            |                          |                                  |
+            +------------+-------------+----------------+-----------------+
+                         |                              |
+                 Application Load Balancer  (HTTPS and WebSocket)
+                         |
+        +----------------+----------------+-------------------+
+        |                                 |                   |
+   web service                      voice service        worker service
+   Next.js UI and API               live call audio      queues and schedules
+   (ECS Fargate)                    (ECS Fargate)        (ECS Fargate)
+        |                                 |                   |
+        +-----------+---------------------+-------------------+
+                    |
+   +----------------+------------------+----------------+----------------+
+   |                |                  |                |                |
+ Cognito      Aurora Serverless v2     S3              SQS         Secrets Manager
+ sign-in      ledger, circles,     receipts and    jobs and        PayPal, Claude,
+ and tokens   approvals, audit     letter photos   webhook events  speech keys
+
+ External services:  PayPal sandbox  |  Claude API  |  speech-to-text and text-to-speech
+```
+
+Three small services share one codebase:
+
+- **Web** serves the app and its API, and receives PayPal webhooks.
+- **Voice** holds the long-lived connections that live phone calls need.
+- **Worker** processes webhook events, runs monthly settlement, schedules refills and sends notifications.
+
+---
+
+## 4. Frontend
+
+- **Next.js with React and TypeScript.** One app serves siblings on a laptop, and the parent and caregiver on a phone.
+- **Tailwind CSS and shadcn/ui.** Fast to build, accessible by default, easy to restyle for very large type and high contrast.
+- **Installable web app.** A manifest and service worker let the parent's phone keep Kin on the home screen and receive notifications.
+- **AG Grid.** The ledger, the list of bills and the audit export are tables with sorting, filtering, grouping and export. This is exactly what AG Grid is for, and it carries the largest sponsor prize.
+- **Browser microphone and camera.** Used for voice in the app and for photographing bills and letters.
+- **Accessibility target:** WCAG 2.2 level AA, tested with a screen reader.
+
+---
+
+## 5. PayPal
+
+| Kin feature | PayPal product | How Kin reaches it |
+|---|---|---|
+| Monthly sibling contributions | Subscriptions | Agent Toolkit for plans, PayPal's approval link for the sibling's consent |
+| One-off top-ups | Orders v2 | JavaScript SDK v6, with capture on the server |
+| Top-up and settlement requests to siblings | Invoicing v2 | Agent Toolkit |
+| Purchases for the parent | Vault payment token and Orders v2 at a linked merchant | Direct REST calls by the merchant |
+| Paying caregivers and rebalancing siblings | Payouts | Direct REST calls |
+| Spreading a large cost | Pay Later | JavaScript SDK v6 |
+| The record of what happened | Transaction Search and webhooks | Agent Toolkit and a webhook endpoint |
+| Following a delivery | Shipment tracking | Agent Toolkit |
+| Contesting a wrong charge | Disputes | Agent Toolkit |
+| Signing in with PayPal | Log in with PayPal | Federated through Cognito, see section 9 |
+
+**Packages and endpoints:**
+
+- `@paypal/agent-toolkit` for the agent's PayPal tools.
+- The hosted sandbox MCP server at `https://mcp.sandbox.paypal.com`, with `/sse` and `/http` transports. It can also run locally with `npx @paypal/mcp --tools=all`.
+- PayPal JavaScript SDK v6 in the browser.
+- PayPal REST APIs called directly where the toolkit has no tool.
+
+**Rules for every PayPal call:**
+
+- **Webhooks are the source of truth.** Kin records a payment as done only when PayPal's webhook says so. Every webhook signature is verified.
+- **Every write carries an idempotency key**, so a retry never pays twice.
+- **Every movement of money sits behind an approval record** in Kin's own database. PayPal's toolkit has no built-in confirmation step, so Kin supplies one.
+
+---
+
+## 6. AI
+
+- **Model: Claude Opus 5.5, model ID `claude-opus-5-5`.** Used for the agent's reasoning, for reading bills, letters and receipts from photographs, and for writing statements and spoken sentences.
+- **SDK: `@anthropic-ai/sdk`**, using its tool runner with typed tools, so the SDK drives the tool-calling loop and Kin supplies the tools and the approval checks.
+- **Structured outputs** for anything Kin stores, such as the amount, payee and due date read from a bill.
+- **Streaming** for spoken replies, so the parent hears the first words quickly.
+
+**Settings to get right from the start:**
+
+- Set the effort level explicitly. Its default on this model is medium. Use low for short spoken turns and high for the monthly statement and for reading difficult documents.
+- Do not force a specific tool call. Opus 5.5 rejects forced tool choice. Use automatic tool choice with strict tool schemas.
+- Check the stop reason on every response and handle a refusal cleanly. Enable server-side fallbacks so a declined request is rerouted.
+- If spoken replies feel slow at low effort, test Claude Haiku 5.5 (`claude-haiku-5-5`) for those turns only.
+
+**What AI is not used for:** the ledger arithmetic, the settlement calculation and the decision that a payment happened. Those are plain deterministic code reading PayPal's records.
+
+**AWS alternative:** Claude is also available through Amazon Bedrock. Calling Anthropic's API directly is simpler and receives new features first. Use Bedrock only if everything must sit on one AWS bill.
+
+---
+
+## 7. Voice
+
+Claude's API takes text and images, not audio, so speech needs its own services.
+
+| Need | Recommended | AWS alternative |
+|---|---|---|
+| Speech to text | Deepgram | Amazon Transcribe |
+| Text to speech | ElevenLabs | Amazon Polly |
+| Phone calls to and from the parent | Twilio voice | Amazon Connect or the Amazon Chime SDK |
+
+- **Phone calls are the parent's main channel.** Kin rings an ordinary phone, including a landline, and speaks. This avoids the limit that a web app cannot wake a locked phone.
+- **In the app,** the same speech services run through the browser microphone.
+- **Choose the voice by ear.** Warmth and clarity matter more for an 81-year-old listener than any benchmark. Compare the candidates with a real older listener before deciding.
+- **Languages.** Pick services that cover every language your pilot families speak.
+
+---
+
+## 8. Compute: AWS ECS on Fargate
+
+- **Three Fargate services** from one container image: web, voice and worker.
+- **Application Load Balancer** in front of web and voice, with HTTPS certificates from AWS Certificate Manager and a domain in Route 53.
+- **Why Fargate and not a serverless-only setup:** live calls need connections that stay open for minutes, and PayPal webhooks need an endpoint that is always awake.
+- **Docker.** One multi-stage Dockerfile builds one image. Web, voice and worker start from it with different commands. Docker Compose runs them with PostgreSQL for local development.
+- **Match the processor architecture.** Build the image for the architecture Fargate runs.
+- **Amazon ECR** stores the images.
+- **Amazon CloudFront** in front of the load balancer is optional, for static assets and caching.
+
+---
+
+## 9. Authentication and authorization: Amazon Cognito
+
+### 9.1 Authentication
+
+- **One Cognito user pool** holds every person: siblings, parents, caregivers and professionals.
+- **Passwordless sign-in.** A one-time code by email, or a passkey. Nobody in a family should have to remember a password for Kin.
+- **Cognito managed login** for the sign-in pages, so Kin does not build or host credential forms.
+- **Log in with PayPal as a federated identity provider.** Cognito accepts OpenID Connect providers, and Log in with PayPal is built on OpenID Connect. This lets a sibling sign in with the PayPal account they will pay from.
+- **Multi-factor authentication** required for organizers and for anyone who can approve a payout.
+- **Tokens.** Cognito issues signed tokens. Each service verifies them with the `aws-jwt-verify` library before doing anything.
+
+### 9.2 Authorization
+
+Cognito answers "who is this?" Kin's database answers "what may they do in this circle?" Both are needed, because one person can hold different roles in different circles.
+
+| Level | Held in | Examples |
+|---|---|---|
+| Account type | Cognito groups | family member, caregiver, professional, administrator |
+| Role in a circle | Aurora, checked on every request | organizer, contributor, parent, caregiver, observer |
+| Limits and approvals | Aurora, from the family agreement | spending thresholds, who must approve, second approval above an amount |
+
+- **Cognito groups** give coarse access, such as whether someone sees the caregiver screens or the family screens.
+- **Per-circle roles** are enforced in the service on every request. A caregiver can see only their own bills. An observer can read and never write.
+- **Row-level security in Aurora** is a second line of defense, so a coding mistake in the service cannot expose another family's data.
+- **Amazon Verified Permissions** is an option later if the rules outgrow simple role checks. It is not needed for the hackathon.
+
+### 9.3 The parent on a phone call
+
+A phone call is not a browser session, so Cognito does not sign the parent in there.
+
+- **Outbound calls** go only to the number the family registered for the parent.
+- **Inbound calls** are matched to that number, and the parent confirms with a short spoken phrase or PIN before Kin discusses money.
+- **Approvals given by voice** are recorded with the call reference, the time and the words confirmed.
+- The voice service acts with its own service identity and is limited to that one parent's circle.
+
+### 9.4 Service access
+
+- **Kin's own MCP server**, which makes Kin usable by other AI agents, is protected with Cognito-issued OAuth tokens.
+- **Service-to-service calls** inside AWS use IAM roles, not shared keys.
+
+---
+
+## 10. Database: Amazon Aurora Serverless v2
+
+- **Aurora Serverless v2, PostgreSQL-compatible.** It scales capacity up and down with load, which suits a demo that is idle most of the day and busy when a judge arrives.
+- **Access library:** Drizzle or Prisma, with migrations kept in the repository.
+
+**How the data is kept:**
+
+- **An append-only ledger.** Entries are never edited or deleted. Corrections are new entries. This is what makes the audit export trustworthy.
+- **Money as whole cents** in integer columns, with the currency stored beside each amount. No floating-point arithmetic anywhere.
+- **Approvals as records.** Each one stores who approved, when, by what means and for which movement.
+- **PayPal events stored as received**, each with its PayPal identifier, so every ledger entry can be traced to the event that caused it.
+- **Row-level security** by circle.
+
+**Operating notes:**
+
+- **Minimum capacity.** Aurora Serverless v2 can pause when idle and takes several seconds to resume. During the judging period, set a minimum capacity above zero so a judge's first visit is not slow.
+- **Backups** with point-in-time recovery switched on.
+- **Encryption at rest** with AWS KMS.
+
+---
+
+## 11. Files, queues and schedules
+
+- **Amazon S3** stores photographs of receipts, bills and letters. Uploads go straight from the phone to S3 through short-lived signed links. Buckets are private and encrypted.
+- **Amazon SQS** carries work that should not block a request: processing a PayPal webhook, reading a photographed bill, sending a notification. Each queue has a dead-letter queue.
+- **Amazon EventBridge Scheduler** triggers the timed work: monthly settlement, the monthly statement, refill reminders and the parent's scheduled calls.
+- **Amazon SES** sends email, including statements and sign-in codes.
+
+---
+
+## 12. Infrastructure, delivery and monitoring
+
+- **AWS CDK in TypeScript** defines every resource, so the whole environment can be recreated from the repository. This also serves the rule that the repository must contain everything needed to run the project.
+- **GitHub Actions** builds, tests and deploys. It signs in to AWS through OpenID Connect, with no long-lived keys stored in GitHub.
+- **AWS Secrets Manager** holds the PayPal credentials, the Claude key and the speech and telephony keys.
+- **Amazon CloudWatch** for logs, metrics and alarms. Alarms on failed webhooks, failed payouts and queue backlogs.
+- **AWS WAF** on the load balancer is optional, for rate limiting on public endpoints.
+
+---
+
+## 13. Security
+
+- **Least privilege.** Each Fargate service has its own IAM role with only the access it needs.
+- **No secrets in the repository or the container image.**
+- **Webhook signatures verified** for PayPal and for the telephony provider.
+- **Encryption** in transit everywhere and at rest in Aurora and S3.
+- **Minimal personal data.** Financial records and receipts only. No medical records.
+- **Audit trail** of every sign-in, approval and payment movement.
+
+---
+
+## 14. Testing
+
+- **Vitest** for unit tests. The ledger and the settlement calculation get the heaviest coverage, because they are the heart of the fairness claim.
+- **Playwright** for end-to-end tests of the main journeys in a real browser.
+- **PayPal sandbox** with seeded personal and business accounts for each member of the demo family.
+- **PayPal webhook simulator** to replay payment events.
+- **PayPal negative testing** to prove Kin behaves correctly when a payment fails, is declined or is reversed.
+- **Recorded test calls** for the voice flows.
+
+---
+
+## 15. Sponsor tools
+
+A project can win one sponsor prize, so the aim is one strong fit.
+
+| Tool | Use in Kin | Verdict |
+|---|---|---|
+| **AG Grid** | Family ledger, bills list, audit export | Use. Best fit and largest sponsor prize |
+| **APIMatic** | Context plugins while coding the PayPal integration | Use during development |
+| **Postman** | Sandbox testing, and a published collection for judges | Use |
+| **Channel3** | Product search inside the purchasing agent | Use if the purchasing agent searches real catalogs |
+| **Render** | Hosting | Not used, because hosting is on AWS |
+| **Bryntum, Elastic, KERNEL, Zapier, Astropods** | No natural role | Skip |
+
+---
+
+## 16. Things to settle on day one
+
+Each of these should be tried against the real services before the build depends on it.
+
+1. **How the agent connects to PayPal's tools.** Try the MCP server and the toolkit's other adapters with Claude, and keep whichever is more reliable.
+2. **Payouts.** The Agent Toolkit has no payout tool. Confirm that Payouts is enabled on the sandbox business account and call the REST API directly.
+3. **Subscriptions in the sandbox.** Billing happens in real time and cannot be fast-forwarded. Confirm the shortest billing cycle the sandbox allows, and plan to use short cycles or simulated webhook events for the demo.
+4. **Log in with PayPal through Cognito.** Confirm that PayPal's OpenID Connect endpoints work with Cognito federation. If they do not, keep email codes and passkeys, and link each sibling's PayPal account at the first payment.
+5. **Text-message sign-in codes.** Cognito sends them through Amazon SNS, which starts in a restricted mode and takes time to open up. Use email codes for the hackathon.
+6. **Live call audio on AWS.** Confirm that the load balancer and the voice service hold a connection for the length of a real call.
+7. **Pay Later.** Availability depends on the buyer's country, including in the sandbox. Treat it as optional.
+
+---
+
+## 17. Access for judges
+
+- **A hosted demo** at a stable address, with a one-click demo mode.
+- **Seeded demo accounts** in Cognito for each role, with the sign-in details in the README.
+- **Matching sandbox PayPal accounts** for each demo person.
+- **A reset script** that returns the demo family to its starting state.
+- **A demo phone number** judges can call to hear the parent's experience, or a recorded call if a live number is not practical.
+- **Full setup instructions** in the repository, so a judge can also run it themselves.
+
+---
+
+## 18. Cost and running through judging
+
+- The environment must stay up from submission on 12 November until judging ends on 15 December 2026.
+- Keep Fargate tasks small and Aurora's maximum capacity low.
+- Set an AWS billing alarm before deploying anything.
+- Set spending limits on the Claude, speech and telephony accounts, since the demo is public.
+
+---
+
+## 19. How certain each part is
+
+**Checked against the source during this session:**
+
+- The hackathon's technology rules and sponsor list.
+- The PayPal Agent Toolkit's tool list, including the absence of a payout tool.
+- The PayPal sandbox MCP server address and transports.
+- The Claude model identifiers and the behavior notes in section 6.
+
+**Written from general knowledge and to be confirmed before relying on it:**
+
+- Aurora Serverless v2 pause and resume behavior.
+- Cognito's passwordless sign-in options and its handling of OpenID Connect providers.
+- The need for Amazon SNS configuration before Cognito can send text messages.
+- The capabilities of the speech and telephony services named in section 7.
