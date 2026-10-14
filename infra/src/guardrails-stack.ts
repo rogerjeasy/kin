@@ -43,6 +43,20 @@ const IAM_WRITES = [
   "iam:Upload*",
 ];
 
+/**
+ * The only roles a bounded principal may assume: Kin's own, and the three
+ * bootstrap roles a deployment needs. Not the bootstrap's lookup role, which
+ * reads the whole account, and never another project's role, which would
+ * carry no boundary at all.
+ */
+export const ASSUMABLE_ROLES = [
+  "role/Kin*",
+  "role/kin-*",
+  "role/cdk-kin-deploy-role-*",
+  "role/cdk-kin-file-publishing-role-*",
+  "role/cdk-kin-image-publishing-role-*",
+];
+
 /** Changes to a role's or user's powers, allowed only under the boundary. */
 const BOUNDED_IAM_CHANGES = [
   "iam:CreateRole",
@@ -114,6 +128,15 @@ export class GuardrailsStack extends Stack {
           actions: BOUNDED_IAM_CHANGES,
           resources: ["*"],
           conditions: { StringNotEquals: { "iam:PermissionsBoundary": boundaryArn } },
+        }),
+        new iam.PolicyStatement({
+          // Assuming a role that is not Kin's would step outside the boundary.
+          sid: "DenyAssumingRolesOutsideKin",
+          effect: iam.Effect.DENY,
+          actions: ["sts:AssumeRole", "sts:TagSession", "sts:SetSourceIdentity"],
+          notResources: ASSUMABLE_ROLES.map(
+            (role) => `arn:aws:iam::${account}:${role}`,
+          ),
         }),
         new iam.PolicyStatement({
           sid: "DenyRemovingAnyBoundary",

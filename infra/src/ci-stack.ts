@@ -6,6 +6,9 @@ import type { InfraConfig } from "./config.ts";
 
 const GITHUB_ISSUER = "token.actions.githubusercontent.com";
 
+/** The bootstrap roles a CDK deployment assumes. */
+const DEPLOY_BOOTSTRAP_ROLES = ["deploy", "file-publishing", "image-publishing"];
+
 /**
  * The role GitHub Actions assumes to deploy Kin. The account's GitHub OIDC
  * provider already exists and is shared, because an account holds one per
@@ -34,11 +37,15 @@ export class CiStack extends Stack {
         },
       }),
     });
+    // Not the lookup role: Kin's synth needs no lookups, and that role can
+    // read the whole account.
     role.addToPolicy(
       new iam.PolicyStatement({
         sid: "UseKinBootstrapRolesOnly",
         actions: ["sts:AssumeRole"],
-        resources: [`arn:aws:iam::${this.account}:role/cdk-kin-*`],
+        resources: DEPLOY_BOOTSTRAP_ROLES.map(
+          (name) => `arn:aws:iam::${this.account}:role/cdk-kin-${name}-role-*`,
+        ),
       }),
     );
   }

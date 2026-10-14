@@ -265,14 +265,18 @@ describe("deployment from GitHub", () => {
     });
   });
 
-  it("may only hand over to Kin's own bootstrap roles", () => {
+  it("may only hand over to Kin's own deployment roles, not the lookup role", () => {
     ci.hasResourceProperties("AWS::IAM::Policy", {
       PolicyDocument: {
         Statement: [
           {
             Action: "sts:AssumeRole",
             Effect: "Allow",
-            Resource: "arn:aws:iam::123456789012:role/cdk-kin-*",
+            Resource: [
+              "arn:aws:iam::123456789012:role/cdk-kin-deploy-role-*",
+              "arn:aws:iam::123456789012:role/cdk-kin-file-publishing-role-*",
+              "arn:aws:iam::123456789012:role/cdk-kin-image-publishing-role-*",
+            ],
             Sid: "UseKinBootstrapRolesOnly",
           },
         ],
@@ -366,6 +370,20 @@ describe("the deployment boundary", () => {
       "iam:DeleteRolePermissionsBoundary",
       "iam:DeleteUserPermissionsBoundary",
     ]);
+  });
+
+  it("lets a bounded role assume only Kin's roles and the bootstrap's deployment roles", () => {
+    expect(statement("DenyAssumingRolesOutsideKin")).toMatchObject({
+      Effect: "Deny",
+      Action: ["sts:AssumeRole", "sts:SetSourceIdentity", "sts:TagSession"],
+      NotResource: [
+        "arn:aws:iam::123456789012:role/Kin*",
+        "arn:aws:iam::123456789012:role/kin-*",
+        "arn:aws:iam::123456789012:role/cdk-kin-deploy-role-*",
+        "arn:aws:iam::123456789012:role/cdk-kin-file-publishing-role-*",
+        "arn:aws:iam::123456789012:role/cdk-kin-image-publishing-role-*",
+      ],
+    });
   });
 
   it("cannot be rewritten by a deployment it limits", () => {
