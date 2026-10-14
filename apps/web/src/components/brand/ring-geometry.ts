@@ -37,6 +37,6 @@ export function pointOnRing(ring: Ring, position: number): { x: number; y: numbe
 }
 
 // Two decimals is finer than a pixel and keeps the markup stable between builds.
-function round(value: number): number {
+export function round(value: number): number {
   return Math.round(value * 100) / 100;
 }

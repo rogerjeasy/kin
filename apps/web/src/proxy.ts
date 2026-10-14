@@ -17,8 +17,8 @@ export function proxy(request: NextRequest): NextResponse {
 }
 
 export const config = {
-  // Pages only. Skip Next's own files and anything with a file extension.
-  // API and webhook routes must be excluded here when they are added, or they
-  // would be rewritten under a language.
-  matcher: ["/((?!_next/|.*\\..*).*)"],
+  // Pages only. Skip Next's own files, the site icon and anything with a file
+  // extension. API and webhook routes must be excluded here when they are
+  // added, or they would be rewritten under a language.
+  matcher: ["/((?!_next/|icon$|.*\\..*).*)"],
 };

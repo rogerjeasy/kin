@@ -11,6 +11,7 @@ function usd(cents: number): Money {
 export const exampleFamily = {
   purchaseLimit: usd(5000),
   electricityBill: usd(8400),
+  gasBill: usd(5700),
   caregiverPay: usd(26400),
   refill: usd(4200),
   settlement: { elena: usd(12600), ana: usd(4000) },

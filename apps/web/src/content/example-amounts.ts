@@ -4,7 +4,7 @@ import { numberLocaleOf, type Locale } from "../i18n/locales";
 import { exampleFamily } from "./example-family";
 
 export type ExampleAmounts = Record<
-  "limit" | "bill" | "caregiverPay" | "refill" | "elena" | "ana",
+  "limit" | "bill" | "gasBill" | "caregiverPay" | "refill" | "elena" | "ana",
   string
 >;
 
@@ -14,6 +14,7 @@ export function exampleAmounts(locale: Locale): ExampleAmounts {
   return {
     limit: formatMoney(exampleFamily.purchaseLimit, numberLocale),
     bill: formatMoney(exampleFamily.electricityBill, numberLocale),
+    gasBill: formatMoney(exampleFamily.gasBill, numberLocale),
     caregiverPay: formatMoney(exampleFamily.caregiverPay, numberLocale),
     refill: formatMoney(exampleFamily.refill, numberLocale),
     elena: formatMoney(exampleFamily.settlement.elena, numberLocale),

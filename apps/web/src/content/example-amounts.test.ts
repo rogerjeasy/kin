@@ -7,6 +7,7 @@ describe("exampleAmounts", () => {
     expect(exampleAmounts("en")).toEqual({
       limit: "$50.00",
       bill: "$84.00",
+      gasBill: "$57.00",
       caregiverPay: "$264.00",
       refill: "$42.00",
       elena: "$126.00",

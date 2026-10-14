@@ -10,8 +10,8 @@ const destinations = [
   { link: nav.safety, path: "/safety", heading: english.safetyPage.hero.title },
   { link: nav.caregivers, path: "/caregivers", heading: english.caregiversPage.hero.title },
   { link: nav.pricing, path: "/pricing", heading: english.pricingPage.hero.title },
-  { link: nav.signIn, path: "/sign-in", heading: english.notOpen.signInTitle },
-  { link: nav.start, path: "/start", heading: english.notOpen.startTitle },
+  { link: nav.signIn, path: "/sign-in", heading: english.signInPage.hero.title },
+  { link: nav.start, path: "/start", heading: english.startPage.hero.title },
 ];
 
 test.describe("on a laptop", () => {

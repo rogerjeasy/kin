@@ -1,6 +1,5 @@
 import roseFace from "@/assets/images/rose-face.jpg";
 import { RING_LENGTH, pointOnRing, ringSegments } from "@/components/brand/ring-geometry";
-import { shareStrokes } from "@/components/brand/ring-mark";
 import { exampleFamily } from "@/content/example-family";
 import { siblingPortraits } from "@/content/sibling-portraits";
 
@@ -13,6 +12,8 @@ const ROSE_RADIUS = 112;
 const FACE_RADIUS = 38;
 /** A disc in the section's colour behind each face, so the ring appears to pass under it. */
 const HALO_RADIUS = 46;
+
+const shareStrokes = ["stroke-share-1", "stroke-share-2", "stroke-share-3"] as const;
 
 const segments = ringSegments(
   exampleFamily.shares.map((share) => share.percent),

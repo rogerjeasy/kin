@@ -22,11 +22,11 @@
     },
     "start": {
       "title": "Start a circle · Kin",
-      "description": "Kin is being built for the PayPal AI Hackathon 2026. Circles are not open yet."
+      "description": "Four steps to a family circle: invite your siblings, agree the shares, ask your parent, and connect PayPal."
     },
     "signIn": {
       "title": "Sign in · Kin",
-      "description": "Kin is being built for the PayPal AI Hackathon 2026. Sign-in is not open yet."
+      "description": "A code by email or a passkey for the family and the caregiver. No sign-in at all for the parent."
     }
   },
   "common": {
@@ -76,6 +76,9 @@
       "forFamilies": "For families",
       "disclaimer": "Kin is not a bank, a law firm or a care provider. It does not hold funds. This version runs in the PayPal sandbox with test money, for the PayPal AI Hackathon 2026.",
       "photos": "The photographs show models, not a real family. The amounts are examples."
+    },
+    "related": {
+      "title": "Keep reading"
     }
   },
   "home": {
@@ -276,7 +279,21 @@
     "hero": {
       "eyebrow": "How it works",
       "title": "One month with Rose’s family.",
-      "lede": "Kin is easiest to understand by watching it work. Here is one month in one family, from the first agreement to the settlement at the end."
+      "lede": "Kin is easiest to understand by watching it work. Here is one month in one family, from the first agreement to the settlement at the end.",
+      "facts": [
+        {
+          "value": "30",
+          "label": "days"
+        },
+        {
+          "value": "8",
+          "label": "moments"
+        },
+        {
+          "value": "5",
+          "label": "people, one pool"
+        }
+      ]
     },
     "timeline": {
       "label": "The month, day by day",
@@ -284,60 +301,78 @@
         {
           "day": "Day 1",
           "title": "The family agrees",
-          "text": "Elena creates a circle for her mother Rose and invites Marcus and Ana. They agree on shares: Marcus 50 percent, Elena 30 percent, Ana 20 percent. Hands-on care hours count too, at a rate they choose together. Rose joins with the role “decides”: purchases above 50 dollars need her spoken yes.",
+          "text": "Elena creates a circle for her mother Rose and invites Marcus and Ana. They agree on shares: Marcus 50 percent, Elena 30 percent, Ana 20 percent. Hands-on care hours count too, at a rate they choose together. Each sibling sets up a monthly contribution to the family pool. Rose joins with the role “decides”: purchases above 50 dollars need her spoken yes.",
           "speaker": "",
-          "quote": ""
+          "quote": "",
+          "approval": "Elena, Marcus, Ana and Rose",
+          "paypal": "Subscriptions"
         },
         {
           "day": "Day 3",
           "title": "Rose hears a bill being paid",
           "text": "Rose’s phone rings with a calm voice from Kin. She does not have to open anything.",
           "speaker": "Kin",
-          "quote": "Good morning Rose. Your electricity bill of 84 dollars was paid from the family pool this morning. Nothing else is due this week."
+          "quote": "Good morning Rose. Your electricity bill of 84 dollars was paid from the family pool this morning. Nothing else is due this week.",
+          "approval": "The family, when it approved the biller",
+          "paypal": "Payment notifications"
         },
         {
           "day": "Day 6",
           "title": "Amara bills by voice, and is paid",
           "text": "Amara finishes her third visit of the week and tells Kin her hours. Kin prepares the bill and reads it back. Elena approves it with one tap. Amara’s phone confirms the payment before she reaches her car.",
           "speaker": "Amara",
-          "quote": "Bill the family for this week, three visits, four hours each."
+          "quote": "Bill the family for this week, three visits, four hours each.",
+          "approval": "Elena",
+          "paypal": "Payouts"
         },
         {
           "day": "Day 9",
           "title": "Rose approves her refill",
           "text": "Rose’s blood pressure medication is due. She says yes. Kin places the order and tells her when it will arrive.",
           "speaker": "Kin",
-          "quote": "Your refill is ready to order. It costs 42 dollars. Shall I go ahead?"
+          "quote": "Your refill is ready to order. It costs 42 dollars. Shall I go ahead?",
+          "approval": "Rose, by voice",
+          "paypal": "A saved payment method"
         },
         {
           "day": "Day 12",
           "title": "A letter is read aloud",
           "text": "A letter arrives. Rose holds it in front of her phone and Kin reads it to her.",
           "speaker": "Kin",
-          "quote": "This is from the water company. It says 61 dollars is due on the 30th. I have added it to the family’s list. Elena will see it today."
+          "quote": "This is from the water company. It says 61 dollars is due on the 30th. I have added it to the family’s list. Elena will see it today.",
+          "approval": "Nobody yet. Elena will decide.",
+          "paypal": "No money moves"
         },
         {
           "day": "Day 15",
           "title": "A false demand is caught",
           "text": "A man telephones Rose and says her gas account is overdue and she must pay 300 dollars today. Rose asks Kin. The family is alerted within seconds.",
           "speaker": "Kin",
-          "quote": "I find no gas bill outstanding. Your gas bill of 57 dollars was paid on the 2nd. Please do not pay this caller. I have told Elena and Marcus."
+          "quote": "I find no gas bill outstanding. Your gas bill of 57 dollars was paid on the 2nd. Please do not pay this caller. I have told Elena and Marcus.",
+          "approval": "Nobody. Nothing was paid.",
+          "paypal": "Transaction records"
         },
         {
           "day": "Day 20",
           "title": "A big repair is shared",
           "text": "The stairlift needs a repair costing 900 dollars, more than the pool holds. Kin proposes two options: a one-off top-up split by the agreed shares, or spreading the cost over several months. The siblings choose, Rose agrees, and the repair is booked.",
           "speaker": "",
-          "quote": ""
+          "quote": "",
+          "approval": "The siblings, then Rose",
+          "paypal": "Checkout, with Pay Later"
         },
         {
           "day": "Day 30",
           "title": "The month is settled",
           "text": "Elena paid 180 dollars at the pharmacy from her own pocket. Ana drove Rose to four appointments. Kin calculates that Elena is owed 126 dollars and Ana 40, proposes the settlement, and on approval sends the money. Every sibling receives the same one-page statement.",
           "speaker": "Kin",
-          "quote": "This month everything that was due has been paid, and everyone is back to their agreed share. Everything is in order."
+          "quote": "This month everything that was due has been paid, and everyone is back to their agreed share. Everything is in order.",
+          "approval": "The siblings",
+          "paypal": "Payouts"
         }
-      ]
+      ],
+      "approvalLabel": "Who said yes",
+      "paypalLabel": "PayPal"
     },
     "paypal": {
       "eyebrow": "Built on PayPal",
@@ -404,6 +439,16 @@
         "It does not give legal, tax, medical or investment advice."
       ],
       "closing": "This division is deliberate. It is what lets a family trust an AI with something as sensitive as a parent’s money."
+    },
+    "cast": {
+      "title": "Rose’s circle",
+      "members": {
+        "rose": "The parent. Decides above {limit}.",
+        "elena": "The organizer. Carries 30 percent.",
+        "marcus": "Lives abroad. Carries 50 percent.",
+        "ana": "Gives her time. Carries 20 percent.",
+        "amara": "The caregiver. Visits three mornings a week."
+      }
     }
   },
   "safetyPage": {
@@ -415,37 +460,49 @@
     "limits": {
       "eyebrow": "Safeguards",
       "title": "Limits that no one can talk their way around.",
-      "items": [
-        {
+      "items": {
+        "drain": {
           "title": "No one can drain the pool",
           "text": "Money leaves only to approved billers, approved caregivers and members of the circle, and never above the limits in the family agreement without a second approval."
         },
-        {
+        "approvals": {
           "title": "Two approvals for large amounts",
           "text": "Above a threshold the family sets, two members must agree. No member is the only approver of a payment to themselves."
         },
-        {
+        "announced": {
           "title": "Every change is announced",
           "text": "A new biller, a changed share or a new member is reported to everyone in the circle."
         },
-        {
+        "pause": {
           "title": "A pause button",
           "text": "Any member can freeze outgoing payments for 24 hours if something looks wrong."
         },
-        {
+        "pressure": {
           "title": "Protection against pressure",
           "text": "Unusual patterns, such as a sudden new payee or repeated requests to the parent, are flagged to the whole circle, not to one person."
         },
-        {
+        "history": {
           "title": "Nothing is ever deleted",
           "text": "A correction is added as a new entry, so the history stays intact and every line keeps its receipt and its approval."
         }
-      ]
+      }
     },
     "guard": {
       "eyebrow": "The number check",
       "title": "Every amount is checked before it is spoken.",
-      "text": "The AI words the sentence. It never chooses the number. Before anything is said or shown, plain code compares each amount, date and name in the sentence with the record. If anything differs, the sentence is thrown away and a fixed one is used. Your parent can never hear an amount that the record does not contain."
+      "text": "The AI words the sentence. It never chooses the number. Before anything is said or shown, plain code compares each amount, date and name in the sentence with the record. If anything differs, the sentence is thrown away and a fixed one is used. Your parent can never hear an amount that the record does not contain.",
+      "checksLabel": "Checked against the record",
+      "checks": [
+        "Every amount",
+        "Every date",
+        "Every name"
+      ],
+      "matchTitle": "When the wording matches",
+      "mismatchTitle": "When the wording drifts",
+      "wrongAmount": "48 dollars",
+      "mismatch": "“{spoken}” does not match {amount}",
+      "fallbackLabel": "So instead",
+      "fallback": "The sentence is thrown away. Rose hears a fixed one, built from the record."
     },
     "scam": {
       "eyebrow": "The scam check",
@@ -453,7 +510,30 @@
       "text": "Kin does not guess whether a caller sounds suspicious. It checks whether the bill exists and whether it has been paid, tells your parent plainly, and alerts the family.",
       "roseLine": "A man called about the gas bill. He says I must pay 300 dollars today. Is it real?",
       "kinLine": "I find no gas bill outstanding. Your gas bill of 57 dollars was paid on the 2nd. Please do not pay this caller. I have told Elena and Marcus.",
-      "rule": "The family teaches one rule: Kin tells, Kin never asks for secrets. It never asks for a password, a card number or a code."
+      "rule": "The family teaches one rule: Kin tells, Kin never asks for secrets. It never asks for a password, a card number or a code.",
+      "checkedTitle": "What Kin checked before it answered",
+      "checked": [
+        {
+          "question": "Is a gas bill outstanding?",
+          "answer": "No. Nothing is due."
+        },
+        {
+          "question": "Was the last gas bill paid?",
+          "answer": "Yes. {amount}, on the 2nd."
+        },
+        {
+          "question": "Who was told?",
+          "answer": "Elena and Marcus, within seconds."
+        }
+      ],
+      "note": "Kin never calls a caller a criminal. It says what its records show, and what to do.",
+      "ruleTitle": "Kin tells. Kin never asks for secrets.",
+      "neverLabel": "Kin never asks for",
+      "never": [
+        "A password",
+        "A card number",
+        "A code"
+      ]
     },
     "trust": {
       "eyebrow": "Trust and privacy",
@@ -504,24 +584,24 @@
     "features": {
       "eyebrow": "Your side of Kin",
       "title": "Paid on time, with a record to show for it.",
-      "items": [
-        {
+      "items": {
+        "voice": {
           "title": "Bill by voice",
           "text": "Say the visits and the hours. Kin prepares the bill and reads it back to you."
         },
-        {
+        "sameDay": {
           "title": "Paid the same day",
           "text": "Once the family approves, payment is sent to your PayPal account and confirmed to you straight away."
         },
-        {
+        "record": {
           "title": "A record of income",
           "text": "You keep a history of every visit billed and every payment received. You can use it as proof of income."
         },
-        {
+        "expenses": {
           "title": "Expenses reimbursed",
           "text": "If you buy something for the person you care for, photograph the receipt. It is repaid with your pay."
         }
-      ]
+      }
     },
     "exchange": {
       "eyebrow": "How billing sounds",
@@ -529,7 +609,25 @@
       "amaraLine": "Bill the family for this week, three visits, four hours each.",
       "kinLine": "Three visits of four hours each, twelve hours in all. That comes to {amount}. Shall I send it to the family?",
       "kinAmount": "264 dollars",
-      "note": "Elena approves with one tap. The payment is confirmed on Amara’s phone before she reaches her car."
+      "note": "Elena approves with one tap. The payment is confirmed on Amara’s phone before she reaches her car.",
+      "steps": [
+        {
+          "title": "Say your hours",
+          "text": "Tell Kin the visits and the hours, in your own words."
+        },
+        {
+          "title": "Hear it read back",
+          "text": "Kin prepares the bill and reads it to you before anything is sent."
+        },
+        {
+          "title": "The family approves",
+          "text": "The organizer approves it with one tap."
+        },
+        {
+          "title": "You are paid",
+          "text": "The payment goes to your PayPal account the same day, and your phone confirms it."
+        }
+      ]
     },
     "privacy": {
       "title": "Your own bills and payments, and nothing else.",
@@ -538,6 +636,23 @@
     "free": {
       "title": "Free for caregivers. Always.",
       "text": "You never pay to use your side of Kin."
+    },
+    "record": {
+      "eyebrow": "Your record",
+      "title": "Proof of income, kept for you.",
+      "text": "Every visit you bill and every payment you receive stays in your history. You can use it as proof of income.",
+      "cardTitle": "Amara’s record",
+      "weeks": [
+        "First week",
+        "Second week",
+        "Third week"
+      ],
+      "visits": "Three visits, twelve hours",
+      "paid": "Paid the same day"
+    },
+    "language": {
+      "title": "In your own language.",
+      "text": "Bill in the language you speak. The family reads the same bill in theirs."
     }
   },
   "pricingPage": {
@@ -555,42 +670,101 @@
       "whoPays": "Who pays",
       "whatTheyGet": "What they get",
       "price": "Proposed price",
-      "items": [
-        {
-          "name": "Family",
-          "whoPays": "The circle, split like any other cost",
-          "whatTheyGet": "Everything Kin does, for one circle",
-          "price": "A flat monthly fee per circle"
-        },
-        {
+      "includes": "Includes",
+      "cards": {
+        "free": {
           "name": "Parent and caregiver",
-          "whoPays": "Nobody",
-          "whatTheyGet": "Full use of their side of Kin",
-          "price": "Free, always"
+          "price": "Free",
+          "priceNote": "always",
+          "whoPays": "Nobody pays",
+          "features": [
+            "Every payment spoken aloud",
+            "Approvals by voice",
+            "Letters and bills read through the phone camera",
+            "A scam check against the real record",
+            "Caregiver billing by voice, paid the same day",
+            "A record of income for the caregiver"
+          ]
         },
-        {
+        "family": {
+          "name": "Family circle",
+          "badge": "Shared by the circle",
+          "price": "One flat fee",
+          "priceNote": "per circle, each month",
+          "whoPays": "The circle pays, split like any other cost",
+          "features": [
+            "One family pool, on PayPal",
+            "Bills and caregiver pay, under your approval rules",
+            "A fairness ledger in money and in hours",
+            "A settlement every month, paid for real",
+            "The monthly statement and the audit export",
+            "Everything the parent and the caregiver get"
+          ]
+        },
+        "professional": {
           "name": "Professional",
-          "whoPays": "Care managers, attorneys and guardians",
-          "whatTheyGet": "Many circles, client reporting and court-ready exports",
-          "price": "Per client, per month"
-        },
-        {
-          "name": "Agency",
-          "whoPays": "Home-care agencies",
-          "whatTheyGet": "Billing and same-day pay for their aides across many families",
-          "price": "Per active aide"
-        },
-        {
-          "name": "Employer benefit",
-          "whoPays": "Employers",
-          "whatTheyGet": "Kin offered to staff who are caregivers",
-          "price": "Per enrolled employee"
+          "price": "Per client",
+          "priceNote": "each month",
+          "whoPays": "Care managers, attorneys and guardians pay",
+          "features": [
+            "Many circles in one place",
+            "Client reporting",
+            "Court-ready exports"
+          ]
         }
-      ]
+      },
+      "organisations": {
+        "title": "For organisations",
+        "items": [
+          {
+            "name": "Agency",
+            "whoPays": "Home-care agencies",
+            "whatTheyGet": "Billing and same-day pay for their aides across many families",
+            "price": "Per active aide"
+          },
+          {
+            "name": "Employer benefit",
+            "whoPays": "Employers",
+            "whatTheyGet": "Kin offered to staff who are caregivers",
+            "price": "Per enrolled employee"
+          }
+        ]
+      }
     },
     "split": {
       "title": "Kin’s own price is shared like everything else.",
-      "text": "The family plan is paid from the pool through a PayPal subscription. So if Marcus carries 50 percent of the cost of care, he carries 50 percent of the cost of Kin."
+      "text": "The family plan is paid from the pool through a PayPal subscription. So if Marcus carries 50 percent of the cost of care, he carries 50 percent of the cost of Kin.",
+      "barLabel": "In Rose’s circle Marcus carries 50 percent of Kin’s price, Elena 30 percent and Ana 20 percent."
+    },
+    "faq": {
+      "eyebrow": "Questions",
+      "title": "What families ask first.",
+      "items": [
+        {
+          "question": "Is anyone charged today?",
+          "answer": "No. Today Kin runs in the PayPal sandbox with test money, and nobody is charged."
+        },
+        {
+          "question": "What will the family plan cost?",
+          "answer": "The price is not set. The proposal is one flat monthly fee per circle, in the range of a streaming subscription. It will be tested with pilot families first."
+        },
+        {
+          "question": "Does Kin hold our money?",
+          "answer": "No. The family pool is a PayPal account that belongs to the family. Kin connects to it and never holds the money itself."
+        },
+        {
+          "question": "Do we need a new bank account or a new card?",
+          "answer": "No. Each sibling pays a share through PayPal, and PayPal moves every dollar."
+        },
+        {
+          "question": "How is Kin’s own fee paid?",
+          "answer": "From the pool, through a PayPal subscription. It is shared by the same split as every other cost."
+        },
+        {
+          "question": "Our parents live in two homes. Is that one circle or two?",
+          "answer": "Two. There is one circle for each person cared for, so a family with two parents in different homes can run two circles."
+        }
+      ]
     }
   },
   "notOpen": {
@@ -605,5 +779,94 @@
     "title": "This page does not exist.",
     "text": "The address may be mistyped, or the page may have moved.",
     "link": "Back to the homepage"
+  },
+  "principle": {
+    "label": "How every decision about money is made",
+    "steps": {
+      "proposes": {
+        "title": "The AI proposes",
+        "text": "It reads, drafts and explains. It holds no tool that moves money."
+      },
+      "approves": {
+        "title": "People approve",
+        "text": "Every movement needs a recorded yes. A payout asks for a fresh second check."
+      },
+      "decides": {
+        "title": "The record decides",
+        "text": "A payment is done only when PayPal’s own record says so."
+      }
+    }
+  },
+  "startPage": {
+    "hero": {
+      "eyebrow": "Start a circle",
+      "title": "Four steps, and one conversation.",
+      "lede": "Starting a circle means agreeing how to share the cost, and asking your parent what they want to decide. Kin turns that conversation into a written agreement that everyone accepts."
+    },
+    "steps": {
+      "eyebrow": "The four steps",
+      "items": [
+        {
+          "title": "Create the circle"
+        },
+        {
+          "title": "Agree how to share"
+        },
+        {
+          "title": "Your parent says yes"
+        },
+        {
+          "title": "Connect PayPal"
+        }
+      ]
+    },
+    "form": {
+      "title": "Start your family circle",
+      "text": "Tell Kin who you are and who the circle is for. You invite your family next.",
+      "nameLabel": "Your name",
+      "parentLabel": "Who is the circle for?",
+      "parentHelp": "One circle for each person you care for.",
+      "consent": "I understand that the circle is not active until my parent, or the person with legal authority to act for them, has agreed to it.",
+      "consentError": "Please confirm this to continue.",
+      "submit": "Create the circle",
+      "haveCircle": "Already in a circle?"
+    }
+  },
+  "signInPage": {
+    "hero": {
+      "eyebrow": "Sign in",
+      "title": "No password to remember, or to steal.",
+      "lede": "When sign-in opens, Kin will send a code to your email or use a passkey. Your parent will not sign in at all."
+    },
+    "ways": {
+      "label": "How each person gets in",
+      "items": {
+        "family": {
+          "who": "Family members",
+          "title": "A code by email, or a passkey"
+        },
+        "parent": {
+          "who": "Parents",
+          "title": "No sign-in at all"
+        },
+        "caregiver": {
+          "who": "Caregivers",
+          "title": "A code by email, or a passkey"
+        }
+      }
+    },
+    "form": {
+      "title": "Sign in to your circle",
+      "text": "Kin emails you a code. There is no password.",
+      "submit": "Email me a code",
+      "or": "or",
+      "passkey": "Use a passkey",
+      "noCircle": "No circle yet?"
+    }
+  },
+  "account": {
+    "emailLabel": "Email address",
+    "emailError": "Enter an email address, like {example}.",
+    "requiredError": "Please fill this in."
   }
 }

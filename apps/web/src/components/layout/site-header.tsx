@@ -23,7 +23,7 @@ export function SiteHeader({ locale, common }: SiteHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
-      <Container className="flex min-h-18 items-center gap-2">
+      <Container className="flex min-h-(--header-height) items-center gap-2">
         <Logo href={localizedPath(locale, routes.home)} label={common.brandHome} />
         <MainNav locale={locale} labels={nav} className="ms-10 hidden xl:flex" />
         <div className="ms-auto flex items-center gap-1">

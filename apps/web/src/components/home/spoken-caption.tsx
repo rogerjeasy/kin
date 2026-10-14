@@ -1,12 +1,12 @@
 import { RichText } from "@/components/shared/rich-text";
 import { SpokenAmount } from "@/components/shared/spoken-amount";
+import { Waveform } from "@/components/shared/waveform";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 import { fill } from "@/i18n/template";
 import { cn } from "@/lib/utils";
 
 import { SpeakButton } from "./speak-button";
-import { Waveform } from "./waveform";
 
 type SpokenCaptionProps = {
   locale: Locale;
