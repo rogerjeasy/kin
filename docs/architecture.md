@@ -316,6 +316,7 @@ Kin keeps a double-entry ledger for each circle.
 | `payable:{payee}`    | Liability | Approved bills not yet paid                                            |
 | `fees`               | Expense   | PayPal fees                                                            |
 | `care_credit:{id}`   | Memo      | Valued care hours. Tracked beside the cash ledger, never mixed into it |
+| `care_received`      | Memo      | The other side of every care credit, so memo entries balance too       |
 
 **Example entries**
 
@@ -329,6 +330,13 @@ Kin keeps a double-entry ledger for each circle.
 | Settlement pays Elena 126.00                       | `member:elena` 126.00             | `pool_cash` 126.00     |
 
 A member is credited with the gross amount they paid. PayPal fees are a shared cost of the circle.
+
+**How the code holds these rules** (`packages/domain`, `ledger*.ts` and `postings.ts`)
+
+- An entry touches cash accounts or memo accounts, never both. Approved care is posted as debit `care_received`, credit `care_credit:{id}`, valued once at approval to the nearest cent, halves up.
+- The entry's source (a PayPal event, an approval or a settlement, with its ID) is its idempotency key. Applying an entry whose source is recorded changes nothing. A different entry claiming a recorded source is refused.
+- A reversal mirrors its original line for line, keeps the original's kind and names it. An entry is reversed at most once, and a reversal is never itself reversed.
+- `postings.ts` holds one builder per row of the table above, plus settlement collections and care credit. Callers state what happened. Which accounts move is decided there.
 
 ### 7.2 The fairness calculation
 
@@ -353,18 +361,20 @@ At any moment, and formally at month end, Kin answers one question for each memb
 **Rules**
 
 - **Care credit lowers what a member owes. It is not paid out in cash** unless the family switches that on in the agreement. When it is on, step 3 is skipped and `X_i = P_i + O_i + C_i − T_i + B_i`.
-- **Rounding never creates or loses a cent.** The largest-remainder method assigns leftover cents in a fixed, documented order.
+- **Rounding never creates or loses a cent.** The largest-remainder method assigns leftover cents in a fixed, documented order: largest remainder first, and between equal remainders, the member whose ID sorts first. The result does not depend on the order members are listed in.
 - **The calculation is a pure function.** The same inputs always give the same result, and the inputs are stored with each settlement so the result can be reproduced years later.
+- **Inputs come from the ledger.** `P_i`, `O_i` and `C_i` are the period's net credits to the member's accounts from contribution, out-of-pocket and care-credit entries. A refund is a reversal, so it nets out. Settlement collections and payouts are left out, because they close an earlier period and reach the next one through `B_i`. A member who gave something but holds no share stops the calculation.
+- **Care credit beyond the target earns nothing by default.** When `C_i > T_i`, the excess still counts in `K`, so the others' targets include it, but the carer is not paid for it. The pool keeps that cash. Each position reports it as unused care credit, so positions total `ΣB_i` minus the unused credit.
 
 ### 7.3 Settlement
 
-Settlement turns the calculation into movements.
+Settlement turns the calculation into movements. Money moves through the pool, so a settlement holds exactly one movement for each member who is not level, which is the smallest set that closes every gap.
 
 1. **Snapshot.** At period close, Kin freezes the inputs.
 2. **Calculate.** The fairness function produces each member's position.
 3. **Propose.** Members who owe receive a top-up request. Members who are owed become payout proposals.
 4. **Approve.** The circle approves the settlement as a whole, under the agreement's rules.
-5. **Collect, then pay.** Payouts are released only as far as the pool's confirmed balance allows. Kin never pays out money that has not arrived.
+5. **Collect, then pay.** Payouts are released only as far as the pool's confirmed balance allows. Kin never pays out money that has not arrived. When the balance cannot cover every payout, it is shared among them in proportion to what each member is owed, by the same largest-remainder method, and the rest waits for collections.
 6. **Close.** When every movement is confirmed or carried forward, the period is closed and the statement is produced. Unpaid amounts carry into the next period as `B_i`.
 
 ### 7.4 State machines
@@ -1394,6 +1404,10 @@ The hackathon needs a month of family life to be shown in minutes.
 | 16 | Languages by dictionary files and a proxy rewrite, with English unprefixed | An internationalization library | Seven static dictionaries and one routing function need no dependency. A test keeps every translation in step with English. |
 | 17 | Theme by an attribute on the root element, set by an inline script | A theme library | A few lines of our own code, no flash of the wrong theme, and pages stay static. |
 | 18 | Example money on public pages comes from one data module and the shared formatter | Amounts written into the copy | The figures shown and the figures spoken cannot drift apart, and a test checks every language. |
+| 19 | Care credit balanced against a `care_received` memo account | Care credit outside the ledger | Every entry balances, including memo entries, and care hours share the ledger's audit trail without ever touching cash. |
+| 20 | A short pool is shared among payouts pro rata | First come, first paid | No member's payout depends on the order of a list. |
+| 21 | The site's settlement figures are calculated from Rose's month in `packages/domain` | Figures written into the example data | The page can show only what the money core produces. |
+| 22 | Property tests use a small seeded generator in `packages/domain` | A property-testing library | No new dependency for the first slice. Failures name the seed. A library with shrinking is worth proposing when inputs grow. |
 
 ---
 
@@ -1452,6 +1466,10 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - AWS specifics: load balancer timeouts for live audio, Aurora's pause behavior and Cognito's sign-in options.
 - The streaming capabilities of the speech and telephony providers.
 
+**Built and tested**
+
+- The ledger, the fairness calculation and settlement planning in sections 7.1 to 7.3, in `packages/domain`, with unit and property tests. Rose's month from the project description is a fixture there, and the public site's settlement figures are calculated from it.
+
 **Not yet tested**
 
-- Nothing in this document has been built or run. The latency figure is a target. The diagrams describe the intended design.
+- Everything else in this document. The state machines, the approval engine and execution in sections 7.4 to 7.6 are not built. The latency figure is a target. The diagrams describe the intended design.

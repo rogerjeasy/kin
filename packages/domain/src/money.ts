@@ -17,11 +17,27 @@ export class InvalidMoneyError extends Error {
   }
 }
 
+/** Refuses an amount that is not a whole number of minor units. */
+export function assertCents(cents: number): void {
+  if (!Number.isSafeInteger(cents)) {
+    throw new InvalidMoneyError(cents);
+  }
+}
+
+/** Adds amounts, and refuses a total too large to hold exactly. */
+export function sumCents(amounts: readonly number[]): number {
+  let total = 0;
+  for (const cents of amounts) {
+    assertCents(cents);
+    total += cents;
+    assertCents(total);
+  }
+  return total;
+}
+
 /** The one formatter for showing money to a person. */
 export function formatMoney(money: Money, locale: string): string {
-  if (!Number.isSafeInteger(money.cents)) {
-    throw new InvalidMoneyError(money.cents);
-  }
+  assertCents(money.cents);
   const formatter = new Intl.NumberFormat(locale, {
     style: "currency",
     currency: money.currency,

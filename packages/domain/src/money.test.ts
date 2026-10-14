@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { InvalidMoneyError, formatMoney } from "./money.ts";
+import { InvalidMoneyError, formatMoney, sumCents } from "./money.ts";
 
 describe("formatMoney", () => {
   it("formats integer cents as a currency amount", () => {
@@ -35,6 +35,23 @@ describe("formatMoney", () => {
 
   it("refuses an amount that is not a whole number of minor units", () => {
     expect(() => formatMoney({ cents: 84.5, currency: "USD" }, "en")).toThrow(
+      InvalidMoneyError,
+    );
+  });
+});
+
+describe("sumCents", () => {
+  it("adds whole amounts", () => {
+    expect(sumCents([8400, 5700, -4200])).toBe(9900);
+    expect(sumCents([])).toBe(0);
+  });
+
+  it("refuses a fractional amount", () => {
+    expect(() => sumCents([100, 0.5])).toThrow(InvalidMoneyError);
+  });
+
+  it("refuses a total too large to hold exactly", () => {
+    expect(() => sumCents([Number.MAX_SAFE_INTEGER, 1])).toThrow(
       InvalidMoneyError,
     );
   });
