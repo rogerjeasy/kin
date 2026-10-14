@@ -123,6 +123,7 @@ describe("periodInputs", () => {
       settlementPaidOut(testHeader("payout-elena"), {
         memberId: "elena",
         cents: 5000,
+        feeCents: 25,
       }),
     ]);
 

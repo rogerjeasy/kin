@@ -7,6 +7,7 @@ import {
   expenseAccount,
   memberAccount,
   payableAccount,
+  type AccountCode,
 } from "./ledger-accounts.ts";
 import {
   createEntry,
@@ -16,6 +17,7 @@ import {
   type LedgerEntry,
   type LedgerLine,
 } from "./ledger-entry.ts";
+import { sumCents } from "./money.ts";
 
 /**
  * The ledger entry for each kind of financial fact, from the table in
@@ -93,18 +95,25 @@ export function billApproved(
   });
 }
 
+type MoneyOut = {
+  /** What the payee received. */
+  readonly cents: number;
+  /**
+   * PayPal's fee for sending it, read from the payout item. The pool pays it
+   * on top, and the whole circle shares it.
+   */
+  readonly feeCents: number;
+};
+
 /** PayPal confirms that a payee has been paid from the pool. */
 export function payoutConfirmed(
   header: EntryHeader,
-  payout: { readonly payeeId: string; readonly cents: number },
+  payout: MoneyOut & { readonly payeeId: string },
 ): LedgerEntry {
   return createEntry({
     ...header,
     kind: "payout_confirmed",
-    lines: [
-      debit(payableAccount(payout.payeeId), payout.cents),
-      credit(POOL_CASH, payout.cents),
-    ],
+    lines: moneyOut(payableAccount(payout.payeeId), payout),
   });
 }
 
@@ -126,15 +135,12 @@ export function purchaseCaptured(
 /** PayPal confirms that a settlement has paid a member what they were owed. */
 export function settlementPaidOut(
   header: EntryHeader,
-  payout: { readonly memberId: string; readonly cents: number },
+  payout: MoneyOut & { readonly memberId: string },
 ): LedgerEntry {
   return createEntry({
     ...header,
     kind: "settlement_payout",
-    lines: [
-      debit(memberAccount(payout.memberId), payout.cents),
-      credit(POOL_CASH, payout.cents),
-    ],
+    lines: moneyOut(memberAccount(payout.memberId), payout),
   });
 }
 
@@ -169,4 +175,12 @@ function moneyIn(payment: MoneyIn): LedgerLine[] {
   return payment.feeCents === 0
     ? lines
     : [...lines, debit(FEES, payment.feeCents)];
+}
+
+function moneyOut(account: AccountCode, payout: MoneyOut): LedgerLine[] {
+  const lines = [
+    debit(account, payout.cents),
+    credit(POOL_CASH, sumCents([payout.cents, payout.feeCents])),
+  ];
+  return payout.feeCents === 0 ? lines : [...lines, debit(FEES, payout.feeCents)];
 }

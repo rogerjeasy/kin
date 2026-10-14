@@ -1,7 +1,7 @@
 import type { Agreement } from "../agreement.ts";
 import type { EntryHeader, EntrySource, LedgerEntry } from "../ledger-entry.ts";
 import { appendEntries, openLedger, type Ledger } from "../ledger.ts";
-import type { PeriodQuery } from "../period-inputs.ts";
+import type { SettlementQuery } from "../settle-period.ts";
 import {
   billApproved,
   careCreditLogged,
@@ -22,12 +22,16 @@ import {
  * the story tells follows from the calculation: care at 20.00 an hour, and
  * Marcus paying in 424.00, which is 76.00 short of half the month's cash.
  * The stairlift repair of day 20 is booked and not yet paid, so it is absent.
+ * Each bill paid by payout carries PayPal's payout fee, as the sandbox charged.
  */
 
 const CIRCLE_ID = "rose";
 const CURRENCY = "USD";
 const PERIOD = "2026-10";
 const CARE_RATE_CENTS_PER_HOUR = 2000;
+// What PayPal's sandbox charged to send a payout on 14 October 2026. Real
+// fees are read back from each payout, never assumed.
+const PAYOUT_FEE_CENTS = 25;
 
 const agreement: Agreement = {
   version: 1,
@@ -72,7 +76,7 @@ function billPaid(
     ),
     payoutConfirmed(
       header(paidOn, paypal(`payout-${bill.payeeId}`), `${bill.name} paid`),
-      bill,
+      { ...bill, feeCents: PAYOUT_FEE_CENTS },
     ),
   ];
 }
@@ -148,4 +152,5 @@ export const rosesMonth = {
   ledger,
   agreement,
   period: PERIOD,
-} as const satisfies PeriodQuery;
+  payoutFee: () => PAYOUT_FEE_CENTS,
+} as const satisfies SettlementQuery;

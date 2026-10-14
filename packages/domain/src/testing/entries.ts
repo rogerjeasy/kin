@@ -55,9 +55,9 @@ export function randomEntry(random: Random, name: string): LedgerEntry {
     () => settlementCollected(header, moneyIn),
     () => outOfPocketApproved(header, { memberId, category, cents }),
     () => billApproved(header, { payeeId, category, cents }),
-    () => payoutConfirmed(header, { payeeId, cents }),
+    () => payoutConfirmed(header, { payeeId, cents, feeCents: random.int(0, 2000) }),
     () => purchaseCaptured(header, { category, cents }),
-    () => settlementPaidOut(header, { memberId, cents }),
+    () => settlementPaidOut(header, { memberId, cents, feeCents: random.int(0, 2000) }),
     () =>
       careCreditLogged(header, {
         memberId,

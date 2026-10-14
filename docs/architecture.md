@@ -325,11 +325,11 @@ Kin keeps a double-entry ledger for each circle.
 | Marcus's monthly share of 200.00 arrives, fee 7.28 | `pool_cash` 192.72, `fees` 7.28 | `member:marcus` 200.00 |
 | Elena's 42.00 pharmacy receipt is approved         | `expense:pharmacy` 42.00          | `member:elena` 42.00   |
 | Amara's 240.00 bill is approved                    | `expense:care` 240.00             | `payable:amara` 240.00 |
-| The payout to Amara is confirmed                   | `payable:amara` 240.00            | `pool_cash` 240.00     |
+| The payout to Amara is confirmed, fee 0.25         | `payable:amara` 240.00, `fees` 0.25 | `pool_cash` 240.25   |
 | The refill of 42.00 is captured                    | `expense:pharmacy` 42.00          | `pool_cash` 42.00      |
-| Settlement pays Elena 126.00                       | `member:elena` 126.00             | `pool_cash` 126.00     |
+| Settlement pays Elena 126.00, fee 0.25             | `member:elena` 126.00, `fees` 0.25 | `pool_cash` 126.25    |
 
-A member is credited with the gross amount they paid. PayPal fees are a shared cost of the circle.
+A member is credited with the gross amount they paid, and a payee or member is paid the full amount owed. PayPal's fees, on money coming in and on payouts going out, are a shared cost of the circle, read from PayPal's record of each transaction.
 
 **How the code holds these rules** (`packages/domain`, `ledger*.ts` and `postings.ts`)
 
@@ -374,7 +374,7 @@ Settlement turns the calculation into movements. Money moves through the pool, s
 2. **Calculate.** The fairness function produces each member's position.
 3. **Propose.** Members who owe receive a top-up request. Members who are owed become payout proposals.
 4. **Approve.** The circle approves the settlement as a whole, under the agreement's rules.
-5. **Collect, then pay.** Payouts are released only as far as the pool's confirmed balance allows, less every approved bill not yet paid. Kin never pays out money that has not arrived, nor money already promised to a caregiver or a biller. When the balance cannot cover every payout, it is shared among them in proportion to what each member is owed, by the same largest-remainder method, and the rest waits for collections.
+5. **Collect, then pay.** Payouts are released only as far as the pool's confirmed balance allows, less every approved bill not yet paid and PayPal's fee for sending each payout. Kin never pays out money that has not arrived, nor money already promised to a caregiver or a biller, nor money the fees will take. When the balance cannot cover every payout, it is shared among them in proportion to what each member is owed, by the same largest-remainder method, and the rest waits for collections.
 6. **Close.** When every movement is confirmed or carried forward, the period is closed and the statement is produced. Unpaid amounts carry into the next period as `B_i`.
 
 ### 7.4 State machines
@@ -1433,6 +1433,7 @@ The hackathon needs a month of family life to be shown in minutes.
 | 23 | Kin's own resources in a shared AWS account, with an explicit deny for the other projects | Partitions inside wick's table, bucket and user pool | Wick's roles hold table-wide and account-wide permissions, so a key prefix would isolate nothing. Separate idle resources cost nothing extra. |
 | 24 | A CDK bootstrap of Kin's own, qualifier `kin` | The account's default bootstrap, used by Hold | Kin's assets and deploy roles stay apart from Hold's, and Kin's CI role can reach only Kin's. |
 | 25 | Settlement payouts are bounded by pool cash less unpaid bills | Bounded by pool cash alone | A settlement must not spend money already owed to Amara or a biller. |
+| 26 | Payout fees are posted to `fees` and reserved before a settlement releases payouts | Ignoring payout fees | The sandbox charged the pool 0.25 to send a payout. Unposted, the ledger's pool runs ahead of PayPal's; unreserved, paying everyone in full could overdraw the pool. |
 
 ---
 

@@ -25,6 +25,9 @@ function fairnessOf(positions: Record<string, number>): FairnessResult {
   };
 }
 
+/** Funds where sending a payout costs nothing, to isolate the cash rule. */
+const feeFree = (availableCents: number) => ({ availableCents, payoutFee: () => 0 });
+
 const total = (values: readonly number[]) =>
   values.reduce((sum, value) => sum + value, 0);
 
@@ -32,27 +35,27 @@ describe("planSettlement", () => {
   const month = fairnessOf({ ana: 4000, elena: 12600, marcus: -16600 });
 
   it("asks members who owe to pay in and pays members who are owed", () => {
-    expect(planSettlement(month, 38318)).toEqual({
+    expect(planSettlement(month, feeFree(38318))).toEqual({
       currency: "USD",
       collections: [{ memberId: "marcus", cents: 16600 }],
       payouts: [
-        { memberId: "ana", cents: 4000, releasableCents: 4000 },
-        { memberId: "elena", cents: 12600, releasableCents: 12600 },
+        { memberId: "ana", cents: 4000, feeReservedCents: 0, releasableCents: 4000 },
+        { memberId: "elena", cents: 12600, feeReservedCents: 0, releasableCents: 12600 },
       ],
     });
   });
 
   it("leaves a member who is level out of the plan", () => {
-    const plan = planSettlement(fairnessOf({ a: 0, b: 500, c: -500 }), 500);
+    const plan = planSettlement(fairnessOf({ a: 0, b: 500, c: -500 }), feeFree(500));
 
     expect(plan.collections).toEqual([{ memberId: "c", cents: 500 }]);
     expect(plan.payouts).toEqual([
-      { memberId: "b", cents: 500, releasableCents: 500 },
+      { memberId: "b", cents: 500, feeReservedCents: 0, releasableCents: 500 },
     ]);
   });
 
   it("plans nothing when everyone is level", () => {
-    expect(planSettlement(fairnessOf({ a: 0, b: 0 }), 0)).toEqual({
+    expect(planSettlement(fairnessOf({ a: 0, b: 0 }), feeFree(0))).toEqual({
       currency: "USD",
       collections: [],
       payouts: [],
@@ -60,13 +63,13 @@ describe("planSettlement", () => {
   });
 
   it("releases nothing from an empty pool", () => {
-    const plan = planSettlement(month, 0);
+    const plan = planSettlement(month, feeFree(0));
 
     expect(plan.payouts.map((payout) => payout.releasableCents)).toEqual([0, 0]);
   });
 
   it("shares a short pool in proportion to what each member is owed", () => {
-    const plan = planSettlement(month, 8300);
+    const plan = planSettlement(month, feeFree(8300));
 
     // Half of the 166.00 owed is there, so each payout is half released.
     expect(plan.payouts.map((payout) => payout.releasableCents)).toEqual([
@@ -75,8 +78,55 @@ describe("planSettlement", () => {
   });
 
   it("refuses a pool balance that is below zero or not whole cents", () => {
-    expect(() => planSettlement(month, -1)).toThrow(SettlementError);
-    expect(() => planSettlement(month, 0.5)).toThrow(InvalidMoneyError);
+    expect(() => planSettlement(month, feeFree(-1))).toThrow(SettlementError);
+    expect(() => planSettlement(month, feeFree(0.5))).toThrow(InvalidMoneyError);
+  });
+});
+
+describe("payout fees", () => {
+  const month = fairnessOf({ ana: 4000, elena: 12600, marcus: -16600 });
+  const quarter = () => 25;
+
+  it("holds back PayPal's fee for each payout before releasing any", () => {
+    const plan = planSettlement(month, { availableCents: 16650, payoutFee: quarter });
+
+    expect(plan.payouts).toEqual([
+      { memberId: "ana", cents: 4000, feeReservedCents: 25, releasableCents: 4000 },
+      { memberId: "elena", cents: 12600, feeReservedCents: 25, releasableCents: 12600 },
+    ]);
+  });
+
+  it("releases less when the fees leave too little to pay everyone", () => {
+    const plan = planSettlement(month, { availableCents: 16649, payoutFee: quarter });
+
+    expect(total(plan.payouts.map((payout) => payout.releasableCents))).toBe(16599);
+  });
+
+  it("releases nothing when the fees alone exceed the cash", () => {
+    const plan = planSettlement(month, { availableCents: 30, payoutFee: quarter });
+
+    expect(plan.payouts.map((payout) => payout.releasableCents)).toEqual([0, 0]);
+  });
+
+  it("charges the fee on the whole amount owed", () => {
+    const amounts: number[] = [];
+    planSettlement(month, {
+      availableCents: 100000,
+      payoutFee: (cents) => {
+        amounts.push(cents);
+        return 0;
+      },
+    });
+
+    expect(amounts).toEqual([4000, 12600]);
+  });
+
+  it("refuses a fee that is not a whole number of cents, zero or more", () => {
+    for (const fee of [-1, 0.5, Number.NaN]) {
+      expect(() =>
+        planSettlement(month, { availableCents: 100000, payoutFee: () => fee }),
+      ).toThrow(SettlementError);
+    }
   });
 });
 
@@ -99,7 +149,7 @@ describe("for any positions and any pool balance", () => {
 
   it("a settlement never releases more than the pool holds", () => {
     forAll(anyPlan, ({ input, pool }) => {
-      const { payouts } = planSettlement(calculateFairness(input), pool);
+      const { payouts } = planSettlement(calculateFairness(input), feeFree(pool));
       const owed = total(payouts.map((payout) => payout.cents));
       const released = total(payouts.map((payout) => payout.releasableCents));
 
@@ -111,10 +161,30 @@ describe("for any positions and any pool balance", () => {
     });
   });
 
+  it("payouts released and the fees held back never exceed the pool's cash", () => {
+    forAll(
+      (random) => ({ ...anyPlan(random), fee: random.int(0, 5000) }),
+      ({ input, pool, fee }) => {
+        const { payouts } = planSettlement(calculateFairness(input), {
+          availableCents: pool,
+          payoutFee: () => fee,
+        });
+        const owed = total(payouts.map((payout) => payout.cents));
+        const reserved = total(payouts.map((payout) => payout.feeReservedCents));
+        const released = total(payouts.map((payout) => payout.releasableCents));
+
+        expect(released).toBe(Math.min(Math.max(0, pool - reserved), owed));
+        if (released > 0) {
+          expect(released + reserved).toBeLessThanOrEqual(pool);
+        }
+      },
+    );
+  });
+
   it("the movements close every position exactly", () => {
     forAll(anyPlan, ({ input, pool }) => {
       const fairness = calculateFairness(input);
-      const plan = planSettlement(fairness, pool);
+      const plan = planSettlement(fairness, feeFree(pool));
       const moved = new Map<string, number>([
         ...plan.payouts.map((each) => [each.memberId, each.cents] as const),
         ...plan.collections.map((each) => [each.memberId, -each.cents] as const),
@@ -129,7 +199,7 @@ describe("for any positions and any pool balance", () => {
   it("the plan has one movement for each member who is not level", () => {
     forAll(anyPlan, ({ input, pool }) => {
       const fairness = calculateFairness(input);
-      const plan = planSettlement(fairness, pool);
+      const plan = planSettlement(fairness, feeFree(pool));
       const notLevel = fairness.positions.filter(
         (position) => position.positionCents !== 0,
       );

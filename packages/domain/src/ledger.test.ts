@@ -189,11 +189,13 @@ describe("accountBalance", () => {
       payoutConfirmed(testHeader("payout-1"), {
         payeeId: "amara",
         cents: 10000,
+        feeCents: 25,
       }),
     ]);
 
-    expect(accountBalance(ledger, "pool_cash")).toBe(9272);
-    expect(accountBalance(ledger, "fees")).toBe(728);
+    // 192.72 in, 100.00 paid out and 0.25 to send it.
+    expect(accountBalance(ledger, "pool_cash")).toBe(9247);
+    expect(accountBalance(ledger, "fees")).toBe(753);
     expect(accountBalance(ledger, "member:marcus")).toBe(20000);
     expect(accountBalance(ledger, "expense:care")).toBe(26400);
     expect(accountBalance(ledger, "payable:amara")).toBe(16400);
