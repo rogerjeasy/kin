@@ -60,7 +60,9 @@ The root `package.json` is the source of truth for commands. Keep this contract 
 - A new routine step becomes a script. Do not leave a raw command in a document or a chat as the only record of how to do something.
 - The repository is a pnpm workspace. Run a script everywhere from the root with `pnpm <script>`, or in one workspace with `pnpm --filter @kin/<name> <script>`.
 - Run one test file with `pnpm --filter @kin/<name> exec vitest run <path from that workspace>`.
-- `build` and `test:e2e` run in the workspaces that define them. No app defines either yet.
+- `build` and `test:e2e` run in the workspaces that define them. Today that is `@kin/web`. Its `test:e2e` builds the app and then runs Playwright against the production build. Run `pnpm --filter @kin/web exec playwright install chromium` once before the first run.
+- Start the web app for development with `pnpm --filter @kin/web dev`, and open http://localhost:3000.
+- Import a TypeScript file by its real extension (`./money.ts`, not `./money.js`). Packages export their source, and the Next.js build cannot resolve the `.js` form.
 - A workspace's `test` script drops `--passWithNoTests` in the change that adds its first test.
 - When the local stack and the demo data exist, add to this section the exact commands for starting the stack and resetting the data.
 

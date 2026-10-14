@@ -87,6 +87,12 @@ Three small services share one codebase:
 - **AG Grid.** The ledger, the list of bills and the audit export are tables with sorting, filtering, grouping and export. This is exactly what AG Grid is for, and it carries the largest sponsor prize.
 - **Browser microphone and camera.** Used for voice in the app and for photographing bills and letters.
 - **Accessibility target:** WCAG 2.2 level AA, tested with a screen reader.
+- **Public pages.** The homepage, How it works, Safety, For caregivers and Pricing live in the same app under `src/app/[locale]`, and are prerendered as static HTML.
+- **Seven languages, no library.** English, French, German, Italian, Spanish, Arabic and Hebrew. English sits at the short address (`/pricing`) and the others are prefixed (`/fr/pricing`). A proxy file rewrites the short address, and each language is one JSON dictionary. A test fails the build if a translation's structure drifts from the English one. Arabic and Hebrew render right to left, so components use logical properties only (`ms-`, `pe-`, `text-start`).
+- **Light and dark themes, no library.** The theme is a `data-theme` attribute on `<html>`, set before first paint by a small inline script, with the choice kept in the browser. The colours are CSS variables under shadcn/ui's token names.
+- **shadcn/ui on Radix primitives**, initialised with right-to-left support. Buttons are resized so every control is at least 44 pixels.
+- **Type.** Newsreader for headlines and spoken sentences, IBM Plex Sans for text and IBM Plex Mono for records, with IBM Plex Sans Arabic, IBM Plex Sans Hebrew, Noto Naskh Arabic and Frank Ruhl Libre behind them. All are self-hosted at build time through `next/font`.
+- **Workspace imports.** Packages export TypeScript source and Next.js compiles them (`transpilePackages`). Files are imported by their real `.ts` extension, which `allowImportingTsExtensions` in the base config permits.
 
 ---
 

@@ -1,0 +1,168 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* The theme is an attribute on <html>, set before first paint by themeScript. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  /* One stack per role. The browser falls through to the Arabic and Hebrew
+     faces glyph by glyph, so no per-language font switch is needed. */
+  --font-sans:
+    var(--font-plex-sans), var(--font-plex-arabic), var(--font-plex-hebrew),
+    ui-sans-serif, system-ui, sans-serif;
+  --font-serif:
+    var(--font-newsreader), var(--font-naskh), var(--font-frank), Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* Fluid sizes for display type. Each mixes rem with vw so text still grows
+     when a reader zooms. */
+  --text-display: clamp(2.375rem, 1.3rem + 4.4vw, 4.5rem);
+  --text-display--line-height: 1.04;
+  --text-title: clamp(1.875rem, 1.35rem + 2.2vw, 3rem);
+  --text-title--line-height: 1.1;
+  --text-subtitle: clamp(1.5rem, 1.25rem + 1vw, 2.125rem);
+  --text-subtitle--line-height: 1.15;
+  --text-figure: clamp(2rem, 1.5rem + 1.6vw, 2.75rem);
+  --text-figure--line-height: 1.1;
+  --text-speech: clamp(1.1875rem, 1rem + 0.7vw, 1.5rem);
+  --text-speech--line-height: 1.3;
+  --text-lede: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  --text-lede--line-height: 1.5;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-highlight: var(--highlight);
+  --color-band: var(--band);
+  --color-band-foreground: var(--band-foreground);
+  --color-band-muted: var(--band-muted);
+  --color-band-border: var(--band-border);
+  --color-band-highlight: var(--band-highlight);
+  --color-share-1: var(--share-1);
+  --color-share-2: var(--share-2);
+  --color-share-3: var(--share-3);
+}
+
+/* Warm paper and navy. Every text and background pair below meets WCAG AA. */
+:root {
+  --radius: 0.75rem;
+  --background: #faf7f2;
+  --foreground: #1a1714;
+  --card: #ffffff;
+  --card-foreground: #1a1714;
+  --popover: #ffffff;
+  --popover-foreground: #1a1714;
+  --primary: #1d2b4f;
+  --primary-foreground: #faf7f2;
+  --secondary: #efe8dc;
+  --secondary-foreground: #1a1714;
+  --muted: #f3ede3;
+  --muted-foreground: #5e564d;
+  --accent: #efe8dc;
+  --accent-foreground: #1a1714;
+  --border: #e4dcd0;
+  --input: #cfc5b5;
+  --ring: #1d2b4f;
+  /* Gold for the amounts Kin speaks. */
+  --highlight: #8a5a00;
+  /* The navy band keeps its own colours in both themes. */
+  --band: #1d2b4f;
+  --band-foreground: #faf7f2;
+  --band-muted: #c3c8d6;
+  --band-border: #3a4870;
+  --band-highlight: #e9b872;
+  /* One colour per sibling's share. Checked for colour-blind separation. */
+  --share-1: #2b6cd4;
+  --share-2: #c2610c;
+  --share-3: #a2398c;
+}
+
+[data-theme="dark"] {
+  --background: #11131a;
+  --foreground: #f2eee7;
+  --card: #1a1d27;
+  --card-foreground: #f2eee7;
+  --popover: #1a1d27;
+  --popover-foreground: #f2eee7;
+  --primary: #f2eee7;
+  --primary-foreground: #11131a;
+  --secondary: #232735;
+  --secondary-foreground: #f2eee7;
+  --muted: #161924;
+  --muted-foreground: #a9a69f;
+  --accent: #232735;
+  --accent-foreground: #f2eee7;
+  --border: #2b2f3c;
+  --input: #454b5e;
+  --ring: #f2eee7;
+  --highlight: #e9b872;
+  --band: #1b2238;
+  --band-foreground: #f2eee7;
+  --band-muted: #b4b9c8;
+  --band-border: #303a5a;
+  --band-highlight: #e9b872;
+  --share-1: #5b93f0;
+  --share-2: #c97b2e;
+  --share-3: #c05cab;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-dvh bg-background font-sans text-foreground antialiased;
+  }
+
+  /* A focus ring that is always visible, on any background. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
