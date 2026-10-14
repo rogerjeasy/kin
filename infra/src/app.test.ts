@@ -1,5 +1,7 @@
-import { App } from "aws-cdk-lib";
+import { App, CliCredentialsStackSynthesizer } from "aws-cdk-lib";
 import { Match, Template } from "aws-cdk-lib/assertions";
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { ACCOUNT_TYPES } from "@kin/auth";
@@ -21,7 +23,11 @@ const config: InfraConfig = {
   neighbourProjects: ["wick", "carecircle"],
 };
 
-const stacks = buildKin(new App(), config);
+// The same feature flags as a real synth, so the tests see what is deployed.
+const cdkJson = JSON.parse(
+  readFileSync(new URL("../cdk.json", import.meta.url), "utf8"),
+) as { context: Record<string, unknown> };
+const stacks = buildKin(new App({ context: cdkJson.context }), config);
 const data = Template.fromStack(stacks.data);
 const network = Template.fromStack(stacks.network);
 const ci = Template.fromStack(stacks.ci);
@@ -126,7 +132,12 @@ describe("the database", () => {
     data.hasResource("AWS::RDS::DBCluster", { DeletionPolicy: "Snapshot" });
     data.hasResourceProperties("AWS::RDS::DBSubnetGroup", {
       SubnetIds: Match.arrayWith([
-        { "Fn::ImportValue": Match.stringLikeRegexp("Vpcdatabase") },
+        {
+          "Fn::GetStackOutput": Match.objectLike({
+            StackName: "KinNetwork",
+            OutputName: Match.stringLikeRegexp("Vpcdatabase"),
+          }),
+        },
       ]),
     });
   });
@@ -137,7 +148,10 @@ describe("the database", () => {
       FromPort: 5432,
       ToPort: 5432,
       SourceSecurityGroupId: {
-        "Fn::ImportValue": Match.stringLikeRegexp("Services"),
+        "Fn::GetStackOutput": Match.objectLike({
+          StackName: "KinNetwork",
+          OutputName: Match.stringLikeRegexp("Services"),
+        }),
       },
     });
   });
@@ -267,25 +281,46 @@ describe("deployment from GitHub", () => {
   });
 });
 
-describe("the deployment guardrails", () => {
+describe("the deployment boundary", () => {
+  const guardrails = Template.fromStack(stacks.guardrails);
+  const boundaryArn = "arn:aws:iam::123456789012:policy/kin-deploy-boundary";
   const statements = (): { Sid: string; Effect: string; [key: string]: unknown }[] =>
-    Object.values(ci.findResources("AWS::IAM::ManagedPolicy"))[0]?.["Properties"]["PolicyDocument"]["Statement"] ?? [];
+    Object.values(guardrails.findResources("AWS::IAM::ManagedPolicy"))[0]?.["Properties"]["PolicyDocument"]["Statement"] ?? [];
   const statement = (sid: string) => statements().find((each) => each.Sid === sid);
 
-  it("are a named policy of denies only", () => {
-    ci.hasResourceProperties("AWS::IAM::ManagedPolicy", {
-      ManagedPolicyName: "kin-deploy-guardrails",
+  it("is deployed with the operator's own credentials, never through the bootstrap roles", () => {
+    expect(stacks.guardrails.synthesizer).toBeInstanceOf(CliCredentialsStackSynthesizer);
+    guardrails.hasResourceProperties("AWS::IAM::ManagedPolicy", {
+      ManagedPolicyName: "kin-deploy-boundary",
     });
-    expect(statements().length).toBeGreaterThan(0);
-    expect(statements().every((each) => each.Effect === "Deny")).toBe(true);
   });
 
-  it("deny everything tagged as another project, under either spelling of the tag", () => {
+  it("is carried by every role in the stacks CI deploys", () => {
+    let roles = 0;
+    for (const template of [data, network, ci, ops]) {
+      for (const role of Object.values(template.findResources("AWS::IAM::Role"))) {
+        roles += 1;
+        // CDK writes the ARN as a string or as a join on the partition.
+        expect(JSON.stringify(role["Properties"]["PermissionsBoundary"])).toMatch(
+          /arn:(aws)?.*:iam::123456789012:policy\/kin-deploy-boundary"/,
+        );
+      }
+    }
+    expect(roles).toBeGreaterThanOrEqual(2);
+  });
+
+  it("allows only what no deny takes away", () => {
+    expect(statement("AllowWithinTheDenies")).toMatchObject({ Effect: "Allow", Action: "*", Resource: "*" });
+    expect(statements().filter((each) => each.Effect === "Allow")).toHaveLength(1);
+  });
+
+  it("denies everything tagged as another project, under either spelling of the tag", () => {
     for (const [sid, key] of [
       ["DenyResourcesTaggedAsAnotherProject", "project"],
       ["DenyResourcesTaggedAsAnotherProjectCapitalised", "Project"],
     ] as const) {
       expect(statement(sid)).toMatchObject({
+        Effect: "Deny",
         Action: "*",
         Resource: "*",
         Condition: { StringEquals: { [`aws:ResourceTag/${key}`]: ["wick", "carecircle"] } },
@@ -293,18 +328,21 @@ describe("the deployment guardrails", () => {
     }
   });
 
-  it("deny the other projects' buckets and the default bootstrap's", () => {
-    expect(statement("DenyOtherProjectsBuckets")?.["Resource"]).toEqual([
-      "arn:aws:s3:::wick*",
-      "arn:aws:s3:::wick*/*",
-      "arn:aws:s3:::carecircle*",
-      "arn:aws:s3:::carecircle*/*",
-      "arn:aws:s3:::cdk-hnb659fds*",
-      "arn:aws:s3:::cdk-hnb659fds*/*",
-    ]);
+  it("denies the other projects' buckets and the default bootstrap's", () => {
+    // CDK sorts the list.
+    expect(statement("DenyOtherProjectsBuckets")?.["Resource"]).toEqual(
+      [
+        "arn:aws:s3:::carecircle*",
+        "arn:aws:s3:::carecircle*/*",
+        "arn:aws:s3:::cdk-hnb659fds*",
+        "arn:aws:s3:::cdk-hnb659fds*/*",
+        "arn:aws:s3:::wick*",
+        "arn:aws:s3:::wick*/*",
+      ],
+    );
   });
 
-  it("deny IAM changes to any principal that is not Kin's", () => {
+  it("denies IAM changes to any principal that is not Kin's", () => {
     const iamDeny = statement("DenyIamOutsideKin");
     expect(iamDeny?.["Action"]).toEqual(
       expect.arrayContaining(["iam:Create*", "iam:Put*", "iam:Attach*", "iam:PassRole"]),
@@ -318,8 +356,27 @@ describe("the deployment guardrails", () => {
     ]);
   });
 
-  it("leave room for every role Kin's stacks create", () => {
-    const allowed = [/^Kin/, /^kin-/];
+  it("denies making or arming a role that does not carry the boundary", () => {
+    expect(statement("DenyRolesWithoutThisBoundary")).toMatchObject({
+      Effect: "Deny",
+      Action: expect.arrayContaining(["iam:CreateRole", "iam:AttachRolePolicy", "iam:PutRolePolicy", "iam:PutRolePermissionsBoundary"]),
+      Condition: { StringNotEquals: { "iam:PermissionsBoundary": boundaryArn } },
+    });
+    expect(statement("DenyRemovingAnyBoundary")?.["Action"]).toEqual([
+      "iam:DeleteRolePermissionsBoundary",
+      "iam:DeleteUserPermissionsBoundary",
+    ]);
+  });
+
+  it("cannot be rewritten by a deployment it limits", () => {
+    expect(statement("DenyChangingThisBoundary")).toMatchObject({
+      Effect: "Deny",
+      Action: expect.arrayContaining(["iam:CreatePolicyVersion", "iam:SetDefaultPolicyVersion", "iam:DeletePolicy"]),
+      Resource: boundaryArn,
+    });
+  });
+
+  it("leaves room for every role Kin's stacks create", () => {
     for (const stack of Object.values(stacks)) {
       expect(stack.stackName).toMatch(/^Kin/);
     }
@@ -327,7 +384,7 @@ describe("the deployment guardrails", () => {
       for (const role of Object.values(template.findResources("AWS::IAM::Role"))) {
         const name = role["Properties"]["RoleName"];
         if (typeof name === "string") {
-          expect(allowed.some((pattern) => pattern.test(name))).toBe(true);
+          expect(name).toMatch(/^(Kin|kin-)/);
         }
       }
     }

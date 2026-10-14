@@ -39,6 +39,8 @@ jobs:
           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/kin-github-deploy
           aws-region: us-east-1
       # Security changes were reviewed in the pull request that brought them.
-      - run: pnpm --filter @kin/infra exec cdk deploy --all --require-approval never
+      # KinGuardrails is left out on purpose: it holds the boundary this
+      # deployment runs under, so only a person may change it.
+      - run: pnpm --filter @kin/infra exec cdk deploy KinOps KinNetwork KinData KinCi --require-approval never
         env:
           KIN_ALERT_EMAIL: ${{ secrets.KIN_ALERT_EMAIL }}

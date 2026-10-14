@@ -3,7 +3,6 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import type { Construct } from "constructs";
 
 import type { InfraConfig } from "./config.ts";
-import { createDeployGuardrails } from "./deploy-guardrails.ts";
 
 const GITHUB_ISSUER = "token.actions.githubusercontent.com";
 
@@ -12,15 +11,10 @@ const GITHUB_ISSUER = "token.actions.githubusercontent.com";
  * provider already exists and is shared, because an account holds one per
  * issuer. The role may do one thing: hand the deployment to the CDK roles of
  * Kin's own bootstrap, never another project's.
- *
- * This stack also holds the guardrails that Kin's bootstrap attaches to the
- * CloudFormation execution role, so it is deployed before the bootstrap names
- * them (docs/architecture.md section 14.8).
  */
 export class CiStack extends Stack {
   constructor(scope: Construct, id: string, config: InfraConfig, props: StackProps) {
     super(scope, id, props);
-    createDeployGuardrails(this, config);
 
     const github = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
       this,
