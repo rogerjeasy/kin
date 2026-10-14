@@ -1444,7 +1444,7 @@ The hackathon needs a month of family life to be shown in minutes.
 - Payouts and saved payment methods can be enabled on the sandbox accounts used.
 - The telephony and speech providers support streaming in both directions.
 
-Each should be confirmed on day one. Section 8.6 gives the fallback if the pool cannot act as a payer.
+Each should be confirmed on day one. Section 8.6 gives the fallback if the pool cannot act as a payer. The first two were confirmed in the PayPal sandbox on 14 October 2026 (section 23); the telephony and speech assumption is still open.
 
 ### 22.2 Open questions
 
@@ -1490,6 +1490,15 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - That a PayPal account has no API for paying an invoice it has received. This is the basis of the first correction in section 8.3.
 - AWS specifics: load balancer timeouts for live audio, Aurora's pause behavior and Cognito's sign-in options.
 - The streaming capabilities of the speech and telephony providers.
+
+**Checked against the PayPal sandbox on 14 October 2026** (`pnpm --filter @kin/paypal run sandbox:check`)
+
+- The pool's sandbox business account sends payouts. A 1.00 payout to a personal sandbox account reached `SUCCESS` within a minute, read back from PayPal, and PayPal charged the sender a 0.25 fee.
+- It takes subscriptions. A subscription stays `APPROVAL_PENDING` until a payer approves it in a browser, then turns `ACTIVE` and is billed at once: a 1.00 monthly plan approved by a personal sandbox account took 1.00 gross, a 0.52 fee and 0.48 net, which is why members are credited gross (decision 13).
+- It creates vault setup tokens for a PayPal wallet with merchant usage. A token stays `PAYER_ACTION_REQUIRED` until the payer approves it.
+- Its app holds the payouts, subscriptions, invoicing and vault scopes. Reporting was still missing shortly after Transaction Search was switched on, so the Balances and Transaction Search APIs answered 403.
+- A separate merchant app, the demo pharmacy's, saves a PayPal wallet with merchant usage and charges it with nobody signing in: after one approval, an order carrying only the saved wallet's ID was created and captured `COMPLETED` in a single call (1.00 gross, 0.52 fee). The approval page showed an error after approving, but the setup token read back `APPROVED`.
+- The pool's business account can be that payer. It approved once as a `BUSINESS` customer, and the pharmacy then charged its saved wallet 1.00 with nobody signing in, captured `COMPLETED`. Section 8.6's fallback is not needed.
 
 **Built and tested**
 
