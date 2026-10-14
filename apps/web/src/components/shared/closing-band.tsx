@@ -1,5 +1,5 @@
 import { Section } from "@/components/layout/section";
-import { routes } from "@/content/site-routes";
+import { routes, type RouteKey } from "@/content/site-routes";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 import { localizedPath } from "@/i18n/routing";
@@ -14,10 +14,12 @@ type ClosingBandProps = {
   locale: Locale;
   title: string;
   nav: Dictionary["common"]["nav"];
+  /** The page the band is on, so it does not link to itself. */
+  current?: RouteKey;
 };
 
 /** The last thing on every page: one more invitation to start. */
-export function ClosingBand({ locale, title, nav }: ClosingBandProps) {
+export function ClosingBand({ locale, title, nav, current }: ClosingBandProps) {
   return (
     <Section tone="band" labelledBy={HEADING_ID} className="lg:py-24">
       <div className="flex flex-wrap items-center justify-between gap-x-12 gap-y-7">
@@ -28,7 +30,9 @@ export function ClosingBand({ locale, title, nav }: ClosingBandProps) {
           <ButtonLink href={localizedPath(locale, routes.start)} variant="inverse">
             {nav.startLong}
           </ButtonLink>
-          <TextLink href={localizedPath(locale, routes.howItWorks)}>{nav.seeMonth}</TextLink>
+          {current === "howItWorks" ? null : (
+            <TextLink href={localizedPath(locale, routes.howItWorks)}>{nav.seeMonth}</TextLink>
+          )}
         </div>
       </div>
     </Section>

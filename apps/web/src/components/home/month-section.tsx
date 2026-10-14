@@ -1,27 +1,13 @@
-import caregiverVisit from "@/assets/images/caregiver-visit.jpg";
-import momentBill from "@/assets/images/moment-bill.jpg";
-import momentCall from "@/assets/images/moment-call.jpg";
-import momentLetter from "@/assets/images/moment-letter.jpg";
-import momentRefill from "@/assets/images/moment-refill.jpg";
-import momentSettled from "@/assets/images/moment-settled.jpg";
 import { Container } from "@/components/layout/container";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { Heading } from "@/components/shared/heading";
 import { TextLink } from "@/components/shared/text-link";
+import { momentImages } from "@/content/moment-images";
 import type { Dictionary } from "@/i18n/dictionary";
 
 import { MomentCard } from "./moment-card";
 
 const HEADING_ID = "month-heading";
-
-const images = {
-  bill: momentBill,
-  caregiver: caregiverVisit,
-  refill: momentRefill,
-  letter: momentLetter,
-  call: momentCall,
-  settled: momentSettled,
-} as const;
 
 const order = ["bill", "caregiver", "refill", "letter", "call", "settled"] as const;
 
@@ -48,7 +34,7 @@ export function MonthSection({ copy, href }: MonthSectionProps) {
       <div role="region" aria-label={copy.listLabel} tabIndex={0} className="mx-auto mt-8 max-w-7xl snap-x scroll-px-5 overflow-x-auto px-5 pb-4 sm:scroll-px-8 sm:px-8 lg:scroll-px-14 lg:px-14">
         <ul className="flex gap-4">
           {order.map((key) => (
-            <MomentCard key={key} image={images[key]} {...copy.moments[key]} />
+            <MomentCard key={key} image={momentImages[key]} {...copy.moments[key]} />
           ))}
         </ul>
       </div>

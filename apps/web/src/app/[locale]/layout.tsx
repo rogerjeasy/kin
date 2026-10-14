@@ -1,9 +1,7 @@
 import type { Viewport } from "next";
 
 import { DirectionProvider } from "@/components/layout/direction-provider";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
-import { CONTENT_ID, SkipLink } from "@/components/layout/skip-link";
+import { SkipLink } from "@/components/layout/skip-link";
 import { directionOf, locales } from "@/i18n/locales";
 import { pageContext } from "@/i18n/page-context";
 import { THEME_ATTRIBUTE, themeScript } from "@/theme/theme";
@@ -25,23 +23,29 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+/**
+ * What every screen shares: the language, the fonts and the theme. The public
+ * pages add the site's header and footer in (site)/layout.tsx. The sign-in and
+ * start screens stand alone.
+ */
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale, dictionary } = await pageContext(params);
   const dir = directionOf(locale);
   // themeScript corrects this attribute before the first paint.
   const themeAttribute = { [THEME_ATTRIBUTE]: "light" };
+  // Links inside a page scroll smoothly. This tells Next to switch that off
+  // while it moves to a new page, so the page opens at its top at once.
+  const scrollAttribute = { "data-scroll-behavior": "smooth" };
 
   return (
-    <html lang={locale} dir={dir} className={fontVariables} {...themeAttribute} suppressHydrationWarning>
+    <html lang={locale} dir={dir} className={fontVariables} {...themeAttribute} {...scrollAttribute} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
         <DirectionProvider dir={dir}>
           <SkipLink label={dictionary.common.skipToContent} />
-          <SiteHeader locale={locale} common={dictionary.common} />
-          <main id={CONTENT_ID}>{children}</main>
-          <SiteFooter locale={locale} common={dictionary.common} />
+          {children}
         </DirectionProvider>
       </body>
     </html>

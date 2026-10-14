@@ -55,6 +55,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-highlight: var(--highlight);
+  --color-danger: var(--danger);
   --color-band: var(--band);
   --color-band-foreground: var(--band-foreground);
   --color-band-muted: var(--band-muted);
@@ -68,6 +69,8 @@
 /* Warm paper and navy. Every text and background pair below meets WCAG AA. */
 :root {
   --radius: 0.75rem;
+  /* The header's own height, without its border or the notch above it. */
+  --header-height: 4.5rem;
   --background: #faf7f2;
   --foreground: #1a1714;
   --card: #ffffff;
@@ -87,6 +90,8 @@
   --ring: #1d2b4f;
   /* Gold for the amounts Kin speaks. */
   --highlight: #8a5a00;
+  /* For a form field that needs correcting. */
+  --danger: #a3261e;
   /* The navy band keeps its own colours in both themes. */
   --band: #1d2b4f;
   --band-foreground: #faf7f2;
@@ -118,6 +123,7 @@
   --input: #454b5e;
   --ring: #f2eee7;
   --highlight: #e9b872;
+  --danger: #f5a79e;
   --band: #1b2238;
   --band-foreground: #f2eee7;
   --band-muted: #b4b9c8;
@@ -136,7 +142,10 @@
   html {
     color-scheme: light;
     scroll-behavior: smooth;
-    scroll-padding-top: 5rem;
+    /* Keeps a link's target clear of the sticky header. It must never exceed
+       the header's real height: Next treats a new page that starts above this
+       line as out of view, and scrolls past its opening section. */
+    scroll-padding-top: calc(var(--header-height) + env(safe-area-inset-top));
   }
 
   html[data-theme="dark"] {

@@ -4,7 +4,7 @@ import { phone } from "./support/viewports";
 
 test.use({ viewport: { width: phone.width, height: phone.height } });
 
-for (const path of ["/", "/caregivers"]) {
+for (const path of ["/", "/caregivers", "/how-it-works"]) {
   test(`every photograph on ${path} loads`, async ({ page, request }) => {
     await page.goto(path);
 

@@ -14,13 +14,19 @@ const paths = [
   "/sign-in",
   "/de",
   "/de/pricing",
+  "/de/how-it-works",
+  "/de/start",
   "/fr/how-it-works",
+  "/fr/start",
   "/it/safety",
   "/es/caregivers",
   "/ar",
   "/ar/how-it-works",
+  "/ar/safety",
+  "/ar/sign-in",
   "/he",
   "/he/pricing",
+  "/he/caregivers",
 ];
 
 for (const viewport of viewports) {

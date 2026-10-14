@@ -3,15 +3,15 @@ import { Emphasis } from "@/components/shared/emphasis";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { Heading } from "@/components/shared/heading";
 import { Lede } from "@/components/shared/lede";
+import { PaymentTicker } from "@/components/shared/payment-ticker";
+import { ShareLegend } from "@/components/shared/share-legend";
 import { StepList } from "@/components/shared/step-list";
 import type { ExampleAmounts } from "@/content/example-amounts";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 import { fill } from "@/i18n/template";
 
-import { PaymentTicker } from "./payment-ticker";
 import { SettlementCard } from "./settlement-card";
-import { ShareLegend } from "./share-legend";
 import { ShareRing } from "./share-ring";
 
 const HEADING_ID = "circle-heading";
@@ -44,6 +44,7 @@ export function CircleSection({ locale, copy, common, amounts }: CircleSectionPr
               text={fill(copy.ticker, { amount: amounts.caregiverPay })}
               note={copy.tickerNote}
               tag={example.sandbox}
+              className="mx-auto max-w-lg"
             />
           </div>
         </figure>

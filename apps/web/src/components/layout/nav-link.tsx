@@ -29,7 +29,7 @@ export function NavLink({ href, route, className, children }: NavLinkProps) {
       href={href}
       aria-current={isCurrent ? "page" : undefined}
       className={cn(
-        "inline-flex min-h-11 items-center whitespace-nowrap text-muted-foreground hover:text-foreground aria-[current=page]:text-foreground",
+        "inline-flex min-h-11 items-center whitespace-nowrap text-muted-foreground decoration-highlight decoration-2 underline-offset-8 hover:text-foreground aria-[current=page]:text-foreground aria-[current=page]:underline",
         className,
       )}
     >

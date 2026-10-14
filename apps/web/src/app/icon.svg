@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
-  <!-- The Kin ring: 50, 30 and 20. Colours match --share-1 to --share-3 in globals.css. -->
-  <g transform="rotate(-90 14 14)" fill="none" stroke-width="3.6">
-    <circle cx="14" cy="14" r="10.5" pathLength="100" stroke="#2b6cd4" stroke-dasharray="45 55" stroke-dashoffset="-2.5"/>
-    <circle cx="14" cy="14" r="10.5" pathLength="100" stroke="#c2610c" stroke-dasharray="25 75" stroke-dashoffset="-52.5"/>
-    <circle cx="14" cy="14" r="10.5" pathLength="100" stroke="#a2398c" stroke-dasharray="15 85" stroke-dashoffset="-82.5"/>
-  </g>
-</svg>

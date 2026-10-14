@@ -22,11 +22,11 @@
     },
     "start": {
       "title": "Kreis gründen · Kin",
-      "description": "Kin entsteht für den PayPal AI Hackathon 2026. Kreise sind noch nicht geöffnet."
+      "description": "Vier Schritte zum Familienkreis: Geschwister einladen, Anteile vereinbaren, Ihre Mutter oder Ihren Vater fragen und PayPal verbinden."
     },
     "signIn": {
       "title": "Anmelden · Kin",
-      "description": "Kin entsteht für den PayPal AI Hackathon 2026. Die Anmeldung ist noch nicht geöffnet."
+      "description": "Ein Code per E-Mail oder ein Passkey für Familie und Pflegekraft. Für den Elternteil gar keine Anmeldung."
     }
   },
   "common": {
@@ -76,6 +76,9 @@
       "forFamilies": "Für Familien",
       "disclaimer": "Kin ist keine Bank, keine Anwaltskanzlei und kein Pflegedienst. Kin verwahrt kein Geld. Diese Version läuft für den PayPal AI Hackathon 2026 in der PayPal-Sandbox mit Testgeld.",
       "photos": "Die Fotos zeigen Models, keine echte Familie. Die Beträge sind Beispiele."
+    },
+    "related": {
+      "title": "Weiterlesen"
     }
   },
   "home": {
@@ -276,7 +279,21 @@
     "hero": {
       "eyebrow": "So funktioniert’s",
       "title": "Ein Monat mit Roses Familie.",
-      "lede": "Kin versteht man am besten, wenn man es bei der Arbeit sieht. Hier ist ein Monat in einer Familie, von der ersten Vereinbarung bis zum Ausgleich am Ende."
+      "lede": "Kin versteht man am besten, wenn man es bei der Arbeit sieht. Hier ist ein Monat in einer Familie, von der ersten Vereinbarung bis zum Ausgleich am Ende.",
+      "facts": [
+        {
+          "value": "30",
+          "label": "Tage"
+        },
+        {
+          "value": "8",
+          "label": "Momente"
+        },
+        {
+          "value": "5",
+          "label": "Menschen, eine Kasse"
+        }
+      ]
     },
     "timeline": {
       "label": "Der Monat, Tag für Tag",
@@ -284,60 +301,78 @@
         {
           "day": "Tag 1",
           "title": "Die Familie einigt sich",
-          "text": "Elena gründet einen Kreis für ihre Mutter Rose und lädt Marcus und Ana ein. Sie einigen sich auf die Anteile: Marcus 50 Prozent, Elena 30 Prozent, Ana 20 Prozent. Auch Stunden praktischer Pflege zählen, zu einem Satz, den sie gemeinsam festlegen. Rose tritt mit der Rolle „entscheidet“ bei: Käufe über 50 Dollar brauchen ihr gesprochenes Ja.",
+          "text": "Elena gründet einen Kreis für ihre Mutter Rose und lädt Marcus und Ana ein. Sie einigen sich auf die Anteile: Marcus 50 Prozent, Elena 30 Prozent, Ana 20 Prozent. Auch Stunden praktischer Pflege zählen, zu einem Satz, den sie gemeinsam festlegen. Alle Geschwister richten einen monatlichen Beitrag zur gemeinsamen Kasse ein. Rose tritt mit der Rolle „entscheidet“ bei: Käufe über 50 Dollar brauchen ihr gesprochenes Ja.",
           "speaker": "",
-          "quote": ""
+          "quote": "",
+          "approval": "Elena, Marcus, Ana und Rose",
+          "paypal": "Abonnements"
         },
         {
           "day": "Tag 3",
           "title": "Rose hört, dass eine Rechnung bezahlt ist",
           "text": "Roses Telefon klingelt, und eine ruhige Stimme von Kin meldet sich. Sie muss nichts öffnen.",
           "speaker": "Kin",
-          "quote": "Guten Morgen, Rose. Ihre Stromrechnung über 84 Dollar wurde heute Morgen aus der gemeinsamen Kasse bezahlt. Sonst ist diese Woche nichts fällig."
+          "quote": "Guten Morgen, Rose. Ihre Stromrechnung über 84 Dollar wurde heute Morgen aus der gemeinsamen Kasse bezahlt. Sonst ist diese Woche nichts fällig.",
+          "approval": "Die Familie, als sie den Rechnungssteller freigab",
+          "paypal": "Zahlungsbenachrichtigungen"
         },
         {
           "day": "Tag 6",
           "title": "Amara rechnet per Sprache ab und wird bezahlt",
           "text": "Amara beendet ihren dritten Besuch der Woche und nennt Kin ihre Stunden. Kin bereitet die Rechnung vor und liest sie ihr vor. Elena gibt sie mit einem Tipp frei. Amaras Telefon bestätigt die Zahlung, noch bevor sie bei ihrem Auto ist.",
           "speaker": "Amara",
-          "quote": "Bitte diese Woche mit der Familie abrechnen: drei Besuche, je vier Stunden."
+          "quote": "Bitte diese Woche mit der Familie abrechnen: drei Besuche, je vier Stunden.",
+          "approval": "Elena",
+          "paypal": "Auszahlungen"
         },
         {
           "day": "Tag 9",
           "title": "Rose gibt ihre Nachbestellung frei",
           "text": "Roses Blutdruckmedikament muss nachbestellt werden. Sie sagt Ja. Kin gibt die Bestellung auf und sagt ihr, wann sie ankommt.",
           "speaker": "Kin",
-          "quote": "Ihr Medikament kann nachbestellt werden. Es kostet 42 Dollar. Soll ich bestellen?"
+          "quote": "Ihr Medikament kann nachbestellt werden. Es kostet 42 Dollar. Soll ich bestellen?",
+          "approval": "Rose, per Sprache",
+          "paypal": "Eine gespeicherte Zahlungsmethode"
         },
         {
           "day": "Tag 12",
           "title": "Ein Brief wird vorgelesen",
           "text": "Ein Brief kommt an. Rose hält ihn vor ihr Telefon, und Kin liest ihn ihr vor.",
           "speaker": "Kin",
-          "quote": "Das ist vom Wasserversorger. Darin steht: 61 Dollar sind am 30. fällig. Ich habe es auf die Liste der Familie gesetzt. Elena sieht es heute."
+          "quote": "Das ist vom Wasserversorger. Darin steht: 61 Dollar sind am 30. fällig. Ich habe es auf die Liste der Familie gesetzt. Elena sieht es heute.",
+          "approval": "Noch niemand. Elena wird entscheiden.",
+          "paypal": "Es fließt kein Geld"
         },
         {
           "day": "Tag 15",
           "title": "Eine falsche Forderung fliegt auf",
           "text": "Ein Mann ruft Rose an und sagt, ihr Gaskonto sei überfällig und sie müsse heute 300 Dollar zahlen. Rose fragt Kin. Die Familie wird binnen Sekunden benachrichtigt.",
           "speaker": "Kin",
-          "quote": "Ich finde keine offene Gasrechnung. Ihre Gasrechnung über 57 Dollar wurde am 2. bezahlt. Bitte zahlen Sie nichts an diesen Anrufer. Ich habe Elena und Marcus Bescheid gesagt."
+          "quote": "Ich finde keine offene Gasrechnung. Ihre Gasrechnung über 57 Dollar wurde am 2. bezahlt. Bitte zahlen Sie nichts an diesen Anrufer. Ich habe Elena und Marcus Bescheid gesagt.",
+          "approval": "Niemand. Es wurde nichts bezahlt.",
+          "paypal": "Transaktionsaufzeichnungen"
         },
         {
           "day": "Tag 20",
           "title": "Eine große Reparatur wird geteilt",
           "text": "Der Treppenlift braucht eine Reparatur für 900 Dollar, mehr, als in der Kasse ist. Kin schlägt zwei Wege vor: eine einmalige Einzahlung, aufgeteilt nach den vereinbarten Anteilen, oder die Kosten über mehrere Monate zu verteilen. Die Geschwister wählen, Rose stimmt zu, und die Reparatur wird beauftragt.",
           "speaker": "",
-          "quote": ""
+          "quote": "",
+          "approval": "Die Geschwister, dann Rose",
+          "paypal": "Checkout, mit Pay Later"
         },
         {
           "day": "Tag 30",
           "title": "Der Monat ist ausgeglichen",
           "text": "Elena hat in der Apotheke 180 Dollar aus eigener Tasche bezahlt. Ana hat Rose zu vier Terminen gefahren. Kin berechnet, dass Elena 126 Dollar und Ana 40 zustehen, schlägt den Ausgleich vor und sendet nach der Freigabe das Geld. Alle Geschwister erhalten dieselbe einseitige Abrechnung.",
           "speaker": "Kin",
-          "quote": "Diesen Monat ist alles bezahlt, was fällig war, und alle sind wieder bei ihrem vereinbarten Anteil. Alles ist in Ordnung."
+          "quote": "Diesen Monat ist alles bezahlt, was fällig war, und alle sind wieder bei ihrem vereinbarten Anteil. Alles ist in Ordnung.",
+          "approval": "Die Geschwister",
+          "paypal": "Auszahlungen"
         }
-      ]
+      ],
+      "approvalLabel": "Wer Ja gesagt hat",
+      "paypalLabel": "PayPal"
     },
     "paypal": {
       "eyebrow": "Auf PayPal gebaut",
@@ -404,6 +439,16 @@
         "Sie gibt keine Rechts-, Steuer-, Medizin- oder Anlageberatung."
       ],
       "closing": "Diese Trennung ist Absicht. Sie macht es möglich, dass eine Familie einer KI etwas so Sensibles anvertraut wie das Geld eines Elternteils."
+    },
+    "cast": {
+      "title": "Roses Kreis",
+      "members": {
+        "rose": "Die Mutter. Entscheidet bei mehr als {limit}.",
+        "elena": "Die Organisatorin. Trägt 30 Prozent.",
+        "marcus": "Lebt im Ausland. Trägt 50 Prozent.",
+        "ana": "Gibt ihre Zeit. Trägt 20 Prozent.",
+        "amara": "Die Pflegekraft. Kommt an drei Vormittagen pro Woche."
+      }
     }
   },
   "safetyPage": {
@@ -415,37 +460,49 @@
     "limits": {
       "eyebrow": "Schutzmaßnahmen",
       "title": "Grenzen, die sich nicht wegdiskutieren lassen.",
-      "items": [
-        {
+      "items": {
+        "drain": {
           "title": "Niemand kann die Kasse leeren",
           "text": "Geld geht nur an freigegebene Rechnungssteller, freigegebene Pflegekräfte und Mitglieder des Kreises, und ohne zweite Freigabe nie über die Grenzen der Familienvereinbarung hinaus."
         },
-        {
+        "approvals": {
           "title": "Zwei Freigaben für große Beträge",
           "text": "Über einer Schwelle, die die Familie festlegt, müssen zwei Mitglieder zustimmen. Kein Mitglied gibt eine Zahlung an sich selbst allein frei."
         },
-        {
+        "announced": {
           "title": "Jede Änderung wird bekannt gegeben",
           "text": "Ein neuer Rechnungssteller, ein geänderter Anteil oder ein neues Mitglied wird allen im Kreis gemeldet."
         },
-        {
+        "pause": {
           "title": "Eine Pausentaste",
           "text": "Jedes Mitglied kann ausgehende Zahlungen für 24 Stunden anhalten, wenn etwas nicht stimmt."
         },
-        {
+        "pressure": {
           "title": "Schutz vor Druck",
           "text": "Ungewöhnliche Muster, etwa ein plötzlich neuer Zahlungsempfänger oder wiederholte Bitten an den Elternteil, werden dem ganzen Kreis gemeldet, nicht einer einzelnen Person."
         },
-        {
+        "history": {
           "title": "Nichts wird je gelöscht",
           "text": "Eine Korrektur wird als neuer Eintrag hinzugefügt. So bleibt der Verlauf vollständig, und jede Zeile behält ihren Beleg und ihre Freigabe."
         }
-      ]
+      }
     },
     "guard": {
       "eyebrow": "Die Zahlenprüfung",
       "title": "Jeder Betrag wird geprüft, bevor er ausgesprochen wird.",
-      "text": "Die KI formuliert den Satz. Die Zahl wählt sie nie. Bevor etwas gesagt oder angezeigt wird, vergleicht einfacher Programmcode jeden Betrag, jedes Datum und jeden Namen im Satz mit den Aufzeichnungen. Weicht etwas ab, wird der Satz verworfen und durch einen festen ersetzt. Ihre Mutter oder Ihr Vater hört nie einen Betrag, der nicht in den Aufzeichnungen steht."
+      "text": "Die KI formuliert den Satz. Die Zahl wählt sie nie. Bevor etwas gesagt oder angezeigt wird, vergleicht einfacher Programmcode jeden Betrag, jedes Datum und jeden Namen im Satz mit den Aufzeichnungen. Weicht etwas ab, wird der Satz verworfen und durch einen festen ersetzt. Ihre Mutter oder Ihr Vater hört nie einen Betrag, der nicht in den Aufzeichnungen steht.",
+      "checksLabel": "Mit den Aufzeichnungen verglichen",
+      "checks": [
+        "Jeder Betrag",
+        "Jedes Datum",
+        "Jeder Name"
+      ],
+      "matchTitle": "Wenn der Wortlaut stimmt",
+      "mismatchTitle": "Wenn der Wortlaut abweicht",
+      "wrongAmount": "48 Dollar",
+      "mismatch": "„{spoken}“ stimmt nicht mit {amount} überein",
+      "fallbackLabel": "Stattdessen",
+      "fallback": "Der Satz wird verworfen. Rose hört einen festen, gebildet aus den Aufzeichnungen."
     },
     "scam": {
       "eyebrow": "Die Betrugsprüfung",
@@ -453,7 +510,30 @@
       "text": "Kin rät nicht, ob ein Anrufer verdächtig klingt. Kin prüft, ob die Rechnung existiert und ob sie bezahlt ist, sagt es Ihrer Mutter oder Ihrem Vater klar und benachrichtigt die Familie.",
       "roseLine": "Ein Mann hat wegen der Gasrechnung angerufen. Er sagt, ich muss heute 300 Dollar zahlen. Ist das echt?",
       "kinLine": "Ich finde keine offene Gasrechnung. Ihre Gasrechnung über 57 Dollar wurde am 2. bezahlt. Bitte zahlen Sie nichts an diesen Anrufer. Ich habe Elena und Marcus Bescheid gesagt.",
-      "rule": "Die Familie gibt eine Regel weiter: Kin sagt Bescheid, Kin fragt nie nach Geheimnissen. Kin fragt nie nach einem Passwort, einer Kartennummer oder einem Code."
+      "rule": "Die Familie gibt eine Regel weiter: Kin sagt Bescheid, Kin fragt nie nach Geheimnissen. Kin fragt nie nach einem Passwort, einer Kartennummer oder einem Code.",
+      "checkedTitle": "Was Kin vor der Antwort geprüft hat",
+      "checked": [
+        {
+          "question": "Ist eine Gasrechnung offen?",
+          "answer": "Nein. Nichts ist fällig."
+        },
+        {
+          "question": "Wurde die letzte Gasrechnung bezahlt?",
+          "answer": "Ja. {amount}, am 2."
+        },
+        {
+          "question": "Wer hat Bescheid bekommen?",
+          "answer": "Elena und Marcus, binnen Sekunden."
+        }
+      ],
+      "note": "Kin nennt einen Anrufer nie einen Verbrecher. Kin sagt, was die Aufzeichnungen zeigen und was zu tun ist.",
+      "ruleTitle": "Kin sagt Bescheid. Kin fragt nie nach Geheimnissen.",
+      "neverLabel": "Danach fragt Kin nie",
+      "never": [
+        "Ein Passwort",
+        "Eine Kartennummer",
+        "Ein Code"
+      ]
     },
     "trust": {
       "eyebrow": "Vertrauen und Datenschutz",
@@ -504,24 +584,24 @@
     "features": {
       "eyebrow": "Ihre Seite von Kin",
       "title": "Pünktlich bezahlt, mit Nachweis.",
-      "items": [
-        {
+      "items": {
+        "voice": {
           "title": "Per Sprache abrechnen",
           "text": "Nennen Sie die Besuche und die Stunden. Kin bereitet die Rechnung vor und liest sie Ihnen vor."
         },
-        {
+        "sameDay": {
           "title": "Am selben Tag bezahlt",
           "text": "Sobald die Familie freigibt, geht die Zahlung auf Ihr PayPal-Konto und wird Ihnen sofort bestätigt."
         },
-        {
+        "record": {
           "title": "Ein Einkommensnachweis",
           "text": "Sie behalten einen Verlauf jedes abgerechneten Besuchs und jeder erhaltenen Zahlung. Sie können ihn als Einkommensnachweis nutzen."
         },
-        {
+        "expenses": {
           "title": "Auslagen erstattet",
           "text": "Wenn Sie etwas für die Person kaufen, die Sie betreuen, fotografieren Sie den Beleg. Der Betrag wird mit Ihrer Bezahlung erstattet."
         }
-      ]
+      }
     },
     "exchange": {
       "eyebrow": "So klingt eine Abrechnung",
@@ -529,7 +609,25 @@
       "amaraLine": "Bitte diese Woche mit der Familie abrechnen: drei Besuche, je vier Stunden.",
       "kinLine": "Drei Besuche zu je vier Stunden, insgesamt zwölf Stunden. Das macht {amount}. Soll ich es an die Familie senden?",
       "kinAmount": "264 Dollar",
-      "note": "Elena gibt mit einem Tipp frei. Die Zahlung ist auf Amaras Telefon bestätigt, noch bevor sie bei ihrem Auto ist."
+      "note": "Elena gibt mit einem Tipp frei. Die Zahlung ist auf Amaras Telefon bestätigt, noch bevor sie bei ihrem Auto ist.",
+      "steps": [
+        {
+          "title": "Stunden ansagen",
+          "text": "Nennen Sie Kin die Besuche und die Stunden, in Ihren eigenen Worten."
+        },
+        {
+          "title": "Vorlesen lassen",
+          "text": "Kin bereitet die Rechnung vor und liest sie Ihnen vor, bevor etwas gesendet wird."
+        },
+        {
+          "title": "Die Familie gibt frei",
+          "text": "Wer den Kreis organisiert, gibt sie mit einem Tipp frei."
+        },
+        {
+          "title": "Sie werden bezahlt",
+          "text": "Die Zahlung geht am selben Tag auf Ihr PayPal-Konto, und Ihr Telefon bestätigt sie."
+        }
+      ]
     },
     "privacy": {
       "title": "Ihre eigenen Rechnungen und Zahlungen, sonst nichts.",
@@ -538,6 +636,23 @@
     "free": {
       "title": "Kostenlos für Pflegekräfte. Immer.",
       "text": "Für Ihre Seite von Kin zahlen Sie nie."
+    },
+    "record": {
+      "eyebrow": "Ihr Nachweis",
+      "title": "Ein Einkommensnachweis, für Sie geführt.",
+      "text": "Jeder Besuch, den Sie abrechnen, und jede Zahlung, die Sie erhalten, bleibt in Ihrem Verlauf. Sie können ihn als Einkommensnachweis nutzen.",
+      "cardTitle": "Amaras Nachweis",
+      "weeks": [
+        "Erste Woche",
+        "Zweite Woche",
+        "Dritte Woche"
+      ],
+      "visits": "Drei Besuche, zwölf Stunden",
+      "paid": "Am selben Tag bezahlt"
+    },
+    "language": {
+      "title": "In Ihrer eigenen Sprache.",
+      "text": "Rechnen Sie in der Sprache ab, die Sie sprechen. Die Familie liest dieselbe Rechnung in ihrer eigenen."
     }
   },
   "pricingPage": {
@@ -555,42 +670,101 @@
       "whoPays": "Wer zahlt",
       "whatTheyGet": "Was enthalten ist",
       "price": "Vorgeschlagener Preis",
-      "items": [
-        {
-          "name": "Familie",
-          "whoPays": "Der Kreis, aufgeteilt wie alle anderen Kosten",
-          "whatTheyGet": "Alles, was Kin kann, für einen Kreis",
-          "price": "Eine feste Monatsgebühr pro Kreis"
-        },
-        {
+      "includes": "Enthalten",
+      "cards": {
+        "free": {
           "name": "Elternteil und Pflegekraft",
-          "whoPays": "Niemand",
-          "whatTheyGet": "Volle Nutzung ihrer Seite von Kin",
-          "price": "Kostenlos, immer"
+          "price": "Kostenlos",
+          "priceNote": "immer",
+          "whoPays": "Niemand zahlt",
+          "features": [
+            "Jede Zahlung laut angesagt",
+            "Freigaben per Sprache",
+            "Briefe und Rechnungen, per Telefonkamera vorgelesen",
+            "Eine Betrugsprüfung anhand der echten Aufzeichnungen",
+            "Abrechnung der Pflegekraft per Sprache, am selben Tag bezahlt",
+            "Ein Einkommensnachweis für die Pflegekraft"
+          ]
         },
-        {
+        "family": {
+          "name": "Familienkreis",
+          "badge": "Vom Kreis geteilt",
+          "price": "Eine feste Gebühr",
+          "priceNote": "pro Kreis, jeden Monat",
+          "whoPays": "Der Kreis zahlt, aufgeteilt wie alle anderen Kosten",
+          "features": [
+            "Eine gemeinsame Kasse, bei PayPal",
+            "Rechnungen und Bezahlung der Pflegekraft, nach Ihren Freigaberegeln",
+            "Eine Fairness-Bilanz in Geld und in Stunden",
+            "Jeden Monat ein Ausgleich mit echter Zahlung",
+            "Die Monatsabrechnung und der Audit-Export",
+            "Alles, was Elternteil und Pflegekraft bekommen"
+          ]
+        },
+        "professional": {
           "name": "Profi",
-          "whoPays": "Pflegeberatung, Anwaltskanzleien und rechtliche Betreuung",
-          "whatTheyGet": "Viele Kreise, Berichte je betreuter Person und gerichtstaugliche Exporte",
-          "price": "Pro betreuter Person und Monat"
-        },
-        {
-          "name": "Pflegedienst",
-          "whoPays": "Ambulante Pflegedienste",
-          "whatTheyGet": "Abrechnung und Bezahlung am selben Tag für ihre Pflegekräfte in vielen Familien",
-          "price": "Pro aktiver Pflegekraft"
-        },
-        {
-          "name": "Arbeitgeberleistung",
-          "whoPays": "Arbeitgeber",
-          "whatTheyGet": "Kin als Angebot für Beschäftigte, die Angehörige pflegen",
-          "price": "Pro angemeldeter Person"
+          "price": "Pro betreuter Person",
+          "priceNote": "jeden Monat",
+          "whoPays": "Pflegeberatung, Anwaltskanzleien und rechtliche Betreuung zahlen",
+          "features": [
+            "Viele Kreise an einem Ort",
+            "Berichte je betreuter Person",
+            "Gerichtstaugliche Exporte"
+          ]
         }
-      ]
+      },
+      "organisations": {
+        "title": "Für Organisationen",
+        "items": [
+          {
+            "name": "Pflegedienst",
+            "whoPays": "Ambulante Pflegedienste",
+            "whatTheyGet": "Abrechnung und Bezahlung am selben Tag für ihre Pflegekräfte in vielen Familien",
+            "price": "Pro aktiver Pflegekraft"
+          },
+          {
+            "name": "Arbeitgeberleistung",
+            "whoPays": "Arbeitgeber",
+            "whatTheyGet": "Kin als Angebot für Beschäftigte, die Angehörige pflegen",
+            "price": "Pro angemeldeter Person"
+          }
+        ]
+      }
     },
     "split": {
       "title": "Auch der Preis von Kin wird geteilt wie alles andere.",
-      "text": "Der Familientarif wird über ein PayPal-Abonnement aus der Kasse bezahlt. Trägt Marcus also 50 Prozent der Pflegekosten, trägt er auch 50 Prozent der Kosten für Kin."
+      "text": "Der Familientarif wird über ein PayPal-Abonnement aus der Kasse bezahlt. Trägt Marcus also 50 Prozent der Pflegekosten, trägt er auch 50 Prozent der Kosten für Kin.",
+      "barLabel": "In Roses Kreis trägt Marcus 50 Prozent des Preises von Kin, Elena 30 Prozent und Ana 20 Prozent."
+    },
+    "faq": {
+      "eyebrow": "Fragen",
+      "title": "Was Familien zuerst fragen.",
+      "items": [
+        {
+          "question": "Wird heute jemandem etwas berechnet?",
+          "answer": "Nein. Heute läuft Kin in der PayPal-Sandbox mit Testgeld, und niemandem wird etwas berechnet."
+        },
+        {
+          "question": "Was wird der Familientarif kosten?",
+          "answer": "Der Preis steht nicht fest. Vorgeschlagen ist eine feste Monatsgebühr pro Kreis, etwa so viel wie ein Streaming-Abo. Sie wird zuerst mit Pilotfamilien getestet."
+        },
+        {
+          "question": "Verwahrt Kin unser Geld?",
+          "answer": "Nein. Die gemeinsame Kasse ist ein PayPal-Konto, das der Familie gehört. Kin verbindet sich damit und verwahrt das Geld nie selbst."
+        },
+        {
+          "question": "Brauchen wir ein neues Bankkonto oder eine neue Karte?",
+          "answer": "Nein. Alle Geschwister zahlen ihren Anteil über PayPal, und PayPal bewegt jeden Dollar."
+        },
+        {
+          "question": "Wie wird die Gebühr für Kin bezahlt?",
+          "answer": "Aus der Kasse, über ein PayPal-Abonnement. Sie wird nach demselben Schlüssel aufgeteilt wie alle anderen Kosten."
+        },
+        {
+          "question": "Unsere Eltern wohnen an zwei Orten. Ist das ein Kreis oder sind es zwei?",
+          "answer": "Zwei. Es gibt einen Kreis für jede betreute Person. Eine Familie mit zwei Elternteilen an verschiedenen Orten kann also zwei Kreise führen."
+        }
+      ]
     }
   },
   "notOpen": {
@@ -605,5 +779,94 @@
     "title": "Diese Seite gibt es nicht.",
     "text": "Vielleicht ist die Adresse falsch geschrieben, oder die Seite ist umgezogen.",
     "link": "Zurück zur Startseite"
+  },
+  "principle": {
+    "label": "So fällt jede Entscheidung über Geld",
+    "steps": {
+      "proposes": {
+        "title": "Die KI schlägt vor",
+        "text": "Sie liest, entwirft und erklärt. Sie hat kein Werkzeug, das Geld bewegt."
+      },
+      "approves": {
+        "title": "Menschen geben frei",
+        "text": "Jede Bewegung braucht ein festgehaltenes Ja. Eine Auszahlung verlangt eine neue zweite Prüfung."
+      },
+      "decides": {
+        "title": "Die Aufzeichnungen entscheiden",
+        "text": "Eine Zahlung gilt erst als erledigt, wenn die Aufzeichnungen von PayPal das sagen."
+      }
+    }
+  },
+  "startPage": {
+    "hero": {
+      "eyebrow": "Kreis gründen",
+      "title": "Vier Schritte und ein Gespräch.",
+      "lede": "Einen Kreis zu gründen heißt: sich einigen, wie die Kosten geteilt werden, und Ihre Mutter oder Ihren Vater fragen, was sie oder er entscheiden möchte. Kin macht aus diesem Gespräch eine schriftliche Vereinbarung, der alle zustimmen."
+    },
+    "steps": {
+      "eyebrow": "Die vier Schritte",
+      "items": [
+        {
+          "title": "Den Kreis gründen"
+        },
+        {
+          "title": "Die Aufteilung vereinbaren"
+        },
+        {
+          "title": "Der Elternteil sagt Ja"
+        },
+        {
+          "title": "PayPal verbinden"
+        }
+      ]
+    },
+    "form": {
+      "title": "Ihren Familienkreis gründen",
+      "text": "Sagen Sie Kin, wer Sie sind und für wen der Kreis ist. Danach laden Sie Ihre Familie ein.",
+      "nameLabel": "Ihr Name",
+      "parentLabel": "Für wen ist der Kreis?",
+      "parentHelp": "Ein Kreis für jede Person, um die Sie sich kümmern.",
+      "consent": "Mir ist klar: Der Kreis ist erst aktiv, wenn meine Mutter oder mein Vater zugestimmt hat, oder die Person, die rechtlich für sie oder ihn handeln darf.",
+      "consentError": "Bitte bestätigen Sie das, um fortzufahren.",
+      "submit": "Kreis gründen",
+      "haveCircle": "Schon in einem Kreis?"
+    }
+  },
+  "signInPage": {
+    "hero": {
+      "eyebrow": "Anmelden",
+      "title": "Kein Passwort zum Merken, keines zum Stehlen.",
+      "lede": "Sobald die Anmeldung geöffnet ist, sendet Kin einen Code an Ihre E-Mail-Adresse oder nutzt einen Passkey. Ihre Mutter oder Ihr Vater meldet sich gar nicht an."
+    },
+    "ways": {
+      "label": "So kommt jede Person hinein",
+      "items": {
+        "family": {
+          "who": "Familienmitglieder",
+          "title": "Ein Code per E-Mail oder ein Passkey"
+        },
+        "parent": {
+          "who": "Eltern",
+          "title": "Gar keine Anmeldung"
+        },
+        "caregiver": {
+          "who": "Pflegekräfte",
+          "title": "Ein Code per E-Mail oder ein Passkey"
+        }
+      }
+    },
+    "form": {
+      "title": "Bei Ihrem Kreis anmelden",
+      "text": "Kin sendet Ihnen einen Code per E-Mail. Ein Passwort gibt es nicht.",
+      "submit": "Code per E-Mail senden",
+      "or": "oder",
+      "passkey": "Passkey verwenden",
+      "noCircle": "Noch kein Kreis?"
+    }
+  },
+  "account": {
+    "emailLabel": "E-Mail-Adresse",
+    "emailError": "Geben Sie eine E-Mail-Adresse ein, zum Beispiel {example}.",
+    "requiredError": "Bitte füllen Sie dieses Feld aus."
   }
 }
