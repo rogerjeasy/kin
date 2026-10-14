@@ -1212,6 +1212,25 @@ Every queue has a dead-letter queue and an alarm on it.
 - Non-secret configuration is typed and validated at startup. A service with invalid configuration does not start.
 - Secrets come from Secrets Manager at startup and are never written to logs or images.
 
+### 14.8 Sharing the AWS account
+
+Kin runs in AWS account `707938860881`, us-east-1, beside four other projects: wick (Terraform), Hold (CDK, default bootstrap), carecircle (Terraform) and zeitzeuge. Kin shares only what an account cannot hold twice or should not: the GitHub OIDC provider and the region. Every Kin resource is its own, named `kin-*` or `Kin*` and tagged `project=kin`.
+
+Separate names are not enough on their own. Some of the other projects' principals hold account-wide permissions, such as wick's deploy role with `s3:*`, `dynamodb:*` and `lambda:*` on every resource. So Kin keeps them out in its own resource policies:
+
+| Boundary | How it holds |
+| --- | --- |
+| Encryption | One customer key, `alias/kin`, for Aurora, both buckets, every queue and the database secret. |
+| Explicit deny | Every bucket, queue and secret, and the key itself, deny all actions to the other projects' roles and users, listed in `cdk.json` as `kin:neighbourPrincipalPatterns`. An explicit deny overrides any allow they hold. Add a pattern when a project joins the account. |
+| Network | Kin's own VPC. The database admits only the `kin-services` security group, on port 5432, from isolated subnets with no internet route. |
+| Sign-in | Kin's own Cognito pool, `kin-people`. Nobody signs in across projects. |
+| Deployment | Kin's own CDK bootstrap, qualifier `kin`, stack `KinCDKToolkit`. The GitHub role `kin-github-deploy` trusts one repository and one branch, and may assume only `cdk-kin-*` roles. |
+| Cost | The budget `kin-monthly` counts only resources tagged `project=kin`. |
+
+**What the deny cannot cover.** Cognito user pools, Lambda functions, log groups and ECR repositories have no resource policy that a deny can sit in, or none that covers management actions. Wick's deploy role can change any of them. Closing that needs wick's role narrowed to `wick*` resources, in wick's repository. The account's Lambda concurrency quota is 10 and is shared, so Kin adds one function, the deploy-time custom resource that locks the VPC's default security group.
+
+The stacks are `KinOps` (alerts and budget, deployed first), `KinNetwork`, `KinData` and `KinCi`, in `infra/`. Compute, the load balancer and the Fargate services, follows when the apps have images. Aurora's capacity is `kin:databaseCapacityAcu` in `cdk.json`: a minimum of 0 lets it pause while nobody is using it, and it is raised above zero for judging.
+
 ---
 
 ## 15. Security
@@ -1408,6 +1427,8 @@ The hackathon needs a month of family life to be shown in minutes.
 | 20 | A short pool is shared among payouts pro rata | First come, first paid | No member's payout depends on the order of a list. |
 | 21 | The site's settlement figures are calculated from Rose's month in `packages/domain` | Figures written into the example data | The page can show only what the money core produces. |
 | 22 | Property tests use a small seeded generator in `packages/domain` | A property-testing library | No new dependency for the first slice. Failures name the seed. A library with shrinking is worth proposing when inputs grow. |
+| 23 | Kin's own resources in a shared AWS account, with an explicit deny for the other projects | Partitions inside wick's table, bucket and user pool | Wick's roles hold table-wide and account-wide permissions, so a key prefix would isolate nothing. Separate idle resources cost nothing extra. |
+| 24 | A CDK bootstrap of Kin's own, qualifier `kin` | The account's default bootstrap, used by Hold | Kin's assets and deploy roles stay apart from Hold's, and Kin's CI role can reach only Kin's. |
 
 ---
 
