@@ -41,6 +41,13 @@ const agreement: Agreement = {
     { memberId: "ana", bps: 2000 },
   ],
   care: { rateCentsPerHour: CARE_RATE_CENTS_PER_HOUR, paidInCash: false },
+  // Rose decides above 50.00, as the story's pharmacy refill shows. The
+  // ceiling and the second-approval threshold are chosen for the example.
+  approvals: {
+    ceilingCents: 300000,
+    secondApprovalAboveCents: 50000,
+    parentDecidesAboveCents: 5000,
+  },
 };
 
 function header(

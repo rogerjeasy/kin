@@ -21,7 +21,7 @@ function payoutTo(memberId: string): Money {
  * marketing pages show comes from here. None of it is a real transaction.
  */
 export const exampleFamily = {
-  purchaseLimit: usd(5000),
+  purchaseLimit: usd(rosesMonth.agreement.approvals.parentDecidesAboveCents),
   electricityBill: usd(8400),
   gasBill: usd(5700),
   caregiverPay: usd(26400),

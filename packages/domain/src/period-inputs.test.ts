@@ -26,6 +26,11 @@ const agreement: Agreement = {
     { memberId: "ana", bps: 4000 },
   ],
   care: { rateCentsPerHour: 2000, paidInCash: false },
+  approvals: {
+    ceilingCents: 100000,
+    secondApprovalAboveCents: 50000,
+    parentDecidesAboveCents: 5000,
+  },
 };
 
 const sale = contributionReceived(testHeader("sale-elena"), {
