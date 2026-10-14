@@ -325,11 +325,11 @@ Kin keeps a double-entry ledger for each circle.
 | Marcus's monthly share of 200.00 arrives, fee 7.28 | `pool_cash` 192.72, `fees` 7.28 | `member:marcus` 200.00 |
 | Elena's 42.00 pharmacy receipt is approved         | `expense:pharmacy` 42.00          | `member:elena` 42.00   |
 | Amara's 240.00 bill is approved                    | `expense:care` 240.00             | `payable:amara` 240.00 |
-| The payout to Amara is confirmed                   | `payable:amara` 240.00            | `pool_cash` 240.00     |
+| The payout to Amara is confirmed, fee 0.25         | `payable:amara` 240.00, `fees` 0.25 | `pool_cash` 240.25   |
 | The refill of 42.00 is captured                    | `expense:pharmacy` 42.00          | `pool_cash` 42.00      |
-| Settlement pays Elena 126.00                       | `member:elena` 126.00             | `pool_cash` 126.00     |
+| Settlement pays Elena 126.00, fee 0.25             | `member:elena` 126.00, `fees` 0.25 | `pool_cash` 126.25    |
 
-A member is credited with the gross amount they paid. PayPal fees are a shared cost of the circle.
+A member is credited with the gross amount they paid, and a payee or member is paid the full amount owed. PayPal's fees, on money coming in and on payouts going out, are a shared cost of the circle, read from PayPal's record of each transaction.
 
 **How the code holds these rules** (`packages/domain`, `ledger*.ts` and `postings.ts`)
 
@@ -374,7 +374,7 @@ Settlement turns the calculation into movements. Money moves through the pool, s
 2. **Calculate.** The fairness function produces each member's position.
 3. **Propose.** Members who owe receive a top-up request. Members who are owed become payout proposals.
 4. **Approve.** The circle approves the settlement as a whole, under the agreement's rules.
-5. **Collect, then pay.** Payouts are released only as far as the pool's confirmed balance allows, less every approved bill not yet paid. Kin never pays out money that has not arrived, nor money already promised to a caregiver or a biller. When the balance cannot cover every payout, it is shared among them in proportion to what each member is owed, by the same largest-remainder method, and the rest waits for collections.
+5. **Collect, then pay.** Payouts are released only as far as the pool's confirmed balance allows, less every approved bill not yet paid and PayPal's fee for sending each payout. Kin never pays out money that has not arrived, nor money already promised to a caregiver or a biller, nor money the fees will take. When the balance cannot cover every payout, it is shared among them in proportion to what each member is owed, by the same largest-remainder method, and the rest waits for collections.
 6. **Close.** When every movement is confirmed or carried forward, the period is closed and the statement is produced. Unpaid amounts carry into the next period as `B_i`.
 
 ### 7.4 State machines
@@ -1433,6 +1433,7 @@ The hackathon needs a month of family life to be shown in minutes.
 | 23 | Kin's own resources in a shared AWS account, with an explicit deny for the other projects | Partitions inside wick's table, bucket and user pool | Wick's roles hold table-wide and account-wide permissions, so a key prefix would isolate nothing. Separate idle resources cost nothing extra. |
 | 24 | A CDK bootstrap of Kin's own, qualifier `kin` | The account's default bootstrap, used by Hold | Kin's assets and deploy roles stay apart from Hold's, and Kin's CI role can reach only Kin's. |
 | 25 | Settlement payouts are bounded by pool cash less unpaid bills | Bounded by pool cash alone | A settlement must not spend money already owed to Amara or a biller. |
+| 26 | Payout fees are posted to `fees` and reserved before a settlement releases payouts | Ignoring payout fees | The sandbox charged the pool 0.25 to send a payout. Unposted, the ledger's pool runs ahead of PayPal's; unreserved, paying everyone in full could overdraw the pool. |
 
 ---
 
@@ -1444,7 +1445,7 @@ The hackathon needs a month of family life to be shown in minutes.
 - Payouts and saved payment methods can be enabled on the sandbox accounts used.
 - The telephony and speech providers support streaming in both directions.
 
-Each should be confirmed on day one. Section 8.6 gives the fallback if the pool cannot act as a payer.
+Each should be confirmed on day one. Section 8.6 gives the fallback if the pool cannot act as a payer. The first two were confirmed in the PayPal sandbox on 14 October 2026 (section 23); the telephony and speech assumption is still open.
 
 ### 22.2 Open questions
 
@@ -1490,6 +1491,15 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - That a PayPal account has no API for paying an invoice it has received. This is the basis of the first correction in section 8.3.
 - AWS specifics: load balancer timeouts for live audio, Aurora's pause behavior and Cognito's sign-in options.
 - The streaming capabilities of the speech and telephony providers.
+
+**Checked against the PayPal sandbox on 14 October 2026** (`pnpm --filter @kin/paypal run sandbox:check`)
+
+- The pool's sandbox business account sends payouts. A 1.00 payout to a personal sandbox account reached `SUCCESS` within a minute, read back from PayPal, and PayPal charged the sender a 0.25 fee.
+- It takes subscriptions. A subscription stays `APPROVAL_PENDING` until a payer approves it in a browser, then turns `ACTIVE` and is billed at once: a 1.00 monthly plan approved by a personal sandbox account took 1.00 gross, a 0.52 fee and 0.48 net, which is why members are credited gross (decision 13).
+- It creates vault setup tokens for a PayPal wallet with merchant usage. A token stays `PAYER_ACTION_REQUIRED` until the payer approves it.
+- Its app holds the payouts, subscriptions, invoicing and vault scopes. Reporting was still missing shortly after Transaction Search was switched on, so the Balances and Transaction Search APIs answered 403.
+- A separate merchant app, the demo pharmacy's, saves a PayPal wallet with merchant usage and charges it with nobody signing in: after one approval, an order carrying only the saved wallet's ID was created and captured `COMPLETED` in a single call (1.00 gross, 0.52 fee). The approval page showed an error after approving, but the setup token read back `APPROVED`.
+- The pool's business account can be that payer. It approved once as a `BUSINESS` customer, and the pharmacy then charged its saved wallet 1.00 with nobody signing in, captured `COMPLETED`. Section 8.6's fallback is not needed.
 
 **Built and tested**
 

@@ -53,18 +53,19 @@ describe("Rose's month", () => {
       currency: "USD",
       collections: [{ memberId: "marcus", cents: 16600 }],
       payouts: [
-        { memberId: "ana", cents: 4000, releasableCents: 4000 },
-        { memberId: "elena", cents: 12600, releasableCents: 12600 },
+        { memberId: "ana", cents: 4000, feeReservedCents: 25, releasableCents: 4000 },
+        { memberId: "elena", cents: 12600, feeReservedCents: 25, releasableCents: 12600 },
       ],
     });
   });
 
   it("leaves the pool holding what came in less fees and what went out", () => {
-    // 924.00 in, 32.82 in fees, 508.00 in bills and the refill.
-    expect(accountBalance(rosesMonth.ledger, POOL_CASH)).toBe(38318);
+    // 924.00 in, 32.82 in fees on the way in, 508.00 in bills and the refill,
+    // and 0.25 to send each of the four bills paid by payout.
+    expect(accountBalance(rosesMonth.ledger, POOL_CASH)).toBe(38218);
   });
 
-  it("returns the pool to its earlier balance once the settlement is paid", () => {
+  it("returns the pool to its earlier balance, less the payout fees, once the settlement is paid", () => {
     const header = (name: string) => ({
       id: `settlement:${name}`,
       circleId: rosesMonth.ledger.circleId,
@@ -81,11 +82,11 @@ describe("Rose's month", () => {
         grossCents: 16600,
         feeCents: 0,
       }),
-      settlementPaidOut(header("pay-elena"), { memberId: "elena", cents: 12600 }),
-      settlementPaidOut(header("pay-ana"), { memberId: "ana", cents: 4000 }),
+      settlementPaidOut(header("pay-elena"), { memberId: "elena", cents: 12600, feeCents: 25 }),
+      settlementPaidOut(header("pay-ana"), { memberId: "ana", cents: 4000, feeCents: 25 }),
     ]);
 
-    expect(accountBalance(settled, POOL_CASH)).toBe(38318);
+    expect(accountBalance(settled, POOL_CASH)).toBe(38218 - 50);
     expect(accountBalance(settled, "member:marcus")).toBe(59000);
     expect(accountBalance(settled, "member:elena")).toBe(35400);
     // Ana's 160.00 of cash plus her 76.00 of care make her 236.00 target.
@@ -95,7 +96,8 @@ describe("Rose's month", () => {
 
   it("releases payouts only from cash not already promised to a bill", () => {
     // The stairlift repair of day 20, approved but not yet paid, leaves
-    // 83.18 of the pool's 383.18 free for the settlement.
+    // 82.18 of the pool's 382.18 free, and 81.68 once the two payout fees
+    // are held back.
     const withRepair = appendEntries(rosesMonth.ledger, [
       billApproved(
         {
@@ -116,6 +118,6 @@ describe("Rose's month", () => {
     expect(payouts.map((payout) => payout.cents)).toEqual([4000, 12600]);
     expect(
       payouts.reduce((sum, payout) => sum + payout.releasableCents, 0),
-    ).toBe(8318);
+    ).toBe(8168);
   });
 });

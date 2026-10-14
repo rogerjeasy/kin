@@ -46,7 +46,11 @@ describe("cashAvailableForPayouts", () => {
   it("frees the cash once PayPal confirms the bill is paid", () => {
     const paid = appendEntries(funded, [
       amaraBill,
-      payoutConfirmed(testHeader("payout-amara"), { payeeId: "amara", cents: 26400 }),
+      payoutConfirmed(testHeader("payout-amara"), {
+        payeeId: "amara",
+        cents: 26400,
+        feeCents: 0,
+      }),
     ]);
 
     expect(cashAvailableForPayouts(paid)).toBe(50000 - 26400);
@@ -67,7 +71,11 @@ describe("cashAvailableForPayouts", () => {
 
   it("stops when the pool's cash is below zero, because the ledger is wrong", () => {
     const overdrawn = appendEntries(funded, [
-      settlementPaidOut(testHeader("overpay"), { memberId: "elena", cents: 60000 }),
+      settlementPaidOut(testHeader("overpay"), {
+        memberId: "elena",
+        cents: 60000,
+        feeCents: 0,
+      }),
     ]);
 
     expect(() => cashAvailableForPayouts(overdrawn)).toThrow(SettlementError);

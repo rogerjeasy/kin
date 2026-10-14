@@ -12,8 +12,21 @@ export type Collection = {
 export type Payout = {
   readonly memberId: string;
   readonly cents: number;
-  /** The part the pool's confirmed balance can pay now. Never above `cents`. */
+  /** Cash held back for PayPal's fee on sending the whole amount. */
+  readonly feeReservedCents: number;
+  /** The part the pool can pay now. Never above `cents`. */
   readonly releasableCents: number;
+};
+
+/** The cash a settlement may draw on, and what sending a payout costs. */
+export type PayoutFunds = {
+  /** The pool's confirmed cash less unpaid bills, from `cashAvailableForPayouts`. */
+  readonly availableCents: number;
+  /**
+   * The most PayPal charges to send a payout of `cents`. It must not fall as
+   * the amount falls, so the fee on a partly released payout stays covered.
+   */
+  readonly payoutFee: (cents: number) => number;
 };
 
 export type SettlementPlan = {
@@ -37,14 +50,14 @@ export class SettlementError extends Error {
  * moves through the pool, so the plan holds exactly one movement for each
  * member who is not already level, and no smaller set could close the gap.
  *
- * Payouts are released only as far as `poolAvailableCents` allows: the pool's
- * confirmed balance less unpaid bills, from `cashAvailableForPayouts`.
- * When it cannot cover them all, it is shared among them in proportion to what
- * each is owed, and the rest waits for the collections to arrive.
+ * Payouts are released only from the cash available after PayPal's fee for
+ * each one is held back, so sending them cannot take the pool below zero.
+ * When the rest cannot cover them all, it is shared among them in proportion
+ * to what each is owed, and the remainder waits for the collections.
  */
 export function planSettlement(
   fairness: FairnessResult,
-  poolAvailableCents: number,
+  funds: PayoutFunds,
 ): SettlementPlan {
   const collections = fairness.positions
     .filter((position) => position.positionCents < 0)
@@ -58,19 +71,43 @@ export function planSettlement(
       memberId: position.memberId,
       cents: position.positionCents,
     }));
+  assertPoolCash(funds.availableCents);
+  const fees = owed.map((payout) => feeFor(funds, payout.cents));
+  const afterFees = Math.max(0, funds.availableCents - sumCents(fees));
   const releasable = releasableNow(
     owed.map((payout) => payout.cents),
-    poolAvailableCents,
+    afterFees,
   );
   return {
     currency: fairness.currency,
     collections,
     payouts: owed.map((payout, index) => ({
       ...payout,
-      // Safe: `releasableNow` returns one amount for each amount owed.
+      // Safe: `fees` and `releasable` hold one amount for each amount owed.
+      feeReservedCents: fees[index] as number,
       releasableCents: releasable[index] as number,
     })),
   };
+}
+
+function feeFor(funds: PayoutFunds, cents: number): number {
+  const fee = funds.payoutFee(cents);
+  if (!Number.isSafeInteger(fee) || fee < 0) {
+    throw new SettlementError(
+      `A payout fee must be a whole number of cents, zero or more, got ${fee}`,
+    );
+  }
+  return fee;
+}
+
+function assertPoolCash(cents: number): void {
+  assertCents(cents);
+  if (cents < 0) {
+    // A pool cannot hold less than nothing, so the ledger behind it is wrong.
+    throw new SettlementError(
+      `The pool's confirmed balance cannot be below zero, got ${cents}`,
+    );
+  }
 }
 
 /**
@@ -81,13 +118,7 @@ export function releasableNow(
   owedCents: readonly number[],
   poolAvailableCents: number,
 ): number[] {
-  assertCents(poolAvailableCents);
-  if (poolAvailableCents < 0) {
-    // A pool cannot hold less than nothing, so the ledger behind it is wrong.
-    throw new SettlementError(
-      `The pool's confirmed balance cannot be below zero, got ${poolAvailableCents}`,
-    );
-  }
+  assertPoolCash(poolAvailableCents);
   if (owedCents.some((cents) => !Number.isSafeInteger(cents) || cents <= 0)) {
     throw new SettlementError(
       "An amount owed must be a whole number above zero",

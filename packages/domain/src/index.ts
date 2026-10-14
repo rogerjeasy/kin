@@ -68,10 +68,15 @@ export {
   settlementPaidOut,
 } from "./postings.ts";
 export { settlePeriod } from "./settle-period.ts";
-export type { Settlement } from "./settle-period.ts";
+export type { Settlement, SettlementQuery } from "./settle-period.ts";
 export {
   SettlementError,
   planSettlement,
   releasableNow,
 } from "./settlement.ts";
-export type { Collection, Payout, SettlementPlan } from "./settlement.ts";
+export type {
+  Collection,
+  Payout,
+  PayoutFunds,
+  SettlementPlan,
+} from "./settlement.ts";
