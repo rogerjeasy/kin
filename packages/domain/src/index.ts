@@ -54,6 +54,7 @@ export {
   sumCents,
 } from "./money.ts";
 export type { Money } from "./money.ts";
+export { cashAvailableForPayouts } from "./payout-cash.ts";
 export { PeriodInputError, periodInputs } from "./period-inputs.ts";
 export type { PeriodQuery } from "./period-inputs.ts";
 export {

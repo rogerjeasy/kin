@@ -1,7 +1,6 @@
 import { calculateFairness } from "./fairness.ts";
 import type { FairnessInput, FairnessResult } from "./fairness.ts";
-import { POOL_CASH } from "./ledger-accounts.ts";
-import { accountBalance } from "./ledger.ts";
+import { cashAvailableForPayouts } from "./payout-cash.ts";
 import { periodInputs, type PeriodQuery } from "./period-inputs.ts";
 import { planSettlement, type SettlementPlan } from "./settlement.ts";
 
@@ -20,7 +19,7 @@ export type Settlement = {
 /**
  * Closes a period: snapshots the inputs from the ledger, measures every member
  * against the agreement and plans the movements, with payouts bounded by the
- * pool's confirmed cash.
+ * pool's confirmed cash less the bills it has already promised to pay.
  */
 export function settlePeriod(query: PeriodQuery): Settlement {
   const inputs = periodInputs(query);
@@ -30,6 +29,6 @@ export function settlePeriod(query: PeriodQuery): Settlement {
     agreementVersion: query.agreement.version,
     inputs,
     fairness,
-    plan: planSettlement(fairness, accountBalance(query.ledger, POOL_CASH)),
+    plan: planSettlement(fairness, cashAvailableForPayouts(query.ledger)),
   };
 }

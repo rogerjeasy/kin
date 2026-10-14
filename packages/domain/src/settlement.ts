@@ -37,7 +37,8 @@ export class SettlementError extends Error {
  * moves through the pool, so the plan holds exactly one movement for each
  * member who is not already level, and no smaller set could close the gap.
  *
- * Payouts are released only as far as the pool's confirmed balance allows.
+ * Payouts are released only as far as `poolAvailableCents` allows: the pool's
+ * confirmed balance less unpaid bills, from `cashAvailableForPayouts`.
  * When it cannot cover them all, it is shared among them in proportion to what
  * each is owed, and the rest waits for the collections to arrive.
  */

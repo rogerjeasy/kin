@@ -374,7 +374,7 @@ Settlement turns the calculation into movements. Money moves through the pool, s
 2. **Calculate.** The fairness function produces each member's position.
 3. **Propose.** Members who owe receive a top-up request. Members who are owed become payout proposals.
 4. **Approve.** The circle approves the settlement as a whole, under the agreement's rules.
-5. **Collect, then pay.** Payouts are released only as far as the pool's confirmed balance allows. Kin never pays out money that has not arrived. When the balance cannot cover every payout, it is shared among them in proportion to what each member is owed, by the same largest-remainder method, and the rest waits for collections.
+5. **Collect, then pay.** Payouts are released only as far as the pool's confirmed balance allows, less every approved bill not yet paid. Kin never pays out money that has not arrived, nor money already promised to a caregiver or a biller. When the balance cannot cover every payout, it is shared among them in proportion to what each member is owed, by the same largest-remainder method, and the rest waits for collections.
 6. **Close.** When every movement is confirmed or carried forward, the period is closed and the statement is produced. Unpaid amounts carry into the next period as `B_i`.
 
 ### 7.4 State machines
@@ -1429,6 +1429,7 @@ The hackathon needs a month of family life to be shown in minutes.
 | 22 | Property tests use a small seeded generator in `packages/domain` | A property-testing library | No new dependency for the first slice. Failures name the seed. A library with shrinking is worth proposing when inputs grow. |
 | 23 | Kin's own resources in a shared AWS account, with an explicit deny for the other projects | Partitions inside wick's table, bucket and user pool | Wick's roles hold table-wide and account-wide permissions, so a key prefix would isolate nothing. Separate idle resources cost nothing extra. |
 | 24 | A CDK bootstrap of Kin's own, qualifier `kin` | The account's default bootstrap, used by Hold | Kin's assets and deploy roles stay apart from Hold's, and Kin's CI role can reach only Kin's. |
+| 25 | Settlement payouts are bounded by pool cash less unpaid bills | Bounded by pool cash alone | A settlement must not spend money already owed to Amara or a biller. |
 
 ---
 

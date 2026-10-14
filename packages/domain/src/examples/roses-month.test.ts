@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { POOL_CASH } from "../ledger-accounts.ts";
 import { accountBalance, appendEntries } from "../ledger.ts";
-import { settlementCollected, settlementPaidOut } from "../postings.ts";
+import {
+  billApproved,
+  settlementCollected,
+  settlementPaidOut,
+} from "../postings.ts";
 import { settlePeriod } from "../settle-period.ts";
 import { rosesMonth } from "./roses-month.ts";
 
@@ -87,5 +91,31 @@ describe("Rose's month", () => {
     // Ana's 160.00 of cash plus her 76.00 of care make her 236.00 target.
     expect(accountBalance(settled, "member:ana")).toBe(16000);
     expect(accountBalance(settled, "care_credit:ana")).toBe(7600);
+  });
+
+  it("releases payouts only from cash not already promised to a bill", () => {
+    // The stairlift repair of day 20, approved but not yet paid, leaves
+    // 83.18 of the pool's 383.18 free for the settlement.
+    const withRepair = appendEntries(rosesMonth.ledger, [
+      billApproved(
+        {
+          id: "approval:bill-stairlift",
+          circleId: rosesMonth.ledger.circleId,
+          occurredOn: "2026-10-20",
+          period: rosesMonth.period,
+          description: "Stairlift repair approved",
+          source: { type: "approval", id: "bill-stairlift" },
+          currency: rosesMonth.ledger.currency,
+          simulated: true,
+        },
+        { payeeId: "stairlift", category: "repairs", cents: 30000 },
+      ),
+    ]);
+    const { payouts } = settlePeriod({ ...rosesMonth, ledger: withRepair }).plan;
+
+    expect(payouts.map((payout) => payout.cents)).toEqual([4000, 12600]);
+    expect(
+      payouts.reduce((sum, payout) => sum + payout.releasableCents, 0),
+    ).toBe(8318);
   });
 });
