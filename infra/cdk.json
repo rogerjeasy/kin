@@ -1,5 +1,5 @@
 {
-  "app": "node src/main.ts",
+  "app": "node --env-file-if-exists=../.env src/main.ts",
   "toolkitStackName": "KinCDKToolkit",
   "context": {
     "@aws-cdk/core:bootstrapQualifier": "kin",

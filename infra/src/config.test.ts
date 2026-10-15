@@ -38,6 +38,17 @@ describe("readConfig", () => {
     expect(read({ "kin:alertEmail": "b@example.com" }).alertEmail).toBe("b@example.com");
   });
 
+  it("leaves sign-in email to Cognito unless an SES sender is set", () => {
+    expect(read().senderEmail).toBeNull();
+    expect(read({}, { ...env, KIN_SENDER_EMAIL: "" }).senderEmail).toBeNull();
+    expect(read({}, { ...env, KIN_SENDER_EMAIL: "kin@example.com" }).senderEmail).toBe("kin@example.com");
+    expect(read({ "kin:senderEmail": "c@example.com" }).senderEmail).toBe("c@example.com");
+  });
+
+  it("refuses a sender that is not an email address", () => {
+    expect(() => read({}, { ...env, KIN_SENDER_EMAIL: "kin" })).toThrow(InfraConfigError);
+  });
+
   it("stops without an AWS account or an alert email", () => {
     expect(() => read({}, { KIN_ALERT_EMAIL: "a@example.com" })).toThrow(InfraConfigError);
     expect(() => read({}, { CDK_DEFAULT_ACCOUNT: "123456789012" })).toThrow(InfraConfigError);

@@ -15,6 +15,7 @@ const config: InfraConfig = {
   region: "us-east-1",
   availabilityZones: ["us-east-1a", "us-east-1b"],
   alertEmail: "alerts@example.com",
+  senderEmail: null,
   monthlyBudgetUsd: 150,
   databaseCapacityAcu: { min: 0, max: 4 },
   webOrigins: ["http://localhost:3000"],
@@ -97,7 +98,8 @@ describe("Kin's place in the shared account", () => {
       ...policyStatements(data, "AWS::KMS::Key", "KeyPolicy"),
     ];
 
-    expect(statements).toHaveLength(2 + 10 + 1 + 1);
+    // Two buckets, ten queues, two secrets (the database's and the Gmail app password) and the key.
+    expect(statements).toHaveLength(2 + 10 + 2 + 1);
     for (const statement of statements) {
       expect(statement).toEqual(expect.arrayContaining([neighbourDeny]));
     }
@@ -241,6 +243,75 @@ describe("sign-in", () => {
       GenerateSecret: false,
       AllowedOAuthFlows: ["code"],
       CallbackURLs: ["http://localhost:3000/auth/callback"],
+    });
+  });
+});
+
+describe("sign-in with a code by email", () => {
+  it("stays off, with Cognito's own sender and passwords only, until a Gmail sender is set", () => {
+    data.hasResourceProperties("AWS::Cognito::UserPool", {
+      LambdaConfig: Match.absent(),
+      Policies: Match.objectLike({ SignInPolicy: Match.absent() }),
+    });
+    data.hasResourceProperties("AWS::Cognito::UserPoolClient", {
+      ExplicitAuthFlows: Match.not(Match.arrayWith(["ALLOW_USER_AUTH"])),
+    });
+    data.resourceCountIs("AWS::Lambda::Function", 0);
+  });
+
+  it("keeps a secret slot for the Gmail app password, so it can be stored before the switch", () => {
+    data.hasResourceProperties("AWS::SecretsManager::Secret", { Name: "kin/gmail-app-password", KmsKeyId: Match.anyValue() });
+  });
+
+  describe("once a Gmail sender is set", () => {
+    const withSender = Template.fromStack(
+      buildKin(
+        // Bundling the function is skipped here. The synth and the deploy bundle it.
+        new App({ context: { ...cdkJson.context, "aws:cdk:bundling-stacks": [] } }),
+        { ...config, senderEmail: "kin.family@gmail.com" },
+      ).data,
+    );
+
+    it("hands every code to Kin's sender, encrypted with Kin's key, and offers the code beside the password", () => {
+      withSender.hasResourceProperties("AWS::Cognito::UserPool", {
+        EmailConfiguration: Match.absent(),
+        LambdaConfig: {
+          CustomEmailSender: { LambdaArn: Match.anyValue(), LambdaVersion: "V1_0" },
+          KMSKeyID: Match.anyValue(),
+        },
+        Policies: Match.objectLike({ SignInPolicy: { AllowedFirstAuthFactors: ["PASSWORD", "EMAIL_OTP"] } }),
+        MfaConfiguration: "OPTIONAL",
+      });
+      withSender.hasResourceProperties("AWS::Cognito::UserPoolClient", { ExplicitAuthFlows: Match.arrayWith(["ALLOW_USER_AUTH"]) });
+      withSender.hasResourceProperties("AWS::Cognito::UserPoolClient", { ExplicitAuthFlows: Match.arrayWith(["ALLOW_USER_SRP_AUTH"]) });
+    });
+
+    it("runs the sender with the address, the secret and the key, and no code in its settings", () => {
+      withSender.hasResourceProperties("AWS::Lambda::Function", {
+        FunctionName: "kin-sign-in-email",
+        Runtime: "nodejs22.x",
+        Environment: {
+          Variables: {
+            KIN_SENDER_EMAIL: "kin.family@gmail.com",
+            KIN_GMAIL_SECRET_ARN: Match.anyValue(),
+            KIN_CODES_KEY_ARN: Match.anyValue(),
+          },
+        },
+      });
+    });
+
+    it("lets the sender decrypt only codes encrypted for Kin's user pool", () => {
+      const statements = Object.values(withSender.findResources("AWS::IAM::Policy")).flatMap(
+        (policy) => policy["Properties"]["PolicyDocument"]["Statement"] as Record<string, unknown>[],
+      );
+      const decrypts = statements.filter((statement) => [statement["Action"]].flat().includes("kms:Decrypt"));
+      const unscoped = decrypts.filter((statement) => {
+        const condition = JSON.stringify(statement["Condition"] ?? {});
+        return !condition.includes("kms:EncryptionContext:userpool-id") && !condition.includes("kms:ViaService");
+      });
+
+      expect(decrypts.some((statement) => JSON.stringify(statement["Condition"]).includes("kms:EncryptionContext:userpool-id"))).toBe(true);
+      expect(unscoped).toEqual([]);
     });
   });
 });

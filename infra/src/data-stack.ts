@@ -35,7 +35,7 @@ export class DataStack extends Stack {
     createPrivateBucket(this, "Documents", { config, key, purpose: "documents" });
     createPrivateBucket(this, "Exports", { config, key, purpose: "exports" });
     new Queues(this, "Queues", { config, key, alerts: props.alerts });
-    new Identity(this, "Identity", config);
+    new Identity(this, "Identity", config, key);
 
     // Period closes, reminders and calling times are created in this group at
     // run time, one schedule per circle, in the circle's own timezone.

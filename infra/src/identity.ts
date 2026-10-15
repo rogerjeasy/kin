@@ -1,9 +1,11 @@
 import { ACCOUNT_TYPES } from "@kin/auth";
 import { Duration, RemovalPolicy } from "aws-cdk-lib";
 import * as cognito from "aws-cdk-lib/aws-cognito";
+import type * as kms from "aws-cdk-lib/aws-kms";
 import { Construct } from "constructs";
 
 import type { InfraConfig } from "./config.ts";
+import { SignInEmailSender, createGmailSecret } from "./sign-in-email.ts";
 
 const MIN_PASSWORD_LENGTH = 12;
 
@@ -17,9 +19,14 @@ export class Identity extends Construct {
   readonly webClient: cognito.UserPoolClient;
   readonly domain: cognito.UserPoolDomain;
 
-  constructor(scope: Construct, id: string, config: InfraConfig) {
+  constructor(scope: Construct, id: string, config: InfraConfig, key: kms.IKey) {
     super(scope, id);
 
+    const gmailSecret = createGmailSecret(this, config, key);
+    const sender =
+      config.senderEmail === null
+        ? null
+        : new SignInEmailSender(this, "SignInEmail", { senderEmail: config.senderEmail, secret: gmailSecret, key });
     this.userPool = new cognito.UserPool(this, "People", {
       userPoolName: "kin-people",
       featurePlan: cognito.FeaturePlan.ESSENTIALS,
@@ -43,6 +50,17 @@ export class Identity extends Construct {
       mfa: cognito.Mfa.OPTIONAL,
       mfaSecondFactor: { otp: true, sms: false },
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+      // A code by email is the sign-in the product describes (tech-stack
+      // section 9.1). Cognito emails codes only through SES or a custom
+      // sender, so it is on only once Kin's Gmail sender is configured.
+      // A password stays possible either way.
+      ...(sender === null
+        ? {}
+        : {
+            customSenderKmsKey: key,
+            lambdaTriggers: { customEmailSender: sender.function },
+            signInPolicy: { allowedFirstAuthFactors: { password: true, emailOtp: true } },
+          }),
       userVerification: {
         emailSubject: "Your Kin code",
         emailBody: "Your Kin code is {####}. If you did not ask for it, you can ignore this email.",
@@ -51,6 +69,8 @@ export class Identity extends Construct {
       deletionProtection: true,
       removalPolicy: RemovalPolicy.RETAIN,
     });
+
+    sender?.allowCodesOf(this.userPool.userPoolId, key);
 
     for (const accountType of ACCOUNT_TYPES) {
       new cognito.CfnUserPoolGroup(this, `group-${accountType}`, {
@@ -68,7 +88,8 @@ export class Identity extends Construct {
       userPoolClientName: "kin-web",
       // A public client with PKCE: no client secret to store or leak.
       generateSecret: false,
-      authFlows: { userSrp: true },
+      // USER_AUTH is the choice-based flow that offers the code by email.
+      authFlows: { userSrp: true, user: sender !== null },
       oAuth: {
         flows: { authorizationCodeGrant: true },
         scopes: [
