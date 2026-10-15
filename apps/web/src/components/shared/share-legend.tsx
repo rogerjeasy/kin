@@ -3,7 +3,7 @@ import type { Dictionary } from "@/i18n/dictionary";
 import { numberLocaleOf, type Locale } from "@/i18n/locales";
 import { cn } from "@/lib/utils";
 
-const dots = ["bg-share-1", "bg-share-2", "bg-share-3"] as const;
+import { shareDots } from "./share-colors";
 
 const alignments = { centre: "justify-center", start: "justify-start" } as const;
 
@@ -21,7 +21,7 @@ export function ShareLegend({ locale, people, align = "centre" }: ShareLegendPro
     <ul className={cn("flex flex-wrap gap-2", alignments[align])}>
       {exampleFamily.shares.map((share, index) => (
         <li key={share.member} className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1.5 text-sm">
-          <span aria-hidden="true" className={`size-2.5 rounded-full ${dots[index] ?? ""}`} />
+          <span aria-hidden="true" className={`size-2.5 rounded-full ${shareDots[index] ?? ""}`} />
           <strong className="font-semibold">{people[share.member]}</strong>
           <span className="text-muted-foreground tabular-nums">{percent.format(share.percent)}</span>
         </li>

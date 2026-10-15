@@ -460,6 +460,12 @@ Before any proposal can execute, the approval engine decides who must say yes.
 7. **No self-approval.** A member cannot be the only approver of a payment to themselves.
 8. **New payees** always need a person, and the whole circle is told.
 
+The agreement holds three amounts for these rules: the ceiling (rule 2), the large-payment threshold (rule 6) and the parent's threshold (rule 4). An amount equal to a threshold does not cross it. A proposal waits 72 hours for its approvals and then expires.
+
+**Counting the answers.** Each approval the plan asks for is a place that needs a yes from a different member: the parent's place takes the parent, the organizer's place an organizer, and the second approval an organizer or a contributor. A no from any member whose yes could fill a place rejects the proposal, even after a yes. When the payee is a member, they may say yes, but another organizer or contributor must say yes too, and that member's no also counts. Caregivers and observers never approve or reject. While the circle is paused, no proposal becomes approved, and answers already given count again once the pause lifts. A member holds one role per circle, so answers that give one member two roles are refused.
+
+`planApprovals` and `decideApprovals` in `packages/domain` implement this section, and the state machines of section 7.4 live in `state-machines.ts` beside them. A test pins every move the diagrams above draw, so a transition is added to the diagram, that test and the code together.
+
 **Evidence.** Each approval records how it was given:
 
 | Method         | Evidence stored                                                                 |
@@ -1033,6 +1039,8 @@ sequenceDiagram
 
 ### 12.1 Signing in
 
+Which first factors Cognito offers is set in `infra/src/identity.ts`: a password always, and a code by email once `KIN_SENDER_EMAIL` names the Gmail account that sends Kin's email (decision 34). Cognito then hands every code, encrypted with Kin's key, to the `kin-sign-in-email` function (`apps/worker/src/cognito-email-sender`), which may decrypt only codes bound to Kin's user pool and sends them through Gmail with an app password kept in Secrets Manager. How the web app does it today: `/auth/sign-in` draws a PKCE verifier, a state and a nonce, keeps them in a ten-minute cookie, and sends the browser to Cognito's `/oauth2/authorize`. `/auth/callback` checks the state, trades the code with the verifier, verifies both tokens (issuer, signature, expiry, app client, `token_use`, the nonce, the same `sub`) and sets the session cookies. `/auth/refresh` renews expired tokens with the refresh token, and `/auth/sign-out` (POST only) clears the cookies and ends the Cognito session. The proxy refuses `/dashboard` without a verified session, and every page under it verifies again before reading anything. The code is in `packages/auth`, `packages/config` and `apps/web/src/server/auth`.
+
 - **Amazon Cognito** holds one user pool for every person.
 - **Passwordless sign-in** by emailed code or passkey, through Cognito's managed pages.
 - **Multi-factor authentication** is required for organizers and for anyone approving a payout. Approving a payout asks for a fresh check even inside an active session.
@@ -1230,7 +1238,7 @@ Separate names are not enough on their own. Some of the other projects' principa
 
 **Order in a fresh account.** The bootstrap names the boundary, so it must exist first: deploy `KinGuardrails` with your own credentials (`cdk deploy KinGuardrails`), run the bootstrap script, then deploy the other stacks.
 
-**What the deny cannot cover.** Kin's bootstrap roles trust the whole account, as every CDK bootstrap does, so a principal with rights to assume any role can still use them. The boundary limits what such a deployment can do. Cognito user pools, Lambda functions, log groups and ECR repositories have no resource policy that a deny can sit in, or none that covers management actions. Wick's deploy role can change any of them. Closing that needs wick's role narrowed to `wick*` resources, in wick's repository. The account's Lambda concurrency quota is 10 and is shared, so Kin adds one function, the deploy-time custom resource that locks the VPC's default security group.
+**What the deny cannot cover.** Kin's bootstrap roles trust the whole account, as every CDK bootstrap does, so a principal with rights to assume any role can still use them. The boundary limits what such a deployment can do. Cognito user pools, Lambda functions, log groups and ECR repositories have no resource policy that a deny can sit in, or none that covers management actions. Wick's deploy role can change any of them. Closing that needs wick's role narrowed to `wick*` resources, in wick's repository. The account's Lambda concurrency quota is 10 and is shared, so Kin adds two functions: the deploy-time custom resource that locks the VPC's default security group, and the sign-in email sender once it is switched on. Neither reserves concurrency.
 
 The stacks are `KinGuardrails` (the boundary, deployed by a person), `KinOps` (alerts and budget), `KinNetwork`, `KinData` and `KinCi`, in `infra/`. Compute, the load balancer and the Fargate services, follows when the apps have images. Aurora's capacity is `kin:databaseCapacityAcu` in `cdk.json`: a minimum of 0 lets it pause while nobody is using it, and it is raised above zero for judging.
 
@@ -1401,6 +1409,7 @@ The hackathon needs a month of family life to be shown in minutes.
 - **Simulated billing cycles.** PayPal's sandbox bills subscriptions in real time. To show several months, the demo replays subscription payment events through the normal webhook path.
 - **Honest labelling.** Anything simulated is marked as simulated in the interface and in the ledger entry. Real sandbox transactions and simulated ones are never presented as the same thing.
 - **Reset.** One command returns the circle to its starting state.
+- **The demo dashboard, before circles exist.** `/dashboard` and its screens are behind sign-in. Every signed-in person sees Rose's October from Elena's seat, with their own name in the account menu. Every figure is computed by `packages/domain` from the example ledger (`rosesMonth`): balances, the settlement, and each proposal's approval plan and decision. The clock is fixed at the evening of 30 October 2026 in `apps/web/src/content/demo-circle/clock.ts`. Every button that would move money or change the circle answers that nothing moved and sends no request. When circles and the seeded circle exist, these screens read the same shapes from the API instead, and the circle-role check of section 12.3 decides what each person sees.
 
 ---
 
@@ -1434,6 +1443,14 @@ The hackathon needs a month of family life to be shown in minutes.
 | 24 | A CDK bootstrap of Kin's own, qualifier `kin` | The account's default bootstrap, used by Hold | Kin's assets and deploy roles stay apart from Hold's, and Kin's CI role can reach only Kin's. |
 | 25 | Settlement payouts are bounded by pool cash less unpaid bills | Bounded by pool cash alone | A settlement must not spend money already owed to Amara or a biller. |
 | 26 | Payout fees are posted to `fees` and reserved before a settlement releases payouts | Ignoring payout fees | The sandbox charged the pool 0.25 to send a payout. Unposted, the ledger's pool runs ahead of PayPal's; unreserved, paying everyone in full could overdraw the pool. |
+| 27 | One no from a member who could approve rejects a proposal | Majority or organizer-only rejection | Uncertain means stop. A sibling who objects to a payment from their parent's money should halt it, not be outvoted. |
+| 28 | Proposals expire after 72 hours | No expiry, or a per-circle setting | A stale approval should not pay a bill whose facts may have changed. One fixed window needs no configuration until a family asks for another. |
+| 29 | A pause holds a request above the ceiling as paused, not refused | Refusing it at once | The pause is rule 1. A held request is planned again when the pause lifts and refused then. |
+| 30 | The web session is Cognito's own tokens in httpOnly, secure, same-site cookies, verified with `aws-jwt-verify` in the proxy and again in every page | A session of Kin's own, signed with a server secret | No session store and no signing secret to manage. Every check is the same check the API will make. Every cookie is `__Host-`, so no other subdomain can plant one; `/auth/sign-out` also refuses a request from another origin. |
+| 31 | Sign-in through Cognito managed login, authorization code with PKCE, state and nonce | Kin's own sign-in form against the Cognito API | Kin hosts no credential form (tech-stack section 9.1). PKCE lets a public client with no secret trade the code safely. |
+| 32 | End-to-end tests sign in against a local stand-in for Cognito | A test user in the real pool, or a test-only bypass | The tests run the real flow and the real token checks with no switch in the app. The stand-in signs with its own key and lives only in `apps/web/e2e`. |
+| 33 | AG Grid Community for the ledger | AG Grid Enterprise on a trial key | The ledger needs sorting, selection and keyboard use, all in Community. An evaluation key would lapse on 13 November 2026, before judging, and may not be used in production. |
+| 34 | Cognito's email goes through a custom sender that sends from a Gmail account, switched on by a deploy-time setting (`KIN_SENDER_EMAIL`) | Amazon SES; Cognito's own sender | Cognito sends sign-in codes only through SES or a custom sender. SES production access was refused on 15 October 2026, and the project has no domain. Gmail signs what it sends, so codes pass the recipient's sender checks. A password stays possible if Gmail fails. |
 
 ---
 
@@ -1504,7 +1521,8 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 **Built and tested**
 
 - The ledger, the fairness calculation and settlement planning in sections 7.1 to 7.3, in `packages/domain`, with unit and property tests. Rose's month from the project description is a fixture there, and the public site's settlement figures are calculated from it.
+- The proposal, bill and execution state machines in section 7.4 and the approval engine in section 7.5, in `packages/domain`, with unit and property tests. The tests pin the transitions drawn in this document.
 
 **Not yet tested**
 
-- Everything else in this document. The state machines, the approval engine and execution in sections 7.4 to 7.6 are not built. The latency figure is a target. The diagrams describe the intended design.
+- Everything else in this document. Execution and the outbox in section 7.6 are not built. The latency figure is a target. The diagrams describe the intended design.

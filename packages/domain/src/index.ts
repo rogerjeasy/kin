@@ -1,6 +1,33 @@
 export { BASIS_POINTS } from "./agreement.ts";
-export type { Agreement, CareTerms, Share } from "./agreement.ts";
+export type {
+  Agreement,
+  ApprovalTerms,
+  CareTerms,
+  Share,
+} from "./agreement.ts";
 export { AllocationError, allocate } from "./allocate.ts";
+export { decideApprovals } from "./approval-decision.ts";
+export type {
+  ApprovalDecision,
+  ApprovalTally,
+  ApprovalVote,
+  PendingPlan,
+} from "./approval-decision.ts";
+export { ApprovalError } from "./approval-error.ts";
+export {
+  APPROVAL_WINDOW_HOURS,
+  INDEPENDENT_APPROVER_ROLES,
+  PROPOSAL_KINDS,
+  planApprovals,
+} from "./approval-plan.ts";
+export type {
+  ApprovalPlan,
+  ApprovalRequest,
+  ApprovalSlot,
+  AutoPayRule,
+  Payee,
+  ProposalKind,
+} from "./approval-plan.ts";
 export { CareValueError, careValueCents } from "./care.ts";
 export { rosesMonth } from "./examples/roses-month.ts";
 export { FairnessError, calculateFairness } from "./fairness.ts";
@@ -54,6 +81,7 @@ export {
   sumCents,
 } from "./money.ts";
 export type { Money } from "./money.ts";
+export { PAUSE_HOURS, isPaused, pauseEndsAt } from "./pause.ts";
 export { cashAvailableForPayouts } from "./payout-cash.ts";
 export { PeriodInputError, periodInputs } from "./period-inputs.ts";
 export type { PeriodQuery } from "./period-inputs.ts";
@@ -67,6 +95,8 @@ export {
   settlementCollected,
   settlementPaidOut,
 } from "./postings.ts";
+export { CIRCLE_ROLES, PARENT_LEVELS } from "./roles.ts";
+export type { CircleRole, ParentLevel } from "./roles.ts";
 export { settlePeriod } from "./settle-period.ts";
 export type { Settlement, SettlementQuery } from "./settle-period.ts";
 export {
@@ -80,3 +110,18 @@ export type {
   PayoutFunds,
   SettlementPlan,
 } from "./settlement.ts";
+export {
+  BILL_TRANSITIONS,
+  EXECUTION_TRANSITIONS,
+  PROPOSAL_TRANSITIONS,
+  TransitionError,
+  billMachine,
+  executionMachine,
+  proposalMachine,
+} from "./state-machines.ts";
+export type {
+  BillState,
+  ExecutionState,
+  ProposalState,
+  StateMachine,
+} from "./state-machines.ts";

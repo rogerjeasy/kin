@@ -16,10 +16,21 @@ export type CareTerms = {
   readonly paidInCash: boolean;
 };
 
+/** The amounts at which the approval engine asks for more, in cents. */
+export type ApprovalTerms = {
+  /** No single movement may be above this, whoever approves it. */
+  readonly ceilingCents: number;
+  /** Above this, two members must agree. */
+  readonly secondApprovalAboveCents: number;
+  /** Above this, a parent who decides must say yes. */
+  readonly parentDecidesAboveCents: number;
+};
+
 /** The part of a circle's versioned agreement that the money core reads. */
 export type Agreement = {
   readonly version: number;
   readonly shares: readonly Share[];
   /** `null` when the family has not agreed that care hours count. */
   readonly care: CareTerms | null;
+  readonly approvals: ApprovalTerms;
 };

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { dashboardRoutes, type DashboardSection } from "../content/dashboard-routes";
 import { routes, type RouteKey } from "../content/site-routes";
 import { getDictionary, type Dictionary } from "./dictionary";
 import { defaultLocale, isLocale, locales, type Locale } from "./locales";
@@ -33,5 +34,20 @@ export async function pageMetadata(params: LocaleParams, page: MetaKey & RouteKe
       canonical: localizedPath(locale, path),
       languages: { ...languages, "x-default": localizedPath(defaultLocale, path) },
     },
+  };
+}
+
+type DashboardMetaKey = keyof Dictionary["dashboard"]["meta"];
+
+/**
+ * Title and description for one of a circle's own screens. They belong to
+ * the people in the circle, so search engines are asked not to list them.
+ */
+export async function dashboardMetadata(params: LocaleParams, section: DashboardMetaKey & DashboardSection): Promise<Metadata> {
+  const { locale, dictionary } = await pageContext(params);
+  return {
+    ...dictionary.dashboard.meta[section],
+    robots: { index: false, follow: false },
+    alternates: { canonical: localizedPath(locale, dashboardRoutes[section]) },
   };
 }

@@ -1,2 +1,10 @@
 export { ACCOUNT_TYPES } from "./account-types.ts";
 export type { AccountType } from "./account-types.ts";
+export { AuthError } from "./auth-error.ts";
+export type { AuthErrorReason } from "./auth-error.ts";
+export { CALLBACK_PATH, authorizeUrl, callbackUrl, exchangeCode, logoutUrl, parseTokenSet, refreshTokens } from "./oauth.ts";
+export type { Fetch, TokenSet } from "./oauth.ts";
+export { createSignInSecrets, pkceChallenge } from "./pkce.ts";
+export type { RandomBytes, SignInSecrets } from "./pkce.ts";
+export { createSessionVerifier } from "./session.ts";
+export type { Session, SessionTokens, SessionVerifier } from "./session.ts";

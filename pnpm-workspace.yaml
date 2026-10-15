@@ -2,3 +2,7 @@ packages:
   - apps/*
   - packages/*
   - infra
+# Dependency install scripts stay off. esbuild finds its binary through its
+# platform package without its own install script.
+allowBuilds:
+  esbuild: false

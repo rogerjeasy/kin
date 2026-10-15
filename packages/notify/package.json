@@ -7,6 +7,14 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run",
+    "gmail:test": "node --env-file=../../.env scripts/send-test-email.ts"
+  },
+  "dependencies": {
+    "nodemailer": "10.0.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/nodemailer": "8.0.2"
   }
 }

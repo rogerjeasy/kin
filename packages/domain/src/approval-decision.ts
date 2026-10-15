@@ -1,0 +1,109 @@
+import { ApprovalError } from "./approval-error.ts";
+import {
+  INDEPENDENT_APPROVER_ROLES,
+  type ApprovalPlan,
+  type ApprovalSlot,
+} from "./approval-plan.ts";
+import { isPaused } from "./pause.ts";
+import type { CircleRole } from "./roles.ts";
+
+/** One member's recorded answer to a proposal. */
+export type ApprovalVote = {
+  readonly memberId: string;
+  /** The member's role in the circle when they answered. */
+  readonly role: CircleRole;
+  readonly decision: "approve" | "reject";
+};
+
+export type PendingPlan = Extract<ApprovalPlan, { outcome: "needs_approval" }>;
+
+export type ApprovalTally = {
+  readonly plan: PendingPlan;
+  readonly votes: readonly ApprovalVote[];
+  /** When the circle's pause lifts, or `null` when it is not paused. */
+  readonly pausedUntil: Date | null;
+  readonly now: Date;
+};
+
+export type ApprovalDecision =
+  | "approved"
+  | "rejected"
+  | "expired"
+  | "paused"
+  | "pending";
+
+/**
+ * Where a proposal stands, given every answer recorded so far. Each slot in
+ * the plan needs a yes from a different member. A no from anyone whose yes
+ * could count rejects the proposal. The member being paid can say yes, but
+ * another member must say yes as well.
+ *
+ * A member holds one role in a circle, so answers that give one member two
+ * roles are refused rather than read in whichever order they arrive.
+ */
+export function decideApprovals(tally: ApprovalTally): ApprovalDecision {
+  assertOneRoleEach(tally.votes);
+  const { plan, now } = tally;
+  if (isPaused(tally.pausedUntil, now)) return "paused";
+  if (now.getTime() >= plan.expiresAt.getTime()) return "expired";
+
+  const counted = tally.votes.filter((vote) => canDecide(plan, vote));
+  if (counted.some((vote) => vote.decision === "reject")) return "rejected";
+
+  const approvers = distinctApprovers(counted);
+  const filled = canFill(plan.slots, approvers);
+  const independent =
+    plan.payeeMemberId === null ||
+    approvers.some((approver) => approver.memberId !== plan.payeeMemberId);
+  return filled && independent ? "approved" : "pending";
+}
+
+function assertOneRoleEach(votes: readonly ApprovalVote[]): void {
+  const roles = new Map<string, CircleRole>();
+  for (const { memberId, role } of votes) {
+    const known = roles.get(memberId);
+    if (known !== undefined && known !== role) {
+      throw new ApprovalError(`Member ${memberId} answered as ${known} and as ${role}`);
+    }
+    roles.set(memberId, role);
+  }
+}
+
+function canDecide(plan: PendingPlan, vote: ApprovalVote): boolean {
+  if (plan.slots.some((slot) => slot.roles.includes(vote.role))) return true;
+  // When the payee is a member, someone else must say yes, so any member who
+  // could give that independent yes also has a say.
+  return (
+    plan.payeeMemberId !== null &&
+    vote.memberId !== plan.payeeMemberId &&
+    includesRole(INDEPENDENT_APPROVER_ROLES, vote.role)
+  );
+}
+
+function includesRole(roles: readonly CircleRole[], role: CircleRole): boolean {
+  return roles.includes(role);
+}
+
+type Approver = { readonly memberId: string; readonly role: CircleRole };
+
+function distinctApprovers(votes: readonly ApprovalVote[]): Approver[] {
+  const byMember = new Map<string, Approver>();
+  for (const { memberId, role } of votes) byMember.set(memberId, { memberId, role });
+  return [...byMember.values()];
+}
+
+// Each slot takes a different approver. Plans hold at most a few slots and a
+// circle a few members, so trying every assignment is cheap and never misses
+// one that a greedy choice would.
+function canFill(
+  slots: readonly ApprovalSlot[],
+  approvers: readonly Approver[],
+): boolean {
+  const [slot, ...rest] = slots;
+  if (slot === undefined) return true;
+  return approvers.some(
+    (approver, index) =>
+      slot.roles.includes(approver.role) &&
+      canFill(rest, approvers.filter((_, other) => other !== index)),
+  );
+}

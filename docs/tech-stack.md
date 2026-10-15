@@ -14,7 +14,7 @@ This document says what to build with and why. It is not a design or an implemen
 | Repository | One pnpm workspace: `apps/*`, `packages/*` and `infra` |
 | Lint | ESLint with typescript-eslint, strict preset |
 | Web app | Next.js, React, Tailwind CSS, shadcn/ui, installable to the home screen |
-| Data grid | AG Grid for the family ledger and audit screens |
+| Data grid | AG Grid Community for the family ledger and audit screens |
 | Checkout | PayPal JavaScript SDK v6 |
 | PayPal server side | PayPal Agent Toolkit and sandbox MCP server, plus direct REST calls |
 | AI model | Claude Opus 5.5 (`claude-opus-5-5`) through the Anthropic TypeScript SDK |

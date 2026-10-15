@@ -9,6 +9,13 @@ export type InfraConfig = {
   readonly availabilityZones: readonly string[];
   /** Where budget and dead-letter alerts are sent. */
   readonly alertEmail: string;
+  /**
+   * The Gmail account that sends Kin's sign-in email, or `null` to keep
+   * Cognito's own sender. Setting it routes every Cognito email through
+   * Kin's Gmail sender and turns on sign-in with a code by email. Set it only
+   * after the app password is stored (`gmail:store`), or no code arrives.
+   */
+  readonly senderEmail: string | null;
   readonly monthlyBudgetUsd: number;
   /** Aurora Serverless v2 capacity. A minimum of zero lets it pause. */
   readonly databaseCapacityAcu: { readonly min: number; readonly max: number };
@@ -53,7 +60,8 @@ export function readConfig({ context, env }: Source): InfraConfig {
     account: account(env["CDK_DEFAULT_ACCOUNT"]),
     region,
     availabilityZones: [`${region}a`, `${region}b`],
-    alertEmail: email(context("kin:alertEmail") ?? env["KIN_ALERT_EMAIL"]),
+    alertEmail: email(context("kin:alertEmail") ?? env["KIN_ALERT_EMAIL"], ALERT_EMAIL_HINT),
+    senderEmail: optionalEmail(context("kin:senderEmail") ?? env["KIN_SENDER_EMAIL"], SENDER_EMAIL_HINT),
     monthlyBudgetUsd: positive(context("kin:monthlyBudgetUsd"), "kin:monthlyBudgetUsd"),
     databaseCapacityAcu: acuRange(capacity),
     webOrigins: texts(context("kin:webOrigins"), "kin:webOrigins"),
@@ -72,13 +80,19 @@ function account(value: unknown): string {
   return value;
 }
 
-function email(value: unknown): string {
+const ALERT_EMAIL_HINT = "Set an alert email with -c kin:alertEmail=you@example.com or KIN_ALERT_EMAIL.";
+const SENDER_EMAIL_HINT = "The sender email (kin:senderEmail or KIN_SENDER_EMAIL) must be an email address, or unset.";
+
+function email(value: unknown, hint: string): string {
   if (typeof value !== "string" || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) {
-    throw new InfraConfigError(
-      "Set an alert email with -c kin:alertEmail=you@example.com or KIN_ALERT_EMAIL.",
-    );
+    throw new InfraConfigError(hint);
   }
   return value;
+}
+
+function optionalEmail(value: unknown, hint: string): string | null {
+  if (value === undefined || value === "") return null;
+  return email(value, hint);
 }
 
 function text(value: unknown, key: string): string {

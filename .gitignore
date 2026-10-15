@@ -10,6 +10,8 @@ cdk.out/
 # Test output
 coverage/
 playwright-report/
+# Signed-in browser state from the end-to-end tests. It holds session tokens.
+apps/web/e2e/.auth/
 test-results/
 
 # Secrets and local configuration. Never commit these.

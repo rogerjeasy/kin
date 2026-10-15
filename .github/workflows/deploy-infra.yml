@@ -44,3 +44,6 @@ jobs:
       - run: pnpm --filter @kin/infra exec cdk deploy KinOps KinNetwork KinData KinCi --require-approval never
         env:
           KIN_ALERT_EMAIL: ${{ secrets.KIN_ALERT_EMAIL }}
+          # Unset, Cognito keeps its own sender and password-only sign-in.
+          # Set, sign-in codes go by email through SES (infra/src/config.ts).
+          KIN_SENDER_EMAIL: ${{ secrets.KIN_SENDER_EMAIL }}
