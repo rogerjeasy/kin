@@ -1,12 +1,12 @@
-import { Avatar } from "@/components/shared/avatar";
-import { shareColor } from "@/components/shared/share-colors";
+import { MemberAvatar } from "@/components/dashboard/ui/member-avatar";
 import { StatusPill, type PillTone } from "@/components/dashboard/ui/status-pill";
-import type { Sibling } from "@/content/example-family";
-import { siblingPortraits } from "@/content/sibling-portraits";
+import { shareColorAt } from "@/components/shared/share-colors";
 
 type MemberCardProps = {
-  memberId: Sibling;
+  memberId: string;
   name: string;
+  portrait: string | null;
+  shareIndex: number;
   share: string;
   /** Paid in, own pocket, care time, then the total and the target. */
   lines: readonly { label: string; value: string; strong?: boolean }[];
@@ -15,17 +15,17 @@ type MemberCardProps = {
 };
 
 /** One sibling's month: what they gave, what their share asked, and where that leaves them. */
-export function MemberCard({ memberId, name, share, lines, position, explanation }: MemberCardProps) {
+export function MemberCard({ memberId, name, portrait, shareIndex, share, lines, position, explanation }: MemberCardProps) {
   return (
     <article aria-labelledby={`member-${memberId}`} className="flex min-w-0 flex-col rounded-2xl border bg-card p-5 shadow-xs sm:p-6">
       <div className="flex items-center gap-3">
-        <Avatar src={siblingPortraits[memberId]} size="md" />
+        <MemberAvatar portrait={portrait} name={name} size="md" />
         <div className="min-w-0 flex-1">
           <h3 id={`member-${memberId}`} className="truncate text-lg font-semibold">
             {name}
           </h3>
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span aria-hidden="true" className={`size-2.5 rounded-full ${shareColor(memberId).dot}`} />
+            <span aria-hidden="true" className={`size-2.5 rounded-full ${shareColorAt(shareIndex).dot}`} />
             {share}
           </p>
         </div>

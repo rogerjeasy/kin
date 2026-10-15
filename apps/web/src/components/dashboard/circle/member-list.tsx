@@ -1,10 +1,9 @@
-import type { StaticImageData } from "next/image";
-
 import { Person } from "@/components/dashboard/ui/person";
 
 export type MemberItem = {
   id: string;
-  portrait: StaticImageData;
+  /** The portrait key the member's row holds, or `null` for initials. */
+  portrait: string | null;
   name: string;
   role: string;
   /** "30% share", for members who hold one. */

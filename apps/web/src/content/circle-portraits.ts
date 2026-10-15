@@ -14,3 +14,10 @@ export const circlePortraits: Record<CircleMember, StaticImageData> = {
   ...siblingPortraits,
   amara,
 };
+
+const isCircleMember = (key: string): key is CircleMember => Object.hasOwn(circlePortraits, key);
+
+/** The portrait a member's row names, or `null` to draw their initials. */
+export function portraitOf(key: string | null): StaticImageData | null {
+  return key !== null && isCircleMember(key) ? circlePortraits[key] : null;
+}

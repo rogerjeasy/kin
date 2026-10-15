@@ -19,7 +19,11 @@ ARG TARGETARCH
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
-    HOSTNAME=0.0.0.0
+    HOSTNAME=0.0.0.0 \
+    NODE_EXTRA_CA_CERTS=/usr/local/share/rds-global-bundle.pem
+# Aurora's certificates are signed by Amazon RDS's own authorities, which
+# Node does not trust by default. TLS to the database is always verified.
+ADD --chmod=644 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /usr/local/share/rds-global-bundle.pem
 WORKDIR /app
 # Next's standalone output: the server and only the files it needs.
 COPY --from=build --chown=node:node /repo/apps/web/.next/standalone ./

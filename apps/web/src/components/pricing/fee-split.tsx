@@ -1,5 +1,6 @@
 import { ShareBar } from "@/components/shared/share-bar";
 import { ShareLegend } from "@/components/shared/share-legend";
+import { exampleShares } from "@/content/example-family";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 
@@ -18,8 +19,8 @@ export function FeeSplit({ locale, copy, people }: FeeSplitProps) {
         <p className="mt-3 max-w-xl text-lg text-muted-foreground">{copy.text}</p>
       </div>
       <div className="min-w-0 space-y-4">
-        <ShareBar label={copy.barLabel} />
-        <ShareLegend locale={locale} people={people} align="start" />
+        <ShareBar label={copy.barLabel} shares={exampleShares(people)} />
+        <ShareLegend locale={locale} shares={exampleShares(people)} align="start" />
       </div>
     </div>
   );

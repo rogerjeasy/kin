@@ -3,6 +3,7 @@
 import { MenuIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 
+import { DemoButton } from "@/components/shared/demo-button";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { mainNav, routes } from "@/content/site-routes";
@@ -56,6 +57,7 @@ export function MobileMenu({ locale, common, className }: MobileMenuProps) {
             <Link href={localizedPath(locale, routes.start)}>{nav.startLong}</Link>
           </Button>
         </SheetClose>
+        <DemoButton locale={locale} label={nav.demo} className="mt-3" />
         <div className="mt-8 flex flex-col items-start gap-4">
           <LanguageList locale={locale} label={common.language.label} />
           <ThemeSelect labels={common.theme} />

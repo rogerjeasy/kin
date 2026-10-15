@@ -5,6 +5,8 @@ import type * as sns from "aws-cdk-lib/aws-sns";
 import type { Construct } from "constructs";
 
 import type { InfraConfig } from "./config.ts";
+import { DatabaseAccess } from "./database-access.ts";
+import { createDemoSessionKey } from "./demo-session-key.ts";
 import { Database } from "./database.ts";
 import { createEncryptionKey } from "./encryption-key.ts";
 import { Identity } from "./identity.ts";
@@ -26,12 +28,20 @@ export class DataStack extends Stack {
     super(scope, id, props);
 
     const key = createEncryptionKey(this, config);
-    new Database(this, "Database", {
+    const database = new Database(this, "Database", {
       config,
       vpc: props.vpc,
       servicesSecurityGroup: props.servicesSecurityGroup,
       key,
     });
+    new DatabaseAccess(this, "DatabaseAccess", {
+      config,
+      cluster: database.cluster,
+      vpc: props.vpc,
+      servicesSecurityGroup: props.servicesSecurityGroup,
+      key,
+    });
+    createDemoSessionKey(this, config, key);
     createPrivateBucket(this, "Documents", { config, key, purpose: "documents" });
     createPrivateBucket(this, "Exports", { config, key, purpose: "exports" });
     new Queues(this, "Queues", { config, key, alerts: props.alerts });

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { ShieldCheckIcon } from "lucide-react";
 import Link from "next/link";
+import { sumCents } from "@kin/domain";
 
 import { ActivityPanel } from "@/components/dashboard/overview/activity-panel";
 import { AttentionPanel } from "@/components/dashboard/overview/attention-panel";
@@ -9,28 +11,28 @@ import { RoseHeardPanel } from "@/components/dashboard/overview/rose-heard-panel
 import { SafetyPanel } from "@/components/dashboard/overview/safety-panel";
 import { SpendingPanel } from "@/components/dashboard/overview/spending-panel";
 import { StatRow } from "@/components/dashboard/overview/stat-row";
+import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { activityItems } from "@/components/dashboard/words/activity-items";
 import { attentionItems } from "@/components/dashboard/words/attention-items";
 import { givenRows } from "@/components/dashboard/words/given-rows";
-import { categoryName, nameOf, payeeName } from "@/components/dashboard/words/names";
 import { planLabel } from "@/components/dashboard/words/plan-words";
 import { ButtonLink } from "@/components/shared/button-link";
 import { Button } from "@/components/ui/button";
 import { dashboardRoutes } from "@/content/dashboard-routes";
-import { falseDemand } from "@/content/demo-circle/claim-check";
-import { DEMO_NOW } from "@/content/demo-circle/clock";
-import { memberFairness, monthSettlement } from "@/content/demo-circle/fairness";
-import { circleFormatters } from "@/content/demo-circle/format";
-import { roseHeard } from "@/content/demo-circle/narrations";
-import { waitingProposals } from "@/content/demo-circle/proposal-view";
-import { monthTotals, recordEntries, spendingByCategory } from "@/content/demo-circle/record";
-import { upcomingBills } from "@/content/demo-circle/upcoming";
+import { memberFairness, periodSettlement } from "@/content/circle/fairness";
+import { circleFormatters } from "@/content/circle/format";
+import { circleNames } from "@/content/circle/names";
+import { openPeriod } from "@/content/circle/period";
+import { waitingProposals } from "@/content/circle/proposal-view";
+import { monthTotals, recordEntries, spendingByCategory } from "@/content/circle/record";
+import { latestClaimCheck, parentHeard } from "@/content/circle/safety";
+import { upcomingBills } from "@/content/circle/upcoming";
+import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
-import { dashboardContext } from "@/server/dashboard-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
-import { sumCents } from "@kin/domain";
+import { dashboardContext } from "@/server/dashboard-context";
 
 const RECENT_ENTRIES = 8;
 
@@ -39,24 +41,34 @@ export function generateMetadata({ params }: PageProps<"/[locale]/dashboard">): 
 }
 
 export default async function OverviewPage({ params }: PageProps<"/[locale]/dashboard">) {
-  const { locale, dictionary, session } = await dashboardContext(params, "overview");
-  const { overview, common } = dictionary.dashboard;
-  const format = circleFormatters(locale);
+  const { locale, dictionary, viewer, circle } = await dashboardContext(params, "overview");
+  const { overview, common, empty } = dictionary.dashboard;
+  const format = circleFormatters(locale, circle);
+  const names = circleNames(circle, dictionary);
   const path = (route: string) => localizedPath(locale, route);
-  const name = (id: Parameters<typeof nameOf>[1]) => nameOf(dictionary, id);
+  const period = openPeriod(circle);
+  const slots = circleSlots(circle, format);
+  const { month } = slots;
+  const greeted = viewer.kind === "person" ? viewer.session.name : names.member(circle.viewer.memberId);
+  const portraits = new Map(circle.members.map((member) => [member.id, member.portrait]));
 
-  const totals = monthTotals();
-  const waiting = waitingProposals();
-  const spending = spendingByCategory();
-  const settlement = monthSettlement();
-  const contributors = memberFairness(settlement).filter((member) => member.input.paidInCents > 0);
+  const totals = monthTotals(circle, period);
+  const waiting = waitingProposals(circle);
+  const spending = spendingByCategory(circle, period);
+  const settlement = periodSettlement(circle, period);
+  const fairness = settlement ? memberFairness(settlement, circle) : [];
+  const contributors = fairness.filter((member) => member.input.paidInCents > 0);
+  const check = latestClaimCheck(circle);
+  const heard = parentHeard(circle);
+  const activity = recordEntries(circle).slice(0, RECENT_ENTRIES);
+  const upcoming = upcomingBills(circle);
 
   return (
     <>
       <PageHeader
-        eyebrow={format.longDay(DEMO_NOW)}
-        title={fill(overview.greeting, { name: session.name })}
-        lede={overview.lede}
+        eyebrow={format.longDay(circle.circle.now)}
+        title={fill(overview.greeting, { name: greeted })}
+        lede={fill(overview.lede, slots)}
         actions={
           <>
             <ButtonLink href={path(dashboardRoutes.approvals)} size="sm">
@@ -69,12 +81,15 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
         }
       />
       <StatRow
-        label={overview.stats.label}
+        label={fill(overview.stats.label, slots)}
         pool={{ label: overview.stats.pool.label, value: format.money(totals.poolCents), note: overview.stats.pool.note }}
         paidIn={{
           label: overview.stats.paidIn.label,
           value: format.money(totals.paidInCents),
-          note: fill(overview.stats.paidIn.note, { names: format.allOf(contributors.map((member) => name(member.memberId))) }),
+          note:
+            contributors.length > 0
+              ? fill(overview.stats.paidIn.note, { names: format.allOf(contributors.map((member) => names.member(member.memberId))) })
+              : overview.stats.paidIn.none,
         }}
         paidOut={{
           label: overview.stats.paidOut.label,
@@ -88,68 +103,104 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
         }}
       />
       <div className="grid gap-6 lg:grid-cols-3">
-        <AttentionPanel
-          className="lg:col-span-2"
-          title={overview.attention.title}
-          link={{ href: path(dashboardRoutes.approvals), label: overview.attention.link }}
-          items={attentionItems(locale, dictionary, format, waiting)}
-        />
-        <SafetyPanel
-          title={overview.safety.title}
-          text={fill(overview.safety.text, {
-            claimed: format.money(falseDemand.claimedCents),
-            paid: format.money(falseDemand.lastPaid.cents),
-            paidDay: format.day(falseDemand.lastPaid.day),
-            alerted: format.allOf(falseDemand.alerted.map(name)),
-          })}
-          rule={overview.safety.rule}
-          link={{ href: `${path(dashboardRoutes.bills)}#checks`, label: overview.safety.link }}
-        />
-      </div>
-      <div className="grid gap-6 lg:grid-cols-3">
-        <FairnessPanel
-          className="lg:col-span-2"
-          title={overview.fairness.title}
-          description={overview.fairness.text}
-          link={{ href: path(dashboardRoutes.fairness), label: overview.fairness.link }}
-          rows={givenRows(dictionary, format, memberFairness(settlement))}
-          totals={[
-            { label: dictionary.dashboard.fairness.members.given, value: format.money(settlement.fairness.totalContributedCents) },
-            { label: dictionary.dashboard.fairness.settlement.collections, value: format.money(sumCents(settlement.plan.collections.map((each) => each.cents))) },
-            { label: dictionary.dashboard.fairness.settlement.payouts, value: format.money(sumCents(settlement.plan.payouts.map((each) => each.cents))) },
-          ]}
-        />
-        <RoseHeardPanel
-          title={overview.heard.title}
-          description={overview.heard.text}
-          lines={roseHeard().map((line) => ({ key: line.key, day: format.day(line.day), text: overview.heard.lines[line.key], amount: format.money(line.cents) }))}
-        />
-      </div>
-      <div className="grid gap-6 lg:grid-cols-3">
-        <ActivityPanel
-          className="lg:col-span-2"
-          title={overview.activity.title}
-          link={{ href: path(dashboardRoutes.record), label: overview.activity.link }}
-          items={activityItems(dictionary, format, recordEntries().slice(0, RECENT_ENTRIES))}
-        />
-        <div className="grid content-start gap-6">
-          <SpendingPanel
-            title={overview.spending.title}
-            description={overview.spending.text}
-            total={fill(overview.spending.total, { amount: format.money(sumCents(spending.map((row) => row.cents))) })}
-            rows={spending.map((row) => ({ ...row, name: categoryName(dictionary, row.category), amount: format.money(row.cents) }))}
+        {waiting.length > 0 ? (
+          <AttentionPanel
+            className="lg:col-span-2"
+            title={overview.attention.title}
+            link={{ href: path(dashboardRoutes.approvals), label: overview.attention.link }}
+            items={attentionItems(locale, dictionary, names, format, waiting, month)}
           />
-          <ComingUpPanel
-            title={overview.comingUp.title}
-            link={{ href: path(dashboardRoutes.bills), label: overview.comingUp.link }}
-            items={upcomingBills().map((bill) => ({
-              id: `${bill.payeeId}-${bill.due}`,
-              day: format.day(bill.due),
-              payee: payeeName(dictionary, bill.payeeId),
-              approval: common.planLabels[planLabel(bill.plan)],
-              amount: format.money(bill.expectedCents),
+        ) : (
+          <EmptyPanel className="lg:col-span-2" title={overview.attention.title} text={empty.attention} />
+        )}
+        {check && check.claimedCents !== null && check.lastPaid ? (
+          <SafetyPanel
+            title={overview.safety.title}
+            text={fill(overview.safety.text, {
+              parent: slots.parent,
+              payee: check.payeeId === null ? "" : names.payee(check.payeeId),
+              claimed: format.money(check.claimedCents),
+              paid: format.money(check.lastPaid.cents),
+              paidDay: format.day(check.lastPaid.day),
+              alerted: format.allOf(check.alerted.map(names.member)),
+            })}
+            rule={overview.safety.rule}
+            link={{ href: `${path(dashboardRoutes.bills)}#checks`, label: overview.safety.link }}
+          />
+        ) : (
+          <EmptyPanel title={empty.safety.title} text={empty.safety.text} icon={ShieldCheckIcon} />
+        )}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {settlement && fairness.length > 0 ? (
+          <FairnessPanel
+            className="lg:col-span-2"
+            title={fill(overview.fairness.title, slots)}
+            description={overview.fairness.text}
+            link={{ href: path(dashboardRoutes.fairness), label: overview.fairness.link }}
+            rows={givenRows(dictionary, names, format, fairness, (id) => portraits.get(id) ?? null)}
+            totals={[
+              { label: dictionary.dashboard.fairness.members.given, value: format.money(settlement.fairness.totalContributedCents) },
+              { label: dictionary.dashboard.fairness.settlement.collections, value: format.money(sumCents(settlement.plan.collections.map((each) => each.cents))) },
+              { label: dictionary.dashboard.fairness.settlement.payouts, value: format.money(sumCents(settlement.plan.payouts.map((each) => each.cents))) },
+            ]}
+          />
+        ) : (
+          <EmptyPanel className="lg:col-span-2" title={fill(overview.fairness.title, slots)} text={empty.fairness} />
+        )}
+        {heard.length > 0 ? (
+          <RoseHeardPanel
+            title={fill(overview.heard.title, slots)}
+            description={fill(overview.heard.text, slots)}
+            lines={heard.map((line) => ({
+              key: line.id,
+              day: format.day(line.day),
+              // {amount} stays a slot, so the panel can speak it in its own style.
+              text: fill(overview.heard.lines[line.topic], { payee: names.subject(line.subject), amount: "{amount}" }),
+              amount: format.money(line.cents),
             }))}
           />
+        ) : (
+          <EmptyPanel title={fill(overview.heard.title, slots)} text={fill(empty.heard, slots)} />
+        )}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {activity.length > 0 ? (
+          <ActivityPanel
+            className="lg:col-span-2"
+            title={overview.activity.title}
+            link={{ href: path(dashboardRoutes.record), label: overview.activity.link }}
+            items={activityItems(dictionary, names, format, activity)}
+          />
+        ) : (
+          <EmptyPanel className="lg:col-span-2" title={overview.activity.title} text={empty.activity} />
+        )}
+        <div className="grid content-start gap-6">
+          {spending.length > 0 ? (
+            <SpendingPanel
+              title={overview.spending.title}
+              description={fill(overview.spending.text, slots)}
+              total={fill(overview.spending.total, { amount: format.money(sumCents(spending.map((row) => row.cents))) })}
+              rows={spending.map((row) => ({ ...row, name: names.category(row.category), amount: format.money(row.cents) }))}
+            />
+          ) : (
+            <EmptyPanel title={overview.spending.title} text={empty.spending} />
+          )}
+          {upcoming.length > 0 ? (
+            <ComingUpPanel
+              title={overview.comingUp.title}
+              link={{ href: path(dashboardRoutes.bills), label: overview.comingUp.link }}
+              items={upcoming.map((bill) => ({
+                id: bill.id,
+                day: format.day(bill.due),
+                payee: names.payee(bill.payeeId),
+                approval: bill.plan ? fill(common.planLabels[planLabel(bill.plan)], slots) : "",
+                amount: format.money(bill.expectedCents),
+              }))}
+            />
+          ) : (
+            <EmptyPanel title={overview.comingUp.title} text={empty.comingUp} />
+          )}
         </div>
       </div>
     </>

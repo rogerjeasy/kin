@@ -19,3 +19,8 @@ export type CircleRole = (typeof CIRCLE_ROLES)[number];
 export const PARENT_LEVELS = ["decides", "informed", "represented"] as const;
 
 export type ParentLevel = (typeof PARENT_LEVELS)[number];
+
+/** Where a person stands in a circle. Only an active member may act. */
+export const MEMBER_STATUSES = ["invited", "active", "left"] as const;
+
+export type MemberStatus = (typeof MEMBER_STATUSES)[number];

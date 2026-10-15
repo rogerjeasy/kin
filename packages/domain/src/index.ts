@@ -29,6 +29,8 @@ export type {
   ProposalKind,
 } from "./approval-plan.ts";
 export { CareValueError, careValueCents } from "./care.ts";
+export { entryHeadline } from "./entry-headline.ts";
+export type { EntryHeadline } from "./entry-headline.ts";
 export { rosesMonth } from "./examples/roses-month.ts";
 export { FairnessError, calculateFairness } from "./fairness.ts";
 export type {
@@ -39,6 +41,7 @@ export type {
 } from "./fairness.ts";
 export {
   CARE_RECEIVED,
+  DIRECTIONS,
   FEES,
   POOL_CASH,
   POOL_CLEARING,
@@ -54,7 +57,15 @@ export type {
   AccountType,
   Direction,
 } from "./ledger-accounts.ts";
-export { createEntry, credit, debit, reverseEntry } from "./ledger-entry.ts";
+export {
+  ENTRY_KINDS,
+  ENTRY_SOURCE_TYPES,
+  createEntry,
+  credit,
+  debit,
+  restoreEntry,
+  reverseEntry,
+} from "./ledger-entry.ts";
 export type {
   Correction,
   EntryDraft,
@@ -77,6 +88,7 @@ export type { AppendResult, Ledger } from "./ledger.ts";
 export {
   InvalidMoneyError,
   assertCents,
+  decimalAmount,
   formatMoney,
   sumCents,
 } from "./money.ts";
@@ -95,8 +107,8 @@ export {
   settlementCollected,
   settlementPaidOut,
 } from "./postings.ts";
-export { CIRCLE_ROLES, PARENT_LEVELS } from "./roles.ts";
-export type { CircleRole, ParentLevel } from "./roles.ts";
+export { CIRCLE_ROLES, MEMBER_STATUSES, PARENT_LEVELS } from "./roles.ts";
+export type { CircleRole, MemberStatus, ParentLevel } from "./roles.ts";
 export { settlePeriod } from "./settle-period.ts";
 export type { Settlement, SettlementQuery } from "./settle-period.ts";
 export {

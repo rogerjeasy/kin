@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "sandbox:check": "node --env-file=../../.env scripts/sandbox-check.ts"
   },
   "devDependencies": {

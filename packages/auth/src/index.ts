@@ -8,3 +8,7 @@ export { createSignInSecrets, pkceChallenge } from "./pkce.ts";
 export type { RandomBytes, SignInSecrets } from "./pkce.ts";
 export { createSessionVerifier } from "./session.ts";
 export type { Session, SessionTokens, SessionVerifier } from "./session.ts";
+export { AccessDenied, CIRCLE_ACTIONS, allowedActions, authorize, requireAccess } from "./circle-access.ts";
+export type { AccessDecision, CircleAction, Seat } from "./circle-access.ts";
+export { DEMO_SESSION_DAYS, issueDemoSession, readDemoSession } from "./demo-session.ts";
+export type { DemoSession } from "./demo-session.ts";

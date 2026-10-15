@@ -1,13 +1,13 @@
-import type { StaticImageData } from "next/image";
 import { CheckIcon } from "lucide-react";
 
-import { Avatar } from "@/components/shared/avatar";
+import { MemberAvatar } from "@/components/dashboard/ui/member-avatar";
 import { cn } from "@/lib/utils";
 
 type Level = { key: string; title: string; text: string; current: boolean };
 
 type ParentPanelProps = {
-  portrait: StaticImageData;
+  portrait: string | null;
+  name: string;
   title: string;
   text: string;
   levelsLabel: string;
@@ -17,11 +17,11 @@ type ParentPanelProps = {
 };
 
 /** How the parent takes part: the level chosen with them, beside the other two. */
-export function ParentPanel({ portrait, title, text, levelsLabel, currentLabel, levels, className }: ParentPanelProps) {
+export function ParentPanel({ portrait, name, title, text, levelsLabel, currentLabel, levels, className }: ParentPanelProps) {
   return (
     <section aria-labelledby="parent-heading" className={cn("rounded-2xl border bg-card p-5 shadow-xs sm:p-6", className)}>
       <div className="flex items-center gap-4">
-        <Avatar src={portrait} size="lg" className="size-16" />
+        <MemberAvatar portrait={portrait} name={name} size="lg" className="size-16" />
         <h2 id="parent-heading" className="font-serif text-subtitle text-balance">
           {title}
         </h2>

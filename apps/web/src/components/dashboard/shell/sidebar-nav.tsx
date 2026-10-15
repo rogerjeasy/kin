@@ -15,16 +15,18 @@ type SidebarNavProps = {
   locale: Locale;
   copy: Dictionary["dashboard"]["shell"];
   badges: Partial<Record<DashboardSection, NavBadge>>;
+  /** The sections the viewer may open. The others are not offered. */
+  sections: readonly DashboardSection[];
 };
 
 /** The circle's sections, down the side of a wide screen. */
-export function SidebarNav({ locale, copy, badges }: SidebarNavProps) {
+export function SidebarNav({ locale, copy, badges, sections }: SidebarNavProps) {
   const current = sectionOf(useSelectedLayoutSegment());
 
   return (
     <nav aria-label={copy.navLabel}>
       <ul className="space-y-1">
-        {dashboardNav.map((section) => {
+        {dashboardNav.filter((section) => sections.includes(section)).map((section) => {
           const Icon = sectionIcons[section];
           const badge = badges[section];
           return (

@@ -62,6 +62,8 @@ jobs:
           curl -sf -o /dev/null -w "French pricing %{http_code}\n" http://localhost:3000/fr/pricing
       - if: failure()
         run: docker logs kin-web || true
+      # The migration task's image (packages/db/Dockerfile) must build too.
+      - run: docker build -f packages/db/Dockerfile -t kin-migrate:ci .
 
   infra:
     name: Synthesize infrastructure

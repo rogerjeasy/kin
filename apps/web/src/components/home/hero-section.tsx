@@ -1,5 +1,6 @@
 import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/shared/button-link";
+import { DemoButton } from "@/components/shared/demo-button";
 import { Emphasis } from "@/components/shared/emphasis";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { Heading } from "@/components/shared/heading";
@@ -32,6 +33,10 @@ export function HeroSection({ locale, copy, nav, limit }: HeroSectionProps) {
           <Lede className="mt-6">{copy.lede}</Lede>
           <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3">
             <ButtonLink href={localizedPath(locale, routes.start)}>{nav.startLong}</ButtonLink>
+            <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+              <DemoButton locale={locale} label={nav.demo} />
+              <span className="text-sm text-muted-foreground">{nav.demoNote}</span>
+            </span>
             <TextLink href={localizedPath(locale, routes.howItWorks)}>{nav.seeMonth}</TextLink>
           </div>
           <div className="mt-9">

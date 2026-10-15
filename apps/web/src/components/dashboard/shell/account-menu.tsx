@@ -14,18 +14,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Dictionary } from "@/i18n/dictionary";
+import type { Locale } from "@/i18n/locales";
+import { leaveDemo } from "@/server/demo-actions";
+
+import type { ShellContext } from "./shell-context";
 
 type AccountMenuProps = {
+  locale: Locale;
   copy: Dictionary["dashboard"]["shell"]["account"];
-  name: string;
-  email: string;
+  leaveLabel: string;
+  viewer: ShellContext["viewer"];
   links: { circle: string; website: string };
 };
 
 const itemClass = "min-h-11 gap-3 px-3 text-base";
 
-/** Who is signed in, and the ways out of the circle's screens. */
-export function AccountMenu({ copy, name, email, links }: AccountMenuProps) {
+/** Who is looking, and the ways out: signing out, or leaving the demo. */
+export function AccountMenu({ locale, copy, leaveLabel, viewer, links }: AccountMenuProps) {
+  const { name, email } = viewer;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -37,9 +43,9 @@ export function AccountMenu({ copy, name, email, links }: AccountMenuProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-72 max-w-[calc(100vw-2rem)]">
         <DropdownMenuLabel className="px-3 py-2 font-normal">
-          <span className="block text-xs text-muted-foreground">{copy.signedInAs}</span>
+          {viewer.kind === "person" ? <span className="block text-xs text-muted-foreground">{copy.signedInAs}</span> : null}
           <span className="block truncate font-semibold">{name}</span>
-          <span className="block truncate text-sm text-muted-foreground">{email}</span>
+          {email ? <span className="block truncate text-sm text-muted-foreground">{email}</span> : null}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild className={itemClass}>
@@ -55,15 +61,27 @@ export function AccountMenu({ copy, name, email, links }: AccountMenuProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {/* Signing out is a POST, so no link on another site can do it. */}
-        <form action="/auth/sign-out" method="post">
-          <DropdownMenuItem asChild className={`${itemClass} w-full`}>
-            <button type="submit">
-              <LogOutIcon aria-hidden="true" />
-              {copy.signOut}
-            </button>
-          </DropdownMenuItem>
-        </form>
+        {viewer.kind === "person" ? (
+          // Signing out is a POST, so no link on another site can do it.
+          <form action="/auth/sign-out" method="post">
+            <DropdownMenuItem asChild className={`${itemClass} w-full`}>
+              <button type="submit">
+                <LogOutIcon aria-hidden="true" />
+                {copy.signOut}
+              </button>
+            </DropdownMenuItem>
+          </form>
+        ) : (
+          <form action={leaveDemo}>
+            <input type="hidden" name="locale" value={locale} />
+            <DropdownMenuItem asChild className={`${itemClass} w-full`}>
+              <button type="submit">
+                <LogOutIcon aria-hidden="true" />
+                {leaveLabel}
+              </button>
+            </DropdownMenuItem>
+          </form>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

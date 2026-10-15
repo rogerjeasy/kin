@@ -16,20 +16,26 @@ type BottomNavProps = {
   locale: Locale;
   copy: Dictionary["dashboard"]["shell"];
   badges: Partial<Record<DashboardSection, NavBadge>>;
+  /** The sections the viewer may open. The others are not offered. */
+  sections: readonly DashboardSection[];
   className?: string;
 };
 
+// One column per section offered, so the tabs always fill the bar.
+const columns = ["grid-cols-1", "grid-cols-1", "grid-cols-2", "grid-cols-3", "grid-cols-4", "grid-cols-5"] as const;
+
 /** The circle's main sections, along the bottom of a phone or tablet, within thumb's reach. */
-export function BottomNav({ locale, copy, badges, className }: BottomNavProps) {
+export function BottomNav({ locale, copy, badges, sections, className }: BottomNavProps) {
   const current = sectionOf(useSelectedLayoutSegment());
+  const offered = phoneNav.filter((section) => sections.includes(section));
 
   return (
     <nav
       aria-label={copy.navLabel}
       className={cn("fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm", className)}
     >
-      <ul className="mx-auto grid max-w-2xl grid-cols-5">
-        {phoneNav.map((section) => {
+      <ul className={cn("mx-auto grid max-w-2xl", columns[offered.length] ?? "grid-cols-5")}>
+        {offered.map((section) => {
           const Icon = sectionIcons[section];
           const badge = badges[section];
           return (

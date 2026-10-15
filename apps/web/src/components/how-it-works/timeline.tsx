@@ -1,5 +1,6 @@
 import { Container } from "@/components/layout/container";
 import { ShareLegend } from "@/components/shared/share-legend";
+import { exampleShares } from "@/content/example-family";
 import { momentImages } from "@/content/moment-images";
 import { monthScenes } from "@/content/month-scenes";
 import type { Dictionary } from "@/i18n/dictionary";
@@ -40,7 +41,7 @@ export function Timeline({ locale, copy, people, moments }: TimelineProps) {
               >
                 {scene.showsShares ? (
                   <div className="mt-5">
-                    <ShareLegend locale={locale} people={people} align="start" />
+                    <ShareLegend locale={locale} shares={exampleShares(people)} align="start" />
                   </div>
                 ) : null}
                 {scene.speaker ? <TimelineQuote voice={scene.speaker} speaker={entry.speaker} quote={entry.quote} /> : null}

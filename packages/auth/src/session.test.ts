@@ -28,10 +28,19 @@ function tokensFor(claims = cognitoClaims(person), sign = signer.sign) {
 describe("a session", () => {
   const verifier = createSessionVerifier(config, servingKeys());
 
+  it("says whether Cognito verified the address, as a flag or as text", async () => {
+    const verified = async (emailVerified: boolean | "true" | "false") => (await verifier.verify(tokensFor(cognitoClaims({ ...person, emailVerified }))))?.emailVerified;
+    expect(await verified(true)).toBe(true);
+    expect(await verified("true")).toBe(true);
+    expect(await verified(false)).toBe(false);
+    expect(await verified("false")).toBe(false);
+  });
+
   it("is proved by a matching access and ID token from Kin's provider", async () => {
     await expect(verifier.verify(tokensFor(cognitoClaims({ ...person, groups: ["family_member", "other"] })))).resolves.toEqual({
       userId: "user-1",
       email: "elena@example.com",
+      emailVerified: true,
       name: "Elena Moreau",
       accountTypes: ["family_member"],
     });
