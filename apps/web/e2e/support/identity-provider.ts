@@ -93,7 +93,8 @@ const server = createServer((request, response) => {
   const url = new URL(request.url ?? "/", issuer);
   if (request.method === "GET" && url.pathname === "/health") return send(response, 200, { ok: true });
   if (request.method === "GET" && url.pathname === "/.well-known/jwks.json") return send(response, 200, signer.jwks);
-  if (request.method === "GET" && url.pathname === "/oauth2/authorize") return authorize(url, response);
+  // Cognito's sign-up page takes the authorize parameters and answers the same way.
+  if (request.method === "GET" && (url.pathname === "/oauth2/authorize" || url.pathname === "/signup")) return authorize(url, response);
   if (request.method === "POST" && url.pathname === "/oauth2/token") {
     token(request, response).catch(() => send(response, 500, { error: "server_error" }));
     return;

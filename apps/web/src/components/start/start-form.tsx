@@ -20,7 +20,7 @@ const CONSENT = "consent";
 
 /**
  * The consent rule comes first. Once it is ticked, the form goes to Kin's
- * sign-in route, which sends the person on to create their account.
+ * sign-in route, which opens the identity provider's sign-up page.
  */
 export function StartForm({ labelledBy, copy, action, next }: StartFormProps) {
   const id = useId();
@@ -38,6 +38,7 @@ export function StartForm({ labelledBy, copy, action, next }: StartFormProps) {
   return (
     <form noValidate aria-labelledby={labelledBy} action={action} method="get" onSubmit={handleSubmit} className="space-y-5">
       <input type="hidden" name="next" value={next} />
+      <input type="hidden" name="screen" value="sign-up" />
       <ConsentField id={`${id}-${CONSENT}`} name={CONSENT} label={copy.consent} error={error} />
       <Button type="submit" className="w-full whitespace-normal">
         {copy.submit}

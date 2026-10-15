@@ -2,7 +2,7 @@ import type { AuthConfig } from "@kin/config";
 import { describe, expect, it } from "vitest";
 
 import { AuthError } from "./auth-error.ts";
-import { authorizeUrl, exchangeCode, logoutUrl, parseTokenSet, refreshTokens, type Fetch } from "./oauth.ts";
+import { authorizeUrl, exchangeCode, logoutUrl, parseAuthScreen, parseTokenSet, refreshTokens, type Fetch } from "./oauth.ts";
 import { createSignInSecrets, pkceChallenge } from "./pkce.ts";
 
 const config: AuthConfig = {
@@ -31,7 +31,7 @@ describe("PKCE", () => {
 
 describe("the sign-in address", () => {
   it("asks for a code with PKCE, state and nonce, coming back to Kin's callback", () => {
-    const url = new URL(authorizeUrl(config, secrets, "fr"));
+    const url = new URL(authorizeUrl(config, secrets, "fr", "sign-in"));
 
     expect(url.origin + url.pathname).toBe("https://login.example/oauth2/authorize");
     expect(Object.fromEntries(url.searchParams)).toEqual({
@@ -47,12 +47,25 @@ describe("the sign-in address", () => {
     });
   });
 
+  it("opens the sign-up page with the same secrets when a person is new", () => {
+    const signIn = new URL(authorizeUrl(config, secrets, "de", "sign-in"));
+    const signUp = new URL(authorizeUrl(config, secrets, "de", "sign-up"));
+
+    expect(signUp.origin + signUp.pathname).toBe("https://login.example/signup");
+    expect(Object.fromEntries(signUp.searchParams)).toEqual(Object.fromEntries(signIn.searchParams));
+  });
+
+  it("starts on the sign-in page unless sign-up is asked for by name", () => {
+    expect(parseAuthScreen("sign-up")).toBe("sign-up");
+    for (const value of [null, "", "sign-in", "SIGN-UP", "/signup"]) expect(parseAuthScreen(value)).toBe("sign-in");
+  });
+
   it("never sends the verifier itself", () => {
-    expect(authorizeUrl(config, secrets, "en")).not.toContain(secrets.verifier);
+    expect(authorizeUrl(config, secrets, "en", "sign-in")).not.toContain(secrets.verifier);
   });
 
   it("leaves the language to the provider when its pages do not speak the reader's", () => {
-    expect(new URL(authorizeUrl(config, secrets, "ar")).searchParams.has("lang")).toBe(false);
+    expect(new URL(authorizeUrl(config, secrets, "ar", "sign-in")).searchParams.has("lang")).toBe(false);
   });
 
   it("signs out of the provider too, then comes back to Kin's home page", () => {
