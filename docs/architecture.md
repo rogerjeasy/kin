@@ -1214,7 +1214,7 @@ The load balancer routes `/voice/*` to the voice service, with a long idle timeo
 
 ### 14.4 Data
 
-- **Aurora Serverless v2,** PostgreSQL-compatible, one writer, in private subnets. Minimum capacity is kept above zero during judging to avoid a slow first request.
+- **Aurora Serverless v2,** PostgreSQL-compatible, one writer, in private subnets. Minimum capacity is zero, so it pauses after five idle minutes and costs nothing then (decision 43). The first connection after a pause wakes it, which took 74 seconds on 15 October 2026: the web app waits up to 90 seconds for a connection, inside App Runner's 120-second limit on a request, and the migration retries for up to five minutes.
 - **Backups** with point-in-time recovery.
 - **Encryption** with a KMS key.
 - **Migrations** run as a one-off Fargate task (`kin-database-migrate`, in the services subnets) before the web app rolls out. It alone reads the admin's password from the cluster's secret, applies `packages/db/migrations`, and sets each service role's password from its own secret (`kin/database/app`, `kin/database/service`, `kin/database/provisioner`). A task, not a Lambda function, because the shared account's Lambda quota is small and the task can take as long as Aurora needs to resume.
@@ -1489,6 +1489,7 @@ The hackathon needs a month of family life to be shown in minutes.
 | 40 | Database migrations run as a one-off Fargate task between KinData and KinWeb in the deploy workflow | A Lambda function triggered by the deployment; migrating from the web app on start | Section 14.4's design. The account's Lambda quota is small. The web app must not hold the admin's password. |
 | 41 | Demo data only behind the Demo button, for an anonymous visitor with a signed session of Kin's own | Giving every signed-in person a demo circle; a demo that needs an account | Judges reach the demo in one click with no account, and a real account never shows example data. The session names only a `demo:` visitor, whom the database seats only in demo circles, so even a stolen or forged session cannot open a family's circle. Each press is a row Kin can count. |
 | 42 | A person's writes go through kin_app with row-level security, column grants and database guards; the decision is the approval engine's | Writing votes and states through the service role from the web app; deciding approvals in SQL | The web app never holds the service role (decision 38), and the rule stays in one place (`decideApprovals`). The database still refuses, from the plan stored with the proposal, an approval with fewer yeses than places, with a no, or with only the payee's yes; a move other than closing a pending proposal; an answer in another member's name or role; any person's answer or decision in a real circle; and a pause longer than 24 hours. |
+| 43 | Aurora stays at zero minimum capacity, and the first request after a pause waits for it to resume | 0.5 ACU minimum so it never pauses, about $44 a month | The project owner chose no standing cost. The first visitor after a quiet spell waits over a minute; everyone after them does not. The migration retries for up to five minutes, because the first deploy's migration failed at 30 seconds while Aurora resumed. |
 
 ---
 
