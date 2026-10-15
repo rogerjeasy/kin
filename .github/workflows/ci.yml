@@ -42,6 +42,27 @@ jobs:
           path: apps/web/test-results/
           retention-days: 7
 
+  image:
+    name: Build and run the web image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: docker build -f apps/web/Dockerfile -t kin-web:ci .
+      # The image must start and serve its pages, as App Runner will run it.
+      - run: |
+          docker run -d --name kin-web -p 3000:3000 kin-web:ci
+          for _ in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:3000/ && break
+            sleep 2
+          done
+          curl -sf -o /dev/null -w "home page %{http_code}\n" http://localhost:3000/
+          curl -sf -o /dev/null -w "French pricing %{http_code}\n" http://localhost:3000/fr/pricing
+      - if: failure()
+        run: docker logs kin-web || true
+
   infra:
     name: Synthesize infrastructure
     runs-on: ubuntu-24.04

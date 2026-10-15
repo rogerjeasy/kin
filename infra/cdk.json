@@ -10,7 +10,8 @@
       "max": 4
     },
     "kin:webOrigins": [
-      "http://localhost:3000"
+      "http://localhost:3000",
+      "https://mzdg4f3stk.us-east-1.awsapprunner.com"
     ],
     "kin:githubDeploySubject": "repo:rogerjeasy@58919295/kin@1417344617:ref:refs/heads/main",
     "kin:neighbourPrincipalPatterns": [

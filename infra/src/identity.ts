@@ -2,10 +2,12 @@ import { ACCOUNT_TYPES } from "@kin/auth";
 import { Duration, RemovalPolicy } from "aws-cdk-lib";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import type * as kms from "aws-cdk-lib/aws-kms";
+import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 
 import type { InfraConfig } from "./config.ts";
 import { SignInEmailSender, createGmailSecret } from "./sign-in-email.ts";
+import { WEB_SETTINGS } from "./web-settings.ts";
 
 const MIN_PASSWORD_LENGTH = 12;
 
@@ -105,6 +107,16 @@ export class Identity extends Construct {
       idTokenValidity: Duration.minutes(60),
       refreshTokenValidity: Duration.days(7),
     });
+
+    // What the web app needs to send people to sign in and check their tokens.
+    const webSettings: Record<keyof typeof WEB_SETTINGS, string> = {
+      authIssuer: `https://cognito-idp.${config.region}.amazonaws.com/${this.userPool.userPoolId}`,
+      authLoginUrl: this.domain.baseUrl(),
+      authClientId: this.webClient.userPoolClientId,
+    };
+    for (const [key, parameterName] of Object.entries(WEB_SETTINGS) as [keyof typeof WEB_SETTINGS, string][]) {
+      new ssm.StringParameter(this, `WebSetting-${key}`, { parameterName, stringValue: webSettings[key] });
+    }
 
     // Managed login shows a page only to a client that has a style.
     new cognito.CfnManagedLoginBranding(this, "Branding", {

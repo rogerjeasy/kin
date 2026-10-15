@@ -26,9 +26,9 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], storageState: SIGNED_IN_STATE },
     },
   ],
-  // The tests run against the production build, the same thing a visitor gets.
-  // The test:e2e script builds first. Each server is started as one process,
-  // with no package-manager wrapper, so Playwright can stop it cleanly.
+  // The tests run against the production build, started the way the container
+  // starts it. The test:e2e script builds first. Each server is started as one
+  // process, with no package-manager wrapper, so Playwright can stop it cleanly.
   webServer: [
     {
       // A stand-in for Cognito that runs the same sign-in flow (e2e/support).
@@ -38,12 +38,14 @@ export default defineConfig({
       timeout: 15_000,
     },
     {
-      command: `node node_modules/next/dist/bin/next start --port ${port}`,
+      // The standalone server through the container's own start file.
+      command: "node .next/standalone/apps/web/start.mjs",
       url: baseURL,
       reuseExistingServer: false,
       gracefulShutdown: { signal: "SIGTERM", timeout: 5_000 },
       timeout: 60_000,
       env: {
+        PORT: String(port),
         KIN_AUTH_ISSUER: identityProvider,
         KIN_AUTH_LOGIN_URL: identityProvider,
         KIN_AUTH_CLIENT_ID: IDENTITY_PROVIDER.clientId,
