@@ -1,4 +1,4 @@
-import { round } from "./ring-geometry";
+import { round } from "./ring-geometry.ts";
 
 /**
  * Geometry for the Kin knot: one closed line woven into three lobes. Where the

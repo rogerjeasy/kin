@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "next build && node scripts/prepare-standalone.mjs && playwright test"
+    "test:e2e": "next build && node scripts/prepare-standalone.mjs && playwright test",
+    "brand:export": "node scripts/export-sign-in-brand.ts"
   },
   "dependencies": {
     "@kin/auth": "workspace:*",

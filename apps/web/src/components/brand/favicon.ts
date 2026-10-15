@@ -1,5 +1,5 @@
-import { KNOT_MARK, knot, strandPath } from "./knot-geometry";
-import { round } from "./ring-geometry";
+import { KNOT_MARK, knot, strandPath } from "./knot-geometry.ts";
+import { round } from "./ring-geometry.ts";
 
 const TILE = 64;
 const TILE_RADIUS = 14;
