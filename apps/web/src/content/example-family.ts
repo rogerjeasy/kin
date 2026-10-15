@@ -41,3 +41,8 @@ export const exampleFamily = {
 export const PAYOUT_EVENT = "PAYMENT.PAYOUTS-ITEM.SUCCEEDED";
 
 export type Sibling = (typeof exampleFamily.shares)[number]["member"];
+
+/** The example family's shares, named in the reader's language, for the share bar and legend. */
+export function exampleShares(people: Readonly<Record<Sibling, string>>) {
+  return exampleFamily.shares.map((share) => ({ key: share.member, name: people[share.member], bps: share.percent * 100 }));
+}

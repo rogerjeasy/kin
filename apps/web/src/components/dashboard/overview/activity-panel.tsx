@@ -8,6 +8,8 @@ export type ActivityItem = {
   kind: string;
   amount: string;
   flow: "in" | "out" | "none";
+  /** No real sandbox transaction stands behind it (AGENTS.md section 5, rule 9). */
+  simulated: boolean;
 };
 
 type ActivityPanelProps = {

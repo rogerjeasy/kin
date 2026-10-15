@@ -1,10 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { snapshotFor, testDatabases, visitorWithCircle } from "@kin/db/testing";
+import type { CircleSnapshot } from "@kin/db";
+import { beforeAll, describe, expect, it } from "vitest";
 
-import { recordEntries } from "@/content/demo-circle/record";
-import { upcomingBills } from "@/content/demo-circle/upcoming";
-import { waitingProposals } from "@/content/demo-circle/proposal-view";
+import { circleNames } from "@/content/circle/names";
+import { waitingProposals } from "@/content/circle/proposal-view";
+import { recordEntries } from "@/content/circle/record";
+import { upcomingBills } from "@/content/circle/upcoming";
 import { getDictionary } from "@/i18n/dictionary";
 import { locales } from "@/i18n/locales";
+import { fill } from "@/i18n/template";
 import { formatters } from "@/lib/format";
 
 import { describeEntry } from "./entry-words";
@@ -12,18 +16,19 @@ import { planLabel } from "./plan-words";
 import { proposalStatus, proposalTitle } from "./proposal-words";
 
 const format = formatters("en", "USD");
+const db = testDatabases();
+let circle: CircleSnapshot;
+
+beforeAll(async () => {
+  const visitor = await visitorWithCircle(db);
+  circle = await snapshotFor(db, visitor.userId, visitor.circleId);
+});
 
 describe("the words for an approval plan", () => {
   it("say how each of November's bills will be approved", async () => {
     const english = await getDictionary("en");
-    const labels = upcomingBills().map((bill) => english.dashboard.common.planLabels[planLabel(bill.plan)]);
-
-    expect(labels).toEqual([
-      "Pays itself under a standing rule",
-      "Pays itself under a standing rule",
-      "Rose decides",
-      "The organizer approves",
-    ]);
+    const labels = upcomingBills(circle).map((bill) => (bill.plan ? fill(english.dashboard.common.planLabels[planLabel(bill.plan)], { parent: "Rose" }) : null));
+    expect(labels).toEqual(["Pays itself under a standing rule", "Pays itself under a standing rule", "Rose decides", "The organizer approves"]);
   });
 
   it("cover every outcome the approval engine can give", () => {
@@ -40,43 +45,45 @@ describe("the words for an approval plan", () => {
 describe("the words for a proposal", () => {
   it("tell Elena when it is her turn, and whose yes it waits for when it is not", async () => {
     const english = await getDictionary("en");
-    const statuses = Object.fromEntries(waitingProposals().map((view) => [view.proposal.id, proposalStatus(english, format, view).text]));
-
-    expect(statuses).toEqual({
-      "stairlift-repair": "Your yes is needed",
-      "amara-week-44": "Waiting for Rose",
-      "settlement-ana": "Your yes is needed",
-      "settlement-elena": "Waiting for Rose",
+    const names = circleNames(circle, english);
+    const statuses = waitingProposals(circle).map((view) => [proposalTitle(english, names, view.proposal, "October 2026"), proposalStatus(english, names, format, view).text]);
+    expect(Object.fromEntries(statuses)).toEqual({
+      "Stairlift repair": "Your yes is needed",
+      "Amara’s visits this week": "Waiting for Rose",
+      "October 2026 settlement for Ana": "Your yes is needed",
+      "October 2026 settlement for Elena": "Waiting for Rose",
     });
   });
 
-  it("name a settlement after the member it pays", async () => {
+  it("fall back to who is paid for a purpose the dictionary does not know", async () => {
     const english = await getDictionary("en");
-    const titles = waitingProposals().map((view) => proposalTitle(english, view.proposal));
-
-    expect(titles).toContain("October settlement for Elena");
-    expect(titles).toContain("Stairlift repair");
+    const [first] = circle.proposals;
+    if (!first) throw new Error("No proposal");
+    expect(proposalTitle(english, circleNames(circle, english), { ...first, purpose: "somethingNew" }, "October 2026")).toBe("Ridgeway Stairlifts");
   });
 });
 
 describe("the words for a ledger entry", () => {
-  it.each(locales)("describe every entry of Rose's month in %s, with no slot left unfilled", async (locale) => {
+  it.each(locales)("describe every entry of the circle in %s, with no slot left unfilled", async (locale) => {
     const dictionary = await getDictionary(locale);
-
-    for (const view of recordEntries()) {
-      const text = describeEntry(dictionary, view);
+    const names = circleNames(circle, dictionary);
+    for (const view of recordEntries(circle)) {
+      const text = describeEntry(dictionary, names, view);
       expect(text).not.toMatch(/[{}]/);
       expect(text.trim()).not.toBe("");
+      // A row ID never reaches a person: every subject resolves to a name.
+      expect(text).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
     }
   });
 
-  it("say who paid what in English", async () => {
+  it("say who paid what in English, with the names the circle gave them", async () => {
     const english = await getDictionary("en");
-    const lines = recordEntries().map((view) => describeEntry(english, view));
-
+    const names = circleNames(circle, english);
+    const lines = recordEntries(circle).map((view) => describeEntry(english, names, view));
     expect(lines).toContain("Marcus’s monthly contribution");
     expect(lines).toContain("Elena’s receipt: Pharmacy");
     expect(lines).toContain("Amara: paid");
+    expect(lines).toContain("Northfield Gas: paid");
     expect(lines).toContain("Pharmacy order for Rose");
   });
 });

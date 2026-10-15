@@ -1,99 +1,133 @@
-import { APPROVAL_WINDOW_HOURS, PARENT_LEVELS, PAUSE_HOURS, rosesMonth } from "@kin/domain";
+import { APPROVAL_WINDOW_HOURS, CIRCLE_ROLES, PARENT_LEVELS, PAUSE_HOURS } from "@kin/domain";
 import type { Metadata } from "next";
 
 import { MemberList } from "@/components/dashboard/circle/member-list";
 import { ParentPanel } from "@/components/dashboard/circle/parent-panel";
 import { PayeeList } from "@/components/dashboard/circle/payee-list";
 import { TermList } from "@/components/dashboard/circle/term-list";
-import { DemoActions } from "@/components/dashboard/ui/demo-actions";
+import { InvitationList } from "@/components/dashboard/circle/invitation-list";
+import { InviteSheet } from "@/components/dashboard/circle/invite-sheet";
+import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
-import { categoryName, nameOf, payeeName } from "@/components/dashboard/words/names";
-import { circlePortraits } from "@/content/circle-portraits";
-import { circleFormatters } from "@/content/demo-circle/format";
-import { ROSE_LEVEL, VIEWER, demoMembers } from "@/content/demo-circle/members";
-import { PAYEE_IDS, demoPayees } from "@/content/demo-circle/payees";
+import { circleFormatters } from "@/content/circle/format";
+import { activeMembers, parentOf } from "@/content/circle/members";
+import { circleNames } from "@/content/circle/names";
+import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
-import { dashboardContext } from "@/server/dashboard-context";
 import { fill } from "@/i18n/template";
+import { dashboardContext, may } from "@/server/dashboard-context";
 
 export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/circle">): Promise<Metadata> {
   return dashboardMetadata(params, "circle");
 }
 
-const { agreement } = rosesMonth;
-
 export default async function CirclePage({ params }: PageProps<"/[locale]/dashboard/circle">) {
-  const { locale, dictionary } = await dashboardContext(params, "circle");
-  const { circle, common, demoAction } = dictionary.dashboard;
-  const format = circleFormatters(locale);
-  const { terms } = circle.agreement;
-  const careRate = agreement.care?.rateCentsPerHour;
+  const { locale, dictionary, circle } = await dashboardContext(params, "circle");
+  const { circle: copy, common, empty } = dictionary.dashboard;
+  const format = circleFormatters(locale, circle);
+  const names = circleNames(circle, dictionary);
+  const { agreement } = circle;
+  const parent = parentOf(circle);
+  const { terms } = copy.agreement;
+  const careRate = agreement?.care?.rateCentsPerHour;
+  const slots = circleSlots(circle, format);
+  const parentWords = { parent: slots.parent };
 
   return (
     <>
-      <PageHeader title={circle.title} lede={circle.lede} />
+      <PageHeader title={copy.title} lede={copy.lede} />
       <div className="grid gap-6 lg:grid-cols-3">
-        <ParentPanel
-          portrait={circlePortraits.rose}
-          title={circle.parent.title}
-          text={fill(circle.parent.text, { amount: format.money(agreement.approvals.parentDecidesAboveCents) })}
-          levelsLabel={circle.parent.levelsLabel}
-          currentLabel={circle.parent.current}
-          levels={PARENT_LEVELS.map((level) => ({ key: level, ...circle.parent.levels[level], current: level === ROSE_LEVEL }))}
-        />
+        {parent ? (
+          <ParentPanel
+            portrait={parent.portrait}
+            name={parent.displayName}
+            title={fill(copy.parent.title, parentWords)}
+            text={
+              parent.parentLevel === "decides" && agreement
+                ? fill(copy.parent.text, { ...parentWords, amount: format.money(agreement.approvals.parentDecidesAboveCents) })
+                : copy.parent.levels[parent.parentLevel ?? "represented"].text
+            }
+            levelsLabel={copy.parent.levelsLabel}
+            currentLabel={fill(copy.parent.current, parentWords)}
+            levels={PARENT_LEVELS.map((level) => ({ key: level, ...copy.parent.levels[level], current: level === parent.parentLevel }))}
+          />
+        ) : null}
         <Panel
-          className="lg:col-span-2"
-          title={circle.members.title}
-          aside={<DemoActions actions={[{ label: circle.members.invite, variant: "outline" }]} note={demoAction} className="w-full sm:w-auto" />}
+          className={parent ? "lg:col-span-2" : "lg:col-span-3"}
+          title={copy.members.title}
+          aside={
+            may(circle, "member.invite") ? (
+              <InviteSheet locale={locale} trigger={copy.members.invite} copy={copy.invite} roles={CIRCLE_ROLES.map((role) => ({ value: role, label: common.roles[role] }))} />
+            ) : null
+          }
           flush
         >
           <MemberList
-            members={demoMembers.map((member) => {
-              const share = agreement.shares.find((each) => each.memberId === member.id);
-              const name = nameOf(dictionary, member.id);
+            members={activeMembers(circle).map((member) => {
+              const share = agreement?.shares.find((each) => each.memberId === member.id);
+              const name = names.member(member.id);
               return {
                 id: member.id,
-                portrait: circlePortraits[member.id],
-                name: member.id === VIEWER.id ? `${name} (${common.you})` : name,
+                portrait: member.portrait,
+                name: member.id === circle.viewer.memberId ? `${name} (${common.you})` : name,
                 role: common.roles[member.role],
-                share: share ? fill(circle.members.share, { share: format.share(share.bps) }) : null,
-                text: circle.members.roleText[member.role],
+                share: share ? fill(copy.members.share, { share: format.share(share.bps) }) : null,
+                text: copy.members.roleText[member.role],
               };
             })}
           />
         </Panel>
       </div>
+      {circle.invitations.length > 0 ? (
+        <Panel title={copy.invitations.title} flush>
+          <InvitationList
+            items={circle.invitations.map((invitation) => ({
+              id: invitation.id,
+              email: invitation.email,
+              role: common.roles[invitation.role],
+              status: copy.invitations.status[invitation.status],
+              pending: invitation.status === "pending",
+              detail: invitation.status === "pending" ? fill(copy.invitations.waiting, { date: format.dateTime(invitation.expiresAt) }) : "",
+            }))}
+          />
+        </Panel>
+      ) : null}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Panel title={circle.agreement.title} description={fill(circle.agreement.version, { version: format.count(agreement.version) })}>
-          <TermList
-            terms={[
-              ...(careRate === undefined ? [] : [{ label: terms.care.label, value: fill(terms.care.value, { rate: format.money(careRate) }) }]),
-              { label: terms.parent.label, value: fill(terms.parent.value, { amount: format.money(agreement.approvals.parentDecidesAboveCents) }) },
-              { label: terms.second.label, value: fill(terms.second.value, { amount: format.money(agreement.approvals.secondApprovalAboveCents) }) },
-              { label: terms.ceiling.label, value: fill(terms.ceiling.value, { amount: format.money(agreement.approvals.ceilingCents) }) },
-              { label: terms.window.label, value: fill(terms.window.value, { hours: format.count(APPROVAL_WINDOW_HOURS) }) },
-              { label: terms.pause.label, value: fill(terms.pause.value, { hours: format.count(PAUSE_HOURS) }) },
-            ]}
-          />
-        </Panel>
-        <Panel title={circle.payees.title} description={circle.payees.text} flush>
-          <PayeeList
-            payees={PAYEE_IDS.map((id) => {
-              const { category, payee } = demoPayees[id];
-              const rule = payee.autoPay;
-              return {
-                id,
-                name: payeeName(dictionary, id),
-                category: categoryName(dictionary, category),
-                status: { text: payee.status === "new" ? circle.payees.new : circle.payees.approved, isNew: payee.status === "new" },
-                rule: rule
-                  ? fill(circle.payees.standing, { min: format.money(rule.minCents), max: format.money(rule.maxCents) })
-                  : circle.payees.eachBill,
-              };
-            })}
-          />
-        </Panel>
+        {agreement ? (
+          <Panel title={copy.agreement.title} description={fill(copy.agreement.version, { version: format.count(agreement.version) })}>
+            <TermList
+              terms={[
+                ...(careRate === undefined ? [] : [{ label: terms.care.label, value: fill(terms.care.value, { rate: format.money(careRate) }) }]),
+                { label: fill(terms.parent.label, parentWords), value: fill(terms.parent.value, { amount: format.money(agreement.approvals.parentDecidesAboveCents) }) },
+                { label: terms.second.label, value: fill(terms.second.value, { amount: format.money(agreement.approvals.secondApprovalAboveCents) }) },
+                { label: terms.ceiling.label, value: fill(terms.ceiling.value, { amount: format.money(agreement.approvals.ceilingCents) }) },
+                { label: terms.window.label, value: fill(terms.window.value, { hours: format.count(APPROVAL_WINDOW_HOURS) }) },
+                { label: terms.pause.label, value: fill(terms.pause.value, { hours: format.count(PAUSE_HOURS) }) },
+              ]}
+            />
+          </Panel>
+        ) : (
+          <EmptyPanel title={copy.agreement.title} text={empty.agreement} />
+        )}
+        {circle.payees.length > 0 ? (
+          <Panel title={copy.payees.title} description={copy.payees.text} flush>
+            <PayeeList
+              payees={circle.payees.map(({ id, category, payee }) => {
+                const rule = payee.autoPay;
+                return {
+                  id,
+                  name: names.payee(id),
+                  category: names.category(category),
+                  status: { text: payee.status === "new" ? copy.payees.new : copy.payees.approved, isNew: payee.status === "new" },
+                  rule: rule ? fill(copy.payees.standing, { min: format.money(rule.minCents), max: format.money(rule.maxCents) }) : copy.payees.eachBill,
+                };
+              })}
+            />
+          </Panel>
+        ) : (
+          <EmptyPanel title={copy.payees.title} description={copy.payees.text} text={empty.payees} />
+        )}
       </div>
     </>
   );

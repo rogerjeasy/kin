@@ -1,5 +1,6 @@
 import { Logo } from "@/components/brand/logo";
 import { ButtonLink } from "@/components/shared/button-link";
+import { DemoButton } from "@/components/shared/demo-button";
 import { routes } from "@/content/site-routes";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
@@ -32,6 +33,7 @@ export function SiteHeader({ locale, common }: SiteHeaderProps) {
           <NavLink href={localizedPath(locale, routes.signIn)} route={routes.signIn} className="hidden px-3 text-foreground xl:inline-flex">
             {nav.signIn}
           </NavLink>
+          <DemoButton locale={locale} label={nav.demo} size="sm" variant="ghost" className="hidden text-foreground lg:inline-flex" />
           <ButtonLink href={localizedPath(locale, routes.start)} size="sm" className="hidden sm:inline-flex">
             {nav.start}
           </ButtonLink>

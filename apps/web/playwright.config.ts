@@ -1,11 +1,20 @@
+import { randomBytes } from "node:crypto";
+
 import { defineConfig, devices } from "@playwright/test";
 
+import { E2E_DATABASE, e2eDatabaseEnv } from "./e2e/support/database-settings";
 import { IDENTITY_PROVIDER } from "./e2e/support/identity-provider";
 import { SIGNED_IN_STATE } from "./e2e/support/signed-in-state";
 
 const port = 3100;
 const baseURL = `http://localhost:${port}`;
 const identityProvider = `http://localhost:${IDENTITY_PROVIDER.port}`;
+// Read once, in the process that starts the servers, so both get the same passwords.
+const database = e2eDatabaseEnv();
+const ADMIN_ONLY = new Set(["KIN_DATABASE_ADMIN_USER", "KIN_DATABASE_ADMIN_PASSWORD", "KIN_DATABASE_SERVICE_PASSWORD"]);
+// Signs demo visitors' sessions for this run only.
+const demoSessionKey = randomBytes(36).toString("base64url");
+const appDatabase = Object.fromEntries(Object.entries(database).filter(([name]) => !ADMIN_ONLY.has(name)));
 
 export default defineConfig({
   testDir: "./e2e",
@@ -17,7 +26,7 @@ export default defineConfig({
   use: { baseURL, trace: "retain-on-failure" },
   projects: [
     // Public pages, and every test of signing in, start signed out.
-    { name: "public", testIgnore: [/dashboard\.spec\.ts/, /\.setup\.ts/], use: { ...devices["Desktop Chrome"] } },
+    { name: "public", testIgnore: [/dashboard\.spec\.ts/, /real-circle\.spec\.ts/, /\.setup\.ts/], use: { ...devices["Desktop Chrome"] } },
     { name: "sign-in", testMatch: /\.setup\.ts/, use: { ...devices["Desktop Chrome"] } },
     {
       name: "signed-in",
@@ -25,11 +34,29 @@ export default defineConfig({
       dependencies: ["sign-in"],
       use: { ...devices["Desktop Chrome"], storageState: SIGNED_IN_STATE },
     },
+    // The signed-in person starts a circle of their own. The stand-in signs in
+    // one person, so this runs last, after every test that expects them to
+    // have none.
+    {
+      name: "real-circle",
+      testMatch: /real-circle\.spec\.ts/,
+      dependencies: ["public", "signed-in"],
+      use: { ...devices["Desktop Chrome"], storageState: SIGNED_IN_STATE },
+    },
   ],
   // The tests run against the production build, started the way the container
   // starts it. The test:e2e script builds first. Each server is started as one
   // process, with no package-manager wrapper, so Playwright can stop it cleanly.
   webServer: [
+    {
+      // A throwaway PostgreSQL in Docker, migrated (e2e/support/database.ts).
+      command: "node e2e/support/database.ts",
+      url: `http://localhost:${E2E_DATABASE.healthPort}`,
+      reuseExistingServer: false,
+      gracefulShutdown: { signal: "SIGTERM", timeout: 10_000 },
+      timeout: 120_000,
+      env: database,
+    },
     {
       // A stand-in for Cognito that runs the same sign-in flow (e2e/support).
       command: "node e2e/support/identity-provider.ts",
@@ -50,6 +77,10 @@ export default defineConfig({
         KIN_AUTH_LOGIN_URL: identityProvider,
         KIN_AUTH_CLIENT_ID: IDENTITY_PROVIDER.clientId,
         KIN_WEB_ORIGIN: baseURL,
+        // The app holds only the person's role and the demo provisioner, as in AWS.
+        ...appDatabase,
+        KIN_DEMO_CIRCLES: "on",
+        KIN_DEMO_SESSION_KEY: demoSessionKey,
       },
     },
   ],

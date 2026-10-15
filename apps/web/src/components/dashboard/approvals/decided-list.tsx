@@ -3,7 +3,7 @@ import { CheckIcon } from "lucide-react";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { Tag } from "@/components/shared/tag";
 
-export type DecidedItem = { id: string; day: string; text: string; kind: string; amount: string };
+export type DecidedItem = { id: string; day: string; text: string; kind: string; amount: string; simulated: boolean };
 
 type DecidedListProps = { title: string; description: string; simulated: string; items: readonly DecidedItem[] };
 
@@ -23,7 +23,7 @@ export function DecidedList({ title, description, simulated, items }: DecidedLis
                 <span>{item.day}</span>
                 <span aria-hidden="true">·</span>
                 <span>{item.kind}</span>
-                <Tag className="py-0.5">{simulated}</Tag>
+                {item.simulated ? <Tag className="py-0.5">{simulated}</Tag> : null}
               </p>
             </div>
             <span className="font-semibold whitespace-nowrap tabular-nums">{item.amount}</span>

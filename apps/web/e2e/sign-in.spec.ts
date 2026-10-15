@@ -3,8 +3,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { dashboardNav, dashboardRoutes } from "../src/content/dashboard-routes";
 import english from "../src/i18n/dictionaries/en.json" with { type: "json" };
 import french from "../src/i18n/dictionaries/fr.json" with { type: "json" };
-import { fill } from "../src/i18n/template";
-import { openAccountMenu } from "./support/account-menu";
 import { IDENTITY_PROVIDER } from "./support/identity-provider";
 import { laptop } from "./support/viewports";
 
@@ -44,11 +42,13 @@ test("a signed-out visitor to a French screen signs in in French and comes back 
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
 });
 
-test("signing in greets the person by the name their account holds", async ({ page }) => {
+test("signing in opens the person's own account, by the name and address it holds", async ({ page }) => {
   await signIn(page);
 
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(fill(dashboard.overview.greeting, { name: IDENTITY_PROVIDER.person.name }));
-  await expect(await openAccountMenu(page)).toContainText(IDENTITY_PROVIDER.person.email);
+  // A new account belongs to no circle yet, so it is offered to start one.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(dashboard.createCircle.title);
+  await expect(page.getByRole("main")).toContainText(IDENTITY_PROVIDER.person.name);
+  await expect(page.getByRole("main")).toContainText(IDENTITY_PROVIDER.person.email);
 });
 
 test("the session lives in cookies that page scripts cannot read", async ({ page }) => {
@@ -136,8 +136,7 @@ test("a form on another site cannot sign anyone out", async ({ page }) => {
 test("signing out ends the session, and the circle's screens close again", async ({ page }) => {
   await signIn(page);
 
-  const menu = await openAccountMenu(page);
-  await menu.getByRole("menuitem", { name: dashboard.shell.account.signOut }).click();
+  await page.getByRole("button", { name: dashboard.shell.account.signOut }).click();
 
   await expect(page).toHaveURL("/");
   expect(await cookieNames(page)).not.toEqual(expect.arrayContaining([SESSION_COOKIES[0]]));

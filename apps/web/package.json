@@ -16,7 +16,9 @@
   "dependencies": {
     "@kin/auth": "workspace:*",
     "@kin/config": "workspace:*",
+    "@kin/db": "workspace:*",
     "@kin/domain": "workspace:*",
+    "@kin/paypal": "workspace:*",
     "ag-grid-community": "^36.2.0",
     "ag-grid-react": "^36.2.0",
     "class-variance-authority": "^0.7.1",

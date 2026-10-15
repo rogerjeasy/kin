@@ -1,9 +1,10 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { CONTENT_ID } from "@/components/layout/skip-link";
 
 import { BottomNav } from "./bottom-nav";
 import { DemoBanner } from "./demo-banner";
+import { NoticeBanner } from "./notice-banner";
 import type { ShellContext } from "./shell-context";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
@@ -23,12 +24,15 @@ export function AppShell({ children, ...context }: AppShellProps) {
         <TopBar {...context} />
         <main id={CONTENT_ID} className="flex-1 px-4 pt-5 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-10 lg:pt-8 lg:pb-14">
           <div className="mx-auto w-full max-w-7xl space-y-6 lg:space-y-8">
-            <DemoBanner copy={context.dictionary.dashboard.shell.demo} />
+            {context.demo ? <DemoBanner locale={context.locale} copy={context.dictionary.dashboard.shell.demo} demo={context.demo} /> : null}
+            <Suspense fallback={null}>
+              <NoticeBanner notices={context.dictionary.dashboard.notices} dismiss={context.dictionary.dashboard.notices.dismiss} />
+            </Suspense>
             {children}
           </div>
         </main>
       </div>
-      <BottomNav locale={context.locale} copy={context.dictionary.dashboard.shell} badges={context.badges} className="lg:hidden" />
+      <BottomNav locale={context.locale} copy={context.dictionary.dashboard.shell} badges={context.badges} sections={context.sections} className="lg:hidden" />
     </div>
   );
 }

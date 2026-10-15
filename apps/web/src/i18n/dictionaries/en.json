@@ -41,6 +41,8 @@
       "signIn": "Sign in",
       "start": "Start a circle",
       "startLong": "Start a family circle",
+      "demo": "Try the demo",
+      "demoNote": "No account needed",
       "seeMonth": "See a month with Kin",
       "menuOpen": "Open menu",
       "menuClose": "Close menu",
@@ -819,8 +821,9 @@
       "consent": "I understand that the circle is not active until my parent, or the person with legal authority to act for them, has agreed to it.",
       "consentError": "Please confirm this to continue.",
       "submit": "Create your account",
-      "note": "You create your account on Kin’s secure page, run by Amazon Cognito. Until circles open, your new account opens the demo circle.",
-      "haveCircle": "Already have an account?"
+      "note": "You create your account on Kin’s secure page, run by Amazon Cognito. Then you name your circle and invite your family.",
+      "haveCircle": "Already have an account?",
+      "justLooking": "Just looking?"
     }
   },
   "signInPage": {
@@ -861,27 +864,27 @@
   "dashboard": {
     "meta": {
       "overview": {
-        "title": "Overview · Rose’s circle · Kin",
-        "description": "Rose’s October at a glance: the pool, what needs a yes, fairness and what Rose heard."
+        "title": "Overview · Kin",
+        "description": "Your circle at a glance: the pool, what needs a yes, fairness and what the parent heard."
       },
       "approvals": {
-        "title": "Approvals · Rose’s circle · Kin",
+        "title": "Approvals · Kin",
         "description": "Every movement of money waiting for a yes, and who must give it."
       },
       "bills": {
-        "title": "Bills · Rose’s circle · Kin",
+        "title": "Bills · Kin",
         "description": "What is coming, what was paid and what Kin checked."
       },
       "fairness": {
-        "title": "Fairness · Rose’s circle · Kin",
+        "title": "Fairness · Kin",
         "description": "Each member measured against the agreed shares, and the settlement that closes the gap."
       },
       "record": {
-        "title": "Record · Rose’s circle · Kin",
-        "description": "Every movement of Rose’s money, in the order it happened."
+        "title": "Record · Kin",
+        "description": "Every movement of the circle’s money, in the order it happened."
       },
       "circle": {
-        "title": "Circle · Rose’s circle · Kin",
+        "title": "Circle · Kin",
         "description": "The members, their roles, the family agreement and the payees."
       }
     },
@@ -896,8 +899,7 @@
         "circle": "Circle"
       },
       "waiting": "{count} waiting",
-      "homeLabel": "Kin, overview of Rose’s circle",
-      "circleName": "Rose’s circle",
+      "homeLabel": "Kin, overview of {circle}",
       "clock": "Demo clock · {date}",
       "account": {
         "menu": "Your account",
@@ -908,8 +910,14 @@
       },
       "demo": {
         "label": "Demo circle",
-        "text": "You are seeing Rose’s October from Elena’s seat, as the organizer. The data are examples in the PayPal sandbox: nothing here is a real payment, and no button moves money."
-      }
+        "text": "You are in Rose’s circle as {name}, the {role}. The money is simulated in the PayPal sandbox, and what you do here changes only your own copy of the circle.",
+        "restart": "Start again",
+        "restartNote": "Gives you a fresh copy of Rose’s circle. The one you have now is archived, not deleted.",
+        "viewAs": "See the circle as",
+        "seat": "You are {name}, {role}",
+        "leave": "Leave the demo"
+      },
+      "visitor": "Demo visitor"
     },
     "pause": {
       "button": "Pause payments",
@@ -919,14 +927,12 @@
         "Bills, purchases and caregiver pay wait.",
         "Money coming in still arrives.",
         "Yeses already given count again when the pause lifts.",
-        "Rose hears about it on her next call."
+        "{parent} hears about it on the next call."
       ],
       "confirm": "Pause for {hours} hours",
-      "cancel": "Keep payments running"
-    },
-    "demoAction": {
-      "title": "Nothing moved.",
-      "text": "This is the demo circle. Approving, declining and pausing open with accounts, and each one will ask for a fresh check that it is you."
+      "cancel": "Keep payments running",
+      "resume": "Lift the pause",
+      "active": "Paused until {until} by {name}."
     },
     "common": {
       "simulated": "Simulated",
@@ -953,14 +959,6 @@
         "pharmacy": "Pharmacy",
         "repairs": "Repairs"
       },
-      "payees": {
-        "electricity": "Electricity company",
-        "gas": "Gas company",
-        "water": "Water company",
-        "pharmacy": "Pharmacy",
-        "amara": "Amara",
-        "stairlift": "Ridgeway Stairlifts"
-      },
       "entryKinds": {
         "contribution": "Contribution",
         "out_of_pocket": "Own pocket",
@@ -973,8 +971,8 @@
       },
       "planLabels": {
         "standing": "Pays itself under a standing rule",
-        "parent": "Rose decides",
-        "parentAndSecond": "Rose and a second yes",
+        "parent": "{parent} decides",
+        "parentAndSecond": "{parent} and a second yes",
         "organizer": "The organizer approves",
         "organizerAndSecond": "Two yeses",
         "refused": "Above the agreement’s limit",
@@ -983,20 +981,21 @@
     },
     "overview": {
       "greeting": "Good evening, {name}",
-      "lede": "Here is Rose’s October. The pool matches PayPal’s record, and the month is ready to close.",
+      "lede": "Here is {month} in {circle}: the pool, what needs a yes, and what Kin did.",
       "actions": {
         "approvals": "Review approvals",
         "settlement": "See the settlement"
       },
       "stats": {
-        "label": "October at a glance",
+        "label": "{month} at a glance",
         "pool": {
           "label": "In the pool",
           "note": "Confirmed by PayPal"
         },
         "paidIn": {
           "label": "Paid in",
-          "note": "From {names}"
+          "note": "From {names}",
+          "none": "No contributions yet"
         },
         "paidOut": {
           "label": "Paid out",
@@ -1013,12 +1012,12 @@
       },
       "safety": {
         "title": "Kin caught a false demand",
-        "text": "A caller told Rose she owed {claimed} for gas. Kin found no gas bill outstanding: the last one, {paid}, was paid on {paidDay}. Rose was told not to pay, and {alerted} were alerted.",
+        "text": "A caller told {parent} they owed {claimed} to {payee}. Kin found no bill outstanding: the last one, {paid}, was paid on {paidDay}. {parent} was told not to pay, and {alerted} were alerted.",
         "rule": "Kin tells. Kin never asks for secrets.",
         "link": "See the check"
       },
       "fairness": {
-        "title": "Fairness in October",
+        "title": "Fairness in {month}",
         "text": "Each member against the shares the family agreed.",
         "owed": "Owed {amount}",
         "owes": "Owes {amount}",
@@ -1026,14 +1025,14 @@
         "link": "Open fairness"
       },
       "heard": {
-        "title": "What Rose heard",
-        "text": "Kin speaks every confirmed payment to Rose on her phone.",
+        "title": "What {parent} heard",
+        "text": "Kin speaks every confirmed payment to {parent} by phone.",
         "lines": {
-          "billPaid": "Your electricity bill of {amount} was paid from the family pool this morning.",
-          "refill": "Your blood pressure refill is ordered. It cost {amount} and arrives tomorrow.",
-          "letter": "This is from the water company. It says {amount} is due on the 30th. Elena will see it today.",
-          "falseDemand": "I find no gas bill outstanding. Your gas bill of {amount} was paid on the 2nd. Please do not pay this caller.",
-          "caregiverPaid": "Amara has been paid {amount} for her visits this week."
+          "billPaid": "Your {payee} bill of {amount} was paid from the family pool.",
+          "refill": "Your {payee} order is placed. It cost {amount}.",
+          "letter": "This letter is from {payee}. It says {amount} is due. The family will see it today.",
+          "falseDemand": "I find no {payee} bill outstanding. The last one, {amount}, is paid. Please do not pay this caller.",
+          "caregiverPaid": "{payee} has been paid {amount} for the visits."
         }
       },
       "activity": {
@@ -1042,7 +1041,7 @@
       },
       "spending": {
         "title": "Where the money went",
-        "text": "October’s spending by category, from the pool and from members’ own pockets.",
+        "text": "Spending in {month} by category, from the pool and from members’ own pockets.",
         "total": "{amount} in all"
       },
       "comingUp": {
@@ -1055,7 +1054,7 @@
       "lede": "Nothing leaves the pool without the yeses below. Kin works out who must say yes from the family agreement, and no one can skip a step.",
       "waitingTitle": "Waiting for a yes",
       "waitingEmpty": "Nothing is waiting for a yes.",
-      "decidedTitle": "Approved in October",
+      "decidedTitle": "Approved in {month}",
       "decidedText": "Each approval is kept with the entry it led to.",
       "purposes": {
         "stairlift": {
@@ -1067,7 +1066,7 @@
           "text": "Three visits of four hours, billed by Amara by voice."
         },
         "settlement": {
-          "title": "October settlement for {name}",
+          "title": "{month} settlement for {name}",
           "text": "From Kin’s calculation of the month. The Fairness page shows why."
         }
       },
@@ -1080,26 +1079,37 @@
       "progress": "Yeses: {done} of {total}",
       "slots": {
         "label": "Who must say yes",
-        "parent_decides": "Rose decides above {amount}",
+        "parent_decides": "{parent} decides above {amount}",
         "organizer": "The organizer’s yes",
         "second_approval": "A second yes above {amount}",
         "saidYes": "{name} said yes {method}, {time}",
+        "saidNo": "{name} said no {method}, {time}",
         "methods": {
           "voice": "by phone",
           "app": "in the app"
         },
         "open": "Waiting for {names}",
-        "parentCall": "Kin will ask Rose on her next call."
+        "parentCall": "Kin will ask {parent} on the next call."
       },
       "notes": {
         "newPayee": "A new payee. Everyone in the circle was told.",
         "payeeIsMember": "{name} is being paid, so someone else must say yes too.",
         "abovePool": "More than the pool holds today ({pool}). It is paid only once enough money has arrived."
-      }
+      },
+      "answered": {
+        "title": "Answered",
+        "text": "Proposals the circle has decided. Each answer is kept with who gave it, how and when.",
+        "states": {
+          "approved": "Approved · the payment goes out with PayPal payouts, which come next",
+          "rejected": "Declined · nothing is paid",
+          "expired": "Expired · nothing is paid"
+        }
+      },
+      "realLocked": "Answering a real payment needs a fresh check that it is you. It opens with payments."
     },
     "bills": {
       "title": "Bills",
-      "lede": "One list for everything Rose’s circle pays: what is coming, what was paid, and what Kin checked.",
+      "lede": "One list for everything the circle pays: what is coming, what was paid, and what Kin checked.",
       "upcoming": {
         "title": "Coming up in {month}",
         "text": "Expected amounts. The real amount comes with each bill.",
@@ -1125,8 +1135,8 @@
         "title": "Checked by Kin",
         "text": "Kin checks every bill and every demand against the record, with plain code.",
         "falseDemand": {
-          "title": "A caller demanded {claimed} for gas",
-          "text": "On {day} a caller told Rose her gas account was overdue. Kin found no gas bill outstanding. The last one, {paid}, was paid on {paidDay}. {alerted} were alerted within seconds."
+          "title": "A caller demanded {claimed} for {payee}",
+          "text": "On {day} a caller told {parent} the {payee} account was overdue. Kin found no bill outstanding. The last one, {paid}, was paid on {paidDay}. {alerted} were alerted within seconds."
         },
         "verdict": "Matches nothing on record",
         "noDuplicates": "No duplicate bills this month.",
@@ -1142,7 +1152,7 @@
         "version": "Version {version}, accepted by everyone."
       },
       "members": {
-        "title": "Each member in October",
+        "title": "Each member in {month}",
         "paidIn": "Paid into the pool",
         "ownPocket": "Paid from own pocket",
         "care": "Care time",
@@ -1162,7 +1172,7 @@
         "text": "Each bar is what a member gave. The mark is their agreed share of {total}."
       },
       "settlement": {
-        "title": "October settlement",
+        "title": "{month} settlement",
         "text": "The smallest set of payments that brings everyone back to their share.",
         "payouts": "Out of the pool",
         "collections": "Into the pool",
@@ -1178,7 +1188,7 @@
     },
     "record": {
       "title": "Record",
-      "lede": "Every movement of Rose’s money, in the order it happened. Nothing is changed or deleted. A correction is a new entry.",
+      "lede": "Every movement of the circle’s money, in the order it happened. Nothing is changed or deleted. A correction is a new entry.",
       "filters": {
         "label": "Show",
         "all": "All",
@@ -1204,7 +1214,7 @@
         "out_of_pocket": "{name}’s receipt: {category}",
         "bill_approved": "{payee}: bill approved",
         "payout_confirmed": "{payee}: paid",
-        "purchase_captured": "{category} order for Rose",
+        "purchase_captured": "{category} order for {parent}",
         "care_credit": "{name}’s care time",
         "settlement_collection": "{name} settled up",
         "settlement_payout": "{name} was paid back"
@@ -1233,17 +1243,28 @@
       "fee": "PayPal fee {fee}",
       "careNote": "Care time, not cash",
       "summary": "{count} entries. Every one balances.",
-      "export": "Export audit record",
-      "empty": "No entries of this kind this month."
+      "empty": "No entries of this kind this month.",
+      "download": "Download the record (CSV)",
+      "csv": {
+        "date": "Date",
+        "entry": "Entry",
+        "kind": "Kind",
+        "account": "Account",
+        "debit": "Debit",
+        "credit": "Credit",
+        "simulated": "Simulated",
+        "yes": "yes",
+        "no": "no"
+      }
     },
     "circle": {
       "title": "Circle",
-      "lede": "Who is in Rose’s circle, what each person may do, and the agreement everyone accepted.",
+      "lede": "Who is in the circle, what each person may do, and the agreement everyone accepted.",
       "parent": {
-        "title": "Rose decides",
-        "text": "Rose’s spoken yes is needed for anything above {amount}. Kin speaks every confirmed payment to her, and she can ask it anything.",
+        "title": "How {parent} takes part",
+        "text": "{parent}’s spoken yes is needed for anything above {amount}. Kin speaks every confirmed payment to them, and they can ask it anything.",
         "levelsLabel": "How a parent can take part",
-        "current": "Rose’s choice",
+        "current": "Chosen with {parent}",
         "levels": {
           "decides": {
             "title": "Decides",
@@ -1288,7 +1309,7 @@
             "value": "Above {amount}"
           },
           "parent": {
-            "label": "Rose decides",
+            "label": "{parent} decides",
             "value": "Above {amount}"
           },
           "window": {
@@ -1308,7 +1329,88 @@
         "new": "New",
         "standing": "Pays itself between {min} and {max}",
         "eachBill": "Every payment needs a yes"
+      },
+      "invite": {
+        "title": "Invite someone",
+        "text": "They join this circle the first time they sign in to Kin with this address.",
+        "email": "Email address",
+        "role": "Role",
+        "submit": "Record the invitation",
+        "cancel": "Cancel"
+      },
+      "invitations": {
+        "title": "Invitations",
+        "waiting": "Waiting until {date}",
+        "status": {
+          "pending": "Waiting to join",
+          "accepted": "Joined",
+          "declined": "Declined",
+          "expired": "Expired"
+        }
       }
+    },
+    "createCircle": {
+      "eyebrow": "Your circle",
+      "title": "Start your family’s circle",
+      "text": "A circle holds one family’s shared money for one parent. You will organize it, and you can invite the others as soon as it exists.",
+      "name": {
+        "label": "Name of the circle",
+        "hint": "For example, Mum’s circle."
+      },
+      "parentName": {
+        "label": "The parent’s name"
+      },
+      "parentLevel": {
+        "label": "How the parent takes part"
+      },
+      "relationship": {
+        "label": "You are their",
+        "hint": "Optional. For example, daughter or son."
+      },
+      "timezone": {
+        "label": "Timezone",
+        "hint": "Dates and the close of each month follow it."
+      },
+      "currency": {
+        "label": "Currency",
+        "value": "US dollars. Kin’s PayPal sandbox runs in US dollars for now."
+      },
+      "submit": "Start the circle",
+      "invited": "Invited by a family? Their circle opens here as soon as you sign in with the address they used."
+    },
+    "notices": {
+      "answered": "Your answer is recorded. The proposal waits for the other yeses it needs.",
+      "approved": "Approved. The payment goes out with PayPal payouts, which come next in Kin.",
+      "rejected": "Declined. Nothing will be paid.",
+      "closed": "That proposal was already decided.",
+      "refused": "Your role cannot do that in this circle.",
+      "freshCheck": "Approving a real payment needs a fresh check that it is you. It opens with payments.",
+      "paused": "Paused. No payment is approved for 24 hours, and everyone is told.",
+      "resumed": "The pause is lifted.",
+      "invited": "Invitation recorded. They join when they sign in to Kin with that address.",
+      "invalidInvite": "Enter a valid email address and choose a role.",
+      "roleChanged": "You now see the circle from a new seat.",
+      "restarted": "You have a fresh copy of Rose’s circle.",
+      "circleCreated": "Your circle is ready. Invite your family from the Circle screen.",
+      "invalidCircle": "Please fill in every field to start the circle.",
+      "dismiss": "Dismiss"
+    },
+    "empty": {
+      "attention": "Nothing needs a yes right now.",
+      "safety": {
+        "title": "Kin checks every demand",
+        "text": "When someone asks the parent for money, Kin checks it against the record and alerts the family. Nothing has been checked yet."
+      },
+      "fairness": "Fairness appears once the family has agreed its shares.",
+      "heard": "Kin has not told {parent} anything yet. Every confirmed payment will be spoken to them.",
+      "activity": "No money has moved yet. Contributions and payments appear here as PayPal confirms them.",
+      "spending": "Nothing has been spent this month.",
+      "comingUp": "No bills are expected yet.",
+      "paid": "No bill has been paid this month.",
+      "decided": "Nothing has been decided yet.",
+      "record": "The record is empty. Every confirmed movement of money will appear here, in order.",
+      "agreement": "No agreement yet. The shares, the care rate and the approval thresholds are set when the family agrees them.",
+      "payees": "No payees yet. The companies and caregivers the circle pays appear here once they are added."
     }
   }
 }

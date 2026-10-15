@@ -1,31 +1,37 @@
 import { describeAccount } from "@kin/domain";
+import { DownloadIcon } from "lucide-react";
 import type { Metadata } from "next";
 
 import { FILTER_OF } from "@/components/dashboard/record/record-filters";
 import { RecordList } from "@/components/dashboard/record/record-list";
-import { DemoActions } from "@/components/dashboard/ui/demo-actions";
+import { EmptyState } from "@/components/dashboard/ui/empty-state";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { describeAccountCode, describeEntry } from "@/components/dashboard/words/entry-words";
-import { DEMO_PERIOD } from "@/content/demo-circle/clock";
-import { circleFormatters } from "@/content/demo-circle/format";
-import { monthTotals, recordEntries } from "@/content/demo-circle/record";
+import { Button } from "@/components/ui/button";
+import { dashboardRoutes } from "@/content/dashboard-routes";
+import { circleFormatters } from "@/content/circle/format";
+import { circleNames } from "@/content/circle/names";
+import { openPeriod } from "@/content/circle/period";
+import { recordEntries } from "@/content/circle/record";
 import { directionOf } from "@/i18n/locales";
 import { dashboardMetadata } from "@/i18n/page-context";
-import { dashboardContext } from "@/server/dashboard-context";
+import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
+import { dashboardContext } from "@/server/dashboard-context";
 
 export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/record">): Promise<Metadata> {
   return dashboardMetadata(params, "record");
 }
 
 export default async function RecordPage({ params }: PageProps<"/[locale]/dashboard/record">) {
-  const { locale, dictionary } = await dashboardContext(params, "record");
-  const { record, common, demoAction } = dictionary.dashboard;
-  const format = circleFormatters(locale);
-  const { entryCount } = monthTotals();
+  const { locale, dictionary, circle } = await dashboardContext(params, "record");
+  const { record, common, empty } = dictionary.dashboard;
+  const format = circleFormatters(locale, circle);
+  const names = circleNames(circle, dictionary);
+  const entries = recordEntries(circle);
 
-  const items = recordEntries().map((view) => {
+  const items = entries.map((view) => {
     const { entry } = view;
     const note = entry.kind === "care_credit" ? record.careNote : view.feeCents > 0 ? fill(record.fee, { fee: format.money(view.feeCents) }) : null;
     return {
@@ -34,7 +40,7 @@ export default async function RecordPage({ params }: PageProps<"/[locale]/dashbo
       isoDay: entry.occurredOn,
       cents: view.cents,
       day: format.day(entry.occurredOn),
-      text: describeEntry(dictionary, view),
+      text: describeEntry(dictionary, names, view),
       kind: common.entryKinds[entry.kind],
       source: record.sources[entry.source.type],
       amount: format.money(view.cents),
@@ -45,7 +51,7 @@ export default async function RecordPage({ params }: PageProps<"/[locale]/dashbo
         const account = describeAccount(line.account);
         const amount = format.money(line.cents);
         return {
-          account: describeAccountCode(dictionary, account.family, account.subject),
+          account: describeAccountCode(dictionary, names, account.family, account.subject),
           debit: line.direction === "debit" ? amount : "",
           credit: line.direction === "credit" ? amount : "",
         };
@@ -55,13 +61,29 @@ export default async function RecordPage({ params }: PageProps<"/[locale]/dashbo
 
   return (
     <>
-      <PageHeader eyebrow={format.month(DEMO_PERIOD)} title={record.title} lede={record.lede} />
+      <PageHeader eyebrow={format.month(openPeriod(circle))} title={record.title} lede={record.lede} />
       <Panel
-        title={fill(record.summary, { count: format.count(entryCount) })}
-        aside={<DemoActions actions={[{ label: record.export, variant: "outline" }]} note={demoAction} className="w-full sm:w-auto" />}
+        title={fill(record.summary, { count: format.count(entries.length) })}
+        aside={
+          items.length > 0 ? (
+            // A plain link: the browser downloads the file, and the route checks the viewer again.
+            <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">
+              <a href={`${localizedPath(locale, dashboardRoutes.record)}/export`} download>
+                <DownloadIcon aria-hidden="true" />
+                {record.download}
+              </a>
+            </Button>
+          ) : null
+        }
         flush
       >
-        <RecordList copy={record} items={items} rtl={directionOf(locale) === "rtl"} />
+        {items.length > 0 ? (
+          <RecordList copy={record} items={items} rtl={directionOf(locale) === "rtl"} />
+        ) : (
+          <div className="px-5 pb-5 sm:px-6">
+            <EmptyState text={empty.record} />
+          </div>
+        )}
       </Panel>
     </>
   );

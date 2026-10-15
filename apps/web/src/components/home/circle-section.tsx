@@ -5,6 +5,7 @@ import { Heading } from "@/components/shared/heading";
 import { Lede } from "@/components/shared/lede";
 import { PaymentTicker } from "@/components/shared/payment-ticker";
 import { ShareLegend } from "@/components/shared/share-legend";
+import { exampleShares } from "@/content/example-family";
 import { StepList } from "@/components/shared/step-list";
 import type { ExampleAmounts } from "@/content/example-amounts";
 import type { Dictionary } from "@/i18n/dictionary";
@@ -36,7 +37,7 @@ export function CircleSection({ locale, copy, common, amounts }: CircleSectionPr
             <p className="font-serif text-2xl">{people.rose}</p>
             <p className="text-sm text-muted-foreground">{fill(copy.roseNote, { limit: amounts.limit })}</p>
             <div className="mt-4">
-              <ShareLegend locale={locale} people={people} />
+              <ShareLegend locale={locale} shares={exampleShares(people)} />
             </div>
           </figcaption>
           <div className="mt-6">
