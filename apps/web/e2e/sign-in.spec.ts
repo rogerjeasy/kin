@@ -121,6 +121,16 @@ test("a link that tries to send someone elsewhere after signing in lands on the 
   await expect(page).toHaveURL("/dashboard");
 });
 
+test("a form on another site cannot sign anyone out", async ({ page }) => {
+  await signIn(page);
+
+  const response = await page.request.post("/auth/sign-out", { headers: { origin: "https://evil.example" }, maxRedirects: 0 });
+
+  expect(response.status()).toBe(403);
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL("/dashboard");
+});
+
 test("signing out ends the session, and the circle's screens close again", async ({ page }) => {
   await signIn(page);
 

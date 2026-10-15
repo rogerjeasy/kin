@@ -13,8 +13,13 @@ describe("the session cookies", () => {
     expect(sessionCookies(tokens).find((cookie) => cookie.name === COOKIES.access)?.options).toMatchObject({ path: "/", maxAge: 3600 });
   });
 
-  it("send the refresh token only to the sign-in routes", () => {
-    expect(sessionCookies(tokens).find((cookie) => cookie.name === COOKIES.refresh)?.options.path).toBe("/auth");
+  it("are all bound to this exact origin, so no other subdomain can plant one", () => {
+    for (const name of Object.values(COOKIES)) {
+      expect(name.startsWith("__Host-")).toBe(true);
+    }
+    for (const cookie of [...sessionCookies(tokens), signInCookie("x")]) {
+      expect(cookie.options.path).toBe("/");
+    }
   });
 
   it("keep the refresh token in hand when a refresh returns none", () => {
@@ -33,8 +38,8 @@ describe("the session cookies", () => {
 describe("one sign-in's secrets", () => {
   const flow = { verifier: "v", state: "s", nonce: "n", next: "/dashboard" };
 
-  it("travel only to the sign-in routes, for ten minutes", () => {
-    expect(signInCookie(encodeFlow(flow)).options).toMatchObject({ path: "/auth", maxAge: 600, httpOnly: true });
+  it("last ten minutes, out of reach of page scripts", () => {
+    expect(signInCookie(encodeFlow(flow)).options).toMatchObject({ path: "/", maxAge: 600, httpOnly: true, secure: true });
   });
 
   it("come back exactly as they left", () => {
