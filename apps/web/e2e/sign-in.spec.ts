@@ -70,7 +70,9 @@ test("the start screen asks for the consent rule before creating an account", as
   await expect(page.getByRole("checkbox")).toHaveAccessibleDescription(startPage.form.consentError);
 
   await page.getByRole("checkbox").check();
+  const signUp = page.waitForRequest((request) => new URL(request.url()).pathname === "/signup");
   await page.getByRole("button", { name: startPage.form.submit }).click();
+  await signUp;
   await expect(page).toHaveURL("/dashboard");
 });
 

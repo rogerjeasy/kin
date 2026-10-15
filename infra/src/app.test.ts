@@ -249,6 +249,20 @@ describe("sign-in", () => {
       CallbackURLs: ["http://localhost:3000/auth/callback"],
     });
   });
+
+  it("shows the web client Kin's own branded pages, not Cognito's default style", () => {
+    data.resourceCountIs("AWS::Cognito::ManagedLoginBranding", 1);
+    data.hasResourceProperties("AWS::Cognito::ManagedLoginBranding", {
+      UseCognitoProvidedValues: false,
+      Settings: Match.objectLike({
+        categories: Match.objectLike({ global: Match.objectLike({ colorSchemeMode: "DYNAMIC" }) }),
+      }),
+      Assets: Match.arrayWith([
+        Match.objectLike({ Category: "FORM_LOGO", ColorMode: "LIGHT", Extension: "SVG" }),
+        Match.objectLike({ Category: "FORM_LOGO", ColorMode: "DARK", Extension: "SVG" }),
+      ]),
+    });
+  });
 });
 
 describe("sign-in with a code by email", () => {

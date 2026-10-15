@@ -15,9 +15,21 @@ export function callbackUrl(config: AuthConfig): string {
   return `${config.webOrigin}${CALLBACK_PATH}`;
 }
 
-/** Where to send the browser to sign in, carrying this sign-in's secrets. */
-export function authorizeUrl(config: AuthConfig, secrets: SignInSecrets, language: string): string {
-  const url = new URL("/oauth2/authorize", config.loginUrl);
+/**
+ * The provider's page a person starts on. Its sign-up page takes the same
+ * parameters as its sign-in page and comes back to the same callback.
+ */
+const SCREEN_PATHS = { "sign-in": "/oauth2/authorize", "sign-up": "/signup" } as const;
+
+export type AuthScreen = keyof typeof SCREEN_PATHS;
+
+export function parseAuthScreen(value: string | null): AuthScreen {
+  return value === "sign-up" ? "sign-up" : "sign-in";
+}
+
+/** Where to send the browser to sign in or sign up, carrying this attempt's secrets. */
+export function authorizeUrl(config: AuthConfig, secrets: SignInSecrets, language: string, screen: AuthScreen): string {
+  const url = new URL(SCREEN_PATHS[screen], config.loginUrl);
   url.search = new URLSearchParams({
     response_type: "code",
     client_id: config.clientId,

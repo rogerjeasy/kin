@@ -6,6 +6,7 @@ import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 
 import type { InfraConfig } from "./config.ts";
+import { MANAGED_LOGIN_SETTINGS, managedLoginAssets } from "./managed-login/branding.ts";
 import { SignInEmailSender, createGmailSecret } from "./sign-in-email.ts";
 import { WEB_SETTINGS } from "./web-settings.ts";
 
@@ -118,11 +119,14 @@ export class Identity extends Construct {
       new ssm.StringParameter(this, `WebSetting-${key}`, { parameterName, stringValue: webSettings[key] });
     }
 
-    // Managed login shows a page only to a client that has a style.
+    // Managed login shows a page only to a client that has a style. Kin's
+    // sets its colours, logo and background; Cognito's defaults fill the rest.
     new cognito.CfnManagedLoginBranding(this, "Branding", {
       userPoolId: this.userPool.userPoolId,
       clientId: this.webClient.userPoolClientId,
-      useCognitoProvidedValues: true,
+      useCognitoProvidedValues: false,
+      settings: MANAGED_LOGIN_SETTINGS,
+      assets: managedLoginAssets(),
     });
   }
 }
