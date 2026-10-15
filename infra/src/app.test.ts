@@ -102,8 +102,10 @@ describe("Kin's place in the shared account", () => {
       ...policyStatements(data, "AWS::KMS::Key", "KeyPolicy"),
     ];
 
-    // Two buckets, ten queues, two secrets (the database's and the Gmail app password) and the key.
-    expect(statements).toHaveLength(2 + 10 + 2 + 1);
+    // Two buckets, ten queues, six secrets (the database admin's, the Gmail
+    // app password, the three database roles' passwords and the demo
+    // session key) and the key.
+    expect(statements).toHaveLength(2 + 10 + 6 + 1);
     for (const statement of statements) {
       expect(statement).toEqual(expect.arrayContaining([neighbourDeny]));
     }
@@ -123,6 +125,62 @@ describe("Kin's place in the shared account", () => {
       0,
     );
     expect(functions).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("the demo", () => {
+  it("signs visitors' sessions with a generated key kept in Secrets Manager", () => {
+    data.hasResourceProperties("AWS::SecretsManager::Secret", {
+      Name: "kin/web/demo-session-key",
+      KmsKeyId: { "Fn::GetAtt": [keyId(), "Arn"] },
+      GenerateSecretString: { PasswordLength: 64, ExcludePunctuation: true },
+    });
+  });
+});
+
+describe("the database's users", () => {
+  it("each have a generated password of their own, kept if the stack goes", () => {
+    for (const role of ["app", "service", "provisioner"]) {
+      data.hasResourceProperties("AWS::SecretsManager::Secret", {
+        Name: `kin/database/${role}`,
+        KmsKeyId: { "Fn::GetAtt": [keyId(), "Arn"] },
+        GenerateSecretString: { PasswordLength: 40, ExcludePunctuation: true },
+      });
+    }
+    const roleSecrets = Object.values(data.findResources("AWS::SecretsManager::Secret")).filter((secret) =>
+      /^kin\/database\/(app|service|provisioner)$/.test(String(secret["Properties"]["Name"])),
+    );
+    expect(roleSecrets.map((secret) => secret["DeletionPolicy"])).toEqual(["Retain", "Retain", "Retain"]);
+  });
+
+  it("are set up by a one-off migration task, not a Lambda function", () => {
+    data.hasResourceProperties("AWS::ECS::TaskDefinition", {
+      Family: "kin-database-migrate",
+      RequiresCompatibilities: ["FARGATE"],
+      ContainerDefinitions: [
+        Match.objectLike({
+          Name: "migrate",
+          Environment: Match.arrayWith([{ Name: "KIN_DATABASE_TLS", Value: "require" }]),
+          Secrets: Match.arrayWith([
+            Match.objectLike({ Name: "KIN_DATABASE_ADMIN_PASSWORD" }),
+            Match.objectLike({ Name: "KIN_DATABASE_APP_PASSWORD" }),
+            Match.objectLike({ Name: "KIN_DATABASE_SERVICE_PASSWORD" }),
+            Match.objectLike({ Name: "KIN_DATABASE_PROVISIONER_PASSWORD" }),
+          ]),
+        }),
+      ],
+    });
+    data.hasResourceProperties("AWS::ECS::Cluster", { ClusterName: "kin" });
+    data.resourceCountIs("AWS::Lambda::Function", 0);
+  });
+
+  it("give the migration task no AWS access of its own", () => {
+    const [taskRole] = Object.entries(data.findResources("AWS::IAM::Role")).filter(([, role]) => role["Properties"]["RoleName"] === "kin-database-migrate-task");
+    expect(taskRole).toBeDefined();
+    const attached = Object.values(data.findResources("AWS::IAM::Policy")).filter((policy) =>
+      JSON.stringify(policy["Properties"]["Roles"]).includes(taskRole?.[0] ?? "missing"),
+    );
+    expect(attached).toEqual([]);
   });
 });
 
@@ -348,11 +406,49 @@ describe("the web app", () => {
     web.hasResourceProperties("AWS::AppRunner::AutoScalingConfiguration", { MinSize: 1, MaxSize: 2 });
   });
 
-  it("is told where sign-in lives, and has no secret in its settings", () => {
+  it("is told where sign-in and the database live, and has no secret in its settings", () => {
     const [service] = Object.values(web.findResources("AWS::AppRunner::Service"));
-    const variables = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"]["RuntimeEnvironmentVariables"] as { Name: string }[];
+    const image = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"];
+    const variables = image["RuntimeEnvironmentVariables"] as { Name: string; Value: unknown }[];
 
-    expect(variables.map((variable) => variable.Name).toSorted()).toEqual(["KIN_AUTH_CLIENT_ID", "KIN_AUTH_ISSUER", "KIN_AUTH_LOGIN_URL"]);
+    expect(variables.map((variable) => variable.Name).toSorted()).toEqual([
+      "KIN_AUTH_CLIENT_ID",
+      "KIN_AUTH_ISSUER",
+      "KIN_AUTH_LOGIN_URL",
+      "KIN_DATABASE_HOST",
+      "KIN_DATABASE_NAME",
+      "KIN_DATABASE_PORT",
+      "KIN_DATABASE_TLS",
+      "KIN_DEMO_CIRCLES",
+    ]);
+    expect(variables).toContainEqual({ Name: "KIN_DATABASE_TLS", Value: "require" });
+    expect(variables).toContainEqual({ Name: "KIN_DEMO_CIRCLES", Value: "on" });
+  });
+
+  it("gets only the person's and the provisioner's database passwords and the demo key, from Secrets Manager", () => {
+    const [service] = Object.values(web.findResources("AWS::AppRunner::Service"));
+    const secrets = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"]["RuntimeEnvironmentSecrets"] as { Name: string; Value: unknown }[];
+
+    expect(secrets.map((secret) => secret.Name).toSorted()).toEqual(["KIN_DATABASE_APP_PASSWORD", "KIN_DATABASE_PROVISIONER_PASSWORD", "KIN_DEMO_SESSION_KEY"]);
+    for (const name of ["kin-database-app-secret-arn", "kin-database-provisioner-secret-arn", "kin-web-demo-session-key-arn"]) {
+      data.hasResourceProperties("AWS::SSM::Parameter", { Name: name, Type: "String" });
+    }
+    expect(JSON.stringify(web.toJSON())).not.toMatch(/ADMIN|SERVICE_PASSWORD|kin-database-service/);
+  });
+
+  it("reaches the database through Kin's services subnets, in the group the database admits", () => {
+    web.hasResourceProperties("AWS::AppRunner::VpcConnector", {
+      VpcConnectorName: "kin-web",
+      Subnets: { Ref: Match.stringLikeRegexp("SsmParameterValuekinservicessubnets") },
+      SecurityGroups: [{ Ref: Match.stringLikeRegexp("SsmParameterValuekinservicessecuritygroup") }],
+    });
+    web.hasResourceProperties("AWS::AppRunner::Service", {
+      NetworkConfiguration: {
+        EgressConfiguration: { EgressType: "VPC", VpcConnectorArn: Match.anyValue() },
+        IngressConfiguration: { IsPubliclyAccessible: true },
+      },
+    });
+    data.hasResourceProperties("AWS::SSM::Parameter", { Name: "kin-services-subnets", Type: "StringList" });
   });
 
   it("learns its own address from the first https origin Cognito may return to", () => {
@@ -373,14 +469,24 @@ describe("the web app", () => {
     expect(Object.keys(web.toJSON()["Parameters"] as object).some((key) => key.startsWith("SsmParameterValuekinwebauth"))).toBe(true);
   });
 
-  it("lets App Runner only pull the image", () => {
+  it("lets App Runner only pull the image, and the app only read its own three secrets", () => {
     const statements = Object.values(web.findResources("AWS::IAM::Policy")).flatMap(
-      (policy) => policy["Properties"]["PolicyDocument"]["Statement"] as { Action: string | string[] }[],
+      (policy) => policy["Properties"]["PolicyDocument"]["Statement"] as { Action: string | string[]; Resource: unknown; Condition?: unknown }[],
     );
     const actions = statements.flatMap((statement) => [statement.Action].flat());
 
-    expect(actions.every((action) => action.startsWith("ecr:"))).toBe(true);
+    expect(actions.filter((action) => !action.startsWith("ecr:")).toSorted()).toEqual(["kms:Decrypt", "secretsmanager:GetSecretValue"]);
     expect(actions).not.toContain("ecr:PutImage");
+    const read = statements.find((statement) => statement.Action === "secretsmanager:GetSecretValue");
+    expect(read?.Resource).toHaveLength(3);
+    const decrypt = statements.find((statement) => statement.Action === "kms:Decrypt");
+    expect(JSON.stringify(decrypt?.Condition)).toContain("kms:ViaService");
+    web.hasResourceProperties("AWS::IAM::Role", {
+      RoleName: "kin-web-instance",
+      AssumeRolePolicyDocument: Match.objectLike({
+        Statement: [Match.objectLike({ Principal: { Service: "tasks.apprunner.amazonaws.com" } })],
+      }),
+    });
   });
 });
 
@@ -407,7 +513,7 @@ describe("deployment from GitHub", () => {
   it("may only hand over to Kin's own deployment roles, not the lookup role", () => {
     ci.hasResourceProperties("AWS::IAM::Policy", {
       PolicyDocument: {
-        Statement: [
+        Statement: Match.arrayWith([
           {
             Action: "sts:AssumeRole",
             Effect: "Allow",
@@ -418,9 +524,33 @@ describe("deployment from GitHub", () => {
             ],
             Sid: "UseKinBootstrapRolesOnly",
           },
-        ],
+        ]),
       },
     });
+  });
+
+  it("may otherwise only run the migration task, watch it and read its log", () => {
+    const statements = Object.values(ci.findResources("AWS::IAM::Policy")).flatMap(
+      (policy) => policy["Properties"]["PolicyDocument"]["Statement"] as { Sid: string; Action: string; Resource: unknown; Condition?: unknown }[],
+    );
+    expect(statements.map((statement) => [statement.Sid, statement.Action])).toEqual([
+      ["UseKinBootstrapRolesOnly", "sts:AssumeRole"],
+      ["RunTheMigrationTaskOnly", "ecs:RunTask"],
+      ["WatchTheMigrationTask", "ecs:DescribeTasks"],
+      ["HandTheMigrationTaskItsRoles", "iam:PassRole"],
+      ["ReadWhereTheMigrationRuns", "ssm:GetParameter"],
+      ["ReadTheMigrationLog", "logs:GetLogEvents"],
+    ]);
+    const bySid = (sid: string) => statements.find((statement) => statement.Sid === sid);
+    expect(bySid("RunTheMigrationTaskOnly")).toMatchObject({
+      Resource: "arn:aws:ecs:us-east-1:123456789012:task-definition/kin-database-migrate:*",
+      Condition: { ArnEquals: { "ecs:cluster": "arn:aws:ecs:us-east-1:123456789012:cluster/kin" } },
+    });
+    expect(bySid("HandTheMigrationTaskItsRoles")).toMatchObject({
+      Resource: ["arn:aws:iam::123456789012:role/kin-database-migrate-execution", "arn:aws:iam::123456789012:role/kin-database-migrate-task"],
+      Condition: { StringEquals: { "iam:PassedToService": "ecs-tasks.amazonaws.com" } },
+    });
+    expect(JSON.stringify(statements)).not.toMatch(/"Resource":"\*"|"Action":"\*"/);
   });
 });
 

@@ -3,6 +3,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import type { Construct } from "constructs";
 
 import type { InfraConfig } from "./config.ts";
+import { DATABASE_SETTINGS, MIGRATION_TASK } from "./database-settings.ts";
 
 const GITHUB_ISSUER = "token.actions.githubusercontent.com";
 
@@ -46,6 +47,47 @@ export class CiStack extends Stack {
         resources: DEPLOY_BOOTSTRAP_ROLES.map(
           (name) => `arn:aws:iam::${this.account}:role/cdk-kin-${name}-role-*`,
         ),
+      }),
+    );
+    // Between deploying KinData and KinWeb, the pipeline migrates the
+    // database (infra/scripts/run-migrations.ts). It may run that one task
+    // and read what it needs to, nothing else in ECS.
+    const arn = (service: string, resource: string) => `arn:aws:${service}:${this.region}:${this.account}:${resource}`;
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "RunTheMigrationTaskOnly",
+        actions: ["ecs:RunTask"],
+        resources: [arn("ecs", `task-definition/${MIGRATION_TASK.family}:*`)],
+        conditions: { ArnEquals: { "ecs:cluster": arn("ecs", `cluster/${MIGRATION_TASK.cluster}`) } },
+      }),
+    );
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "WatchTheMigrationTask",
+        actions: ["ecs:DescribeTasks"],
+        resources: [arn("ecs", `task/${MIGRATION_TASK.cluster}/*`)],
+      }),
+    );
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "HandTheMigrationTaskItsRoles",
+        actions: ["iam:PassRole"],
+        resources: [MIGRATION_TASK.executionRole, MIGRATION_TASK.taskRole].map((name) => `arn:aws:iam::${this.account}:role/${name}`),
+        conditions: { StringEquals: { "iam:PassedToService": "ecs-tasks.amazonaws.com" } },
+      }),
+    );
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "ReadWhereTheMigrationRuns",
+        actions: ["ssm:GetParameter"],
+        resources: [DATABASE_SETTINGS.servicesSubnets, DATABASE_SETTINGS.servicesSecurityGroup].map((name) => arn("ssm", `parameter/${name}`)),
+      }),
+    );
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "ReadTheMigrationLog",
+        actions: ["logs:GetLogEvents"],
+        resources: [arn("logs", "log-group:/kin/database-migrate:log-stream:*")],
       }),
     );
   }

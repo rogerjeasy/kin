@@ -7,6 +7,7 @@ import type { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
 import type { InfraConfig } from "./config.ts";
+import { DATABASE_SETTINGS } from "./database-settings.ts";
 import { WEB_SETTINGS } from "./web-settings.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -56,7 +57,46 @@ export class WebStack extends Stack {
       { name: "KIN_AUTH_CLIENT_ID", value: setting(WEB_SETTINGS.authClientId) },
       // Known only once App Runner has named the service: see kin:webOrigins.
       ...(origin === null ? [] : [{ name: "KIN_WEB_ORIGIN", value: origin }]),
+      { name: "KIN_DATABASE_HOST", value: setting(DATABASE_SETTINGS.host) },
+      { name: "KIN_DATABASE_PORT", value: "5432" },
+      { name: "KIN_DATABASE_NAME", value: "kin" },
+      { name: "KIN_DATABASE_TLS", value: "require" },
+      // The hosted app is the demo environment (docs/architecture.md section 20.3).
+      { name: "KIN_DEMO_CIRCLES", value: "on" },
     ];
+
+    // The web app is a person's agent: it holds the person's role and the
+    // demo provisioner, never the admin's or the service's password. App
+    // Runner reads the two secrets when it deploys and never logs them.
+    const appSecret = setting(DATABASE_SETTINGS.appSecretArn);
+    const provisionerSecret = setting(DATABASE_SETTINGS.provisionerSecretArn);
+    const demoSessionKey = setting(DATABASE_SETTINGS.demoSessionKeyArn);
+    const instance = new iam.Role(this, "Instance", {
+      roleName: "kin-web-instance",
+      description: "What Kin's web app may reach in AWS: its two database passwords and the demo session key",
+      assumedBy: new iam.ServicePrincipal("tasks.apprunner.amazonaws.com"),
+    });
+    instance.addToPolicy(new iam.PolicyStatement({ actions: ["secretsmanager:GetSecretValue"], resources: [appSecret, provisionerSecret, demoSessionKey] }));
+    instance.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["kms:Decrypt"],
+        resources: [setting(DATABASE_SETTINGS.keyArn)],
+        conditions: { StringEquals: { "kms:ViaService": `secretsmanager.${this.region}.amazonaws.com` } },
+      }),
+    );
+    const secrets = [
+      { name: "KIN_DATABASE_APP_PASSWORD", value: appSecret },
+      { name: "KIN_DATABASE_PROVISIONER_PASSWORD", value: provisionerSecret },
+      { name: "KIN_DEMO_SESSION_KEY", value: demoSessionKey },
+    ];
+
+    // Out through Kin's own network, where the database admits Kin's
+    // services and the NAT gateway reaches Cognito.
+    const connector = new apprunner.CfnVpcConnector(this, "Network", {
+      vpcConnectorName: "kin-web",
+      subnets: ssm.StringListParameter.valueForTypedListParameter(this, DATABASE_SETTINGS.servicesSubnets),
+      securityGroups: [setting(DATABASE_SETTINGS.servicesSecurityGroup)],
+    });
 
     const service = new apprunner.CfnService(this, "Service", {
       serviceName: "kin-web",
@@ -66,15 +106,21 @@ export class WebStack extends Stack {
         imageRepository: {
           imageIdentifier: image.imageUri,
           imageRepositoryType: "ECR",
-          imageConfiguration: { port: "3000", runtimeEnvironmentVariables: environment },
+          imageConfiguration: { port: "3000", runtimeEnvironmentVariables: environment, runtimeEnvironmentSecrets: secrets },
         },
       },
-      instanceConfiguration: { cpu: "1 vCPU", memory: "2 GB" },
+      instanceConfiguration: { cpu: "1 vCPU", memory: "2 GB", instanceRoleArn: instance.roleArn },
+      networkConfiguration: {
+        egressConfiguration: { egressType: "VPC", vpcConnectorArn: connector.attrVpcConnectorArn },
+        ingressConfiguration: { isPubliclyAccessible: true },
+      },
       healthCheckConfiguration: { protocol: "HTTP", path: "/", interval: 10, timeout: 5, healthyThreshold: 1, unhealthyThreshold: 5 },
       autoScalingConfigurationArn: scaling.attrAutoScalingConfigurationArn,
     });
     // App Runner pulls the image as it creates the service, so the role's grant must exist first.
     service.node.addDependency(imageAccess);
+    // It reads its secrets as it starts, so the instance role's grant must exist first.
+    service.node.addDependency(instance);
 
     new CfnOutput(this, "Url", { value: `https://${service.attrServiceUrl}`, description: "Where Kin's web app is served" });
   }

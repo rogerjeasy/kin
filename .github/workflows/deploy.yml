@@ -45,13 +45,24 @@ jobs:
       # Security changes were reviewed in the pull request that brought them.
       # KinGuardrails is left out on purpose: it holds the boundary this
       # deployment runs under, so only a person may change it.
-      - name: Deploy the stacks, building and rolling out the web image
+      - name: Deploy everything the web app stands on
         working-directory: infra
-        run: pnpm exec cdk deploy KinOps KinNetwork KinData KinCi KinWeb --require-approval never --outputs-file cdk-outputs.json
+        run: pnpm exec cdk deploy KinOps KinNetwork KinData KinCi --require-approval never
         env:
           KIN_ALERT_EMAIL: ${{ secrets.KIN_ALERT_EMAIL }}
           # Unset, Cognito keeps its own sender and password-only sign-in.
           # Set, sign-in codes go by email through Kin's Gmail sender.
+          KIN_SENDER_EMAIL: ${{ secrets.KIN_SENDER_EMAIL }}
+      # Before the web app rolls out, so it never meets a schema older than its
+      # code. A one-off task in Kin's network; the step fails if it does.
+      - name: Migrate the database
+        working-directory: infra
+        run: pnpm run migrate
+      - name: Build and roll out the web image
+        working-directory: infra
+        run: pnpm exec cdk deploy KinWeb --require-approval never --outputs-file cdk-outputs.json
+        env:
+          KIN_ALERT_EMAIL: ${{ secrets.KIN_ALERT_EMAIL }}
           KIN_SENDER_EMAIL: ${{ secrets.KIN_SENDER_EMAIL }}
       - name: Check the live app
         working-directory: infra
