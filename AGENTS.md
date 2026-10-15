@@ -61,7 +61,8 @@ The root `package.json` is the source of truth for commands. Keep this contract 
 - The repository is a pnpm workspace. Run a script everywhere from the root with `pnpm <script>`, or in one workspace with `pnpm --filter @kin/<name> <script>`.
 - Run one test file with `pnpm --filter @kin/<name> exec vitest run <path from that workspace>`.
 - `build` and `test:e2e` run in the workspaces that define them. Today that is `@kin/web`. Its `test:e2e` builds the app and then runs Playwright against the production build. Run `pnpm --filter @kin/web exec playwright install chromium` once before the first run.
-- Start the web app for development with `pnpm --filter @kin/web dev`, and open http://localhost:3000.
+- Start the web app for development with `pnpm --filter @kin/web dev`, and open http://localhost:3000. Signing in needs `apps/web/.env.local`, copied from `apps/web/.env.example` and filled from the deployed KinData stack. Keep port 3000: it is the callback origin registered on the Cognito app client.
+- `test:e2e` starts a local stand-in for Cognito (`apps/web/e2e/support/identity-provider.ts`) beside the app and signs in through the real flow. It needs no AWS access.
 - Infrastructure is AWS CDK in `infra/`, in an AWS account shared with other projects (`architecture.md` section 14.8). Run it with an AWS profile for that account and an alert email: `AWS_PROFILE=wick-dev KIN_ALERT_EMAIL=you@example.com pnpm --filter @kin/infra run <synth|diff|deploy>`. Bootstrap once with `pnpm --filter @kin/infra run bootstrap`. Keep `run`: `pnpm deploy` without it is pnpm's own command. Deploying changes shared infrastructure, so section 12 applies.
 - Import a TypeScript file by its real extension (`./money.ts`, not `./money.js`). Packages export their source, and the Next.js build cannot resolve the `.js` form.
 - A workspace's `test` script drops `--passWithNoTests` in the change that adds its first test.

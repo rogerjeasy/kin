@@ -1039,6 +1039,8 @@ sequenceDiagram
 
 ### 12.1 Signing in
 
+How the web app does it today: `/auth/sign-in` draws a PKCE verifier, a state and a nonce, keeps them in a ten-minute cookie scoped to `/auth`, and sends the browser to Cognito's `/oauth2/authorize`. `/auth/callback` checks the state, trades the code with the verifier, verifies both tokens (issuer, signature, expiry, app client, `token_use`, the nonce, the same `sub`) and sets the session cookies. `/auth/refresh` renews expired tokens with the refresh token, and `/auth/sign-out` (POST only) clears the cookies and ends the Cognito session. The proxy refuses `/dashboard` without a verified session, and every page under it verifies again before reading anything. The code is in `packages/auth`, `packages/config` and `apps/web/src/server/auth`.
+
 - **Amazon Cognito** holds one user pool for every person.
 - **Passwordless sign-in** by emailed code or passkey, through Cognito's managed pages.
 - **Multi-factor authentication** is required for organizers and for anyone approving a payout. Approving a payout asks for a fresh check even inside an active session.
@@ -1407,6 +1409,7 @@ The hackathon needs a month of family life to be shown in minutes.
 - **Simulated billing cycles.** PayPal's sandbox bills subscriptions in real time. To show several months, the demo replays subscription payment events through the normal webhook path.
 - **Honest labelling.** Anything simulated is marked as simulated in the interface and in the ledger entry. Real sandbox transactions and simulated ones are never presented as the same thing.
 - **Reset.** One command returns the circle to its starting state.
+- **The demo dashboard, before circles exist.** `/dashboard` and its screens are behind sign-in. Every signed-in person sees Rose's October from Elena's seat, with their own name in the account menu. Every figure is computed by `packages/domain` from the example ledger (`rosesMonth`): balances, the settlement, and each proposal's approval plan and decision. The clock is fixed at the evening of 30 October 2026 in `apps/web/src/content/demo-circle/clock.ts`. Every button that would move money or change the circle answers that nothing moved and sends no request. When circles and the seeded circle exist, these screens read the same shapes from the API instead, and the circle-role check of section 12.3 decides what each person sees.
 
 ---
 
@@ -1443,6 +1446,10 @@ The hackathon needs a month of family life to be shown in minutes.
 | 27 | One no from a member who could approve rejects a proposal | Majority or organizer-only rejection | Uncertain means stop. A sibling who objects to a payment from their parent's money should halt it, not be outvoted. |
 | 28 | Proposals expire after 72 hours | No expiry, or a per-circle setting | A stale approval should not pay a bill whose facts may have changed. One fixed window needs no configuration until a family asks for another. |
 | 29 | A pause holds a request above the ceiling as paused, not refused | Refusing it at once | The pause is rule 1. A held request is planned again when the pause lifts and refused then. |
+| 30 | The web session is Cognito's own tokens in httpOnly, secure, same-site cookies, verified with `aws-jwt-verify` in the proxy and again in every page | A session of Kin's own, signed with a server secret | No session store and no signing secret to manage. Every check is the same check the API will make. The refresh token goes only to `/auth`. |
+| 31 | Sign-in through Cognito managed login, authorization code with PKCE, state and nonce | Kin's own sign-in form against the Cognito API | Kin hosts no credential form (tech-stack section 9.1). PKCE lets a public client with no secret trade the code safely. |
+| 32 | End-to-end tests sign in against a local stand-in for Cognito | A test user in the real pool, or a test-only bypass | The tests run the real flow and the real token checks with no switch in the app. The stand-in signs with its own key and lives only in `apps/web/e2e`. |
+| 33 | AG Grid Community for the ledger | AG Grid Enterprise on a trial key | The ledger needs sorting, selection and keyboard use, all in Community. An evaluation key would lapse on 13 November 2026, before judging, and may not be used in production. |
 
 ---
 

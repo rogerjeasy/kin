@@ -56,6 +56,7 @@
   --color-ring: var(--ring);
   --color-highlight: var(--highlight);
   --color-danger: var(--danger);
+  --color-positive: var(--positive);
   --color-band: var(--band);
   --color-band-foreground: var(--band-foreground);
   --color-band-muted: var(--band-muted);
@@ -90,8 +91,10 @@
   --ring: #1d2b4f;
   /* Gold for the amounts Kin speaks. */
   --highlight: #8a5a00;
-  /* For a form field that needs correcting. */
+  /* For a form field that needs correcting, and an alert. */
   --danger: #a3261e;
+  /* Money PayPal has confirmed. */
+  --positive: #1d6b3c;
   /* The navy band keeps its own colours in both themes. */
   --band: #1d2b4f;
   --band-foreground: #faf7f2;
@@ -124,6 +127,7 @@
   --ring: #f2eee7;
   --highlight: #e9b872;
   --danger: #f5a79e;
+  --positive: #86d3a0;
   --band: #1b2238;
   --band-foreground: #f2eee7;
   --band-muted: #b4b9c8;

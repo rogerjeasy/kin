@@ -26,7 +26,7 @@
     },
     "signIn": {
       "title": "Accedi · Kin",
-      "description": "Un codice via email o una passkey per la famiglia e per l’assistente familiare. Nessun accesso da fare per il genitore."
+      "description": "Familiari e assistenti familiari accedono dalla pagina sicura di Kin, gestita da Amazon Cognito. Il genitore non deve mai accedere."
     }
   },
   "common": {
@@ -767,13 +767,6 @@
       ]
     }
   },
-  "notOpen": {
-    "eyebrow": "Non ancora aperto",
-    "startTitle": "Le cerchie non sono ancora aperte.",
-    "signInTitle": "L’accesso non è ancora aperto.",
-    "text": "Kin è in fase di sviluppo per il PayPal AI Hackathon 2026 e funziona nella sandbox di PayPal con denaro di prova. Gli account apriranno con la dimostrazione.",
-    "link": "Scopri come funziona Kin"
-  },
   "notFound": {
     "eyebrow": "Pagina non trovata",
     "title": "Questa pagina non esiste.",
@@ -810,7 +803,7 @@
           "title": "Crea la cerchia"
         },
         {
-          "title": "Accordatevi su come dividere"
+          "title": "Concorda come dividere i costi"
         },
         {
           "title": "Tua madre o tuo padre dice sì"
@@ -822,28 +815,26 @@
     },
     "form": {
       "title": "Crea la tua cerchia familiare",
-      "text": "Di’ a Kin chi sei e per chi è la cerchia. Poi inviterai la tua famiglia.",
-      "nameLabel": "Il tuo nome",
-      "parentLabel": "Per chi è la cerchia?",
-      "parentHelp": "Una cerchia per ogni persona che assisti.",
+      "text": "Per prima cosa, crea il tuo account. Poi darai un nome alla cerchia e inviterai la tua famiglia.",
       "consent": "Ho capito che la cerchia non è attiva finché mia madre o mio padre, o chi ha l’autorità legale per agire in suo nome, non l’ha accettata.",
       "consentError": "Conferma questo punto per continuare.",
-      "submit": "Crea la cerchia",
-      "haveCircle": "Fai già parte di una cerchia?"
+      "submit": "Crea il tuo account",
+      "note": "Crei il tuo account sulla pagina sicura di Kin, gestita da Amazon Cognito. Finché le cerchie non saranno aperte, il nuovo account apre la cerchia dimostrativa.",
+      "haveCircle": "Hai già un account?"
     }
   },
   "signInPage": {
     "hero": {
       "eyebrow": "Accedi",
-      "title": "Nessuna password da ricordare, né da rubare.",
-      "lede": "Quando l’accesso sarà aperto, Kin ti invierà un codice via email oppure userà una passkey. Tua madre o tuo padre non dovrà accedere affatto."
+      "title": "La cerchia della tua famiglia, dietro un’unica porta.",
+      "lede": "L’accesso a Kin funziona con Amazon Cognito, quindi Kin non vede né conserva mai la tua password. Tua madre o tuo padre non deve mai accedere: è Kin a telefonare."
     },
     "ways": {
       "label": "Come entra ciascuno",
       "items": {
         "family": {
           "who": "Familiari",
-          "title": "Un codice via email, o una passkey"
+          "title": "La tua email e una password"
         },
         "parent": {
           "who": "Genitori",
@@ -851,22 +842,473 @@
         },
         "caregiver": {
           "who": "Assistenti familiari",
-          "title": "Un codice via email, o una passkey"
+          "title": "La tua email e una password"
         }
       }
     },
     "form": {
       "title": "Accedi alla tua cerchia",
-      "text": "Kin ti invia un codice via email. Non c’è nessuna password.",
-      "submit": "Inviami un codice via email",
-      "or": "oppure",
-      "passkey": "Usa una passkey",
-      "noCircle": "Non hai ancora una cerchia?"
+      "text": "Accedi dalla pagina sicura di Kin, poi torni subito qui.",
+      "submit": "Vai all’accesso",
+      "note": "Kin non vede mai ciò che scrivi lì. L’accesso dura un’ora e si rinnova da solo fino a una settimana.",
+      "problems": {
+        "failed": "L’accesso non è stato completato. Riprova.",
+        "unavailable": "Il servizio di accesso non è raggiungibile in questo momento. Riprova tra poco."
+      },
+      "noCircle": "Non hai ancora un account?"
     }
   },
-  "account": {
-    "emailLabel": "Indirizzo email",
-    "emailError": "Inserisci un indirizzo email, per esempio {example}.",
-    "requiredError": "Compila questo campo."
+  "dashboard": {
+    "meta": {
+      "overview": {
+        "title": "Panoramica · La cerchia di Rose · Kin",
+        "description": "L’ottobre di Rose in breve: la cassa comune, ciò che attende un sì, l’equità e ciò che ha sentito Rose."
+      },
+      "approvals": {
+        "title": "Decisioni · La cerchia di Rose · Kin",
+        "description": "Ogni movimento di denaro in attesa di un sì, e chi deve darlo."
+      },
+      "bills": {
+        "title": "Bollette · La cerchia di Rose · Kin",
+        "description": "Ciò che sta per arrivare, ciò che è stato pagato e ciò che Kin ha verificato."
+      },
+      "fairness": {
+        "title": "Equità · La cerchia di Rose · Kin",
+        "description": "Ogni membro confrontato con le quote concordate, e il conguaglio che colma la differenza."
+      },
+      "record": {
+        "title": "Registro · La cerchia di Rose · Kin",
+        "description": "Ogni movimento del denaro di Rose, nell’ordine in cui è avvenuto."
+      },
+      "circle": {
+        "title": "Cerchia · La cerchia di Rose · Kin",
+        "description": "I membri, i loro ruoli, l’accordo di famiglia e i beneficiari."
+      }
+    },
+    "shell": {
+      "navLabel": "Cerchia",
+      "nav": {
+        "overview": "Panoramica",
+        "approvals": "Decisioni",
+        "bills": "Bollette",
+        "fairness": "Equità",
+        "record": "Registro",
+        "circle": "Cerchia"
+      },
+      "waiting": "{count} in attesa",
+      "homeLabel": "Kin, panoramica della cerchia di Rose",
+      "circleName": "La cerchia di Rose",
+      "clock": "Orologio della demo · {date}",
+      "account": {
+        "menu": "Il tuo account",
+        "signedInAs": "Accesso effettuato come",
+        "settings": "Cerchia e accordo",
+        "website": "Sito di Kin",
+        "signOut": "Esci"
+      },
+      "demo": {
+        "label": "Cerchia dimostrativa",
+        "text": "Stai vedendo l’ottobre di Rose dal punto di vista di Elena, nel ruolo di referente. I dati sono esempi nella sandbox di PayPal: niente qui è un pagamento reale e nessun pulsante muove denaro."
+      }
+    },
+    "pause": {
+      "button": "Sospendi i pagamenti",
+      "title": "Sospendere ogni pagamento per {hours} ore?",
+      "text": "Usalo se qualcosa non torna. Nulla esce dalla cassa comune finché la pausa non termina, e tutta la cerchia viene avvisata subito.",
+      "points": [
+        "Bollette, acquisti e compensi dell’assistente familiare restano in attesa.",
+        "Il denaro in entrata continua ad arrivare.",
+        "I sì già dati tornano validi quando la pausa termina.",
+        "Rose ne viene informata alla sua prossima chiamata."
+      ],
+      "confirm": "Sospendi per {hours} ore",
+      "cancel": "Lascia attivi i pagamenti"
+    },
+    "demoAction": {
+      "title": "Non si è mosso nulla.",
+      "text": "Questa è la cerchia dimostrativa. Approvare, rifiutare e sospendere saranno possibili quando apriranno gli account, e ogni volta ti verrà chiesta una nuova verifica della tua identità."
+    },
+    "common": {
+      "simulated": "Simulato",
+      "confirmed": "Confermato da PayPal",
+      "approve": "Approva",
+      "decline": "Rifiuta",
+      "you": "tu",
+      "roles": {
+        "organizer": "Referente",
+        "contributor": "Contribuente",
+        "parent": "Genitore",
+        "caregiver": "Assistente familiare",
+        "observer": "Solo lettura"
+      },
+      "proposalKinds": {
+        "bill_payment": "Bolletta",
+        "caregiver_payout": "Compenso assistente",
+        "member_payout": "Conguaglio",
+        "purchase": "Acquisto"
+      },
+      "categories": {
+        "utilities": "Utenze",
+        "care": "Assistenza",
+        "pharmacy": "Farmacia",
+        "repairs": "Riparazioni"
+      },
+      "payees": {
+        "electricity": "Azienda elettrica",
+        "gas": "Azienda del gas",
+        "water": "Azienda dell’acqua",
+        "pharmacy": "Farmacia",
+        "amara": "Amara",
+        "stairlift": "Ridgeway Stairlifts"
+      },
+      "entryKinds": {
+        "contribution": "Versamento",
+        "out_of_pocket": "Di tasca propria",
+        "bill_approved": "Bolletta approvata",
+        "payout_confirmed": "Pagato",
+        "purchase_captured": "Acquisto",
+        "settlement_collection": "Conguaglio in entrata",
+        "settlement_payout": "Conguaglio in uscita",
+        "care_credit": "Ore di assistenza"
+      },
+      "planLabels": {
+        "standing": "Pagamento automatico con regola fissa",
+        "parent": "Decide Rose",
+        "parentAndSecond": "Rose e un secondo sì",
+        "organizer": "Approva la persona referente",
+        "organizerAndSecond": "Due sì",
+        "refused": "Oltre il limite dell’accordo",
+        "paused": "Bloccato dalla pausa"
+      }
+    },
+    "overview": {
+      "greeting": "Buonasera, {name}",
+      "lede": "Ecco l’ottobre di Rose. La cassa comune corrisponde al registro di PayPal e il mese è pronto per essere chiuso.",
+      "actions": {
+        "approvals": "Esamina le decisioni",
+        "settlement": "Vedi il conguaglio"
+      },
+      "stats": {
+        "label": "Ottobre in breve",
+        "pool": {
+          "label": "Nella cassa comune",
+          "note": "Confermato da PayPal"
+        },
+        "paidIn": {
+          "label": "Versato",
+          "note": "Da {names}"
+        },
+        "paidOut": {
+          "label": "Pagato",
+          "note": "Più {fees} di commissioni PayPal"
+        },
+        "waiting": {
+          "label": "In attesa di un sì",
+          "note": "{amount} in totale"
+        }
+      },
+      "attention": {
+        "title": "Richiede la tua attenzione",
+        "link": "Tutte le decisioni"
+      },
+      "safety": {
+        "title": "Kin ha scoperto una richiesta falsa",
+        "text": "Una persona ha telefonato a Rose dicendo che doveva pagare {claimed} per il gas. Kin non ha trovato nessuna bolletta del gas da pagare: l’ultima, di {paid}, è stata pagata il {paidDay}. A Rose è stato detto di non pagare, e {alerted} hanno ricevuto un avviso.",
+        "rule": "Kin informa. Kin non chiede mai dati segreti.",
+        "link": "Vedi la verifica"
+      },
+      "fairness": {
+        "title": "L’equità a ottobre",
+        "text": "Ogni membro rispetto alle quote concordate dalla famiglia.",
+        "owed": "Deve ricevere {amount}",
+        "owes": "Deve versare {amount}",
+        "level": "In pari",
+        "link": "Vai all’equità"
+      },
+      "heard": {
+        "title": "Che cosa ha sentito Rose",
+        "text": "Kin comunica a voce a Rose, al telefono, ogni pagamento confermato.",
+        "lines": {
+          "billPaid": "La sua bolletta della luce di {amount} è stata pagata stamattina dalla cassa comune della famiglia.",
+          "refill": "Il suo farmaco per la pressione è stato riordinato. È costato {amount} e arriva domani.",
+          "letter": "Viene dall’azienda dell’acqua. Dice che ci sono {amount} da pagare entro il 30. Elena la vedrà oggi.",
+          "falseDemand": "Non risulta nessuna bolletta del gas da pagare. La sua bolletta del gas di {amount} è stata pagata il 2. La prego, non paghi chi l’ha chiamata.",
+          "caregiverPaid": "Amara ha ricevuto {amount} per le sue visite di questa settimana."
+        }
+      },
+      "activity": {
+        "title": "Ultime voci del registro",
+        "link": "Apri il registro"
+      },
+      "spending": {
+        "title": "Dove sono andati i soldi",
+        "text": "Le spese di ottobre per categoria, dalla cassa comune e di tasca propria dei membri.",
+        "total": "{amount} in totale"
+      },
+      "comingUp": {
+        "title": "In arrivo",
+        "link": "Tutte le bollette"
+      }
+    },
+    "approvals": {
+      "title": "Decisioni",
+      "lede": "Nulla esce dalla cassa comune senza i sì qui sotto. Kin stabilisce chi deve dire sì in base all’accordo di famiglia, e nessuno può saltare un passaggio.",
+      "waitingTitle": "In attesa di un sì",
+      "waitingEmpty": "Nulla è in attesa di un sì.",
+      "decidedTitle": "Approvati a ottobre",
+      "decidedText": "Ogni approvazione è conservata insieme alla voce che ne è derivata.",
+      "purposes": {
+        "stairlift": {
+          "title": "Riparazione del montascale",
+          "text": "Un nuovo motore per il montascale. Elena ha fotografato il preventivo."
+        },
+        "caregiverWeek": {
+          "title": "Le visite di Amara di questa settimana",
+          "text": "Tre visite di quattro ore, che Amara ha messo in conto a voce."
+        },
+        "settlement": {
+          "title": "Conguaglio di ottobre per {name}",
+          "text": "In base al calcolo del mese fatto da Kin. La pagina Equità spiega perché."
+        }
+      },
+      "raisedBy": "Proposto da {name}, {date}",
+      "expires": "Scade {when}",
+      "status": {
+        "yourTurn": "Serve il tuo sì",
+        "waitingFor": "In attesa di {names}"
+      },
+      "progress": "Sì: {done} su {total}",
+      "slots": {
+        "label": "Chi deve dire sì",
+        "parent_decides": "Decide Rose sopra {amount}",
+        "organizer": "Il sì della persona referente",
+        "second_approval": "Un secondo sì sopra {amount}",
+        "saidYes": "{name} ha detto sì {method}, {time}",
+        "methods": {
+          "voice": "al telefono",
+          "app": "nell’app"
+        },
+        "open": "In attesa di {names}",
+        "parentCall": "Kin lo chiederà a Rose alla prossima chiamata."
+      },
+      "notes": {
+        "newPayee": "Un nuovo beneficiario. Tutta la cerchia è stata avvisata.",
+        "payeeIsMember": "Il pagamento va a {name}, quindi serve anche il sì di qualcun altro.",
+        "abovePool": "Più di quanto c’è oggi nella cassa comune ({pool}). Viene pagato solo quando arriva abbastanza denaro."
+      }
+    },
+    "bills": {
+      "title": "Bollette",
+      "lede": "Un unico elenco di tutto ciò che la cerchia di Rose paga: ciò che sta per arrivare, ciò che è stato pagato e ciò che Kin ha verificato.",
+      "upcoming": {
+        "title": "In arrivo a {month}",
+        "text": "Importi previsti. L’importo reale arriva con ogni bolletta.",
+        "columns": {
+          "payee": "Beneficiario",
+          "due": "Scadenza",
+          "amount": "Previsto",
+          "approval": "Approvazione"
+        }
+      },
+      "paid": {
+        "title": "Pagate a {month}",
+        "text": "Ognuna confermata dal registro di PayPal.",
+        "columns": {
+          "payee": "Beneficiario",
+          "approved": "Approvata",
+          "paid": "Pagata",
+          "fee": "Commissione PayPal",
+          "amount": "Importo"
+        }
+      },
+      "checks": {
+        "title": "Verificate da Kin",
+        "text": "Kin confronta ogni bolletta e ogni richiesta con il registro, usando del normale codice.",
+        "falseDemand": {
+          "title": "Una persona al telefono ha chiesto {claimed} per il gas",
+          "text": "Il {day} una persona ha telefonato a Rose dicendo che la sua bolletta del gas era scaduta. Kin non ha trovato nessuna bolletta del gas da pagare. L’ultima, di {paid}, è stata pagata il {paidDay}. In pochi secondi {alerted} hanno ricevuto un avviso."
+        },
+        "verdict": "Non corrisponde a nulla nel registro",
+        "noDuplicates": "Nessuna bolletta doppia questo mese.",
+        "noJumps": "Nessun importo è aumentato senza motivo."
+      }
+    },
+    "fairness": {
+      "title": "Equità",
+      "lede": "La famiglia ha concordato le quote. Kin confronta il mese con quelle quote e salda la differenza con pagamenti veri.",
+      "agreement": {
+        "title": "Quote concordate",
+        "care": "Le ore di assistenza valgono {rate} l’ora. Riducono quanto versa un membro e non vengono pagate.",
+        "version": "Versione {version}, accettata da tutti."
+      },
+      "members": {
+        "title": "Ogni membro a ottobre",
+        "paidIn": "Versato nella cassa comune",
+        "ownPocket": "Pagato di tasca propria",
+        "care": "Ore di assistenza",
+        "given": "Totale dato",
+        "target": "Quota concordata",
+        "owed": "La cassa comune deve {amount} a {name}",
+        "owes": "{name} deve {amount} alla cassa comune",
+        "level": "{name} è in pari",
+        "explain": "{name} ha dato {given} a fronte di una quota concordata di {target}.",
+        "reasons": {
+          "ownPocket": "Sono compresi {amount} pagati da {name} di tasca propria.",
+          "care": "Sono compresi {amount} di ore di assistenza, valutate alla tariffa della famiglia."
+        }
+      },
+      "chart": {
+        "title": "Dato rispetto alla quota concordata",
+        "text": "Ogni barra è ciò che un membro ha dato. Il segno indica la sua quota concordata di {total}."
+      },
+      "settlement": {
+        "title": "Conguaglio di ottobre",
+        "text": "Il minor numero di pagamenti che riporta ognuno alla propria quota.",
+        "payouts": "In uscita dalla cassa comune",
+        "collections": "In entrata nella cassa comune",
+        "payout": "A {name}",
+        "collection": "Da {name}",
+        "fee": "{fee} trattenuti per la commissione di PayPal",
+        "now": "Pagabile subito",
+        "invoice": "Richiesto con fattura PayPal",
+        "status": "In attesa di approvazione",
+        "link": "Vai alle decisioni",
+        "core": "Calcolato dal nucleo finanziario di Kin, non dall’IA. Lo stesso registro dà sempre lo stesso risultato."
+      }
+    },
+    "record": {
+      "title": "Registro",
+      "lede": "Ogni movimento del denaro di Rose, nell’ordine in cui è avvenuto. Nulla viene modificato o cancellato. Una correzione è una nuova voce.",
+      "filters": {
+        "label": "Mostra",
+        "all": "Tutto",
+        "in": "Entrate",
+        "bills": "Bollette",
+        "purchases": "Acquisti",
+        "ownPocket": "Di tasca propria",
+        "care": "Ore di assistenza"
+      },
+      "columns": {
+        "date": "Data",
+        "entry": "Voce",
+        "source": "Origine",
+        "amount": "Importo"
+      },
+      "grid": {
+        "label": "Voci del registro",
+        "detailTitle": "Voce selezionata",
+        "hint": "Seleziona una voce per vederne le righe contabili."
+      },
+      "descriptions": {
+        "contribution": "Versamento mensile di {name}",
+        "out_of_pocket": "Ricevuta di {name}: {category}",
+        "bill_approved": "{payee}: bolletta approvata",
+        "payout_confirmed": "{payee}: pagato",
+        "purchase_captured": "Ordine per Rose: {category}",
+        "care_credit": "Ore di assistenza di {name}",
+        "settlement_collection": "Conguaglio versato da {name}",
+        "settlement_payout": "Rimborso a {name}"
+      },
+      "sources": {
+        "paypal_event": "Evento PayPal",
+        "approval": "Approvazione",
+        "settlement": "Conguaglio"
+      },
+      "lines": {
+        "show": "Righe contabili",
+        "account": "Conto",
+        "debit": "Dare",
+        "credit": "Avere"
+      },
+      "accounts": {
+        "pool_cash": "Cassa comune, liquidità",
+        "pool_clearing": "Cassa comune, in transito",
+        "fees": "Commissioni PayPal",
+        "expense": "Spese: {name}",
+        "payable": "Dovuto a {name}",
+        "member": "Versamenti di {name}",
+        "care_credit": "Credito di assistenza di {name}",
+        "care_received": "Assistenza ricevuta"
+      },
+      "fee": "Commissione PayPal {fee}",
+      "careNote": "Ore di assistenza, non denaro",
+      "summary": "{count} voci. Tutte in pareggio.",
+      "export": "Esporta il registro di verifica",
+      "empty": "Nessuna voce di questo tipo questo mese."
+    },
+    "circle": {
+      "title": "Cerchia",
+      "lede": "Chi fa parte della cerchia di Rose, che cosa può fare ciascuno e l’accordo che tutti hanno accettato.",
+      "parent": {
+        "title": "Decide Rose",
+        "text": "Per qualsiasi spesa sopra {amount} serve il sì a voce di Rose. Kin le comunica a voce ogni pagamento confermato, e lei può chiedergli qualsiasi cosa.",
+        "levelsLabel": "Come può partecipare un genitore",
+        "current": "La scelta di Rose",
+        "levels": {
+          "decides": {
+            "title": "Decide",
+            "text": "Sopra un limite fissato dalla famiglia serve il suo sì a voce."
+          },
+          "informed": {
+            "title": "Resta al corrente",
+            "text": "Sente tutto. Le approvazioni spettano alla famiglia."
+          },
+          "represented": {
+            "title": "Ha un rappresentante",
+            "text": "Agisce al suo posto una persona con autorità legale, e Kin lo registra."
+          }
+        }
+      },
+      "members": {
+        "title": "Membri",
+        "share": "Quota: {share}",
+        "invite": "Invita qualcuno",
+        "roleText": {
+          "organizer": "Approva i pagamenti e si occupa della cerchia.",
+          "contributor": "Versa una quota e può dare un secondo sì.",
+          "parent": "Sente ogni pagamento e decide nei casi di sua competenza.",
+          "caregiver": "Vede solo le proprie bollette e i propri pagamenti.",
+          "observer": "Legge tutto e non modifica nulla."
+        }
+      },
+      "agreement": {
+        "title": "Accordo di famiglia",
+        "version": "Versione {version}, accettata da tutti",
+        "terms": {
+          "care": {
+            "label": "Ore di assistenza",
+            "value": "{rate} l’ora, riducono quanto versa un membro"
+          },
+          "ceiling": {
+            "label": "Pagamento singolo massimo",
+            "value": "{amount}"
+          },
+          "second": {
+            "label": "Due sì",
+            "value": "Sopra {amount}"
+          },
+          "parent": {
+            "label": "Decide Rose",
+            "value": "Sopra {amount}"
+          },
+          "window": {
+            "label": "Durata di una proposta",
+            "value": "{hours} ore, poi scade"
+          },
+          "pause": {
+            "label": "Il pulsante di pausa",
+            "value": "Blocca ogni pagamento per {hours} ore"
+          }
+        }
+      },
+      "payees": {
+        "title": "Beneficiari",
+        "text": "Il denaro esce dalla cassa comune solo verso questi beneficiari e verso i membri della cerchia.",
+        "approved": "Approvato",
+        "new": "Nuovo",
+        "standing": "Pagamento automatico tra {min} e {max}",
+        "eachBill": "Ogni pagamento richiede un sì"
+      }
+    }
   }
 }

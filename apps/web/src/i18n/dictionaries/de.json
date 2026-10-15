@@ -26,7 +26,7 @@
     },
     "signIn": {
       "title": "Anmelden · Kin",
-      "description": "Ein Code per E-Mail oder ein Passkey für Familie und Pflegekraft. Für den Elternteil gar keine Anmeldung."
+      "description": "Familienmitglieder und Pflegekräfte melden sich auf der sicheren Seite von Kin an, betrieben von Amazon Cognito. Der Elternteil meldet sich gar nicht an."
     }
   },
   "common": {
@@ -767,13 +767,6 @@
       ]
     }
   },
-  "notOpen": {
-    "eyebrow": "Noch nicht geöffnet",
-    "startTitle": "Kreise sind noch nicht geöffnet.",
-    "signInTitle": "Die Anmeldung ist noch nicht geöffnet.",
-    "text": "Kin entsteht für den PayPal AI Hackathon 2026 und läuft in der PayPal-Sandbox mit Testgeld. Konten werden mit der Vorführung freigeschaltet.",
-    "link": "Sehen, wie Kin funktioniert"
-  },
   "notFound": {
     "eyebrow": "Seite nicht gefunden",
     "title": "Diese Seite gibt es nicht.",
@@ -822,28 +815,26 @@
     },
     "form": {
       "title": "Ihren Familienkreis gründen",
-      "text": "Sagen Sie Kin, wer Sie sind und für wen der Kreis ist. Danach laden Sie Ihre Familie ein.",
-      "nameLabel": "Ihr Name",
-      "parentLabel": "Für wen ist der Kreis?",
-      "parentHelp": "Ein Kreis für jede Person, um die Sie sich kümmern.",
+      "text": "Legen Sie zuerst Ihr Konto an. Danach geben Sie dem Kreis einen Namen und laden Ihre Familie ein.",
       "consent": "Mir ist klar: Der Kreis ist erst aktiv, wenn meine Mutter oder mein Vater zugestimmt hat, oder die Person, die rechtlich für sie oder ihn handeln darf.",
       "consentError": "Bitte bestätigen Sie das, um fortzufahren.",
-      "submit": "Kreis gründen",
-      "haveCircle": "Schon in einem Kreis?"
+      "submit": "Konto anlegen",
+      "note": "Sie legen Ihr Konto auf der sicheren Seite von Kin an, betrieben von Amazon Cognito. Bis Kreise verfügbar sind, öffnet Ihr neues Konto den Demo-Kreis.",
+      "haveCircle": "Schon ein Konto?"
     }
   },
   "signInPage": {
     "hero": {
       "eyebrow": "Anmelden",
-      "title": "Kein Passwort zum Merken, keines zum Stehlen.",
-      "lede": "Sobald die Anmeldung geöffnet ist, sendet Kin einen Code an Ihre E-Mail-Adresse oder nutzt einen Passkey. Ihre Mutter oder Ihr Vater meldet sich gar nicht an."
+      "title": "Der Kreis Ihrer Familie, hinter einer einzigen Tür.",
+      "lede": "Die Anmeldung bei Kin läuft über Amazon Cognito, deshalb sieht und speichert Kin Ihr Passwort nie. Ihre Mutter oder Ihr Vater meldet sich gar nicht an: Kin ruft sie oder ihn an."
     },
     "ways": {
       "label": "So kommt jede Person hinein",
       "items": {
         "family": {
           "who": "Familienmitglieder",
-          "title": "Ein Code per E-Mail oder ein Passkey"
+          "title": "Ihre E-Mail-Adresse und ein Passwort"
         },
         "parent": {
           "who": "Eltern",
@@ -851,22 +842,473 @@
         },
         "caregiver": {
           "who": "Pflegekräfte",
-          "title": "Ein Code per E-Mail oder ein Passkey"
+          "title": "Ihre E-Mail-Adresse und ein Passwort"
         }
       }
     },
     "form": {
       "title": "Bei Ihrem Kreis anmelden",
-      "text": "Kin sendet Ihnen einen Code per E-Mail. Ein Passwort gibt es nicht.",
-      "submit": "Code per E-Mail senden",
-      "or": "oder",
-      "passkey": "Passkey verwenden",
-      "noCircle": "Noch kein Kreis?"
+      "text": "Sie melden sich auf der sicheren Seite von Kin an und kommen danach direkt hierher zurück.",
+      "submit": "Weiter zur Anmeldung",
+      "note": "Was Sie dort eingeben, sieht Kin nie. Ihre Anmeldung gilt eine Stunde und verlängert sich von selbst, höchstens eine Woche lang.",
+      "problems": {
+        "failed": "Die Anmeldung wurde nicht abgeschlossen. Bitte versuchen Sie es noch einmal.",
+        "unavailable": "Die Anmeldung ist gerade nicht erreichbar. Bitte versuchen Sie es gleich noch einmal."
+      },
+      "noCircle": "Noch kein Konto?"
     }
   },
-  "account": {
-    "emailLabel": "E-Mail-Adresse",
-    "emailError": "Geben Sie eine E-Mail-Adresse ein, zum Beispiel {example}.",
-    "requiredError": "Bitte füllen Sie dieses Feld aus."
+  "dashboard": {
+    "meta": {
+      "overview": {
+        "title": "Übersicht · Roses Kreis · Kin",
+        "description": "Roses Oktober auf einen Blick: die Kasse, was ein Ja braucht, die Fairness und was Rose gehört hat."
+      },
+      "approvals": {
+        "title": "Freigaben · Roses Kreis · Kin",
+        "description": "Jede Geldbewegung, die auf ein Ja wartet, und wer es geben muss."
+      },
+      "bills": {
+        "title": "Rechnungen · Roses Kreis · Kin",
+        "description": "Was ansteht, was bezahlt ist und was Kin geprüft hat."
+      },
+      "fairness": {
+        "title": "Fairness · Roses Kreis · Kin",
+        "description": "Jedes Mitglied im Vergleich zu den vereinbarten Anteilen, und der Ausgleich, der die Lücke schließt."
+      },
+      "record": {
+        "title": "Verlauf · Roses Kreis · Kin",
+        "description": "Jede Bewegung von Roses Geld, in der Reihenfolge, in der sie geschah."
+      },
+      "circle": {
+        "title": "Kreis · Roses Kreis · Kin",
+        "description": "Die Mitglieder, ihre Rollen, die Familienvereinbarung und die Zahlungsempfänger."
+      }
+    },
+    "shell": {
+      "navLabel": "Kreis",
+      "nav": {
+        "overview": "Übersicht",
+        "approvals": "Freigaben",
+        "bills": "Rechnungen",
+        "fairness": "Fairness",
+        "record": "Verlauf",
+        "circle": "Kreis"
+      },
+      "waiting": "{count} offen",
+      "homeLabel": "Kin, Übersicht über Roses Kreis",
+      "circleName": "Roses Kreis",
+      "clock": "Demo-Uhr · {date}",
+      "account": {
+        "menu": "Ihr Konto",
+        "signedInAs": "Angemeldet als",
+        "settings": "Kreis und Vereinbarung",
+        "website": "Kin-Website",
+        "signOut": "Abmelden"
+      },
+      "demo": {
+        "label": "Demo-Kreis",
+        "text": "Sie sehen Roses Oktober so, wie Elena ihn als Kreisleitung sieht. Die Daten sind Beispiele in der PayPal-Sandbox: Nichts hier ist eine echte Zahlung, und keine Schaltfläche bewegt Geld."
+      }
+    },
+    "pause": {
+      "button": "Zahlungen pausieren",
+      "title": "Alle Zahlungen für {hours} Stunden anhalten?",
+      "text": "Nutzen Sie das, wenn etwas nicht stimmt. Nichts verlässt die Kasse, bis die Pause endet, und alle im Kreis werden sofort benachrichtigt.",
+      "points": [
+        "Rechnungen, Käufe und die Bezahlung der Pflegekraft warten.",
+        "Eingehendes Geld kommt weiterhin an.",
+        "Bereits gegebene Freigaben gelten wieder, sobald die Pause endet.",
+        "Rose erfährt es bei ihrem nächsten Anruf."
+      ],
+      "confirm": "{hours} Stunden pausieren",
+      "cancel": "Zahlungen weiterlaufen lassen"
+    },
+    "demoAction": {
+      "title": "Es wurde nichts bewegt.",
+      "text": "Das ist der Demo-Kreis. Freigeben, Ablehnen und Pausieren kommen mit den Konten, und jedes Mal wird erneut geprüft, ob Sie es wirklich sind."
+    },
+    "common": {
+      "simulated": "Simuliert",
+      "confirmed": "Von PayPal bestätigt",
+      "approve": "Freigeben",
+      "decline": "Ablehnen",
+      "you": "Sie",
+      "roles": {
+        "organizer": "Kreisleitung",
+        "contributor": "Zahlendes Mitglied",
+        "parent": "Elternteil",
+        "caregiver": "Pflegekraft",
+        "observer": "Nur lesend"
+      },
+      "proposalKinds": {
+        "bill_payment": "Rechnung",
+        "caregiver_payout": "Pflegelohn",
+        "member_payout": "Ausgleich",
+        "purchase": "Kauf"
+      },
+      "categories": {
+        "utilities": "Nebenkosten",
+        "care": "Pflege",
+        "pharmacy": "Apotheke",
+        "repairs": "Reparaturen"
+      },
+      "payees": {
+        "electricity": "Stromversorger",
+        "gas": "Gasversorger",
+        "water": "Wasserversorger",
+        "pharmacy": "Apotheke",
+        "amara": "Amara",
+        "stairlift": "Ridgeway Stairlifts"
+      },
+      "entryKinds": {
+        "contribution": "Beitrag",
+        "out_of_pocket": "Eigene Tasche",
+        "bill_approved": "Rechnung freigegeben",
+        "payout_confirmed": "Bezahlt",
+        "purchase_captured": "Kauf",
+        "settlement_collection": "Ausgleich, Eingang",
+        "settlement_payout": "Ausgleich, Ausgang",
+        "care_credit": "Pflegezeit"
+      },
+      "planLabels": {
+        "standing": "Automatisch per Dauerregel",
+        "parent": "Rose entscheidet",
+        "parentAndSecond": "Rose und ein zweites Ja",
+        "organizer": "Die Kreisleitung gibt frei",
+        "organizerAndSecond": "Zwei Freigaben",
+        "refused": "Über der Grenze der Vereinbarung",
+        "paused": "Durch die Pause angehalten"
+      }
+    },
+    "overview": {
+      "greeting": "Guten Abend, {name}",
+      "lede": "Hier ist Roses Oktober. Die Kasse stimmt mit den Aufzeichnungen von PayPal überein, und der Monat kann abgeschlossen werden.",
+      "actions": {
+        "approvals": "Freigaben prüfen",
+        "settlement": "Ausgleich ansehen"
+      },
+      "stats": {
+        "label": "Der Oktober auf einen Blick",
+        "pool": {
+          "label": "In der Kasse",
+          "note": "Von PayPal bestätigt"
+        },
+        "paidIn": {
+          "label": "Eingezahlt",
+          "note": "Von {names}"
+        },
+        "paidOut": {
+          "label": "Ausgezahlt",
+          "note": "Dazu {fees} PayPal-Gebühren"
+        },
+        "waiting": {
+          "label": "Wartet auf ein Ja",
+          "note": "Insgesamt {amount}"
+        }
+      },
+      "attention": {
+        "title": "Braucht Ihre Aufmerksamkeit",
+        "link": "Alle Freigaben"
+      },
+      "safety": {
+        "title": "Kin hat eine falsche Forderung erkannt",
+        "text": "Ein Anrufer hat Rose gesagt, sie schulde {claimed} für Gas. Kin hat keine offene Gasrechnung gefunden: Die letzte, {paid}, wurde am {paidDay} bezahlt. Rose wurde geraten, nicht zu zahlen, und {alerted} wurden benachrichtigt.",
+        "rule": "Kin sagt Bescheid. Kin fragt nie nach Geheimnissen.",
+        "link": "Zur Prüfung"
+      },
+      "fairness": {
+        "title": "Fairness im Oktober",
+        "text": "Jedes Mitglied im Vergleich zu den Anteilen, die die Familie vereinbart hat.",
+        "owed": "Bekommt {amount}",
+        "owes": "Schuldet {amount}",
+        "level": "Ausgeglichen",
+        "link": "Fairness öffnen"
+      },
+      "heard": {
+        "title": "Was Rose gehört hat",
+        "text": "Kin sagt Rose jede bestätigte Zahlung am Telefon an.",
+        "lines": {
+          "billPaid": "Ihre Stromrechnung über {amount} wurde heute Morgen aus der gemeinsamen Kasse bezahlt.",
+          "refill": "Ihr Blutdruckmedikament ist nachbestellt. Es hat {amount} gekostet und kommt morgen an.",
+          "letter": "Das ist vom Wasserversorger. Darin steht: {amount} sind am 30. fällig. Elena sieht es heute.",
+          "falseDemand": "Ich finde keine offene Gasrechnung. Ihre Gasrechnung über {amount} wurde am 2. bezahlt. Bitte zahlen Sie nichts an diesen Anrufer.",
+          "caregiverPaid": "Amara hat {amount} für ihre Besuche in dieser Woche erhalten."
+        }
+      },
+      "activity": {
+        "title": "Zuletzt im Verlauf",
+        "link": "Verlauf öffnen"
+      },
+      "spending": {
+        "title": "Wohin das Geld ging",
+        "text": "Die Ausgaben im Oktober nach Kategorie, aus der Kasse und aus eigener Tasche der Mitglieder.",
+        "total": "Insgesamt {amount}"
+      },
+      "comingUp": {
+        "title": "Demnächst fällig",
+        "link": "Alle Rechnungen"
+      }
+    },
+    "approvals": {
+      "title": "Freigaben",
+      "lede": "Nichts verlässt die Kasse ohne die Freigaben unten. Kin ermittelt aus der Familienvereinbarung, wer Ja sagen muss, und niemand kann einen Schritt überspringen.",
+      "waitingTitle": "Wartet auf ein Ja",
+      "waitingEmpty": "Nichts wartet auf ein Ja.",
+      "decidedTitle": "Im Oktober freigegeben",
+      "decidedText": "Jede Freigabe bleibt mit dem Eintrag verbunden, zu dem sie geführt hat.",
+      "purposes": {
+        "stairlift": {
+          "title": "Reparatur des Treppenlifts",
+          "text": "Ein neuer Motor für den Treppenlift. Elena hat den Kostenvoranschlag fotografiert."
+        },
+        "caregiverWeek": {
+          "title": "Amaras Besuche in dieser Woche",
+          "text": "Drei Besuche zu je vier Stunden, von Amara per Sprache abgerechnet."
+        },
+        "settlement": {
+          "title": "Ausgleich für Oktober an {name}",
+          "text": "Aus der Monatsberechnung von Kin. Warum, zeigt die Seite „Fairness“."
+        }
+      },
+      "raisedBy": "Eingereicht von {name}, {date}",
+      "expires": "Läuft ab: {when}",
+      "status": {
+        "yourTurn": "Ihr Ja wird gebraucht",
+        "waitingFor": "Wartet auf {names}"
+      },
+      "progress": "Freigaben: {done} von {total}",
+      "slots": {
+        "label": "Wer Ja sagen muss",
+        "parent_decides": "Über {amount} entscheidet Rose",
+        "organizer": "Das Ja der Kreisleitung",
+        "second_approval": "Über {amount} ein zweites Ja",
+        "saidYes": "{name} hat {method} Ja gesagt, {time}",
+        "methods": {
+          "voice": "am Telefon",
+          "app": "in der App"
+        },
+        "open": "Wartet auf {names}",
+        "parentCall": "Kin fragt Rose bei ihrem nächsten Anruf."
+      },
+      "notes": {
+        "newPayee": "Ein neuer Zahlungsempfänger. Alle im Kreis wurden benachrichtigt.",
+        "payeeIsMember": "{name} erhält das Geld, deshalb muss auch jemand anderes Ja sagen.",
+        "abovePool": "Mehr, als heute in der Kasse ist ({pool}). Es wird erst bezahlt, wenn genug Geld eingegangen ist."
+      }
+    },
+    "bills": {
+      "title": "Rechnungen",
+      "lede": "Eine Liste für alles, was Roses Kreis bezahlt: was ansteht, was bezahlt ist und was Kin geprüft hat.",
+      "upcoming": {
+        "title": "Fällig im {month}",
+        "text": "Erwartete Beträge. Der tatsächliche Betrag kommt mit jeder Rechnung.",
+        "columns": {
+          "payee": "Empfänger",
+          "due": "Fällig",
+          "amount": "Erwartet",
+          "approval": "Freigabe"
+        }
+      },
+      "paid": {
+        "title": "Bezahlt im {month}",
+        "text": "Jede einzelne durch die Aufzeichnungen von PayPal bestätigt.",
+        "columns": {
+          "payee": "Empfänger",
+          "approved": "Freigegeben",
+          "paid": "Bezahlt",
+          "fee": "PayPal-Gebühr",
+          "amount": "Betrag"
+        }
+      },
+      "checks": {
+        "title": "Von Kin geprüft",
+        "text": "Kin prüft jede Rechnung und jede Forderung mit einfachem Programmcode anhand der Aufzeichnungen.",
+        "falseDemand": {
+          "title": "Ein Anrufer verlangte {claimed} für Gas",
+          "text": "Am {day} sagte ein Anrufer zu Rose, ihr Gaskonto sei überfällig. Kin fand keine offene Gasrechnung. Die letzte, {paid}, wurde am {paidDay} bezahlt. {alerted} wurden binnen Sekunden benachrichtigt."
+        },
+        "verdict": "Passt zu nichts in den Aufzeichnungen",
+        "noDuplicates": "Diesen Monat keine doppelten Rechnungen.",
+        "noJumps": "Kein Betrag ist ohne Grund gestiegen."
+      }
+    },
+    "fairness": {
+      "title": "Fairness",
+      "lede": "Die Familie hat die Anteile vereinbart. Kin misst den Monat daran und gleicht die Differenz mit echten Zahlungen aus.",
+      "agreement": {
+        "title": "Vereinbarte Anteile",
+        "care": "Pflegezeit zählt mit {rate} pro Stunde. Sie senkt, was ein Mitglied zahlt, und wird nicht ausgezahlt.",
+        "version": "Version {version}, von allen angenommen."
+      },
+      "members": {
+        "title": "Jedes Mitglied im Oktober",
+        "paidIn": "In die Kasse eingezahlt",
+        "ownPocket": "Aus eigener Tasche bezahlt",
+        "care": "Pflegezeit",
+        "given": "Insgesamt beigetragen",
+        "target": "Vereinbarter Anteil",
+        "owed": "Die Kasse schuldet {name} {amount}",
+        "owes": "{name} schuldet der Kasse {amount}",
+        "level": "{name} ist ausgeglichen",
+        "explain": "{name} hat {given} beigetragen, bei einem vereinbarten Anteil von {target}.",
+        "reasons": {
+          "ownPocket": "Darin enthalten sind {amount}, die {name} aus eigener Tasche bezahlt hat.",
+          "care": "Darin enthalten sind {amount} Pflegezeit, bewertet zum Satz der Familie."
+        }
+      },
+      "chart": {
+        "title": "Beitrag im Vergleich zum vereinbarten Anteil",
+        "text": "Jeder Balken zeigt, was ein Mitglied beigetragen hat. Die Markierung zeigt den jeweils vereinbarten Anteil an {total}."
+      },
+      "settlement": {
+        "title": "Ausgleich für Oktober",
+        "text": "Die kleinste Zahl von Zahlungen, die alle wieder auf ihren Anteil bringt.",
+        "payouts": "Aus der Kasse",
+        "collections": "In die Kasse",
+        "payout": "An {name}",
+        "collection": "Von {name}",
+        "fee": "{fee} für die PayPal-Gebühr zurückbehalten",
+        "now": "Jetzt zahlbar",
+        "invoice": "Per PayPal-Rechnung angefordert",
+        "status": "Wartet auf Freigabe",
+        "link": "Zu den Freigaben",
+        "core": "Berechnet vom Rechenkern von Kin, nicht von der KI. Dieselben Aufzeichnungen ergeben immer dasselbe Ergebnis."
+      }
+    },
+    "record": {
+      "title": "Verlauf",
+      "lede": "Jede Bewegung von Roses Geld, in der Reihenfolge, in der sie geschah. Nichts wird geändert oder gelöscht. Eine Korrektur ist ein neuer Eintrag.",
+      "filters": {
+        "label": "Anzeigen",
+        "all": "Alle",
+        "in": "Eingänge",
+        "bills": "Rechnungen",
+        "purchases": "Käufe",
+        "ownPocket": "Eigene Tasche",
+        "care": "Pflegezeit"
+      },
+      "columns": {
+        "date": "Datum",
+        "entry": "Eintrag",
+        "source": "Quelle",
+        "amount": "Betrag"
+      },
+      "grid": {
+        "label": "Einträge im Verlauf",
+        "detailTitle": "Ausgewählter Eintrag",
+        "hint": "Wählen Sie einen Eintrag, um seine Buchungszeilen zu sehen."
+      },
+      "descriptions": {
+        "contribution": "Monatsbeitrag von {name}",
+        "out_of_pocket": "Beleg von {name}: {category}",
+        "bill_approved": "{payee}: Rechnung freigegeben",
+        "payout_confirmed": "{payee}: bezahlt",
+        "purchase_captured": "{category}: Bestellung für Rose",
+        "care_credit": "Pflegezeit von {name}",
+        "settlement_collection": "{name} hat ausgeglichen",
+        "settlement_payout": "{name} hat Geld zurückerhalten"
+      },
+      "sources": {
+        "paypal_event": "PayPal-Ereignis",
+        "approval": "Freigabe",
+        "settlement": "Ausgleich"
+      },
+      "lines": {
+        "show": "Buchungszeilen",
+        "account": "Konto",
+        "debit": "Soll",
+        "credit": "Haben"
+      },
+      "accounts": {
+        "pool_cash": "Kassenbestand",
+        "pool_clearing": "Kasse, Verrechnung",
+        "fees": "PayPal-Gebühren",
+        "expense": "Ausgaben: {name}",
+        "payable": "An {name} geschuldet",
+        "member": "Beiträge von {name}",
+        "care_credit": "Pflegeguthaben von {name}",
+        "care_received": "Erhaltene Pflege"
+      },
+      "fee": "PayPal-Gebühr {fee}",
+      "careNote": "Pflegezeit, kein Bargeld",
+      "summary": "{count} Einträge. Jeder einzelne ist ausgeglichen.",
+      "export": "Audit-Export erstellen",
+      "empty": "Diesen Monat keine Einträge dieser Art."
+    },
+    "circle": {
+      "title": "Kreis",
+      "lede": "Wer zu Roses Kreis gehört, was jede Person darf und die Vereinbarung, der alle zugestimmt haben.",
+      "parent": {
+        "title": "Rose entscheidet",
+        "text": "Für alles über {amount} braucht es Roses gesprochenes Ja. Kin sagt ihr jede bestätigte Zahlung an, und sie kann Kin alles fragen.",
+        "levelsLabel": "Wie ein Elternteil mitwirken kann",
+        "current": "Roses Wahl",
+        "levels": {
+          "decides": {
+            "title": "Entscheidet",
+            "text": "Über einer Grenze, die die Familie festlegt, braucht es das gesprochene Ja des Elternteils."
+          },
+          "informed": {
+            "title": "Informiert",
+            "text": "Hört alles. Die Freigaben liegen bei der Familie."
+          },
+          "represented": {
+            "title": "Vertreten",
+            "text": "Eine Person mit rechtlicher Befugnis handelt für den Elternteil, und Kin hält das fest."
+          }
+        }
+      },
+      "members": {
+        "title": "Mitglieder",
+        "share": "Anteil {share}",
+        "invite": "Jemanden einladen",
+        "roleText": {
+          "organizer": "Gibt Zahlungen frei und kümmert sich um den Kreis.",
+          "contributor": "Zahlt einen Anteil und kann ein zweites Ja geben.",
+          "parent": "Hört von jeder Zahlung und entscheidet, was in die eigene Entscheidung fällt.",
+          "caregiver": "Sieht nur die eigenen Rechnungen und Zahlungen.",
+          "observer": "Sieht alles und ändert nichts."
+        }
+      },
+      "agreement": {
+        "title": "Familienvereinbarung",
+        "version": "Version {version}, von allen angenommen",
+        "terms": {
+          "care": {
+            "label": "Pflegezeit",
+            "value": "{rate} pro Stunde, senkt, was ein Mitglied zahlt"
+          },
+          "ceiling": {
+            "label": "Größte Einzelzahlung",
+            "value": "{amount}"
+          },
+          "second": {
+            "label": "Zwei Freigaben",
+            "value": "Über {amount}"
+          },
+          "parent": {
+            "label": "Rose entscheidet",
+            "value": "Über {amount}"
+          },
+          "window": {
+            "label": "Ein Vorschlag wartet",
+            "value": "{hours} Stunden, dann läuft er ab"
+          },
+          "pause": {
+            "label": "Die Pausentaste",
+            "value": "Hält jede Zahlung {hours} Stunden lang an"
+          }
+        }
+      },
+      "payees": {
+        "title": "Zahlungsempfänger",
+        "text": "Geld verlässt die Kasse nur an diese Empfänger und an Mitglieder des Kreises.",
+        "approved": "Freigegeben",
+        "new": "Neu",
+        "standing": "Automatisch zwischen {min} und {max}",
+        "eachBill": "Jede Zahlung braucht ein Ja"
+      }
+    }
   }
 }

@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 
-import { AccountForm } from "@/components/account/account-form";
 import { AccountScreen } from "@/components/account/account-screen";
 import { FormFooter } from "@/components/account/form-footer";
 import { FormHeading } from "@/components/account/form-heading";
+import { SignInPanel } from "@/components/sign-in/sign-in-panel";
 import { SignInWays } from "@/components/sign-in/sign-in-ways";
-import { EXAMPLE_EMAIL } from "@/content/example-email";
+import { dashboardRoutes } from "@/content/dashboard-routes";
 import { routes } from "@/content/site-routes";
 import { pageContext, pageMetadata } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
-import { fill } from "@/i18n/template";
+import { safeNextPath } from "@/server/auth/next-path";
 
 const FORM_HEADING_ID = "sign-in-heading";
 
@@ -17,13 +17,22 @@ export function generateMetadata({ params }: PageProps<"/[locale]/sign-in">): Pr
   return pageMetadata(params, "signIn");
 }
 
-// Accounts are not built yet. The screen is the real one, with the one field
-// passwordless sign-in needs. Until sign-in exists, the form answers that it
-// is not open and sends nothing.
-export default async function SignInPage({ params }: PageProps<"/[locale]/sign-in">) {
+function problemOf(value: string | string[] | undefined): "failed" | "unavailable" | null {
+  return value === "failed" || value === "unavailable" ? value : null;
+}
+
+/**
+ * Signing in happens on the identity provider's own page. This screen says
+ * how each person gets in, and sends the browser there with where to come
+ * back to.
+ */
+export default async function SignInPage({ params, searchParams }: PageProps<"/[locale]/sign-in">) {
   const { locale, dictionary } = await pageContext(params);
+  const query = await searchParams;
   const { hero, ways, form } = dictionary.signInPage;
-  const { common, account, notOpen } = dictionary;
+  const { common } = dictionary;
+  const rawNext = typeof query.next === "string" ? query.next : null;
+  const next = safeNextPath(rawNext ?? localizedPath(locale, dashboardRoutes.overview));
 
   return (
     <AccountScreen
@@ -34,23 +43,8 @@ export default async function SignInPage({ params }: PageProps<"/[locale]/sign-i
       lede={hero.lede}
       aside={<SignInWays copy={ways} />}
     >
-      <FormHeading id={FORM_HEADING_ID} title={form.title} text={form.text} status={notOpen.eyebrow} />
-      <AccountForm
-        labelledBy={FORM_HEADING_ID}
-        fields={[
-          {
-            name: "email",
-            label: account.emailLabel,
-            type: "email",
-            autoComplete: "email",
-            placeholder: EXAMPLE_EMAIL,
-            error: fill(account.emailError, { example: EXAMPLE_EMAIL }),
-          },
-        ]}
-        submit={form.submit}
-        alternative={{ divider: form.or, label: form.passkey }}
-        closed={{ title: notOpen.signInTitle, text: notOpen.text }}
-      />
+      <FormHeading id={FORM_HEADING_ID} title={form.title} text={form.text} />
+      <SignInPanel copy={form} href={`/auth/sign-in?${new URLSearchParams({ next }).toString()}`} problem={problemOf(query.problem)} />
       <FormFooter question={form.noCircle} link={{ href: localizedPath(locale, routes.start), label: common.nav.start }} />
     </AccountScreen>
   );

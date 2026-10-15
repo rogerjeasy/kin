@@ -26,7 +26,7 @@
     },
     "signIn": {
       "title": "Se connecter · Kin",
-      "description": "Un code par e-mail ou une clé d’accès pour la famille et l’aide à domicile. Pas de connexion du tout pour le parent."
+      "description": "Les membres de la famille et les aides à domicile se connectent sur la page sécurisée de Kin, gérée par Amazon Cognito. Votre parent ne se connecte jamais."
     }
   },
   "common": {
@@ -767,13 +767,6 @@
       ]
     }
   },
-  "notOpen": {
-    "eyebrow": "Pas encore ouvert",
-    "startTitle": "Les cercles ne sont pas encore ouverts.",
-    "signInTitle": "La connexion n’est pas encore ouverte.",
-    "text": "Kin est en cours de création pour le PayPal AI Hackathon 2026 et fonctionne dans l’environnement de test de PayPal (sandbox), avec de l’argent fictif. Les comptes ouvriront avec la démonstration.",
-    "link": "Voir comment Kin fonctionne"
-  },
   "notFound": {
     "eyebrow": "Page introuvable",
     "title": "Cette page n’existe pas.",
@@ -801,7 +794,7 @@
     "hero": {
       "eyebrow": "Créer un cercle",
       "title": "Quatre étapes, et une conversation.",
-      "lede": "Créer un cercle, c’est se mettre d’accord sur le partage des frais et demander à votre parent ce qu’il souhaite décider. Kin transforme cette conversation en un accord écrit que chacun accepte."
+      "lede": "Créer un cercle, c’est se mettre d’accord sur le partage des frais et demander à votre parent quelles décisions lui reviennent. Kin transforme cette conversation en un accord écrit que tout le monde accepte."
     },
     "steps": {
       "eyebrow": "Les quatre étapes",
@@ -822,28 +815,26 @@
     },
     "form": {
       "title": "Créez votre cercle familial",
-      "text": "Dites à Kin qui vous êtes et pour qui est le cercle. Vous inviterez votre famille ensuite.",
-      "nameLabel": "Votre nom",
-      "parentLabel": "Pour qui est le cercle ?",
-      "parentHelp": "Un cercle pour chaque personne que vous accompagnez.",
+      "text": "Commencez par créer votre compte. Vous donnerez ensuite un nom au cercle et inviterez votre famille.",
       "consent": "Je comprends que le cercle n’est actif que lorsque mon parent, ou la personne légalement habilitée à agir en son nom, a donné son accord.",
       "consentError": "Merci de confirmer ce point pour continuer.",
-      "submit": "Créer le cercle",
-      "haveCircle": "Déjà dans un cercle ?"
+      "submit": "Créer votre compte",
+      "note": "Vous créez votre compte sur la page sécurisée de Kin, gérée par Amazon Cognito. Tant que les cercles ne sont pas ouverts, votre nouveau compte ouvre le cercle de démonstration.",
+      "haveCircle": "Vous avez déjà un compte ?"
     }
   },
   "signInPage": {
     "hero": {
       "eyebrow": "Se connecter",
-      "title": "Aucun mot de passe à retenir, ni à voler.",
-      "lede": "Quand la connexion sera ouverte, Kin enverra un code à votre adresse e-mail ou utilisera une clé d’accès. Votre parent ne se connectera pas du tout."
+      "title": "Le cercle de votre famille, derrière une seule porte.",
+      "lede": "La connexion à Kin repose sur Amazon Cognito : Kin ne voit jamais votre mot de passe et ne le conserve pas. Votre parent n’a jamais à se connecter, c’est Kin qui l’appelle."
     },
     "ways": {
-      "label": "Comment chacun accède à Kin",
+      "label": "Comment chaque personne accède à Kin",
       "items": {
         "family": {
           "who": "Membres de la famille",
-          "title": "Un code par e-mail, ou une clé d’accès"
+          "title": "Votre e-mail et un mot de passe"
         },
         "parent": {
           "who": "Parents",
@@ -851,22 +842,473 @@
         },
         "caregiver": {
           "who": "Aides à domicile",
-          "title": "Un code par e-mail, ou une clé d’accès"
+          "title": "Votre e-mail et un mot de passe"
         }
       }
     },
     "form": {
       "title": "Connectez-vous à votre cercle",
-      "text": "Kin vous envoie un code par e-mail. Il n’y a pas de mot de passe.",
-      "submit": "Recevoir un code par e-mail",
-      "or": "ou",
-      "passkey": "Utiliser une clé d’accès",
-      "noCircle": "Pas encore de cercle ?"
+      "text": "Vous vous connectez sur la page sécurisée de Kin, puis vous revenez directement ici.",
+      "submit": "Continuer vers la connexion",
+      "note": "Kin ne voit jamais ce que vous y saisissez. Votre connexion dure une heure et se renouvelle d’elle-même pendant une semaine au plus.",
+      "problems": {
+        "failed": "La connexion n’a pas abouti. Merci de réessayer.",
+        "unavailable": "Le service de connexion est injoignable pour le moment. Merci de réessayer dans un instant."
+      },
+      "noCircle": "Pas encore de compte ?"
     }
   },
-  "account": {
-    "emailLabel": "Adresse e-mail",
-    "emailError": "Saisissez une adresse e-mail, par exemple {example}.",
-    "requiredError": "Merci de remplir ce champ."
+  "dashboard": {
+    "meta": {
+      "overview": {
+        "title": "Aperçu · Le cercle de Rose · Kin",
+        "description": "Le mois d’octobre de Rose en un coup d’œil : la cagnotte, ce qui attend un oui, l’équité et ce que Rose a entendu."
+      },
+      "approvals": {
+        "title": "Décisions · Le cercle de Rose · Kin",
+        "description": "Chaque mouvement d’argent qui attend un oui, et qui doit le donner."
+      },
+      "bills": {
+        "title": "Factures · Le cercle de Rose · Kin",
+        "description": "Ce qui arrive, ce qui a été payé et ce que Kin a vérifié."
+      },
+      "fairness": {
+        "title": "Équité · Le cercle de Rose · Kin",
+        "description": "Chaque membre comparé aux parts convenues, et la régularisation qui comble l’écart."
+      },
+      "record": {
+        "title": "Registre · Le cercle de Rose · Kin",
+        "description": "Chaque mouvement de l’argent de Rose, dans l’ordre où il a eu lieu."
+      },
+      "circle": {
+        "title": "Cercle · Le cercle de Rose · Kin",
+        "description": "Les membres, leurs rôles, l’accord familial et les bénéficiaires."
+      }
+    },
+    "shell": {
+      "navLabel": "Cercle",
+      "nav": {
+        "overview": "Aperçu",
+        "approvals": "Décisions",
+        "bills": "Factures",
+        "fairness": "Équité",
+        "record": "Registre",
+        "circle": "Cercle"
+      },
+      "waiting": "{count} en attente",
+      "homeLabel": "Kin, aperçu du cercle de Rose",
+      "circleName": "Le cercle de Rose",
+      "clock": "Horloge de démo · {date}",
+      "account": {
+        "menu": "Votre compte",
+        "signedInAs": "Connexion en tant que",
+        "settings": "Cercle et accord",
+        "website": "Site de Kin",
+        "signOut": "Se déconnecter"
+      },
+      "demo": {
+        "label": "Cercle de démonstration",
+        "text": "Vous voyez le mois d’octobre de Rose du point de vue d’Elena, responsable du cercle. Les données sont des exemples dans la sandbox PayPal : rien ici n’est un vrai paiement, et aucun bouton ne déplace d’argent."
+      }
+    },
+    "pause": {
+      "button": "Suspendre les paiements",
+      "title": "Suspendre tous les paiements pendant {hours} heures ?",
+      "text": "À utiliser si quelque chose paraît anormal. Rien ne sort de la cagnotte avant la fin de la pause, et tout le cercle est prévenu aussitôt.",
+      "points": [
+        "Les factures, les achats et la paie de l’aide à domicile attendent.",
+        "L’argent qui arrive continue d’arriver.",
+        "Les oui déjà donnés redeviennent valables à la fin de la pause.",
+        "Rose en est informée lors de son prochain appel."
+      ],
+      "confirm": "Suspendre pendant {hours} heures",
+      "cancel": "Laisser les paiements actifs"
+    },
+    "demoAction": {
+      "title": "Rien n’a bougé.",
+      "text": "Ceci est le cercle de démonstration. Approuver, refuser et suspendre seront possibles à l’ouverture des comptes, et chaque action demandera de vérifier à nouveau que c’est bien vous."
+    },
+    "common": {
+      "simulated": "Simulé",
+      "confirmed": "Confirmé par PayPal",
+      "approve": "Approuver",
+      "decline": "Refuser",
+      "you": "vous",
+      "roles": {
+        "organizer": "Responsable du cercle",
+        "contributor": "Membre qui contribue",
+        "parent": "Parent",
+        "caregiver": "Aide à domicile",
+        "observer": "Lecture seule"
+      },
+      "proposalKinds": {
+        "bill_payment": "Facture",
+        "caregiver_payout": "Paie de l’aide à domicile",
+        "member_payout": "Régularisation",
+        "purchase": "Achat"
+      },
+      "categories": {
+        "utilities": "Charges",
+        "care": "Accompagnement",
+        "pharmacy": "Pharmacie",
+        "repairs": "Réparations"
+      },
+      "payees": {
+        "electricity": "Fournisseur d’électricité",
+        "gas": "Fournisseur de gaz",
+        "water": "Compagnie des eaux",
+        "pharmacy": "Pharmacie",
+        "amara": "Amara",
+        "stairlift": "Ridgeway Stairlifts"
+      },
+      "entryKinds": {
+        "contribution": "Contribution",
+        "out_of_pocket": "De sa poche",
+        "bill_approved": "Facture approuvée",
+        "payout_confirmed": "Payé",
+        "purchase_captured": "Achat",
+        "settlement_collection": "Régularisation reçue",
+        "settlement_payout": "Régularisation versée",
+        "care_credit": "Temps d’aide"
+      },
+      "planLabels": {
+        "standing": "Payé selon une règle permanente",
+        "parent": "Rose décide",
+        "parentAndSecond": "Rose et un second oui",
+        "organizer": "La personne responsable approuve",
+        "organizerAndSecond": "Deux oui",
+        "refused": "Au-delà du plafond de l’accord",
+        "paused": "Retenu par la pause"
+      }
+    },
+    "overview": {
+      "greeting": "Bonsoir, {name}",
+      "lede": "Voici le mois d’octobre de Rose. La cagnotte correspond au registre de PayPal, et le mois est prêt à être clôturé.",
+      "actions": {
+        "approvals": "Voir les décisions",
+        "settlement": "Voir la régularisation"
+      },
+      "stats": {
+        "label": "Octobre en un coup d’œil",
+        "pool": {
+          "label": "Dans la cagnotte",
+          "note": "Confirmé par PayPal"
+        },
+        "paidIn": {
+          "label": "Entrées",
+          "note": "Versé par {names}"
+        },
+        "paidOut": {
+          "label": "Sorties",
+          "note": "Plus {fees} de frais PayPal"
+        },
+        "waiting": {
+          "label": "En attente d’un oui",
+          "note": "{amount} au total"
+        }
+      },
+      "attention": {
+        "title": "À traiter",
+        "link": "Toutes les décisions"
+      },
+      "safety": {
+        "title": "Kin a déjoué une fausse demande",
+        "text": "Une personne a appelé Rose et lui a dit qu’elle devait {claimed} pour le gaz. Kin n’a trouvé aucune facture de gaz impayée : la dernière, de {paid}, a été réglée le {paidDay}. Kin a dit à Rose de ne pas payer et a prévenu {alerted}.",
+        "rule": "Kin informe. Kin ne demande jamais de secrets.",
+        "link": "Voir la vérification"
+      },
+      "fairness": {
+        "title": "L’équité en octobre",
+        "text": "Chaque membre comparé aux parts convenues par la famille.",
+        "owed": "À recevoir : {amount}",
+        "owes": "À verser : {amount}",
+        "level": "À l’équilibre",
+        "link": "Voir l’équité"
+      },
+      "heard": {
+        "title": "Ce que Rose a entendu",
+        "text": "Kin annonce à Rose chaque paiement confirmé, sur son téléphone.",
+        "lines": {
+          "billPaid": "Votre facture d’électricité de {amount} a été réglée ce matin avec la cagnotte familiale.",
+          "refill": "Votre médicament contre l’hypertension est commandé. Il a coûté {amount} et arrive demain.",
+          "letter": "Ce courrier vient de la compagnie des eaux. Il indique {amount} à régler le 30. Elena le verra aujourd’hui.",
+          "falseDemand": "Je ne trouve aucune facture de gaz impayée. Votre facture de gaz de {amount} a été réglée le 2. Ne payez rien à cette personne, s’il vous plaît.",
+          "caregiverPaid": "Amara a reçu {amount} pour ses visites de cette semaine."
+        }
+      },
+      "activity": {
+        "title": "Dernières écritures du registre",
+        "link": "Ouvrir le registre"
+      },
+      "spending": {
+        "title": "Où est allé l’argent",
+        "text": "Les dépenses d’octobre par catégorie, payées avec la cagnotte ou de la poche des membres.",
+        "total": "{amount} au total"
+      },
+      "comingUp": {
+        "title": "À venir",
+        "link": "Toutes les factures"
+      }
+    },
+    "approvals": {
+      "title": "Décisions",
+      "lede": "Rien ne sort de la cagnotte sans les oui ci-dessous. Kin détermine qui doit dire oui à partir de l’accord familial, et personne ne peut sauter une étape.",
+      "waitingTitle": "En attente d’un oui",
+      "waitingEmpty": "Aucun oui n’est attendu.",
+      "decidedTitle": "Approuvé en octobre",
+      "decidedText": "Chaque approbation est conservée avec l’écriture à laquelle elle a donné lieu.",
+      "purposes": {
+        "stairlift": {
+          "title": "Réparation du monte-escalier",
+          "text": "Un nouveau moteur pour le monte-escalier. Elena a photographié le devis."
+        },
+        "caregiverWeek": {
+          "title": "Les visites d’Amara cette semaine",
+          "text": "Trois visites de quatre heures, facturées à la voix par Amara."
+        },
+        "settlement": {
+          "title": "Régularisation d’octobre pour {name}",
+          "text": "Issue du calcul du mois par Kin. La page Équité explique pourquoi."
+        }
+      },
+      "raisedBy": "Proposé par {name} le {date}",
+      "expires": "Expire {when}",
+      "status": {
+        "yourTurn": "Votre oui est attendu",
+        "waitingFor": "En attente : {names}"
+      },
+      "progress": "Oui : {done} sur {total}",
+      "slots": {
+        "label": "Qui doit dire oui",
+        "parent_decides": "Rose décide au-delà de {amount}",
+        "organizer": "Le oui de la personne responsable",
+        "second_approval": "Un second oui au-delà de {amount}",
+        "saidYes": "{name} a dit oui {method} le {time}",
+        "methods": {
+          "voice": "par téléphone",
+          "app": "dans l’application"
+        },
+        "open": "En attente : {names}",
+        "parentCall": "Kin posera la question à Rose lors de son prochain appel."
+      },
+      "notes": {
+        "newPayee": "Un nouveau bénéficiaire. Tout le cercle a été prévenu.",
+        "payeeIsMember": "Ce paiement va à {name} : une autre personne doit donc aussi dire oui.",
+        "abovePool": "Plus que ce que contient la cagnotte aujourd’hui ({pool}). Le paiement n’aura lieu qu’une fois assez d’argent arrivé."
+      }
+    },
+    "bills": {
+      "title": "Factures",
+      "lede": "Une seule liste pour tout ce que paie le cercle de Rose : ce qui arrive, ce qui a été payé et ce que Kin a vérifié.",
+      "upcoming": {
+        "title": "À venir en {month}",
+        "text": "Montants prévus. Le montant réel arrive avec chaque facture.",
+        "columns": {
+          "payee": "Bénéficiaire",
+          "due": "Échéance",
+          "amount": "Prévu",
+          "approval": "Approbation"
+        }
+      },
+      "paid": {
+        "title": "Payées en {month}",
+        "text": "Chacune confirmée par le registre de PayPal lui-même.",
+        "columns": {
+          "payee": "Bénéficiaire",
+          "approved": "Approuvée",
+          "paid": "Payée",
+          "fee": "Frais PayPal",
+          "amount": "Montant"
+        }
+      },
+      "checks": {
+        "title": "Vérifié par Kin",
+        "text": "Kin compare chaque facture et chaque demande au registre, avec un programme simple.",
+        "falseDemand": {
+          "title": "Un appel réclamait {claimed} pour le gaz",
+          "text": "Le {day}, une personne a dit à Rose au téléphone que son compte de gaz était en retard de paiement. Kin n’a trouvé aucune facture de gaz impayée. La dernière, de {paid}, a été réglée le {paidDay}. Kin a prévenu {alerted} en quelques secondes."
+        },
+        "verdict": "Ne correspond à rien dans le registre",
+        "noDuplicates": "Aucune facture en double ce mois-ci.",
+        "noJumps": "Aucun montant n’a augmenté sans raison."
+      }
+    },
+    "fairness": {
+      "title": "Équité",
+      "lede": "La famille a fixé les parts. Kin compare le mois à ces parts, et comble l’écart par de vrais paiements.",
+      "agreement": {
+        "title": "Parts convenues",
+        "care": "Le temps d’aide compte {rate} de l’heure. Il réduit ce qu’un membre paie et n’est pas versé en argent.",
+        "version": "Version {version}, acceptée par tout le monde."
+      },
+      "members": {
+        "title": "Chaque membre en octobre",
+        "paidIn": "Versé dans la cagnotte",
+        "ownPocket": "Payé de sa poche",
+        "care": "Temps d’aide",
+        "given": "Total donné",
+        "target": "Part convenue",
+        "owed": "La cagnotte doit {amount} à {name}",
+        "owes": "{name} doit {amount} à la cagnotte",
+        "level": "{name} est à l’équilibre",
+        "explain": "{name} a donné {given}, pour une part convenue de {target}.",
+        "reasons": {
+          "ownPocket": "Cela inclut une somme de {amount}, payée par {name} de sa poche.",
+          "care": "Cela inclut {amount} de temps d’aide, au tarif fixé par la famille."
+        }
+      },
+      "chart": {
+        "title": "Donné, comparé à la part convenue",
+        "text": "Chaque barre montre ce qu’un membre a donné. Le repère indique sa part convenue sur {total}."
+      },
+      "settlement": {
+        "title": "Régularisation d’octobre",
+        "text": "Le plus petit ensemble de paiements qui ramène chaque membre à sa part.",
+        "payouts": "Sorties de la cagnotte",
+        "collections": "Entrées dans la cagnotte",
+        "payout": "À {name}",
+        "collection": "Demandé à {name}",
+        "fee": "Retenue pour les frais PayPal : {fee}",
+        "now": "Payable maintenant",
+        "invoice": "Demandé par facture PayPal",
+        "status": "En attente d’approbation",
+        "link": "Aller aux décisions",
+        "core": "Calculé par le cœur financier de Kin, pas par l’IA. Le même registre donne toujours le même résultat."
+      }
+    },
+    "record": {
+      "title": "Registre",
+      "lede": "Chaque mouvement de l’argent de Rose, dans l’ordre où il a eu lieu. Rien n’est modifié ni supprimé. Une correction est une nouvelle écriture.",
+      "filters": {
+        "label": "Afficher",
+        "all": "Tout",
+        "in": "Entrées",
+        "bills": "Factures",
+        "purchases": "Achats",
+        "ownPocket": "De sa poche",
+        "care": "Temps d’aide"
+      },
+      "columns": {
+        "date": "Date",
+        "entry": "Écriture",
+        "source": "Source",
+        "amount": "Montant"
+      },
+      "grid": {
+        "label": "Écritures du registre",
+        "detailTitle": "Écriture sélectionnée",
+        "hint": "Sélectionnez une écriture pour voir ses lignes comptables."
+      },
+      "descriptions": {
+        "contribution": "Contribution mensuelle versée par {name}",
+        "out_of_pocket": "Reçu envoyé par {name} : {category}",
+        "bill_approved": "{payee} : facture approuvée",
+        "payout_confirmed": "{payee} : payé",
+        "purchase_captured": "Commande pour Rose : {category}",
+        "care_credit": "Temps d’aide donné par {name}",
+        "settlement_collection": "Régularisation versée par {name}",
+        "settlement_payout": "Remboursement versé à {name}"
+      },
+      "sources": {
+        "paypal_event": "Événement PayPal",
+        "approval": "Approbation",
+        "settlement": "Régularisation"
+      },
+      "lines": {
+        "show": "Lignes comptables",
+        "account": "Compte",
+        "debit": "Débit",
+        "credit": "Crédit"
+      },
+      "accounts": {
+        "pool_cash": "Trésorerie de la cagnotte",
+        "pool_clearing": "Cagnotte, en transit",
+        "fees": "Frais PayPal",
+        "expense": "Dépenses : {name}",
+        "payable": "Dû à {name}",
+        "member": "Contributions : {name}",
+        "care_credit": "Crédit d’aide : {name}",
+        "care_received": "Aide reçue"
+      },
+      "fee": "Frais PayPal : {fee}",
+      "careNote": "Temps d’aide, pas d’argent",
+      "summary": "{count} écritures. Chacune est équilibrée.",
+      "export": "Exporter le registre d’audit",
+      "empty": "Aucune écriture de ce type ce mois-ci."
+    },
+    "circle": {
+      "title": "Cercle",
+      "lede": "Qui fait partie du cercle de Rose, ce que chaque personne peut y faire, et l’accord accepté par tout le monde.",
+      "parent": {
+        "title": "Rose décide",
+        "text": "Le oui de vive voix de Rose est nécessaire pour tout ce qui dépasse {amount}. Kin lui annonce chaque paiement confirmé, et elle peut lui poser n’importe quelle question.",
+        "levelsLabel": "Comment un parent peut participer",
+        "current": "Le choix de Rose",
+        "levels": {
+          "decides": {
+            "title": "Décide",
+            "text": "Son oui de vive voix est nécessaire au-delà d’un plafond fixé par la famille."
+          },
+          "informed": {
+            "title": "Entend tout",
+            "text": "Tout lui est annoncé. Les approbations reviennent à la famille."
+          },
+          "represented": {
+            "title": "Se fait représenter",
+            "text": "Une personne légalement habilitée agit en son nom, et Kin l’enregistre."
+          }
+        }
+      },
+      "members": {
+        "title": "Membres",
+        "share": "Part de {share}",
+        "invite": "Inviter quelqu’un",
+        "roleText": {
+          "organizer": "Approuve les paiements et veille sur le cercle.",
+          "contributor": "Verse une part et peut donner un second oui.",
+          "parent": "Entend chaque paiement et prend les décisions qui lui reviennent.",
+          "caregiver": "Ne voit que ses propres factures et paiements.",
+          "observer": "Lit tout et ne modifie rien."
+        }
+      },
+      "agreement": {
+        "title": "Accord familial",
+        "version": "Version {version}, acceptée par tout le monde",
+        "terms": {
+          "care": {
+            "label": "Temps d’aide",
+            "value": "{rate} de l’heure, réduit ce qu’un membre paie"
+          },
+          "ceiling": {
+            "label": "Paiement unique maximal",
+            "value": "{amount}"
+          },
+          "second": {
+            "label": "Deux oui",
+            "value": "Au-delà de {amount}"
+          },
+          "parent": {
+            "label": "Rose décide",
+            "value": "Au-delà de {amount}"
+          },
+          "window": {
+            "label": "Durée d’une proposition",
+            "value": "{hours} heures, puis elle expire"
+          },
+          "pause": {
+            "label": "Le bouton pause",
+            "value": "Suspend tous les paiements pendant {hours} heures"
+          }
+        }
+      },
+      "payees": {
+        "title": "Bénéficiaires",
+        "text": "L’argent ne sort de la cagnotte que vers ces bénéficiaires et vers les membres du cercle.",
+        "approved": "Approuvé",
+        "new": "Nouveau",
+        "standing": "Payé automatiquement entre {min} et {max}",
+        "eachBill": "Chaque paiement demande un oui"
+      }
+    }
   }
 }
