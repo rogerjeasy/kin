@@ -260,35 +260,44 @@ erDiagram
 
 ### 6.3 Tables
 
-Every table except `users` carries a `circle_id`.
+Every table except `users` carries a `circle_id`. Built in `packages/db/src/schema` (decision 37), with these choices:
+
+- Every row has a UUID that Kin makes, and every reference to a row of the same circle is a composite foreign key on `(circle_id, id)`, so the database refuses a link from one family's row to another's.
+- Amounts are `bigint` cents beside a three-letter currency. Each enum is built from the money core's constant (`CIRCLE_ROLES`, `PROPOSAL_KINDS`, `ENTRY_KINDS`, the state machines' states), so the database cannot hold a value the code does not know.
+- Tables marked *not yet* below are designed but not created. Each comes with the feature that writes it.
+- The rows the dashboard showed only as copy or constants are now data: the circle's name, demo flag and demo clock; members' display names, relationships and portraits; payees' names; the bills the family expects; the false-demand check; and what Kin told the parent.
 
 | Table               | Key contents                                                                        |
 | ------------------- | ----------------------------------------------------------------------------------- |
-| `users`           | Cognito subject, contact details, language, linked PayPal payer ID                  |
-| `circles`         | Name, timezone, currency, status, pause flag                                        |
-| `members`         | User, circle, role, status, parent participation level                              |
-| `agreements`      | Version, shares in basis points, thresholds, care rate, effective date, acceptances |
-| `pool_accounts`   | PayPal merchant ID, credential reference, webhook ID, mode                          |
-| `payees`          | Name, type, PayPal recipient, status, auto-pay rule                                 |
-| `subscriptions`   | Member, PayPal subscription ID, plan ID, amount, state                              |
-| `contributions`   | Member, kind, amount, period, source reference                                      |
-| `care_entries`    | Member, date, hours, note, approval state                                           |
-| `documents`       | S3 key, kind, extraction result, confidence, state                                  |
-| `bills`           | Payee, amount, due date, category, state, duplicate link                            |
-| `proposals`       | Kind, amount, payee, origin, required approvals, state, expiry                      |
-| `approvals`       | Proposal, member, decision, method, evidence reference                              |
+| `users`           | Cognito subject as the ID (or `demo:…` for an anonymous demo visitor, with kind `demo_visitor`), email and whether Cognito verified it, name, language, linked PayPal payer ID, last seen. The only table without a circle. |
+| `circles`         | Name, timezone, currency, status (active or archived), demo flag, demo clock, pause until and by whom, the transaction that created it |
+| `members`         | User (empty until the person joins), display name, role, parent participation level (for the parent only), relationship, portrait, status, the visitor's demo seat |
+| `invitations`     | Email, role, who invited, status, expiry                                            |
+| `agreements`      | Version, care rate and whether care is paid in cash, the three thresholds, effective date. Never changed: a new term is a new version. |
+| `agreement_shares` | Each member's share of a version in basis points, in the family's order. A version's shares total 10 000, checked at commit. |
+| `agreement_acceptances` | Who accepted a version, how (app or voice) and when                         |
+| `pool_accounts`   | *Not yet.* PayPal merchant ID, credential reference, webhook ID, mode               |
+| `payees`          | Name, spending category, status, the member it pays, PayPal recipient, auto-pay rule and range |
+| `subscriptions`   | *Not yet.* Member, PayPal subscription ID, plan ID, amount, state                    |
+| `contributions`   | *Not yet.* Member, kind, amount, period, source reference                            |
+| `care_entries`    | Member, date, minutes, note, approved, the care-credit entry that values it         |
+| `documents`       | S3 key (none for a simulated document), kind, uploader, extraction result, confidence, simulated |
+| `bills`           | Payee, document, amount, received and due dates, state, duplicate link              |
+| `expected_bills`  | Payee, kind, expected amount, due date: what the family expects before the bill arrives |
+| `proposals`       | Kind, amount, payee or member paid, purpose and the family's note, who raised it (none for Kin), state, expiry, agreement version, the approval plan made when it was raised, bill, settlement and document links. Only the state and expiry can change. |
+| `approvals`       | Proposal, member, role when answering, decision, method, evidence reference, time. Never changed. |
 | `executions`      | Proposal, idempotency key, PayPal resource IDs, state, attempts                     |
 | `paypal_events`   | PayPal event ID, type, raw body, headers, verification state, processing state      |
-| `ledger_entries`  | Date, kind, description, source reference, period                                   |
-| `ledger_lines`    | Entry, account, direction, amount in cents                                          |
-| `ledger_accounts` | Account code, type, member or payee link                                            |
-| `settlements`     | Period, inputs snapshot, results, state                                             |
-| `claim_checks`    | What was claimed, what was found, verdict, alerts sent                              |
-| `narrations`      | Parent, event reference, text, priority, delivery state                             |
-| `conversations`   | Channel, participant, turns, tool calls                                             |
-| `call_sessions`   | Call reference, verification result, transcript reference                           |
+| `ledger_entries`  | Date, kind, description, source type and ID (unique per circle: the idempotency key), period, currency, simulated, reversal link, order of acceptance |
+| `ledger_lines`    | Entry, position, account, direction, amount in cents                                |
+| `ledger_accounts` | Account code, member or payee link                                                  |
+| `settlements`     | Period, agreement version, inputs, fairness result and plan as calculated, state    |
+| `claim_checks`    | What was claimed and for whom, the amount, the entry it was checked against, verdict, members alerted |
+| `narrations`      | Member told, topic, amount and the entry it came from, the words spoken after the number guard, delivery state |
+| `conversations`   | *Not yet.* Channel, participant, turns, tool calls                                  |
+| `call_sessions`   | *Not yet.* Call reference, verification result, transcript reference                |
 | `outbox`          | Pending messages written in the same transaction as state changes                   |
-| `audit_log`       | Who did what, when, from where                                                      |
+| `audit_log`       | Who did what (member, service or provisioner), to what, when, from where. Never changed. |
 
 ---
 
@@ -1066,9 +1075,21 @@ Three layers, each independent of the others.
 | **Circle role**        | What may this person do in this circle?      | Service, on every request, from the`members` table |
 | **Row-level security** | Can this query see this row?                 | Aurora, on every query                               |
 
-**How row-level security works.** At the start of each request, the service opens a transaction and sets the user's ID as a session setting. Every table has a policy that allows a row only if the user is an active member of that row's circle, with further limits for caregivers and observers. A query that forgets its filter returns nothing instead of another family's data.
+**How row-level security works.** At the start of each request, the service opens a transaction and sets the user's ID as a session setting (`kin.user_id`, local to that transaction, so a pooled connection never carries one person into the next request). Every table has a policy that allows a row only if the user is an active member of that row's active circle, with further limits for caregivers and observers. A query that forgets its filter returns nothing instead of another family's data, and a transaction that names nobody sees nothing at all. Built in `packages/db/migrations/0001_security.sql`; `packages/db/src/security/*.test.ts` attempt every forbidden access and check every table has row-level security on and a policy.
 
-**Service access.** The worker acts for the system, not for a user. It uses a separate database role, and each job names the single circle it is working on.
+**Three database roles connect, and none owns a table or bypasses row-level security.**
+
+| Role | Acts as | May |
+| ---- | ------- | --- |
+| `kin_app` | A signed-in person or a demo visitor (`kin.user_id`) | Read what their role in each of their circles allows. Write their own `users` row; answer a pending proposal in their own seat and role (organizer, contributor or parent); move it to approved or rejected only with a recorded answer to back it; pause the circle in their own name for at most 24 hours (not an observer), and lift it if they paused it or organize it; invite someone (organizers); and record what they did in the audit log. Through `kin_private` functions: start a real circle, join the circles that invited their verified address, take another seat or give up their own in a demo circle. Each grant is column by column where a table is shared. |
+| `kin_service` | Kin's worker, for the one circle a job names (`kin.circle_id`) | Read, add and change rows of that circle. Never delete. |
+| `kin_provisioner` | The demo provisioner | Add rows only to a demo circle created in the same transaction (the circle records the transaction's ID). It cannot read anything, so it cannot reach an existing family. |
+
+A caregiver reads only the payees that are their own seat, the bills, proposals and ledger entries that pay them or that they raised, and their own care entries and documents. They read no agreement, settlement, claim check or narration. An observer reads everything a contributor reads and writes nothing. The audit log and invitations are for organizers.
+
+**The money rules, again in the database.** Triggers refuse any update, delete or truncate of ledger entries and lines, approvals, agreement versions and the audit log, even by the tables' owner. A deferred check at commit refuses an entry that does not balance or has fewer than two lines. Lines can join an entry only in the transaction that wrote it. A reversal must cancel an original of the same kind and currency, once. An entry must be in its circle's currency. A proposal's, bill's or execution's state can move only along `kin_private.state_transitions`, which a test compares with `packages/domain`. After a proposal is raised, only its state and expiry can change.
+
+**Service access.** The worker acts for the system, not for a user. It uses a separate database role, and each job names the single circle it is working on. The web app holds only `kin_app` and, in the demo environment, `kin_provisioner`. It never holds the admin's or the service's password.
 
 ### 12.4 The parent on a call
 
@@ -1196,7 +1217,8 @@ The load balancer routes `/voice/*` to the voice service, with a long idle timeo
 - **Aurora Serverless v2,** PostgreSQL-compatible, one writer, in private subnets. Minimum capacity is kept above zero during judging to avoid a slow first request.
 - **Backups** with point-in-time recovery.
 - **Encryption** with a KMS key.
-- **Migrations** run as a one-off task before each deployment.
+- **Migrations** run as a one-off Fargate task (`kin-database-migrate`, in the services subnets) before the web app rolls out. It alone reads the admin's password from the cluster's secret, applies `packages/db/migrations`, and sets each service role's password from its own secret (`kin/database/app`, `kin/database/service`, `kin/database/provisioner`). A task, not a Lambda function, because the shared account's Lambda quota is small and the task can take as long as Aurora needs to resume.
+- **TLS** to the database is always verified. The images carry Amazon RDS's certificate bundle (`NODE_EXTRA_CA_CERTS`). Plain connections are refused except to a database on the same machine.
 
 ### 14.5 Queues and schedules
 
@@ -1398,7 +1420,7 @@ The audit export assembles these into one dated record per movement.
 3. When CI passes, the Deploy workflow (`.github/workflows/deploy.yml`) checks out that same commit and deploys every stack except KinGuardrails with the CDK.
 4. KinWeb's deploy builds the web image, pushes it to ECR, and App Runner rolls to it with its health check.
 5. A smoke test (`pnpm --filter @kin/infra run smoke`) checks the live app from outside: pages load, the circle's screens need a session, and sign-in reaches Cognito and returns to the right address.
-6. Database migrations will run as a one-off task before step 3 once the database is in use.
+6. Between deploying KinData and KinWeb, the workflow runs the migration task (`pnpm --filter @kin/infra run migrate`) and stops if it fails, so the web app never meets a schema older than its code. KinWeb reaches Aurora through an App Runner VPC connector in the services subnets.
 
 GitHub signs in to AWS through OpenID Connect, and AWS trusts only this repository's main branch. No AWS keys are stored in GitHub. The Deploy workflow can also be started by hand from main.
 
@@ -1406,13 +1428,18 @@ GitHub signs in to AWS through OpenID Connect, and AWS trusts only this reposito
 
 The hackathon needs a month of family life to be shown in minutes.
 
-- **Seeded data.** One complete circle: Rose, Elena, Marcus, Ana and Amara, each with a Cognito account and a sandbox PayPal account.
+- **Seeded data.** One complete circle, copied for each visitor: Rose, Elena, Marcus, Ana, Amara and Daniel, the family's lawyer, so every role is there to try.
 - **A demo clock.** The current date is supplied by a clock that the demo environment can move forward. Settlement and schedules follow it. In every other environment it is the real time.
 - **Simulated billing cycles.** PayPal's sandbox bills subscriptions in real time. To show several months, the demo replays subscription payment events through the normal webhook path.
 - **Honest labelling.** Anything simulated is marked as simulated in the interface and in the ledger entry. Real sandbox transactions and simulated ones are never presented as the same thing.
-- **Reset.** One command returns the circle to its starting state.
+- **Reset.** *Start again* in the demo banner, or `pnpm --filter @kin/db run demo:reset -- <visitor-id>`, gives a visitor a fresh circle. Without an ID the command adds a circle nobody can open, which is enough to look at the data locally.
 - **Where it runs.** The demo is served by App Runner at https://mzdg4f3stk.us-east-1.awsapprunner.com (decision 35). The address is fixed for the life of the `kin-web` service, and it is listed in `kin:webOrigins` so Cognito returns to it.
-- **The demo dashboard, before circles exist.** `/dashboard` and its screens are behind sign-in. Every signed-in person sees Rose's October from Elena's seat, with their own name in the account menu. Every figure is computed by `packages/domain` from the example ledger (`rosesMonth`): balances, the settlement, and each proposal's approval plan and decision. The clock is fixed at the evening of 30 October 2026 in `apps/web/src/content/demo-circle/clock.ts`. Every button that would move money or change the circle answers that nothing moved and sends no request. When circles and the seeded circle exist, these screens read the same shapes from the API instead, and the circle-role check of section 12.3 decides what each person sees.
+- **The Demo button, and only the Demo button, opens demo data.** It is on the home page, the site header and the start page (`startDemo` in `apps/web/src/server/demo-actions.ts`). Pressing it creates an anonymous visitor: a `users` row of kind `demo_visitor` whose ID starts `demo:`, so every press can be counted with no account and no personal details. The visitor's session is a token signed with a key from Secrets Manager (`issueDemoSession` in `packages/auth`), in an httpOnly `__Host-` cookie that lasts 14 days. The visitor gets their own copy of Rose's circle (`provisionDemoCircle` in `packages/db`), isolated from every other by row-level security, so one judge's actions never show up in another's. The demo clock is the circle's own (`circles.clock_at`): the evening of 30 October 2026.
+- **Demo and real never mix.** A database trigger seats demo visitors only in demo circles and people who signed in only in real ones. A person who signs in sees their own circles, joins any real circle that invited their verified address, and otherwise is offered to start one (`kin_private.create_circle`): they become its organizer and the parent its first member. Every screen of a circle with no data yet says so in plain words.
+- **Every role, from one seat.** The demo banner's role switcher moves the visitor into another persona's empty seat (`kin_private.take_demo_seat`), so the database then shows exactly what that role may see: a caregiver only their own pay, an observer everything and no buttons.
+- **Real operations on simulated money.** In the demo a visitor approves and declines proposals (the vote is recorded in their seat and role, and the approval engine decides), pauses and lifts the pause, invites someone, downloads the record as CSV, starts again and leaves. Approving moves a proposal to approved; the payment itself follows with PayPal payouts. In a real circle, answering a proposal waits for the fresh multi-factor check of section 12, so the screen says so and the server refuses it.
+- **Start again** archives the visitor's circle and gives them a fresh one; *Leave the demo* clears the visitor's cookie. Nothing is deleted: the old circle's ledger stays.
+- **What each person sees.** The circle-role check of section 12.3 (`authorize` in `packages/auth`) decides which screens a role may open, and a role refused a screen is sent to its first one.
 
 ---
 
@@ -1456,6 +1483,12 @@ The hackathon needs a month of family life to be shown in minutes.
 | 34 | Cognito's email goes through a custom sender that sends from a Gmail account, switched on by a deploy-time setting (`KIN_SENDER_EMAIL`) | Amazon SES; Cognito's own sender | Cognito sends sign-in codes only through SES or a custom sender. SES production access was refused on 15 October 2026, and the project has no domain. Gmail signs what it sends, so codes pass the recipient's sender checks. A password stays possible if Gmail fails. |
 | 35 | The web app runs on AWS App Runner (`KinWeb`), from the image in `apps/web/Dockerfile` | ECS Fargate behind a load balancer and CloudFront, as section 14 draws it | Cognito returns only to https addresses, and Kin has no domain for a certificate. App Runner serves https at its own address with no load balancer, for a fraction of the cost. The image runs the same production build the end-to-end tests run. Voice and worker still plan for Fargate. |
 | 36 | Cognito's managed pages are branded as code: settings and SVG files in `CfnManagedLoginBranding` | Kin's own sign-in and sign-up screens against the Cognito API; Cognito's default style | The project owner chose to keep Cognito's pages, so Kin still hosts no credential form (decision 31). Branding as code is reviewed and deployed like the rest, and every image comes from the same knot geometry as the app's logo. Cognito serves the SVG files unchanged, so their CSS animations run. |
+| 37 | Drizzle ORM over node-postgres, with row-level security, roles, triggers and grants in a hand-written SQL migration | Prisma; raw SQL with no library | Row types are inferred from one schema (AGENTS.md section 4). Drizzle adds no engine binary to the images. Access rules stay in plain SQL where a reviewer can read them, and tests check them in a real PostgreSQL 17.9, the engine Aurora runs. |
+| 38 | Each visitor of the demo gets their own copy of Rose's circle, made by a provisioner role that can only add rows to a circle created in its own transaction and can read nothing | One shared seeded circle for everyone; seeding with the service role from the web app | Judges act at the same time, so a shared circle would show one judge another's changes. The web app never holds the service role. A compromised web server can create demo circles but cannot read or write any existing family's. |
+| 39 | A proposal shows the approval plan stored when it was raised | Recomputing the plan from the current agreement on every view | The plan made when a proposal is raised is what governs it, even if the agreement later changes. A caregiver, who may not read the agreement, can still see who must say yes to their own pay. The stored plan is parsed and checked on the way out. |
+| 40 | Database migrations run as a one-off Fargate task between KinData and KinWeb in the deploy workflow | A Lambda function triggered by the deployment; migrating from the web app on start | Section 14.4's design. The account's Lambda quota is small. The web app must not hold the admin's password. |
+| 41 | Demo data only behind the Demo button, for an anonymous visitor with a signed session of Kin's own | Giving every signed-in person a demo circle; a demo that needs an account | Judges reach the demo in one click with no account, and a real account never shows example data. The session names only a `demo:` visitor, whom the database seats only in demo circles, so even a stolen or forged session cannot open a family's circle. Each press is a row Kin can count. |
+| 42 | A person's writes go through kin_app with row-level security, column grants and database guards; the decision is the approval engine's | Writing votes and states through the service role from the web app; deciding approvals in SQL | The web app never holds the service role (decision 38), and the rule stays in one place (`decideApprovals`). The database still refuses an approval without a recorded yes, a move other than closing a pending proposal, an answer in another member's name or role, and a pause longer than 24 hours. |
 
 ---
 
@@ -1528,6 +1561,11 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - The ledger, the fairness calculation and settlement planning in sections 7.1 to 7.3, in `packages/domain`, with unit and property tests. Rose's month from the project description is a fixture there, and the public site's settlement figures are calculated from it.
 - The proposal, bill and execution state machines in section 7.4 and the approval engine in section 7.5, in `packages/domain`, with unit and property tests. The tests pin the transitions drawn in this document.
 
+- The database in sections 6.3 and 12.3, in `packages/db`: the schema, the migrations, the three roles and row-level security, the append-only and balancing triggers, the state-machine guard, the ledger store and the demo provisioner. Tested against a real PostgreSQL 17.9 in Docker: isolation between circles on every table, each role's limits (caregiver and observer first), the provisioner's and the service's bounds, the money rules, and a property test that any ledger the money core builds is read back exactly.
+- The circle-role check (`authorize` in `packages/auth`), and the dashboard reading a visitor's own provisioned circle as that visitor, through every screen at the four viewports (unit and end-to-end tests against a migrated database).
+- The Demo button and the anonymous visitor's signed session, the role switcher (every role's screens), answering, pausing, inviting, the CSV record, starting again and leaving; and, for a person who signs in, starting a real circle, joining by invitation and every screen's empty state. Tested in `packages/db` against PostgreSQL, in `packages/auth`, and end to end.
+
 **Not yet tested**
 
+- The migration task and the App Runner VPC connector against the real AWS account. They synthesise and their images build and run locally, but neither has been deployed. TLS to Aurora with the RDS certificate bundle is untested until it is.
 - Everything else in this document. Execution and the outbox in section 7.6 are not built. The latency figure is a target. The diagrams describe the intended design.

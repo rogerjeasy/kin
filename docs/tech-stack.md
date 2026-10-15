@@ -222,7 +222,7 @@ A phone call is not a browser session, so Cognito does not sign the parent in th
 ## 10. Database: Amazon Aurora Serverless v2
 
 - **Aurora Serverless v2, PostgreSQL-compatible.** It scales capacity up and down with load, which suits a demo that is idle most of the day and busy when a judge arrives.
-- **Access library:** Drizzle or Prisma, with migrations kept in the repository.
+- **Access library:** Drizzle ORM (`drizzle-orm` 0.45) over node-postgres (`pg` 8), with `drizzle-kit` generating migrations kept in `packages/db/migrations`. Drizzle infers every row type from the one schema in `packages/db/src/schema`, and its enums are built from the money core's own constants. Row-level security, roles, triggers and grants are plain SQL in a hand-written migration (`0001_security.sql`), so nothing about access is hidden behind the library (architecture decision 37).
 
 **How the data is kept:**
 
