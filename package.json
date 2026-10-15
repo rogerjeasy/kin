@@ -13,7 +13,9 @@
     "test": "pnpm -r run test",
     "test:e2e": "pnpm -r --if-present run test:e2e",
     "build": "pnpm -r --if-present run build",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run test"
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run test",
+    "db:up": "pnpm --filter @kin/db run local:up",
+    "db:down": "pnpm --filter @kin/db run local:down"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

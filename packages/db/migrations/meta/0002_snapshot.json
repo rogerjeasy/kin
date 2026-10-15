@@ -1,0 +1,3328 @@
+{
+  "id": "25f7d53d-b6eb-45ad-b9b1-242babd7543f",
+  "prevId": "2b36c768-4cab-4c1a-bf05-37582a6b6e69",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.circles": {
+      "name": "circles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "char(3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "circle_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "demo": {
+          "name": "demo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "clock_at": {
+          "name": "clock_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paused_until": {
+          "name": "paused_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paused_by": {
+          "name": "paused_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "provisioned_txid": {
+          "name": "provisioned_txid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "txid_current()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "circles_name_present": {
+          "name": "circles_name_present",
+          "value": "length(trim(\"circles\".\"name\")) > 0"
+        },
+        "circles_currency_code": {
+          "name": "circles_currency_code",
+          "value": "\"circles\".\"currency\" ~ '^[A-Z]{3}$'"
+        },
+        "circles_clock_only_in_demo": {
+          "name": "circles_clock_only_in_demo",
+          "value": "\"circles\".\"clock_at\" is null or \"circles\".\"demo\""
+        },
+        "circles_pause_has_author": {
+          "name": "circles_pause_has_author",
+          "value": "(\"circles\".\"paused_until\" is null) = (\"circles\".\"paused_by\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.invitations": {
+      "name": "invitations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "circle_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invited_by": {
+          "name": "invited_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "invitation_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "answered_at": {
+          "name": "answered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "invitations_circle_fk": {
+          "name": "invitations_circle_fk",
+          "tableFrom": "invitations",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "invitations_inviter_fk": {
+          "name": "invitations_inviter_fk",
+          "tableFrom": "invitations",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "invited_by"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "invitations_email_shape": {
+          "name": "invitations_email_shape",
+          "value": "\"invitations\".\"email\" ~ '^[^@\\s]+@[^@\\s]+$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.members": {
+      "name": "members",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "circle_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_level": {
+          "name": "parent_level",
+          "type": "parent_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "relationship": {
+          "name": "relationship",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "portrait": {
+          "name": "portrait",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "member_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "demo_seat": {
+          "name": "demo_seat",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "members_user_idx": {
+          "name": "members_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "members_one_demo_seat": {
+          "name": "members_one_demo_seat",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"members\".\"demo_seat\" and \"members\".\"status\" = 'active'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "members_user_id_users_id_fk": {
+          "name": "members_user_id_users_id_fk",
+          "tableFrom": "members",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "members_circle_fk": {
+          "name": "members_circle_fk",
+          "tableFrom": "members",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "members_circle_row": {
+          "name": "members_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        },
+        "members_one_seat_per_person": {
+          "name": "members_one_seat_per_person",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "user_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "members_demo_seat_has_person": {
+          "name": "members_demo_seat_has_person",
+          "value": "not \"members\".\"demo_seat\" or \"members\".\"user_id\" is not null"
+        },
+        "members_name_present": {
+          "name": "members_name_present",
+          "value": "length(trim(\"members\".\"display_name\")) > 0"
+        },
+        "members_parent_level_only_for_parent": {
+          "name": "members_parent_level_only_for_parent",
+          "value": "(\"members\".\"role\" = 'parent') = (\"members\".\"parent_level\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "user_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'person'"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "language": {
+          "name": "language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'en'"
+        },
+        "paypal_payer_id": {
+          "name": "paypal_payer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "users_id_present": {
+          "name": "users_id_present",
+          "value": "length(\"users\".\"id\") between 1 and 128"
+        },
+        "users_demo_visitor_id": {
+          "name": "users_demo_visitor_id",
+          "value": "(\"users\".\"kind\" = 'demo_visitor') = (\"users\".\"id\" like 'demo:%')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.agreement_acceptances": {
+      "name": "agreement_acceptances",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "agreement_id": {
+          "name": "agreement_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "method": {
+          "name": "method",
+          "type": "approval_method",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accepted_at": {
+          "name": "accepted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "agreement_acceptances_agreement_fk": {
+          "name": "agreement_acceptances_agreement_fk",
+          "tableFrom": "agreement_acceptances",
+          "tableTo": "agreements",
+          "columnsFrom": [
+            "circle_id",
+            "agreement_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "agreement_acceptances_member_fk": {
+          "name": "agreement_acceptances_member_fk",
+          "tableFrom": "agreement_acceptances",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "member_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agreement_acceptances_once": {
+          "name": "agreement_acceptances_once",
+          "nullsNotDistinct": false,
+          "columns": [
+            "agreement_id",
+            "member_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agreement_shares": {
+      "name": "agreement_shares",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "agreement_id": {
+          "name": "agreement_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bps": {
+          "name": "bps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "agreement_shares_agreement_fk": {
+          "name": "agreement_shares_agreement_fk",
+          "tableFrom": "agreement_shares",
+          "tableTo": "agreements",
+          "columnsFrom": [
+            "circle_id",
+            "agreement_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "agreement_shares_member_fk": {
+          "name": "agreement_shares_member_fk",
+          "tableFrom": "agreement_shares",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "member_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agreement_shares_one_per_member": {
+          "name": "agreement_shares_one_per_member",
+          "nullsNotDistinct": false,
+          "columns": [
+            "agreement_id",
+            "member_id"
+          ]
+        },
+        "agreement_shares_position": {
+          "name": "agreement_shares_position",
+          "nullsNotDistinct": false,
+          "columns": [
+            "agreement_id",
+            "position"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "agreement_shares_bps": {
+          "name": "agreement_shares_bps",
+          "value": "\"agreement_shares\".\"bps\" > 0 and \"agreement_shares\".\"bps\" <= 10000"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.agreements": {
+      "name": "agreements",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "care_rate_cents_per_hour": {
+          "name": "care_rate_cents_per_hour",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "care_paid_in_cash": {
+          "name": "care_paid_in_cash",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "ceiling_cents": {
+          "name": "ceiling_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "second_approval_above_cents": {
+          "name": "second_approval_above_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_decides_above_cents": {
+          "name": "parent_decides_above_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effective_on": {
+          "name": "effective_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "agreements_circle_fk": {
+          "name": "agreements_circle_fk",
+          "tableFrom": "agreements",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agreements_circle_row": {
+          "name": "agreements_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        },
+        "agreements_one_per_version": {
+          "name": "agreements_one_per_version",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "version"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "agreements_version_positive": {
+          "name": "agreements_version_positive",
+          "value": "\"agreements\".\"version\" > 0"
+        },
+        "agreements_care_rate": {
+          "name": "agreements_care_rate",
+          "value": "\"agreements\".\"care_rate_cents_per_hour\" is null or \"agreements\".\"care_rate_cents_per_hour\" > 0"
+        },
+        "agreements_care_cash_needs_rate": {
+          "name": "agreements_care_cash_needs_rate",
+          "value": "not \"agreements\".\"care_paid_in_cash\" or \"agreements\".\"care_rate_cents_per_hour\" is not null"
+        },
+        "agreements_thresholds": {
+          "name": "agreements_thresholds",
+          "value": "\"agreements\".\"parent_decides_above_cents\" >= 0 and \"agreements\".\"second_approval_above_cents\" >= 0 and \"agreements\".\"ceiling_cents\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.bills": {
+      "name": "bills",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payee_id": {
+          "name": "payee_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "due_on": {
+          "name": "due_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "received_on": {
+          "name": "received_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "bill_state",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'received'"
+        },
+        "duplicate_of": {
+          "name": "duplicate_of",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "bills_payee_idx": {
+          "name": "bills_payee_idx",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "payee_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "bills_payee_fk": {
+          "name": "bills_payee_fk",
+          "tableFrom": "bills",
+          "tableTo": "payees",
+          "columnsFrom": [
+            "circle_id",
+            "payee_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "bills_document_fk": {
+          "name": "bills_document_fk",
+          "tableFrom": "bills",
+          "tableTo": "documents",
+          "columnsFrom": [
+            "circle_id",
+            "document_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "bills_duplicate_fk": {
+          "name": "bills_duplicate_fk",
+          "tableFrom": "bills",
+          "tableTo": "bills",
+          "columnsFrom": [
+            "circle_id",
+            "duplicate_of"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "bills_circle_row": {
+          "name": "bills_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "bills_amount_positive": {
+          "name": "bills_amount_positive",
+          "value": "\"bills\".\"amount_cents\" > 0"
+        },
+        "bills_duplicate_state": {
+          "name": "bills_duplicate_state",
+          "value": "(\"bills\".\"state\" = 'duplicate') = (\"bills\".\"duplicate_of\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.documents": {
+      "name": "documents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "document_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_key": {
+          "name": "storage_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "uploaded_by": {
+          "name": "uploaded_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "extraction": {
+          "name": "extraction",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confidence": {
+          "name": "confidence",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "simulated": {
+          "name": "simulated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "documents_circle_fk": {
+          "name": "documents_circle_fk",
+          "tableFrom": "documents",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "documents_uploader_fk": {
+          "name": "documents_uploader_fk",
+          "tableFrom": "documents",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "uploaded_by"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "documents_circle_row": {
+          "name": "documents_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "documents_stored_or_simulated": {
+          "name": "documents_stored_or_simulated",
+          "value": "\"documents\".\"storage_key\" is not null or \"documents\".\"simulated\""
+        },
+        "documents_confidence_range": {
+          "name": "documents_confidence_range",
+          "value": "\"documents\".\"confidence\" is null or (\"documents\".\"confidence\" >= 0 and \"documents\".\"confidence\" <= 1)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.expected_bills": {
+      "name": "expected_bills",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payee_id": {
+          "name": "payee_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "proposal_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expected_cents": {
+          "name": "expected_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "due_on": {
+          "name": "due_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "expected_bills_payee_fk": {
+          "name": "expected_bills_payee_fk",
+          "tableFrom": "expected_bills",
+          "tableTo": "payees",
+          "columnsFrom": [
+            "circle_id",
+            "payee_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "expected_bills_once": {
+          "name": "expected_bills_once",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "payee_id",
+            "due_on"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "expected_bills_amount_positive": {
+          "name": "expected_bills_amount_positive",
+          "value": "\"expected_bills\".\"expected_cents\" > 0"
+        },
+        "expected_bills_kind": {
+          "name": "expected_bills_kind",
+          "value": "kind in ('bill_payment', 'caregiver_payout', 'purchase')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.payees": {
+      "name": "payees",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "payee_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'new'"
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paypal_receiver": {
+          "name": "paypal_receiver",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auto_pay_rule_id": {
+          "name": "auto_pay_rule_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auto_pay_min_cents": {
+          "name": "auto_pay_min_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auto_pay_max_cents": {
+          "name": "auto_pay_max_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "payees_circle_fk": {
+          "name": "payees_circle_fk",
+          "tableFrom": "payees",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "payees_member_fk": {
+          "name": "payees_member_fk",
+          "tableFrom": "payees",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "member_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "payees_circle_row": {
+          "name": "payees_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "payees_name_present": {
+          "name": "payees_name_present",
+          "value": "length(trim(\"payees\".\"name\")) > 0"
+        },
+        "payees_category_code": {
+          "name": "payees_category_code",
+          "value": "\"payees\".\"category\" ~ '^[a-z0-9_-]+$'"
+        },
+        "payees_auto_pay_complete": {
+          "name": "payees_auto_pay_complete",
+          "value": "(\"payees\".\"auto_pay_rule_id\" is null and \"payees\".\"auto_pay_min_cents\" is null and \"payees\".\"auto_pay_max_cents\" is null)\n        or (\"payees\".\"auto_pay_rule_id\" is not null and \"payees\".\"auto_pay_min_cents\" > 0 and \"payees\".\"auto_pay_max_cents\" >= \"payees\".\"auto_pay_min_cents\")"
+        },
+        "payees_auto_pay_only_when_approved": {
+          "name": "payees_auto_pay_only_when_approved",
+          "value": "\"payees\".\"auto_pay_rule_id\" is null or \"payees\".\"status\" = 'approved'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.ledger_accounts": {
+      "name": "ledger_accounts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payee_id": {
+          "name": "payee_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ledger_accounts_circle_fk": {
+          "name": "ledger_accounts_circle_fk",
+          "tableFrom": "ledger_accounts",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ledger_accounts_member_fk": {
+          "name": "ledger_accounts_member_fk",
+          "tableFrom": "ledger_accounts",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "member_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ledger_accounts_payee_fk": {
+          "name": "ledger_accounts_payee_fk",
+          "tableFrom": "ledger_accounts",
+          "tableTo": "payees",
+          "columnsFrom": [
+            "circle_id",
+            "payee_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ledger_accounts_circle_row": {
+          "name": "ledger_accounts_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        },
+        "ledger_accounts_one_per_code": {
+          "name": "ledger_accounts_one_per_code",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "code"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "ledger_accounts_code_shape": {
+          "name": "ledger_accounts_code_shape",
+          "value": "\"ledger_accounts\".\"code\" ~ '^[a-z_]+(:[A-Za-z0-9_-]+)?$'"
+        },
+        "ledger_accounts_one_owner": {
+          "name": "ledger_accounts_one_owner",
+          "value": "\"ledger_accounts\".\"member_id\" is null or \"ledger_accounts\".\"payee_id\" is null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.ledger_entries": {
+      "name": "ledger_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "ledger_entries_sequence_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "kind": {
+          "name": "kind",
+          "type": "entry_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "occurred_on": {
+          "name": "occurred_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "period": {
+          "name": "period",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_type": {
+          "name": "source_type",
+          "type": "entry_source_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "char(3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "simulated": {
+          "name": "simulated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reverses": {
+          "name": "reverses",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_txid": {
+          "name": "created_txid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "txid_current()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ledger_entries_period_idx": {
+          "name": "ledger_entries_period_idx",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "period",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ledger_entries_circle_fk": {
+          "name": "ledger_entries_circle_fk",
+          "tableFrom": "ledger_entries",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ledger_entries_reverses_fk": {
+          "name": "ledger_entries_reverses_fk",
+          "tableFrom": "ledger_entries",
+          "tableTo": "ledger_entries",
+          "columnsFrom": [
+            "circle_id",
+            "reverses"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ledger_entries_circle_row": {
+          "name": "ledger_entries_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        },
+        "ledger_entries_one_per_source": {
+          "name": "ledger_entries_one_per_source",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "source_type",
+            "source_id"
+          ]
+        },
+        "ledger_entries_reversed_once": {
+          "name": "ledger_entries_reversed_once",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "reverses"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "ledger_entries_period_shape": {
+          "name": "ledger_entries_period_shape",
+          "value": "period ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'"
+        },
+        "ledger_entries_texts_present": {
+          "name": "ledger_entries_texts_present",
+          "value": "length(trim(\"ledger_entries\".\"description\")) > 0 and length(trim(\"ledger_entries\".\"source_id\")) > 0"
+        },
+        "ledger_entries_currency_code": {
+          "name": "ledger_entries_currency_code",
+          "value": "\"ledger_entries\".\"currency\" ~ '^[A-Z]{3}$'"
+        },
+        "ledger_entries_not_self_reversing": {
+          "name": "ledger_entries_not_self_reversing",
+          "value": "\"ledger_entries\".\"reverses\" is null or \"ledger_entries\".\"reverses\" <> \"ledger_entries\".\"id\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.ledger_lines": {
+      "name": "ledger_lines",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entry_id": {
+          "name": "entry_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "direction": {
+          "name": "direction",
+          "type": "direction",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cents": {
+          "name": "cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "ledger_lines_account_idx": {
+          "name": "ledger_lines_account_idx",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ledger_lines_entry_fk": {
+          "name": "ledger_lines_entry_fk",
+          "tableFrom": "ledger_lines",
+          "tableTo": "ledger_entries",
+          "columnsFrom": [
+            "circle_id",
+            "entry_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ledger_lines_account_fk": {
+          "name": "ledger_lines_account_fk",
+          "tableFrom": "ledger_lines",
+          "tableTo": "ledger_accounts",
+          "columnsFrom": [
+            "circle_id",
+            "account_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ledger_lines_position": {
+          "name": "ledger_lines_position",
+          "nullsNotDistinct": false,
+          "columns": [
+            "entry_id",
+            "position"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "ledger_lines_cents_positive": {
+          "name": "ledger_lines_cents_positive",
+          "value": "\"ledger_lines\".\"cents\" > 0"
+        },
+        "ledger_lines_position_order": {
+          "name": "ledger_lines_position_order",
+          "value": "\"ledger_lines\".\"position\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.care_entries": {
+      "name": "care_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "occurred_on": {
+          "name": "occurred_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "minutes": {
+          "name": "minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approved": {
+          "name": "approved",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "ledger_entry_id": {
+          "name": "ledger_entry_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "care_entries_member_fk": {
+          "name": "care_entries_member_fk",
+          "tableFrom": "care_entries",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "member_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "care_entries_entry_fk": {
+          "name": "care_entries_entry_fk",
+          "tableFrom": "care_entries",
+          "tableTo": "ledger_entries",
+          "columnsFrom": [
+            "circle_id",
+            "ledger_entry_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "care_entries_minutes": {
+          "name": "care_entries_minutes",
+          "value": "\"care_entries\".\"minutes\" > 0 and \"care_entries\".\"minutes\" <= 1440"
+        },
+        "care_entries_entry_when_approved": {
+          "name": "care_entries_entry_when_approved",
+          "value": "\"care_entries\".\"ledger_entry_id\" is null or \"care_entries\".\"approved\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.claim_checks": {
+      "name": "claim_checks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "checked_on": {
+          "name": "checked_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payee_id": {
+          "name": "payee_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "claimed_cents": {
+          "name": "claimed_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "claim": {
+          "name": "claim",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "found_entry_id": {
+          "name": "found_entry_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verdict": {
+          "name": "verdict",
+          "type": "claim_verdict",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alerted": {
+          "name": "alerted",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::uuid[]"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "claim_checks_payee_fk": {
+          "name": "claim_checks_payee_fk",
+          "tableFrom": "claim_checks",
+          "tableTo": "payees",
+          "columnsFrom": [
+            "circle_id",
+            "payee_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "claim_checks_entry_fk": {
+          "name": "claim_checks_entry_fk",
+          "tableFrom": "claim_checks",
+          "tableTo": "ledger_entries",
+          "columnsFrom": [
+            "circle_id",
+            "found_entry_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "claim_checks_circle_row": {
+          "name": "claim_checks_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "claim_checks_claimed_positive": {
+          "name": "claim_checks_claimed_positive",
+          "value": "\"claim_checks\".\"claimed_cents\" is null or \"claim_checks\".\"claimed_cents\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.narrations": {
+      "name": "narrations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "topic": {
+          "name": "topic",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cents": {
+          "name": "cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "entry_id": {
+          "name": "entry_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "claim_check_id": {
+          "name": "claim_check_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spoken_text": {
+          "name": "spoken_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "state": {
+          "name": "state",
+          "type": "narration_state",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'queued'"
+        },
+        "said_on": {
+          "name": "said_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "delivered_at": {
+          "name": "delivered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "narrations_member_fk": {
+          "name": "narrations_member_fk",
+          "tableFrom": "narrations",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "member_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "narrations_entry_fk": {
+          "name": "narrations_entry_fk",
+          "tableFrom": "narrations",
+          "tableTo": "ledger_entries",
+          "columnsFrom": [
+            "circle_id",
+            "entry_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "narrations_claim_check_fk": {
+          "name": "narrations_claim_check_fk",
+          "tableFrom": "narrations",
+          "tableTo": "claim_checks",
+          "columnsFrom": [
+            "circle_id",
+            "claim_check_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "narrations_topic_key": {
+          "name": "narrations_topic_key",
+          "value": "\"narrations\".\"topic\" ~ '^[a-zA-Z0-9_-]+$'"
+        },
+        "narrations_delivered": {
+          "name": "narrations_delivered",
+          "value": "(\"narrations\".\"state\" = 'delivered') = (\"narrations\".\"delivered_at\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.settlements": {
+      "name": "settlements",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "period": {
+          "name": "period",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "agreement_version": {
+          "name": "agreement_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "inputs": {
+          "name": "inputs",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fairness": {
+          "name": "fairness",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan": {
+          "name": "plan",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "settlement_state",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'proposed'"
+        },
+        "calculated_at": {
+          "name": "calculated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "settlements_circle_fk": {
+          "name": "settlements_circle_fk",
+          "tableFrom": "settlements",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "settlements_circle_row": {
+          "name": "settlements_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "settlements_period_shape": {
+          "name": "settlements_period_shape",
+          "value": "period ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.approvals": {
+      "name": "approvals",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proposal_id": {
+          "name": "proposal_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "circle_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decision": {
+          "name": "decision",
+          "type": "vote_decision",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "method": {
+          "name": "method",
+          "type": "approval_method",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evidence_ref": {
+          "name": "evidence_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "decided_at": {
+          "name": "decided_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "approvals_proposal_fk": {
+          "name": "approvals_proposal_fk",
+          "tableFrom": "approvals",
+          "tableTo": "proposals",
+          "columnsFrom": [
+            "circle_id",
+            "proposal_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "approvals_member_fk": {
+          "name": "approvals_member_fk",
+          "tableFrom": "approvals",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "member_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "approvals_one_per_member": {
+          "name": "approvals_one_per_member",
+          "nullsNotDistinct": false,
+          "columns": [
+            "proposal_id",
+            "member_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.executions": {
+      "name": "executions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proposal_id": {
+          "name": "proposal_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "execution_state",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'created'"
+        },
+        "paypal_batch_id": {
+          "name": "paypal_batch_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paypal_item_id": {
+          "name": "paypal_item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paypal_order_id": {
+          "name": "paypal_order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "executions_proposal_fk": {
+          "name": "executions_proposal_fk",
+          "tableFrom": "executions",
+          "tableTo": "proposals",
+          "columnsFrom": [
+            "circle_id",
+            "proposal_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "executions_idempotency_key": {
+          "name": "executions_idempotency_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "idempotency_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "executions_attempts": {
+          "name": "executions_attempts",
+          "value": "\"executions\".\"attempts\" >= 0"
+        },
+        "executions_key_present": {
+          "name": "executions_key_present",
+          "value": "length(trim(\"executions\".\"idempotency_key\")) > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.proposals": {
+      "name": "proposals",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "proposal_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cents": {
+          "name": "cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payee_id": {
+          "name": "payee_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raised_by": {
+          "name": "raised_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raised_at": {
+          "name": "raised_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "proposal_state",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'proposed'"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agreement_version": {
+          "name": "agreement_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan": {
+          "name": "plan",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bill_id": {
+          "name": "bill_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "settlement_id": {
+          "name": "settlement_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "proposals_state_idx": {
+          "name": "proposals_state_idx",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "state",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "proposals_circle_fk": {
+          "name": "proposals_circle_fk",
+          "tableFrom": "proposals",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposals_payee_fk": {
+          "name": "proposals_payee_fk",
+          "tableFrom": "proposals",
+          "tableTo": "payees",
+          "columnsFrom": [
+            "circle_id",
+            "payee_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposals_member_fk": {
+          "name": "proposals_member_fk",
+          "tableFrom": "proposals",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "member_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposals_raised_by_fk": {
+          "name": "proposals_raised_by_fk",
+          "tableFrom": "proposals",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "raised_by"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposals_bill_fk": {
+          "name": "proposals_bill_fk",
+          "tableFrom": "proposals",
+          "tableTo": "bills",
+          "columnsFrom": [
+            "circle_id",
+            "bill_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposals_settlement_fk": {
+          "name": "proposals_settlement_fk",
+          "tableFrom": "proposals",
+          "tableTo": "settlements",
+          "columnsFrom": [
+            "circle_id",
+            "settlement_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposals_document_fk": {
+          "name": "proposals_document_fk",
+          "tableFrom": "proposals",
+          "tableTo": "documents",
+          "columnsFrom": [
+            "circle_id",
+            "document_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "proposals_circle_row": {
+          "name": "proposals_circle_row",
+          "nullsNotDistinct": false,
+          "columns": [
+            "circle_id",
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "proposals_cents_positive": {
+          "name": "proposals_cents_positive",
+          "value": "\"proposals\".\"cents\" > 0"
+        },
+        "proposals_one_recipient": {
+          "name": "proposals_one_recipient",
+          "value": "(\"proposals\".\"payee_id\" is null) <> (\"proposals\".\"member_id\" is null)"
+        },
+        "proposals_member_payout_to_member": {
+          "name": "proposals_member_payout_to_member",
+          "value": "(\"proposals\".\"kind\" = 'member_payout') = (\"proposals\".\"member_id\" is not null)"
+        },
+        "proposals_purpose_key": {
+          "name": "proposals_purpose_key",
+          "value": "\"proposals\".\"purpose\" ~ '^[a-zA-Z0-9_-]+$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.audit_log": {
+      "name": "audit_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "audit_log_sequence_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "actor": {
+          "name": "actor",
+          "type": "audit_actor",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subject_type": {
+          "name": "subject_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject_id": {
+          "name": "subject_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "details": {
+          "name": "details",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "origin": {
+          "name": "origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "at": {
+          "name": "at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "audit_log_circle_idx": {
+          "name": "audit_log_circle_idx",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sequence",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "audit_log_circle_fk": {
+          "name": "audit_log_circle_fk",
+          "tableFrom": "audit_log",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "audit_log_member_fk": {
+          "name": "audit_log_member_fk",
+          "tableFrom": "audit_log",
+          "tableTo": "members",
+          "columnsFrom": [
+            "circle_id",
+            "member_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "audit_log_member_actor": {
+          "name": "audit_log_member_actor",
+          "value": "(\"audit_log\".\"actor\" = 'member') = (\"audit_log\".\"member_id\" is not null)"
+        },
+        "audit_log_action_key": {
+          "name": "audit_log_action_key",
+          "value": "\"audit_log\".\"action\" ~ '^[a-z_.]+$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.outbox": {
+      "name": "outbox",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "topic": {
+          "name": "topic",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "available_at": {
+          "name": "available_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "outbox_unsent_idx": {
+          "name": "outbox_unsent_idx",
+          "columns": [
+            {
+              "expression": "available_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"outbox\".\"sent_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "outbox_circle_fk": {
+          "name": "outbox_circle_fk",
+          "tableFrom": "outbox",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "outbox_attempts": {
+          "name": "outbox_attempts",
+          "value": "\"outbox\".\"attempts\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.paypal_events": {
+      "name": "paypal_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_body": {
+          "name": "raw_body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "headers": {
+          "name": "headers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "paypal_event_state",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'received'"
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "paypal_events_circle_fk": {
+          "name": "paypal_events_circle_fk",
+          "tableFrom": "paypal_events",
+          "tableTo": "circles",
+          "columnsFrom": [
+            "circle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "paypal_events_once": {
+          "name": "paypal_events_once",
+          "nullsNotDistinct": false,
+          "columns": [
+            "event_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.approval_method": {
+      "name": "approval_method",
+      "schema": "public",
+      "values": [
+        "app",
+        "voice"
+      ]
+    },
+    "public.audit_actor": {
+      "name": "audit_actor",
+      "schema": "public",
+      "values": [
+        "member",
+        "service",
+        "provisioner"
+      ]
+    },
+    "public.bill_state": {
+      "name": "bill_state",
+      "schema": "public",
+      "values": [
+        "received",
+        "extracted",
+        "needs_review",
+        "ready",
+        "proposed",
+        "paid",
+        "rejected",
+        "duplicate"
+      ]
+    },
+    "public.circle_role": {
+      "name": "circle_role",
+      "schema": "public",
+      "values": [
+        "organizer",
+        "contributor",
+        "parent",
+        "caregiver",
+        "observer"
+      ]
+    },
+    "public.circle_status": {
+      "name": "circle_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "archived"
+      ]
+    },
+    "public.claim_verdict": {
+      "name": "claim_verdict",
+      "schema": "public",
+      "values": [
+        "match",
+        "no_match",
+        "unclear"
+      ]
+    },
+    "public.direction": {
+      "name": "direction",
+      "schema": "public",
+      "values": [
+        "debit",
+        "credit"
+      ]
+    },
+    "public.document_kind": {
+      "name": "document_kind",
+      "schema": "public",
+      "values": [
+        "bill",
+        "receipt",
+        "quote",
+        "letter",
+        "other"
+      ]
+    },
+    "public.entry_kind": {
+      "name": "entry_kind",
+      "schema": "public",
+      "values": [
+        "contribution",
+        "out_of_pocket",
+        "bill_approved",
+        "payout_confirmed",
+        "purchase_captured",
+        "settlement_collection",
+        "settlement_payout",
+        "care_credit"
+      ]
+    },
+    "public.entry_source_type": {
+      "name": "entry_source_type",
+      "schema": "public",
+      "values": [
+        "paypal_event",
+        "approval",
+        "settlement"
+      ]
+    },
+    "public.execution_state": {
+      "name": "execution_state",
+      "schema": "public",
+      "values": [
+        "created",
+        "submitted",
+        "pending_at_paypal",
+        "unknown",
+        "confirmed",
+        "failed"
+      ]
+    },
+    "public.invitation_status": {
+      "name": "invitation_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "accepted",
+        "declined",
+        "expired"
+      ]
+    },
+    "public.member_status": {
+      "name": "member_status",
+      "schema": "public",
+      "values": [
+        "invited",
+        "active",
+        "left"
+      ]
+    },
+    "public.narration_state": {
+      "name": "narration_state",
+      "schema": "public",
+      "values": [
+        "queued",
+        "delivered",
+        "failed"
+      ]
+    },
+    "public.parent_level": {
+      "name": "parent_level",
+      "schema": "public",
+      "values": [
+        "decides",
+        "informed",
+        "represented"
+      ]
+    },
+    "public.payee_status": {
+      "name": "payee_status",
+      "schema": "public",
+      "values": [
+        "approved",
+        "new"
+      ]
+    },
+    "public.paypal_event_state": {
+      "name": "paypal_event_state",
+      "schema": "public",
+      "values": [
+        "received",
+        "verified",
+        "rejected",
+        "processed",
+        "failed"
+      ]
+    },
+    "public.proposal_kind": {
+      "name": "proposal_kind",
+      "schema": "public",
+      "values": [
+        "bill_payment",
+        "caregiver_payout",
+        "member_payout",
+        "purchase"
+      ]
+    },
+    "public.proposal_state": {
+      "name": "proposal_state",
+      "schema": "public",
+      "values": [
+        "proposed",
+        "pending_approval",
+        "approved",
+        "executing",
+        "failed",
+        "settled",
+        "rejected",
+        "expired",
+        "cancelled"
+      ]
+    },
+    "public.settlement_state": {
+      "name": "settlement_state",
+      "schema": "public",
+      "values": [
+        "proposed",
+        "approved",
+        "settled",
+        "superseded"
+      ]
+    },
+    "public.user_kind": {
+      "name": "user_kind",
+      "schema": "public",
+      "values": [
+        "person",
+        "demo_visitor"
+      ]
+    },
+    "public.vote_decision": {
+      "name": "vote_decision",
+      "schema": "public",
+      "values": [
+        "approve",
+        "reject"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

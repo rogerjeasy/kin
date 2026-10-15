@@ -3,10 +3,32 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./migrate": "./src/migrate.ts",
+    "./testing": "./src/testing/index.ts",
+    "./testing/global-setup": "./src/testing/global-setup.ts",
+    "./testing/postgres-container": "./src/testing/postgres-container.ts"
+  },
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run",
+    "generate": "drizzle-kit generate",
+    "migrate": "node --env-file-if-exists=../../.env scripts/migrate.ts",
+    "demo:reset": "node --env-file-if-exists=../../.env scripts/demo-reset.ts",
+    "local:up": "node --env-file-if-exists=../../.env scripts/local-postgres.ts up",
+    "local:down": "node --env-file-if-exists=../../.env scripts/local-postgres.ts down"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.11"
+  },
+  "dependencies": {
+    "@kin/config": "workspace:*",
+    "@kin/domain": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "pg": "8.23.1"
   }
 }
