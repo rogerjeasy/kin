@@ -1391,14 +1391,14 @@ The audit export assembles these into one dated record per movement.
 
 ### 20.2 Deployment
 
-1. A push to the main branch starts the pipeline in GitHub Actions.
-2. Lint, type-check and tests run.
-3. The container image is built and pushed to ECR. For the web app, `cdk deploy KinWeb` builds `apps/web/Dockerfile` and App Runner rolls to the new image.
-4. Database migrations run as a one-off task.
-5. The CDK deploys infrastructure changes.
-6. Services roll forward one task at a time, with health checks and automatic rollback.
+1. A pull request runs CI in GitHub Actions: lint, type-check, unit tests, the end-to-end and responsive tests, the infrastructure synth, and a build and start of the web image.
+2. A merge to main runs CI again on the merged code.
+3. When CI passes, the Deploy workflow (`.github/workflows/deploy.yml`) checks out that same commit and deploys every stack except KinGuardrails with the CDK.
+4. KinWeb's deploy builds the web image, pushes it to ECR, and App Runner rolls to it with its health check.
+5. A smoke test (`pnpm --filter @kin/infra run smoke`) checks the live app from outside: pages load, the circle's screens need a session, and sign-in reaches Cognito and returns to the right address.
+6. Database migrations will run as a one-off task before step 3 once the database is in use.
 
-GitHub signs in to AWS through OpenID Connect. No AWS keys are stored in GitHub.
+GitHub signs in to AWS through OpenID Connect, and AWS trusts only this repository's main branch. No AWS keys are stored in GitHub. The Deploy workflow can also be started by hand from main.
 
 ### 20.3 Demo mode
 

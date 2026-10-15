@@ -11,7 +11,8 @@
     "diff": "cdk diff",
     "bootstrap": "ACCOUNT=$(aws sts get-caller-identity --query Account --output text) && cdk bootstrap \"aws://$ACCOUNT/us-east-1\" --app '' --qualifier kin --toolkit-stack-name KinCDKToolkit --termination-protection --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess --custom-permissions-boundary kin-deploy-boundary",
     "deploy": "cdk deploy --all --require-approval broadening",
-    "gmail:store": "node --env-file=../.env scripts/store-gmail-password.ts"
+    "gmail:store": "node --env-file=../.env scripts/store-gmail-password.ts",
+    "smoke": "node scripts/smoke-test-web.ts"
   },
   "dependencies": {
     "@kin/auth": "workspace:*",

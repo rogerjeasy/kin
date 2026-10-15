@@ -1,17 +1,15 @@
-name: Deploy infrastructure
+name: Deploy
 
-# Deploys Kin's stacks to the shared AWS account (docs/architecture.md section
-# 14.8) when infrastructure changes reach main. The role kin-github-deploy
+# Deploys Kin to the shared AWS account (docs/architecture.md section 14.8)
+# once CI has passed for a push to main: every stack, and the web app, whose
+# image CDK builds and App Runner then rolls to. The role kin-github-deploy
 # trusts only this repository's main branch, so a run from any other ref is
 # refused by AWS.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
-    paths:
-      - infra/**
-      - packages/auth/**
-      - pnpm-lock.yaml
-      - .github/workflows/deploy-infra.yml
   workflow_dispatch:
 
 permissions:
@@ -20,20 +18,26 @@ permissions:
 
 # One deployment at a time, and never cancel one half way.
 concurrency:
-  group: deploy-infra
+  group: deploy
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Deploy Kin's stacks
+    name: Build and deploy Kin
+    # After a green CI run for a push to main (lint, types, unit and
+    # end-to-end tests, the synth and the image build), or by hand.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # Exactly the commit CI tested.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - run: pnpm --filter @kin/infra test
       - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/kin-github-deploy
@@ -41,9 +45,14 @@ jobs:
       # Security changes were reviewed in the pull request that brought them.
       # KinGuardrails is left out on purpose: it holds the boundary this
       # deployment runs under, so only a person may change it.
-      - run: pnpm --filter @kin/infra exec cdk deploy KinOps KinNetwork KinData KinCi --require-approval never
+      - name: Deploy the stacks, building and rolling out the web image
+        working-directory: infra
+        run: pnpm exec cdk deploy KinOps KinNetwork KinData KinCi KinWeb --require-approval never --outputs-file cdk-outputs.json
         env:
           KIN_ALERT_EMAIL: ${{ secrets.KIN_ALERT_EMAIL }}
           # Unset, Cognito keeps its own sender and password-only sign-in.
-          # Set, sign-in codes go by email through SES (infra/src/config.ts).
+          # Set, sign-in codes go by email through Kin's Gmail sender.
           KIN_SENDER_EMAIL: ${{ secrets.KIN_SENDER_EMAIL }}
+      - name: Check the live app
+        working-directory: infra
+        run: pnpm run smoke cdk-outputs.json
