@@ -834,7 +834,7 @@
       "items": {
         "family": {
           "who": "Family members",
-          "title": "Your email and a password"
+          "title": "A code by email, or a password"
         },
         "parent": {
           "who": "Parents",
@@ -842,7 +842,7 @@
         },
         "caregiver": {
           "who": "Caregivers",
-          "title": "Your email and a password"
+          "title": "A code by email, or a password"
         }
       }
     },

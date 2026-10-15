@@ -834,7 +834,7 @@
       "items": {
         "family": {
           "who": "Miembros de la familia",
-          "title": "Tu correo electrónico y una contraseña"
+          "title": "Un código por correo electrónico, o una contraseña"
         },
         "parent": {
           "who": "Madres y padres",
@@ -842,7 +842,7 @@
         },
         "caregiver": {
           "who": "Personas cuidadoras",
-          "title": "Tu correo electrónico y una contraseña"
+          "title": "Un código por correo electrónico, o una contraseña"
         }
       }
     },
