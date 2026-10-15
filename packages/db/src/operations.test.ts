@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { ProposalClosedError, answerProposal, inviteMember, pauseCircle, resumeCircle, type Seat } from "./operations.ts";
 import { acceptMyInvitations, createCircle, createDemoVisitor, membershipsOf, takeDemoSeat } from "./people.ts";
 import { readCircle } from "./read-circle.ts";
-import { approvals, auditLog, members, proposals } from "./schema/index.ts";
+import { approvals, auditLog, members, payees, proposals } from "./schema/index.ts";
 import { asPerson, asService } from "./scope.ts";
 import { signedIn, visitorWithCircle, type VisitorCircle } from "./testing/circles.ts";
 import { testDatabases } from "./testing/databases.ts";
@@ -187,5 +187,93 @@ describe("a real circle", () => {
     await as(circle, "marcus");
     const attempt = asPerson(db.app, circle.userId, async (tx) => inviteMember(tx, await seatOf(circle), { email: "x@example.com", role: "observer", expiresAt: new Date(Date.now() + 86_400_000) }));
     expect(await errorCode(attempt)).toBe(REFUSED.permission);
+  });
+});
+
+describe("a decision the stored plan does not support", () => {
+  const decide = (circle: VisitorCircle, proposalId: string, state: "approved" | "rejected" | "expired") =>
+    errorCode(asPerson(db.app, circle.userId, (tx) => tx.update(proposals).set({ state }).where(eq(proposals.id, proposalId))));
+  const vote = async (circle: VisitorCircle, proposalId: string, decision: "approve" | "reject") => {
+    const seat = await seatOf(circle);
+    await asPerson(db.app, circle.userId, (tx) =>
+      tx.insert(approvals).values({ id: randomUUID(), circleId: circle.circleId, proposalId, memberId: seat.memberId, role: seat.role, decision, method: "app", decidedAt: CLOCK }),
+    );
+  };
+
+  it("is refused when fewer members said yes than the plan has places", async () => {
+    const circle = await visitorWithCircle(db);
+    const stairlift = await proposalOf(circle, "stairlift");
+    // Rose's spoken yes fills one of two places. Marcus has not answered.
+    await as(circle, "marcus");
+    expect(await decide(circle, stairlift, "approved")).toBe(REFUSED.check);
+  });
+
+  it("is refused when the member being paid is the only one who said yes", async () => {
+    const circle = await visitorWithCircle(db);
+    const [own] = await asService(db.service, circle.circleId, (tx) =>
+      tx.select({ id: proposals.id }).from(proposals).where(eq(proposals.memberId, circle.members.elena)),
+    );
+    if (!own) throw new Error("Elena has no settlement payout");
+    await vote(circle, own.id, "approve");
+    expect(await decide(circle, own.id, "approved")).toBe(REFUSED.check);
+  });
+
+  it("is refused when anyone said no, and a rejection needs a no", async () => {
+    const circle = await visitorWithCircle(db);
+    const week = await proposalOf(circle, "caregiverWeek");
+    expect(await decide(circle, week, "rejected")).toBe(REFUSED.check);
+    await vote(circle, week, "reject");
+    await as(circle, "rose");
+    await vote(circle, week, "approve");
+    expect(await decide(circle, week, "approved")).toBe(REFUSED.check);
+  });
+
+  it("is refused as expired before the proposal's time is up", async () => {
+    const circle = await visitorWithCircle(db);
+    expect(await decide(circle, await proposalOf(circle, "stairlift"), "expired")).toBe(REFUSED.check);
+  });
+});
+
+describe("a real circle's proposals", () => {
+  async function realProposal() {
+    const organizer = await signedIn(db.app, "Priya Shah");
+    const circleId = await asPerson(db.app, organizer, (tx) =>
+      createCircle(tx, { name: "Mum's circle", timezone: "UTC", currency: "USD", parentName: "Meera", parentLevel: "decides", relationship: null }),
+    );
+    const payeeId = randomUUID();
+    const proposalId = randomUUID();
+    await asService(db.service, circleId, async (tx) => {
+      await tx.insert(payees).values({ id: payeeId, circleId, name: "City Water", category: "utilities", status: "approved" });
+      await tx.insert(proposals).values({
+        id: proposalId,
+        circleId,
+        kind: "bill_payment",
+        cents: 6100,
+        payeeId,
+        purpose: "bill",
+        raisedAt: CLOCK,
+        state: "pending_approval",
+        expiresAt: new Date(CLOCK.getTime() + 72 * 3_600_000),
+        agreementVersion: 1,
+        plan: { outcome: "needs_approval", slots: [{ reason: "organizer", roles: ["organizer"] }], payeeMemberId: null, announceToCircle: false, expiresAt: new Date(CLOCK.getTime() + 72 * 3_600_000).toISOString() },
+      });
+    });
+    const [seat] = await asPerson(db.app, organizer, (tx) => membershipsOf(tx, organizer));
+    if (!seat) throw new Error("The organizer has no seat");
+    return { organizer, circleId, proposalId, memberId: seat.memberId };
+  }
+
+  it("take no answer from a person until the fresh multi-factor check exists", async () => {
+    const real = await realProposal();
+    const answer = asPerson(db.app, real.organizer, (tx) =>
+      tx.insert(approvals).values({ id: randomUUID(), circleId: real.circleId, proposalId: real.proposalId, memberId: real.memberId, role: "organizer", decision: "approve", method: "app", decidedAt: CLOCK }),
+    );
+    expect(await errorCode(answer)).toBe(REFUSED.permission);
+  });
+
+  it("cannot be moved by a person at all", async () => {
+    const real = await realProposal();
+    const moved = asPerson(db.app, real.organizer, (tx) => tx.update(proposals).set({ state: "rejected" }).where(eq(proposals.id, real.proposalId)));
+    expect(await errorCode(moved)).toBe(REFUSED.permission);
   });
 });
