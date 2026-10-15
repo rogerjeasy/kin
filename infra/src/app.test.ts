@@ -28,12 +28,16 @@ const config: InfraConfig = {
 const cdkJson = JSON.parse(
   readFileSync(new URL("../cdk.json", import.meta.url), "utf8"),
 ) as { context: Record<string, unknown> };
-const stacks = buildKin(new App({ context: cdkJson.context }), config);
+// Asset staging copies the repository for the web image. The tests read
+// templates only, so they skip it.
+const testContext = { ...cdkJson.context, "aws:cdk:disable-asset-staging": true };
+const stacks = buildKin(new App({ context: testContext }), config);
 const data = Template.fromStack(stacks.data);
 const network = Template.fromStack(stacks.network);
 const ci = Template.fromStack(stacks.ci);
 const ops = Template.fromStack(stacks.ops);
-const all = [data, network, ci, ops];
+const web = Template.fromStack(stacks.web);
+const all = [data, network, ci, ops, web];
 
 const neighbourDeny = expect.objectContaining({
   Effect: "Deny",
@@ -267,7 +271,7 @@ describe("sign-in with a code by email", () => {
     const withSender = Template.fromStack(
       buildKin(
         // Bundling the function is skipped here. The synth and the deploy bundle it.
-        new App({ context: { ...cdkJson.context, "aws:cdk:bundling-stacks": [] } }),
+        new App({ context: { ...testContext, "aws:cdk:bundling-stacks": [] } }),
         { ...config, senderEmail: "kin.family@gmail.com" },
       ).data,
     );
@@ -313,6 +317,56 @@ describe("sign-in with a code by email", () => {
       expect(decrypts.some((statement) => JSON.stringify(statement["Condition"]).includes("kms:EncryptionContext:userpool-id"))).toBe(true);
       expect(unscoped).toEqual([]);
     });
+  });
+});
+
+describe("the web app", () => {
+  it("runs on App Runner from Kin's image, small and capped at two instances", () => {
+    web.hasResourceProperties("AWS::AppRunner::Service", {
+      ServiceName: "kin-web",
+      InstanceConfiguration: { Cpu: "1 vCPU", Memory: "2 GB" },
+      HealthCheckConfiguration: Match.objectLike({ Protocol: "HTTP", Path: "/" }),
+      SourceConfiguration: Match.objectLike({
+        AutoDeploymentsEnabled: false,
+        ImageRepository: Match.objectLike({ ImageRepositoryType: "ECR", ImageConfiguration: Match.objectLike({ Port: "3000" }) }),
+      }),
+    });
+    web.hasResourceProperties("AWS::AppRunner::AutoScalingConfiguration", { MinSize: 1, MaxSize: 2 });
+  });
+
+  it("is told where sign-in lives, and has no secret in its settings", () => {
+    const [service] = Object.values(web.findResources("AWS::AppRunner::Service"));
+    const variables = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"]["RuntimeEnvironmentVariables"] as { Name: string }[];
+
+    expect(variables.map((variable) => variable.Name).toSorted()).toEqual(["KIN_AUTH_CLIENT_ID", "KIN_AUTH_ISSUER", "KIN_AUTH_LOGIN_URL"]);
+  });
+
+  it("learns its own address from the first https origin Cognito may return to", () => {
+    const withOrigin = Template.fromStack(
+      buildKin(new App({ context: testContext }), { ...config, webOrigins: ["http://localhost:3000", "https://kin.example.awsapprunner.com"] }).web,
+    );
+    const [service] = Object.values(withOrigin.findResources("AWS::AppRunner::Service"));
+    const variables = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"]["RuntimeEnvironmentVariables"];
+
+    expect(variables).toContainEqual({ Name: "KIN_WEB_ORIGIN", Value: "https://kin.example.awsapprunner.com" });
+  });
+
+  it("reads its sign-in settings from KinData's parameters, never from a cross-stack output", () => {
+    for (const name of ["kin-web-auth-issuer", "kin-web-auth-login-url", "kin-web-auth-client-id"]) {
+      data.hasResourceProperties("AWS::SSM::Parameter", { Name: name, Type: "String" });
+    }
+    expect(JSON.stringify(web.toJSON())).not.toMatch(/Fn::ImportValue|Fn::GetStackOutput/);
+    expect(Object.keys(web.toJSON()["Parameters"] as object).some((key) => key.startsWith("SsmParameterValuekinwebauth"))).toBe(true);
+  });
+
+  it("lets App Runner only pull the image", () => {
+    const statements = Object.values(web.findResources("AWS::IAM::Policy")).flatMap(
+      (policy) => policy["Properties"]["PolicyDocument"]["Statement"] as { Action: string | string[] }[],
+    );
+    const actions = statements.flatMap((statement) => [statement.Action].flat());
+
+    expect(actions.every((action) => action.startsWith("ecr:"))).toBe(true);
+    expect(actions).not.toContain("ecr:PutImage");
   });
 });
 

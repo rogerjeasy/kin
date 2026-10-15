@@ -1,0 +1,16 @@
+# Nothing secret and nothing built locally goes into an image.
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/.next
+**/.vitest
+**/test-results
+**/playwright-report
+**/tsconfig.tsbuildinfo
+.git
+.github
+.playwright-mcp
+apps/web/e2e/.auth
+infra/cdk.out
+**/*.log

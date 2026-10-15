@@ -21,7 +21,7 @@ This document says what to build with and why. It is not a design or an implemen
 | Speech | A speech-to-text and a text-to-speech service |
 | Phone calls | Twilio voice |
 | Containers | Docker, one image for all three services, Docker Compose locally |
-| Compute | AWS ECS on Fargate, behind an Application Load Balancer |
+| Compute | AWS App Runner for the web app today (architecture decision 35); ECS on Fargate planned for voice and worker |
 | Database | Amazon Aurora Serverless v2, PostgreSQL-compatible |
 | Authentication and authorization | Amazon Cognito |
 | File storage | Amazon S3 |
@@ -164,6 +164,8 @@ Claude's API takes text and images, not audio, so speech needs its own services.
 ---
 
 ## 8. Compute: AWS ECS on Fargate
+
+> **Today:** the web app runs on AWS App Runner (architecture decision 35), which serves https at its own address without a domain. The design below still applies to voice and worker, which need long-lived connections.
 
 - **Three Fargate services** from one container image: web, voice and worker.
 - **Application Load Balancer** in front of web and voice, with HTTPS certificates from AWS Certificate Manager and a domain in Route 53.

@@ -1183,7 +1183,7 @@ flowchart TB
 
 | Service | Tasks     | Notes                                                             |
 | ------- | --------- | ----------------------------------------------------------------- |
-| web     | 2         | Rolling deployment, health-checked                                |
+| web     | 1 to 2    | On App Runner today (decision 35), health-checked                 |
 | voice   | 1 or more | Connections are drained before a task stops, so calls are not cut |
 | worker  | 1 or more | Scales on queue depth                                             |
 
@@ -1393,7 +1393,7 @@ The audit export assembles these into one dated record per movement.
 
 1. A push to the main branch starts the pipeline in GitHub Actions.
 2. Lint, type-check and tests run.
-3. The container image is built and pushed to ECR.
+3. The container image is built and pushed to ECR. For the web app, `cdk deploy KinWeb` builds `apps/web/Dockerfile` and App Runner rolls to the new image.
 4. Database migrations run as a one-off task.
 5. The CDK deploys infrastructure changes.
 6. Services roll forward one task at a time, with health checks and automatic rollback.
@@ -1409,6 +1409,7 @@ The hackathon needs a month of family life to be shown in minutes.
 - **Simulated billing cycles.** PayPal's sandbox bills subscriptions in real time. To show several months, the demo replays subscription payment events through the normal webhook path.
 - **Honest labelling.** Anything simulated is marked as simulated in the interface and in the ledger entry. Real sandbox transactions and simulated ones are never presented as the same thing.
 - **Reset.** One command returns the circle to its starting state.
+- **Where it runs.** The demo is served by App Runner at https://mzdg4f3stk.us-east-1.awsapprunner.com (decision 35). The address is fixed for the life of the `kin-web` service, and it is listed in `kin:webOrigins` so Cognito returns to it.
 - **The demo dashboard, before circles exist.** `/dashboard` and its screens are behind sign-in. Every signed-in person sees Rose's October from Elena's seat, with their own name in the account menu. Every figure is computed by `packages/domain` from the example ledger (`rosesMonth`): balances, the settlement, and each proposal's approval plan and decision. The clock is fixed at the evening of 30 October 2026 in `apps/web/src/content/demo-circle/clock.ts`. Every button that would move money or change the circle answers that nothing moved and sends no request. When circles and the seeded circle exist, these screens read the same shapes from the API instead, and the circle-role check of section 12.3 decides what each person sees.
 
 ---
@@ -1451,6 +1452,7 @@ The hackathon needs a month of family life to be shown in minutes.
 | 32 | End-to-end tests sign in against a local stand-in for Cognito | A test user in the real pool, or a test-only bypass | The tests run the real flow and the real token checks with no switch in the app. The stand-in signs with its own key and lives only in `apps/web/e2e`. |
 | 33 | AG Grid Community for the ledger | AG Grid Enterprise on a trial key | The ledger needs sorting, selection and keyboard use, all in Community. An evaluation key would lapse on 13 November 2026, before judging, and may not be used in production. |
 | 34 | Cognito's email goes through a custom sender that sends from a Gmail account, switched on by a deploy-time setting (`KIN_SENDER_EMAIL`) | Amazon SES; Cognito's own sender | Cognito sends sign-in codes only through SES or a custom sender. SES production access was refused on 15 October 2026, and the project has no domain. Gmail signs what it sends, so codes pass the recipient's sender checks. A password stays possible if Gmail fails. |
+| 35 | The web app runs on AWS App Runner (`KinWeb`), from the image in `apps/web/Dockerfile` | ECS Fargate behind a load balancer and CloudFront, as section 14 draws it | Cognito returns only to https addresses, and Kin has no domain for a certificate. App Runner serves https at its own address with no load balancer, for a fraction of the cost. The image runs the same production build the end-to-end tests run. Voice and worker still plan for Fargate. |
 
 ---
 
