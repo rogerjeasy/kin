@@ -31,6 +31,7 @@ export function cognitoClaims(options: {
   name: string;
   nonce?: string;
   groups?: readonly string[];
+  emailVerified?: boolean | "true" | "false";
   now?: Date;
   lifetimeSeconds?: number;
 }): { access: Record<string, unknown>; id: Record<string, unknown> } {
@@ -44,7 +45,7 @@ export function cognitoClaims(options: {
       token_use: "id",
       aud: options.clientId,
       email: options.email,
-      email_verified: true,
+      email_verified: options.emailVerified ?? true,
       name: options.name,
       ...(options.nonce ? { nonce: options.nonce } : {}),
     },

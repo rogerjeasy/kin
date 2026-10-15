@@ -12,6 +12,8 @@ export type Session = {
   /** The identity provider's stable ID for the person: the `sub` claim. */
   readonly userId: string;
   readonly email: string;
+  /** Cognito confirmed the person owns the address. */
+  readonly emailVerified: boolean;
   readonly name: string;
   readonly accountTypes: readonly AccountType[];
 };
@@ -87,10 +89,13 @@ export function createSessionVerifier(config: AuthConfig, fetcher: Fetch = fetch
         if (accessClaims.sub !== idClaims.sub || typeof idClaims.sub !== "string") return null;
         if (expected.nonce !== undefined && idClaims.nonce !== expected.nonce) return null;
         const { email, name } = idClaims;
+        // Cognito sends the flag as a boolean, or as the text "true" for some providers.
+        const emailVerified = idClaims["email_verified"] === true || idClaims["email_verified"] === "true";
         if (typeof email !== "string" || email === "") return null;
         return {
           userId: idClaims.sub,
           email,
+          emailVerified,
           name: typeof name === "string" && name.trim() !== "" ? name.trim() : email,
           accountTypes: accountTypesOf(accessClaims["cognito:groups"]),
         };

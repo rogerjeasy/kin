@@ -1,0 +1,63 @@
+import type { CircleRole, MemberStatus } from "@kin/domain";
+
+/**
+ * What a member may do inside a circle, by role: the circle-role layer of
+ * docs/architecture.md section 12.3. Every service asks `authorize`; none
+ * writes its own role check. Row-level security enforces the same limits again
+ * in the database.
+ */
+export const CIRCLE_ACTIONS = {
+  /** See who is in the circle and what the circle is. */
+  "circle.view": ["organizer", "contributor", "parent", "caregiver", "observer"],
+  /** See the circle's money: the ledger, balances, fairness, settlement, agreement. */
+  "money.view": ["organizer", "contributor", "parent", "observer"],
+  /** See the bills and payments that pay oneself. */
+  "own_payments.view": ["organizer", "contributor", "parent", "caregiver", "observer"],
+  /** What Kin told the parent, and the scam checks it ran. */
+  "safety.view": ["organizer", "contributor", "parent", "observer"],
+  /** Say yes or no to a proposal (section 7.5: caregivers and observers never answer). */
+  "proposal.answer": ["organizer", "contributor", "parent"],
+  /** Stop all approvals for 24 hours (section 15.3). An observer changes nothing. */
+  "circle.pause": ["organizer", "contributor", "parent", "caregiver"],
+  "member.invite": ["organizer"],
+  "audit.view": ["organizer"],
+} as const satisfies Record<string, readonly CircleRole[]>;
+
+export type CircleAction = keyof typeof CIRCLE_ACTIONS;
+
+/** A person's seat in one circle, as the members table records it. */
+export type Seat = { readonly role: CircleRole; readonly status: MemberStatus };
+
+export type AccessDecision = { readonly allowed: true } | { readonly allowed: false; readonly reason: "not_a_member" | "role" };
+
+/** Whether `seat` may take `action`. No seat, or one not active, may take none. */
+export function authorize(seat: Seat | null, action: CircleAction): AccessDecision {
+  if (seat === null || seat.status !== "active") return { allowed: false, reason: "not_a_member" };
+  const roles: readonly CircleRole[] = CIRCLE_ACTIONS[action];
+  return roles.includes(seat.role) ? { allowed: true } : { allowed: false, reason: "role" };
+}
+
+/** Every action a seat may take, for screens that hide what is refused anyway. */
+export function allowedActions(seat: Seat | null): CircleAction[] {
+  return (Object.keys(CIRCLE_ACTIONS) as CircleAction[]).filter((action) => authorize(seat, action).allowed);
+}
+
+/** A refused action. Retrying cannot help: the person lacks the right. */
+export class AccessDenied extends Error {
+  readonly retryable = false;
+  readonly action: CircleAction;
+  readonly reason: "not_a_member" | "role";
+
+  constructor(action: CircleAction, reason: "not_a_member" | "role") {
+    super(`Not allowed: ${action} (${reason})`);
+    this.name = "AccessDenied";
+    this.action = action;
+    this.reason = reason;
+  }
+}
+
+/** Throws `AccessDenied` unless `seat` may take `action`. */
+export function requireAccess(seat: Seat | null, action: CircleAction): void {
+  const decision = authorize(seat, action);
+  if (!decision.allowed) throw new AccessDenied(action, decision.reason);
+}
