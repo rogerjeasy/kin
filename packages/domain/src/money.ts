@@ -46,6 +46,16 @@ export function formatMoney(money: Money, locale: string): string {
   return formatter.format(toDecimalString(money.cents, minorDigits));
 }
 
+/**
+ * An amount as a plain decimal in its currency's minor digits ("84.00"), for
+ * files a spreadsheet reads. Built from the integer's digits, never by division.
+ */
+export function decimalAmount(money: Money): string {
+  assertCents(money.cents);
+  const minorDigits = new Intl.NumberFormat("en", { style: "currency", currency: money.currency }).resolvedOptions().maximumFractionDigits ?? 0;
+  return toDecimalString(money.cents, minorDigits);
+}
+
 // Intl formats a decimal string exactly, so no floating-point division ever
 // touches the amount.
 function toDecimalString(

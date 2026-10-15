@@ -1,6 +1,8 @@
 import { LedgerError } from "./ledger-error.ts";
 
-export type Direction = "debit" | "credit";
+export const DIRECTIONS = ["debit", "credit"] as const;
+
+export type Direction = (typeof DIRECTIONS)[number];
 export type AccountType = "asset" | "liability" | "equity" | "expense" | "memo";
 
 type AccountFamily = {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { InvalidMoneyError, formatMoney, sumCents } from "./money.ts";
+import { InvalidMoneyError, decimalAmount, formatMoney, sumCents } from "./money.ts";
 
 describe("formatMoney", () => {
   it("formats integer cents as a currency amount", () => {
@@ -54,5 +54,15 @@ describe("sumCents", () => {
     expect(() => sumCents([Number.MAX_SAFE_INTEGER, 1])).toThrow(
       InvalidMoneyError,
     );
+  });
+});
+
+describe("an amount for a file", () => {
+  it("is written exactly in the currency's minor digits, with no rounding", () => {
+    expect(decimalAmount({ cents: 8400, currency: "USD" })).toBe("84.00");
+    expect(decimalAmount({ cents: 5, currency: "USD" })).toBe("0.05");
+    expect(decimalAmount({ cents: -1487, currency: "USD" })).toBe("-14.87");
+    expect(decimalAmount({ cents: 9_007_199_254_740_991, currency: "USD" })).toBe("90071992547409.91");
+    expect(decimalAmount({ cents: 500, currency: "JPY" })).toBe("500");
   });
 });

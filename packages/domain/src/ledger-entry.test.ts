@@ -5,6 +5,7 @@ import {
   createEntry,
   credit,
   debit,
+  restoreEntry,
   reverseEntry,
   type LedgerEntry,
 } from "./ledger-entry.ts";
@@ -128,5 +129,50 @@ describe("reverseEntry", () => {
       credit("fees", 728),
       debit("member:marcus", 20000),
     ]);
+  });
+});
+
+describe("an entry read back from storage", () => {
+  it("is rebuilt with its reversal link and frozen", () => {
+    const stored = {
+      id: "r1",
+      circleId: "c1",
+      kind: "contribution" as const,
+      occurredOn: "2026-10-02",
+      period: "2026-10",
+      description: "Reversed contribution",
+      source: { type: "paypal_event" as const, id: "refund-1" },
+      currency: "USD",
+      simulated: true,
+      reverses: "e1",
+      lines: [
+        { account: "member:marcus" as const, direction: "debit" as const, cents: 100 },
+        { account: "pool_cash" as const, direction: "credit" as const, cents: 100 },
+      ],
+    };
+    const entry = restoreEntry(stored);
+    expect(entry.reverses).toBe("e1");
+    expect(Object.isFrozen(entry) && Object.isFrozen(entry.lines[0])).toBe(true);
+  });
+
+  it("is refused when storage hands back an entry that does not balance", () => {
+    expect(() =>
+      restoreEntry({
+        id: "bad",
+        circleId: "c1",
+        kind: "contribution",
+        occurredOn: "2026-10-02",
+        period: "2026-10",
+        description: "Broken",
+        source: { type: "paypal_event", id: "x" },
+        currency: "USD",
+        simulated: false,
+        reverses: null,
+        lines: [
+          { account: "member:marcus", direction: "credit", cents: 100 },
+          { account: "pool_cash", direction: "debit", cents: 99 },
+        ],
+      }),
+    ).toThrow(/does not balance/);
   });
 });

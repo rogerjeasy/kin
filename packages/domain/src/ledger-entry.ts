@@ -7,19 +7,25 @@ import { LedgerError } from "./ledger-error.ts";
 import { assertCents, sumCents } from "./money.ts";
 
 /** The financial facts a circle's ledger records. */
-export type EntryKind =
-  | "contribution"
-  | "out_of_pocket"
-  | "bill_approved"
-  | "payout_confirmed"
-  | "purchase_captured"
-  | "settlement_collection"
-  | "settlement_payout"
-  | "care_credit";
+export const ENTRY_KINDS = [
+  "contribution",
+  "out_of_pocket",
+  "bill_approved",
+  "payout_confirmed",
+  "purchase_captured",
+  "settlement_collection",
+  "settlement_payout",
+  "care_credit",
+] as const;
+
+export type EntryKind = (typeof ENTRY_KINDS)[number];
+
+/** What can cause a ledger entry. */
+export const ENTRY_SOURCE_TYPES = ["paypal_event", "approval", "settlement"] as const;
 
 /** Every entry names its cause: a PayPal event, an approval or a settlement. */
 export type EntrySource = {
-  readonly type: "paypal_event" | "approval" | "settlement";
+  readonly type: (typeof ENTRY_SOURCE_TYPES)[number];
   /** Unique within its type for a circle. The ledger's idempotency key. */
   readonly id: string;
 };
@@ -70,6 +76,14 @@ export const credit = (account: AccountCode, cents: number): LedgerLine => ({
 /** Builds an entry, and refuses one that breaks a ledger rule. */
 export function createEntry(draft: EntryDraft): LedgerEntry {
   return seal({ ...draft, reverses: null });
+}
+
+/**
+ * Rebuilds an entry read back from storage, reversal link included, and
+ * refuses one that breaks a ledger rule. Storage is not trusted to be right.
+ */
+export function restoreEntry(stored: LedgerEntry): LedgerEntry {
+  return seal(stored);
 }
 
 export type Correction = Pick<
