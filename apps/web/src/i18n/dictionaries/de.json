@@ -1233,7 +1233,7 @@
         "hint": "Wählen Sie einen Eintrag, um seine Buchungszeilen zu sehen."
       },
       "descriptions": {
-        "contribution": "Monatsbeitrag von {name}",
+        "contribution": "Beitrag von {name}",
         "out_of_pocket": "Beleg von {name}: {category}",
         "bill_approved": "{payee}: Rechnung freigegeben",
         "payout_confirmed": "{payee}: bezahlt",

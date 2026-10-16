@@ -28,18 +28,19 @@ describe("a top-up order", () => {
     });
   });
 
-  it("reads a completed order's capture in integer cents, with PayPal's fee", () => {
+  it("reads a completed order's capture in integer cents, with the fee PayPal charged", () => {
+    // Recorded from the first sandbox top-up through Kin, 16 October 2026: $100.00 less $3.98.
     const order = parseOrder(fixture("order-completed.json"));
     expect(order.status).toBe("COMPLETED");
     expect(order.captures).toEqual([
       {
-        id: "3C679366HH908993F",
+        id: "3RG65204E9591424Y",
         status: "COMPLETED",
-        orderId: "5T37836141355693B",
+        orderId: "1SN482215K962041J",
         reference,
-        gross: { cents: 2500, currency: "USD" },
-        fee: { cents: 136, currency: "USD" },
-        createdAt: new Date("2026-10-16T08:09:12Z"),
+        gross: { cents: 10000, currency: "USD" },
+        fee: { cents: 398, currency: "USD" },
+        createdAt: new Date("2026-10-16T10:03:15Z"),
       },
     ]);
   });

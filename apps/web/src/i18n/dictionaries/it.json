@@ -1233,7 +1233,7 @@
         "hint": "Seleziona una voce per vederne le righe contabili."
       },
       "descriptions": {
-        "contribution": "Versamento mensile di {name}",
+        "contribution": "Versamento di {name}",
         "out_of_pocket": "Ricevuta di {name}: {category}",
         "bill_approved": "{payee}: bolletta approvata",
         "payout_confirmed": "{payee}: pagato",

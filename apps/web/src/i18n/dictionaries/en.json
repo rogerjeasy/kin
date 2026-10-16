@@ -1233,7 +1233,7 @@
         "hint": "Select an entry to see its ledger lines."
       },
       "descriptions": {
-        "contribution": "{name}’s monthly contribution",
+        "contribution": "{name}’s contribution",
         "out_of_pocket": "{name}’s receipt: {category}",
         "bill_approved": "{payee}: bill approved",
         "payout_confirmed": "{payee}: paid",

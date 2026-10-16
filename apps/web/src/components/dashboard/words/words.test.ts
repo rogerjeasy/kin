@@ -80,7 +80,7 @@ describe("the words for a ledger entry", () => {
     const english = await getDictionary("en");
     const names = circleNames(circle, english);
     const lines = recordEntries(circle).map((view) => describeEntry(english, names, view));
-    expect(lines).toContain("Marcus’s monthly contribution");
+    expect(lines).toContain("Marcus’s contribution");
     expect(lines).toContain("Elena’s receipt: Pharmacy");
     expect(lines).toContain("Amara: paid");
     expect(lines).toContain("Northfield Gas: paid");

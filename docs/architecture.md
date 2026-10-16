@@ -1583,15 +1583,19 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - PayPal answers a verification request with malformed headers with HTTP 400; Kin counts that as unverified.
 - JavaScript SDK v6 loads from the sandbox in the browser, offers PayPal (not Pay Later, for this sandbox payer), opens PayPal's window with Kin's order, and closing the window comes back as a cancel.
 
+**Checked in AWS by the deployments of 15 and 16 October 2026**
+
+- The migration task reaches Aurora with verified TLS (the RDS certificate bundle) and migrates it in every deployment; the web app reads and writes Aurora through the App Runner VPC connector, as the hosted demo shows. CI builds the worker's Arm image on an x86 runner, and KinWorker's task runs on Fargate.
+
+**Live on 16 October 2026: the first top-up through Kin**
+
+- A sandbox buyer added $100.00 in the hosted demo. PayPal took a $3.98 fee, and the pool rose by $96.02. The worker recorded it from the order read back after capture; PayPal's webhook, verified nine seconds later, found the entry and wrote nothing (`inbox.applied` with `recorded`, then `already_recorded`, in `/kin/worker`). Its response is now the completed-order fixture.
+- A forged webhook sent to the live app was carried to the worker, refused by PayPal's verification, logged and stored nowhere.
+
 **Built and tested: top-ups**
 
 - The money parsing and limits (`centsFromDecimal`, `checkTopUp`, `calendarDay`) with unit and property tests; the PayPal adapter (`packages/paypal`) against recorded responses: retries with the same request ID, no retry of a refusal, token renewal, webhook bytes passed through unchanged; recording a contribution and storing events against PostgreSQL, with isolation between circles; the worker's inbox (`apps/worker`) against PostgreSQL and the fake pool: the webhook and the read-back write one entry in either order, a forged or replayed event writes nothing, an outage is retried; the routes' rules; the "Add money" sheet end to end at the four viewports with a stand-in SDK; the infrastructure's grants and the worker's shape.
 
 **Not yet tested**
 
-- A top-up approved by a sandbox buyer and captured, through the screen. It needs a PayPal sandbox personal account to sign in with. The completed-order fixture follows PayPal's documented shape until one is recorded.
-- A real PayPal webhook delivery, which needs the deployed app's address registered (`webhook:register`), and KinWorker deployed. Neither has been deployed.
-- CI building the worker's Arm image on an x86 runner.
-
-- The migration task and the App Runner VPC connector against the real AWS account. They synthesise and their images build and run locally, but neither has been deployed. TLS to Aurora with the RDS certificate bundle is untested until it is.
 - Everything else in this document. Execution and the outbox in section 7.6 are not built. The latency figure is a target. The diagrams describe the intended design.

@@ -193,7 +193,7 @@ test.describe("the circle and its record in the demo", () => {
     const lines = (await response.text()).trim().split("\r\n");
     expect(lines[0]).toBe("Date,Entry,Kind,Account,Debit,Credit,Simulated");
     expect(lines.slice(1).every((line) => line.endsWith(",yes"))).toBe(true);
-    expect(lines).toContain("2026-10-01,Marcus’s monthly contribution,Contribution,Pool cash,409.13,,yes");
+    expect(lines).toContain("2026-10-01,Marcus’s contribution,Contribution,Pool cash,409.13,,yes");
   });
 
   test("the record is a grid that filters by kind and shows the selected entry's balanced lines", async ({ page }) => {

@@ -1233,7 +1233,7 @@
         "hint": "בחרו רשומה כדי לראות את השורות שלה ברישום."
       },
       "descriptions": {
-        "contribution": "ההפקדה החודשית של {name}",
+        "contribution": "ההפקדה של {name}",
         "out_of_pocket": "קבלה של {name}: {category}",
         "bill_approved": "{payee}: החשבון אושר",
         "payout_confirmed": "{payee}: שולם",
