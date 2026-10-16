@@ -31,6 +31,10 @@
       "carecircle",
       "zeitzeuge"
     ],
+    "kin:paypal": {
+      "clientId": "BAATjOObFGda34lAUzZzBd43bazhUHcRf9GbRKzF1ZiTJl5x0WSIz0Q3fGJ_1rtBYd_BmJZrTQ1-9VfGkA",
+      "webhookId": "3PS4036436315174J"
+    },
     "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
     "@aws-cdk/aws-apigateway:authorizerChangeDeploymentLogicalId": true,
     "@aws-cdk/aws-apigateway:disableCloudWatchRole": true,
