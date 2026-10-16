@@ -1,16 +1,27 @@
 {
-  "id": "5T37836141355693B",
+  "id": "1SN482215K962041J",
   "intent": "CAPTURE",
   "status": "COMPLETED",
   "payment_source": {
-    "paypal": {}
+    "paypal": {
+      "email_address": "buyer@personal.example.com",
+      "account_id": "BUYER0000001",
+      "account_status": "VERIFIED",
+      "name": {
+        "given_name": "Test",
+        "surname": "Buyer"
+      },
+      "address": {
+        "country_code": "US"
+      }
+    }
   },
   "purchase_units": [
     {
       "reference_id": "contribution",
       "amount": {
         "currency_code": "USD",
-        "value": "25.00",
+        "value": "100.00",
         "breakdown": {}
       },
       "payee": {
@@ -25,57 +36,77 @@
       "payments": {
         "captures": [
           {
-            "id": "3C679366HH908993F",
+            "id": "3RG65204E9591424Y",
             "status": "COMPLETED",
             "amount": {
               "currency_code": "USD",
-              "value": "25.00"
+              "value": "100.00"
             },
             "final_capture": true,
             "seller_protection": {
-              "status": "ELIGIBLE"
+              "status": "ELIGIBLE",
+              "dispute_categories": [
+                "ITEM_NOT_RECEIVED",
+                "UNAUTHORIZED_TRANSACTION"
+              ]
             },
             "seller_receivable_breakdown": {
               "gross_amount": {
                 "currency_code": "USD",
-                "value": "25.00"
+                "value": "100.00"
               },
               "paypal_fee": {
                 "currency_code": "USD",
-                "value": "1.36"
+                "value": "3.98"
               },
               "net_amount": {
                 "currency_code": "USD",
-                "value": "23.64"
+                "value": "96.02"
               }
             },
             "custom_id": "kin1:0b6f4c3e-8d1a-4f6e-9c2b-5a7d3e1f9a40:7c2e9a14-3b5d-4e8f-a1c6-d9b0f2e4a738",
-            "create_time": "2026-10-16T08:09:12Z",
-            "update_time": "2026-10-16T08:09:12Z"
+            "links": [
+              {
+                "href": "https://api.sandbox.paypal.com/v2/payments/captures/3RG65204E9591424Y",
+                "rel": "self",
+                "method": "GET"
+              },
+              {
+                "href": "https://api.sandbox.paypal.com/v2/payments/captures/3RG65204E9591424Y/refund",
+                "rel": "refund",
+                "method": "POST"
+              },
+              {
+                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/1SN482215K962041J",
+                "rel": "up",
+                "method": "GET"
+              }
+            ],
+            "create_time": "2026-10-16T10:03:15Z",
+            "update_time": "2026-10-16T10:03:15Z"
           }
         ]
       }
     }
   ],
-  "create_time": "2026-10-16T08:06:52Z",
-  "links": [
-    {
-      "href": "https://api.sandbox.paypal.com/v2/checkout/orders/5T37836141355693B",
-      "rel": "self",
-      "method": "GET"
-    },
-    {
-      "href": "https://www.sandbox.paypal.com/checkoutnow?token=5T37836141355693B",
-      "rel": "payer-action",
-      "method": "GET"
-    }
-  ],
   "payer": {
-    "email_address": "buyer@personal.example.com",
-    "payer_id": "BUYER0000001",
     "name": {
       "given_name": "Test",
       "surname": "Buyer"
+    },
+    "email_address": "buyer@personal.example.com",
+    "payer_id": "BUYER0000001",
+    "address": {
+      "country_code": "US"
     }
-  }
+  },
+  "create_time": "2026-10-16T10:03:15Z",
+  "update_time": "2026-10-16T10:03:15Z",
+  "links": [
+    {
+      "href": "https://api.sandbox.paypal.com/v2/checkout/orders/1SN482215K962041J",
+      "rel": "self",
+      "method": "GET"
+    }
+  ]
 }
