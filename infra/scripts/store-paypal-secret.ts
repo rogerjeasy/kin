@@ -15,9 +15,20 @@ if (secret.length < 20) {
   process.exit(1);
 }
 
-execFileSync(
-  "aws",
-  ["secretsmanager", "put-secret-value", "--secret-id", PAYPAL_SETTINGS.secretName, "--secret-string", "file:///dev/stdin", "--region", "us-east-1"],
-  { input: secret, stdio: ["pipe", "ignore", "inherit"] },
-);
+try {
+  execFileSync(
+    "aws",
+    ["secretsmanager", "put-secret-value", "--secret-id", PAYPAL_SETTINGS.secretName, "--secret-string", "file:///dev/stdin", "--region", "us-east-1"],
+    { input: secret, stdio: ["pipe", "ignore", "pipe"], encoding: "utf8" },
+  );
+} catch (error) {
+  const stderr = String((error as { stderr?: unknown }).stderr ?? "");
+  // KinData makes the slot. Until a deployment that includes it has run, there is nothing to fill.
+  console.error(
+    stderr.includes("ResourceNotFoundException")
+      ? `${PAYPAL_SETTINGS.secretName} does not exist yet. KinData creates it: wait for the deployment of main to finish, then run this again.`
+      : stderr.trim() || "The AWS CLI could not store the secret.",
+  );
+  process.exit(1);
+}
 console.log(`Stored the PayPal client secret in ${PAYPAL_SETTINGS.secretName}.`);
