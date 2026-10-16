@@ -64,6 +64,9 @@ jobs:
         run: docker logs kin-web || true
       # The migration task's image (packages/db/Dockerfile) must build too.
       - run: docker build -f packages/db/Dockerfile -t kin-migrate:ci .
+      # The worker's image (apps/worker/Dockerfile) too, for the Arm task it
+      # runs as. Its last stage only copies files, so no emulation is needed.
+      - run: docker build --platform linux/arm64 -f apps/worker/Dockerfile -t kin-worker:ci .
 
   infra:
     name: Synthesize infrastructure
