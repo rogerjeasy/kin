@@ -910,7 +910,7 @@
       },
       "demo": {
         "label": "Demo-Kreis",
-        "text": "Sie sind in Roses Kreis als {name}, {role}. Das Geld ist in der PayPal-Sandbox simuliert, und was Sie hier tun, ändert nur Ihre eigene Kopie des Kreises.",
+        "text": "Sie sind in Roses Kreis als {name}, {role}. Sein Verlauf ist simuliert; eine Einzahlung, die Sie machen, läuft wirklich über die PayPal-Sandbox. Was Sie hier tun, ändert nur Ihre eigene Kopie des Kreises.",
         "restart": "Neu beginnen",
         "restartNote": "Sie erhalten eine neue Kopie von Roses Kreis. Die jetzige wird archiviert, nicht gelöscht.",
         "viewAs": "Den Kreis sehen als",
@@ -977,7 +977,8 @@
         "organizerAndSecond": "Zwei Freigaben",
         "refused": "Über der Grenze der Vereinbarung",
         "paused": "Durch die Pause angehalten"
-      }
+      },
+      "sandbox": "PayPal-Sandbox"
     },
     "overview": {
       "greeting": "Guten Abend, {name}",
@@ -1048,6 +1049,28 @@
         "title": "Demnächst fällig",
         "link": "Alle Rechnungen"
       }
+    },
+    "topUp": {
+      "trigger": "Geld einzahlen",
+      "title": "Geld in den Topf einzahlen",
+      "text": "Ihre Einzahlung geht über PayPal in den Topf von {circle}. Ihnen wird der volle Betrag gutgeschrieben, die PayPal-Gebühr trägt der Kreis gemeinsam.",
+      "sandbox": "Dies ist die PayPal-Sandbox: Es fließt kein echtes Geld. Melden Sie sich mit einem Käuferkonto der PayPal-Sandbox an.",
+      "amount": "Betrag",
+      "amountHint": "Zwischen {min} und {max}.",
+      "presets": "Schnellbeträge",
+      "invalid": "Geben Sie einen Betrag zwischen {min} und {max} ein.",
+      "loading": "PayPal wird geladen…",
+      "unavailable": "PayPal konnte hier nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "paying": "Schließen Sie die Zahlung im PayPal-Fenster ab. Kin wartet hier.",
+      "confirming": "PayPal hat die Zahlung angenommen. Kin prüft sie bei PayPal, bevor sie ins Protokoll kommt…",
+      "confirmed": "{amount} ist im Topf. PayPal hat es bestätigt, und es steht im Protokoll.",
+      "slow": "PayPal hat noch nicht bestätigt. Die Zahlung erscheint im Protokoll, sobald PayPal es tut.",
+      "cancelled": "Sie haben PayPal geschlossen. Es wurde nichts belastet.",
+      "declined": "PayPal hat die Zahlung abgelehnt. Es wurde nichts belastet.",
+      "failed": "PayPal konnte die Zahlung nicht abschließen. Falls etwas belastet wurde, erscheint es im Protokoll, sobald PayPal es bestätigt.",
+      "again": "Mehr einzahlen",
+      "close": "Schließen",
+      "orderDescription": "Einzahlung für {circle} bei Kin"
     },
     "approvals": {
       "title": "Freigaben",

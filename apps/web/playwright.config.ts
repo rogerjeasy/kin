@@ -81,6 +81,14 @@ export default defineConfig({
         ...appDatabase,
         KIN_DEMO_CIRCLES: "on",
         KIN_DEMO_SESSION_KEY: demoSessionKey,
+        // Top-ups on, against addresses nothing answers: the browser's calls to
+        // the top-up routes and PayPal's SDK are answered by stand-ins in
+        // e2e/top-up.spec.ts, so the server never reaches PayPal or a queue.
+        KIN_PAYPAL_CLIENT_ID: "e2e-client",
+        KIN_PAYPAL_CLIENT_SECRET: "e2e-secret",
+        KIN_PAYPAL_API_URL: "http://127.0.0.1:9",
+        KIN_QUEUE_ENDPOINT: "http://127.0.0.1:9",
+        KIN_PAYPAL_INBOX_URL: "http://127.0.0.1:9/000000000000/kin-paypal-events.fifo",
       },
     },
   ],

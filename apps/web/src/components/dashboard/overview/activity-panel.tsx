@@ -10,6 +10,8 @@ export type ActivityItem = {
   flow: "in" | "out" | "none";
   /** No real sandbox transaction stands behind it (AGENTS.md section 5, rule 9). */
   simulated: boolean;
+  /** Says a real PayPal sandbox transaction stands behind it, or `null` for simulated history. */
+  tag: string | null;
 };
 
 type ActivityPanelProps = {
@@ -29,7 +31,10 @@ export function ActivityPanel({ title, link, items, className }: ActivityPanelPr
             <span className="text-sm text-muted-foreground tabular-nums">{item.day}</span>
             <div className="min-w-0">
               <p className="truncate font-medium">{item.text}</p>
-              <p className="truncate text-sm text-muted-foreground">{item.kind}</p>
+              <p className="truncate text-sm text-muted-foreground">
+                {item.kind}
+                {item.tag === null ? null : <span className="font-medium text-highlight"> · {item.tag}</span>}
+              </p>
             </div>
             <FlowAmount amount={item.amount} flow={item.flow} />
           </li>

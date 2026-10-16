@@ -21,3 +21,12 @@ export function describeAccountCode(dictionary: Dictionary, names: CircleNames, 
   const template = accounts[family] ?? family;
   return subject === null ? template : fill(template, { name: names.subject(subject) });
 }
+
+/**
+ * Which kind of money an entry is: simulated, or a real transaction in
+ * PayPal's sandbox. The two are never shown as the same thing (AGENTS.md
+ * section 5, rule 9).
+ */
+export function entryTag(dictionary: Dictionary, entry: { readonly simulated: boolean }): string {
+  return entry.simulated ? dictionary.dashboard.common.simulated : dictionary.dashboard.common.sandbox;
+}

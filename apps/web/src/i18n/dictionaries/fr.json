@@ -910,7 +910,7 @@
       },
       "demo": {
         "label": "Cercle de démonstration",
-        "text": "Vous êtes dans le cercle de Rose en tant que {name}, {role}. L’argent est simulé dans la sandbox PayPal, et ce que vous faites ici ne change que votre propre copie du cercle.",
+        "text": "Vous êtes dans le cercle de Rose en tant que {name}, {role}. Son historique est simulé ; un versement que vous faites passe réellement par la sandbox de PayPal. Ce que vous faites ici ne change que votre propre copie du cercle.",
         "restart": "Recommencer",
         "restartNote": "Vous recevez une nouvelle copie du cercle de Rose. L’actuelle est archivée, pas supprimée.",
         "viewAs": "Voir le cercle en tant que",
@@ -977,7 +977,8 @@
         "organizerAndSecond": "Deux oui",
         "refused": "Au-delà du plafond de l’accord",
         "paused": "Retenu par la pause"
-      }
+      },
+      "sandbox": "Sandbox PayPal"
     },
     "overview": {
       "greeting": "Bonsoir, {name}",
@@ -1048,6 +1049,28 @@
         "title": "À venir",
         "link": "Toutes les factures"
       }
+    },
+    "topUp": {
+      "trigger": "Ajouter de l’argent",
+      "title": "Ajouter de l’argent à la cagnotte",
+      "text": "Votre versement entre dans la cagnotte de {circle} via PayPal. Le montant entier vous est crédité, et le cercle partage les frais de PayPal.",
+      "sandbox": "Ceci est la sandbox de PayPal : aucun argent réel ne circule. Connectez-vous avec un compte acheteur de la sandbox PayPal.",
+      "amount": "Montant",
+      "amountHint": "Entre {min} et {max}.",
+      "presets": "Montants rapides",
+      "invalid": "Saisissez un montant entre {min} et {max}.",
+      "loading": "Chargement de PayPal…",
+      "unavailable": "PayPal n’a pas pu être chargé ici. Vérifiez votre connexion et réessayez.",
+      "paying": "Terminez dans la fenêtre de PayPal. Kin attend ici.",
+      "confirming": "PayPal a accepté le paiement. Kin le vérifie auprès de PayPal avant de l’ajouter au registre…",
+      "confirmed": "{amount} est dans la cagnotte. PayPal l’a confirmé, et il figure au registre.",
+      "slow": "PayPal ne l’a pas encore confirmé. Il apparaîtra au registre dès que PayPal le fera.",
+      "cancelled": "Vous avez fermé PayPal. Rien n’a été prélevé.",
+      "declined": "PayPal a refusé le paiement. Rien n’a été prélevé.",
+      "failed": "PayPal n’a pas pu terminer le paiement. Si vous avez été prélevé, cela apparaîtra au registre dès que PayPal le confirmera.",
+      "again": "Ajouter encore",
+      "close": "Fermer",
+      "orderDescription": "Versement à {circle} sur Kin"
     },
     "approvals": {
       "title": "Décisions",

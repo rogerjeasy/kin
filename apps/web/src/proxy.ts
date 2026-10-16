@@ -49,8 +49,7 @@ function hasDemoSession(request: NextRequest): boolean {
 
 export const config = {
   // Pages only. Skip Next's own files, the sign-in routes under /auth, the
-  // site icon and anything with a file extension. API and webhook routes must
-  // be excluded here when they are added, or they would be rewritten under a
-  // language.
-  matcher: ["/((?!_next/|auth/|icon$|.*\\..*).*)"],
+  // API and webhook routes under /api (each checks its caller itself), the
+  // site icon and anything with a file extension.
+  matcher: ["/((?!_next/|auth/|api/|icon$|.*\\..*).*)"],
 };

@@ -910,7 +910,7 @@
       },
       "demo": {
         "label": "Demo circle",
-        "text": "You are in Rose’s circle as {name}, the {role}. The money is simulated in the PayPal sandbox, and what you do here changes only your own copy of the circle.",
+        "text": "You are in Rose’s circle as {name}, the {role}. Its history is simulated; a top-up you make goes through PayPal’s sandbox for real. What you do here changes only your own copy of the circle.",
         "restart": "Start again",
         "restartNote": "Gives you a fresh copy of Rose’s circle. The one you have now is archived, not deleted.",
         "viewAs": "See the circle as",
@@ -977,7 +977,8 @@
         "organizerAndSecond": "Two yeses",
         "refused": "Above the agreement’s limit",
         "paused": "Held by the pause"
-      }
+      },
+      "sandbox": "PayPal sandbox"
     },
     "overview": {
       "greeting": "Good evening, {name}",
@@ -1048,6 +1049,28 @@
         "title": "Coming up",
         "link": "All bills"
       }
+    },
+    "topUp": {
+      "trigger": "Add money",
+      "title": "Add money to the pool",
+      "text": "Your top-up goes into the pool of {circle} through PayPal. You are credited the full amount, and the circle shares PayPal’s fee.",
+      "sandbox": "This is PayPal’s sandbox: no real money moves. Sign in with a PayPal sandbox buyer account.",
+      "amount": "Amount",
+      "amountHint": "Between {min} and {max}.",
+      "presets": "Quick amounts",
+      "invalid": "Enter an amount between {min} and {max}.",
+      "loading": "Loading PayPal…",
+      "unavailable": "PayPal could not be loaded here. Check your connection and try again.",
+      "paying": "Finish in PayPal’s window. Kin waits here.",
+      "confirming": "PayPal took the payment. Kin is checking it with PayPal before adding it to the record…",
+      "confirmed": "{amount} is in the pool. PayPal confirmed it, and it is in the record.",
+      "slow": "PayPal has not confirmed it yet. It appears in the record as soon as PayPal does.",
+      "cancelled": "You closed PayPal. Nothing was charged.",
+      "declined": "PayPal declined the payment. Nothing was charged.",
+      "failed": "PayPal could not finish the payment. If you were charged, it appears in the record once PayPal confirms it.",
+      "again": "Add more",
+      "close": "Close",
+      "orderDescription": "Top-up to {circle} on Kin"
     },
     "approvals": {
       "title": "Approvals",

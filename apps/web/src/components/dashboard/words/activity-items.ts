@@ -4,7 +4,7 @@ import type { EntryView } from "@/content/circle/record";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Formatters } from "@/lib/format";
 
-import { describeEntry } from "./entry-words";
+import { describeEntry, entryTag } from "./entry-words";
 
 /** Ledger entries as short lines: when, what, and how much. */
 export function activityItems(dictionary: Dictionary, names: CircleNames, format: Formatters, entries: readonly EntryView[]): ActivityItem[] {
@@ -16,5 +16,7 @@ export function activityItems(dictionary: Dictionary, names: CircleNames, format
     amount: format.money(view.cents),
     flow: view.poolFlow,
     simulated: view.entry.simulated,
+    // Simulated history needs no tag in a list of it; a real sandbox payment beside it does.
+    tag: view.entry.simulated ? null : entryTag(dictionary, view.entry),
   }));
 }
