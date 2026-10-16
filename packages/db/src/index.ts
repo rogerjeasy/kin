@@ -14,6 +14,9 @@ export { acceptMyInvitations, createCircle, createDemoVisitor, leaveDemoCircle, 
 export type { Membership, NewCircle, SignedInPerson } from "./people.ts";
 export { ProposalClosedError, answerProposal, inviteMember, pauseCircle, resumeCircle } from "./operations.ts";
 export type { Seat } from "./operations.ts";
+export { demoTime } from "./demo/demo-time.ts";
+export type { DemoTime } from "./demo/demo-time.ts";
 export { provisionDemoCircle } from "./demo/provision.ts";
+export { ROSES_CIRCLE } from "./demo/roses-circle.ts";
 export type { ProvisionedCircle } from "./demo/provision.ts";
 export * from "./values.ts";

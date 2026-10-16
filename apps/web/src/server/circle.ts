@@ -58,12 +58,12 @@ export async function demoSeat(visitorId: string): Promise<Membership | null> {
   return seat ?? (await joinDemo(visitorId));
 }
 
-/** Seats the visitor in a fresh copy of Rose's circle. */
+/** Seats the visitor in a fresh copy of Rose's circle, its clock set to this moment. */
 export async function joinDemo(visitorId: string): Promise<Membership | null> {
   const { provisioner } = databases();
   if (provisioner === null) return null;
   try {
-    await provisionDemoCircle(provisioner, visitorId);
+    await provisionDemoCircle(provisioner, visitorId, new Date());
   } catch (error) {
     // Two first requests at once: the other one seated this visitor already,
     // and the database refused a second seat. Read the seat it made.

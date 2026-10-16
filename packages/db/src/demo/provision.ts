@@ -15,6 +15,7 @@ import { randomUUID } from "node:crypto";
 
 import type { Database, Transaction } from "../connection.ts";
 import { writeEntries } from "../ledger-store.ts";
+import { demoTime, type DemoTime } from "./demo-time.ts";
 import { rekeyEntry, rowOf } from "./rekey.ts";
 import { asProvisioner } from "../scope.ts";
 import {
@@ -64,6 +65,8 @@ type Ids = ProvisionedCircle & {
   readonly agreementId: string;
   readonly documents: ReadonlyMap<string, string>;
   readonly bills: ReadonlyMap<string, string>;
+  /** Where the template's dates fall for this copy. */
+  readonly time: DemoTime;
 };
 
 const keyed = <K extends string>(keys: readonly K[]) => Object.fromEntries(keys.map((key) => [key, randomUUID()])) as Record<K, string>;
@@ -76,9 +79,12 @@ const byKey = <T>(rows: readonly T[], key: (row: T) => string) => new Map(rows.m
  * never touch another family's circle.
  *
  * `userId` is `null` for a circle nobody can open yet, such as a local seed.
+ * `now` is the moment the visitor pressed the Demo button: it becomes the
+ * circle's clock, and Rose's month is moved to end there.
  */
-export function provisionDemoCircle(db: Database, userId: string | null): Promise<ProvisionedCircle> {
+export function provisionDemoCircle(db: Database, userId: string | null, now: Date): Promise<ProvisionedCircle> {
   const ids: Ids = {
+    time: demoTime(ROSES_CIRCLE.clockAt, now, ROSES_CIRCLE.timezone),
     circleId: randomUUID(),
     members: keyed(PERSONAS.map((persona) => persona.key)),
     payees: keyed(PAYEES.map((payee) => payee.key)),
@@ -116,7 +122,7 @@ async function writePeople(tx: Transaction, ids: Ids, userId: string | null): Pr
     timezone: ROSES_CIRCLE.timezone,
     currency: ROSES_CIRCLE.currency,
     demo: true,
-    clockAt: ROSES_CIRCLE.clockAt,
+    clockAt: ids.time.now,
   });
   await tx.insert(members).values(
     PERSONAS.map((persona) => ({
@@ -130,7 +136,7 @@ async function writePeople(tx: Transaction, ids: Ids, userId: string | null): Pr
       relationship: persona.relationship,
       // Daniel has no photograph, so he is drawn by his initials.
       portrait: persona.key === "daniel" ? null : persona.key,
-      joinedAt: persona.joinedAt,
+      joinedAt: ids.time.at(persona.joinedAt),
     })),
   );
 }
@@ -151,7 +157,7 @@ async function writeAgreement(tx: Transaction, ids: Ids): Promise<Agreement> {
     ceilingCents: agreement.approvals.ceilingCents,
     secondApprovalAboveCents: agreement.approvals.secondApprovalAboveCents,
     parentDecidesAboveCents: agreement.approvals.parentDecidesAboveCents,
-    effectiveOn: AGREEMENT_EFFECTIVE_ON,
+    effectiveOn: ids.time.day(AGREEMENT_EFFECTIVE_ON),
   });
   await tx.insert(agreementShares).values(
     agreement.shares.map((share, position) => ({
@@ -170,7 +176,7 @@ async function writeAgreement(tx: Transaction, ids: Ids): Promise<Agreement> {
       agreementId: ids.agreementId,
       memberId: ids.members[acceptance.member],
       method: acceptance.method,
-      acceptedAt: acceptance.at,
+      acceptedAt: ids.time.at(acceptance.at),
     })),
   );
   return agreement;
@@ -192,9 +198,16 @@ async function writePayees(tx: Transaction, ids: Ids): Promise<void> {
   );
 }
 
-/** Rose's month with fresh entry IDs, and accounts naming this circle's rows. */
+/**
+ * Rose's month with fresh entry IDs, accounts naming this circle's rows, and
+ * its dates moved to end on this copy's clock. The whole month counts toward
+ * the period open on that clock, so the story settles as one month whatever
+ * the day of the press.
+ */
 function rekeyLedger(ids: Ids): LedgerEntry[] {
-  return rosesMonth.ledger.entries.map((entry) => rekeyEntry(entry, { circleId: ids.circleId, members: ids.members, payees: ids.payees }));
+  return rosesMonth.ledger.entries.map((entry) =>
+    rekeyEntry({ ...entry, occurredOn: ids.time.day(entry.occurredOn), period: ids.time.period }, { circleId: ids.circleId, members: ids.members, payees: ids.payees }),
+  );
 }
 
 function entryFrom(ledger: readonly LedgerEntry[], source: string): LedgerEntry {
@@ -217,7 +230,7 @@ async function writeBills(tx: Transaction, ids: Ids, ledger: readonly LedgerEntr
       kind: document.kind,
       uploadedBy: ids.members[document.uploadedBy],
       simulated: true,
-      createdAt: document.at,
+      createdAt: ids.time.at(document.at),
     })),
   );
   await tx.insert(bills).values(
@@ -227,8 +240,8 @@ async function writeBills(tx: Transaction, ids: Ids, ledger: readonly LedgerEntr
       payeeId: ids.payees[bill.payee],
       documentId: bill.document === null ? null : mapped(ids.documents, bill.document),
       amountCents: bill.cents,
-      receivedOn: bill.receivedOn,
-      dueOn: bill.dueOn,
+      receivedOn: ids.time.day(bill.receivedOn),
+      dueOn: bill.dueOn === null ? null : ids.time.day(bill.dueOn),
       state: bill.state,
     })),
   );
@@ -237,7 +250,7 @@ async function writeBills(tx: Transaction, ids: Ids, ledger: readonly LedgerEntr
       id: randomUUID(),
       circleId: ids.circleId,
       memberId: ids.members[care.member],
-      occurredOn: care.occurredOn,
+      occurredOn: ids.time.day(care.occurredOn),
       minutes: care.minutes,
       note: care.note,
       approved: true,
@@ -267,7 +280,8 @@ function payeeRecord(ids: Ids, key: PayeeKey): Payee {
 
 async function writeProposals(tx: Transaction, ids: Ids, agreement: Agreement, ledger: readonly LedgerEntry[]): Promise<void> {
   const raised = PROPOSALS.map((proposal) => {
-    const plan = pendingPlan(proposal.kind, proposal.cents, payeeRecord(ids, proposal.payee), agreement, proposal.raisedAt);
+    const raisedAt = ids.time.at(proposal.raisedAt);
+    const plan = pendingPlan(proposal.kind, proposal.cents, payeeRecord(ids, proposal.payee), agreement, raisedAt);
     const row: ProposalRow = {
       id: randomUUID(),
       circleId: ids.circleId,
@@ -277,7 +291,7 @@ async function writeProposals(tx: Transaction, ids: Ids, agreement: Agreement, l
       purpose: proposal.purpose,
       note: proposal.note,
       raisedBy: ids.members[proposal.raisedBy],
-      raisedAt: proposal.raisedAt,
+      raisedAt,
       state: "pending_approval",
       expiresAt: plan.expiresAt,
       agreementVersion: agreement.version,
@@ -294,7 +308,7 @@ async function writeProposals(tx: Transaction, ids: Ids, agreement: Agreement, l
       decision: "approve" as const,
       method: vote.method,
       evidenceRef: vote.method === "voice" ? "demo-call" : null,
-      decidedAt: vote.at,
+      decidedAt: ids.time.at(vote.at),
     }));
     return { row, votes };
   });
@@ -315,9 +329,10 @@ async function writeSettlement(tx: Transaction, ids: Ids, agreement: Agreement, 
   const settlement = settlePeriod({
     ledger: { circleId: ids.circleId, currency: ROSES_CIRCLE.currency, entries: ledger },
     agreement,
-    period: ROSES_CIRCLE.period,
+    period: ids.time.period,
     payoutFee: rosesMonth.payoutFee,
   });
+  const settledAt = ids.time.at(SETTLED_AT);
   const settlementId = randomUUID();
   await tx.insert(settlements).values({
     id: settlementId,
@@ -327,13 +342,13 @@ async function writeSettlement(tx: Transaction, ids: Ids, agreement: Agreement, 
     inputs: settlement.inputs,
     fairness: settlement.fairness,
     plan: settlement.plan,
-    calculatedAt: SETTLED_AT,
+    calculatedAt: settledAt,
   });
   return settlement.plan.payouts.map((payout) => {
     const persona = PERSONAS.find((each) => ids.members[each.key] === payout.memberId);
     if (!persona) throw new Error("The settlement pays someone outside Rose's circle");
     const payee: Payee = { status: "approved", member: { memberId: payout.memberId, role: persona.role }, autoPay: null };
-    const plan = pendingPlan("member_payout", payout.cents, payee, agreement, SETTLED_AT);
+    const plan = pendingPlan("member_payout", payout.cents, payee, agreement, settledAt);
     return {
       id: randomUUID(),
       circleId: ids.circleId,
@@ -342,7 +357,7 @@ async function writeSettlement(tx: Transaction, ids: Ids, agreement: Agreement, 
       memberId: payout.memberId,
       purpose: "settlement",
       raisedBy: null,
-      raisedAt: SETTLED_AT,
+      raisedAt: settledAt,
       state: "pending_approval",
       expiresAt: plan.expiresAt,
       agreementVersion: agreement.version,
@@ -360,14 +375,14 @@ async function writeNews(tx: Transaction, ids: Ids, ledger: readonly LedgerEntry
       payeeId: ids.payees[bill.payee],
       kind: bill.kind,
       expectedCents: bill.cents,
-      dueOn: bill.dueOn,
+      dueOn: ids.time.day(bill.dueOn),
     })),
   );
   const claimCheckId = randomUUID();
   await tx.insert(claimChecks).values({
     id: claimCheckId,
     circleId: ids.circleId,
-    checkedOn: CLAIM_CHECK.checkedOn,
+    checkedOn: ids.time.day(CLAIM_CHECK.checkedOn),
     payeeId: ids.payees[CLAIM_CHECK.payee],
     claimedCents: CLAIM_CHECK.claimedCents,
     claim: CLAIM_CHECK.claim,
@@ -390,8 +405,8 @@ async function writeNews(tx: Transaction, ids: Ids, ledger: readonly LedgerEntry
         claimCheckId: narration.claimCheck ? claimCheckId : null,
         spokenText: narration.words(formatMoney({ cents, currency: entry.currency }, "en-US")),
         state: "delivered" as const,
-        saidOn: narration.saidOn,
-        deliveredAt: new Date(`${narration.saidOn}T16:00:00Z`),
+        saidOn: ids.time.day(narration.saidOn),
+        deliveredAt: ids.time.at(new Date(`${narration.saidOn}T16:00:00Z`)),
       };
     }),
   );

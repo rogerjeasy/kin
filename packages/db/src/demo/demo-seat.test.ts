@@ -14,8 +14,8 @@ const db = testDatabases();
 describe("a visitor's demo seat", () => {
   it("is one at a time: a second circle for the same person is refused", async () => {
     const userId = await createDemoVisitor(db.app);
-    await provisionDemoCircle(db.provisioner, userId);
-    expect(await errorCode(provisionDemoCircle(db.provisioner, userId))).toBe(REFUSED.unique);
+    await provisionDemoCircle(db.provisioner, userId, new Date());
+    expect(await errorCode(provisionDemoCircle(db.provisioner, userId, new Date()))).toBe(REFUSED.unique);
     expect(await asPerson(db.app, userId, (tx) => membershipsOf(tx, userId))).toHaveLength(1);
   });
 
@@ -34,7 +34,7 @@ describe("a visitor's demo seat", () => {
       asPerson(db.app, first.userId, (tx) => readCircle(tx, { circleId: first.circleId, userId: first.userId, now: new Date() })),
     ).rejects.toThrow(CircleNotFoundError);
 
-    const second = await provisionDemoCircle(db.provisioner, first.userId);
+    const second = await provisionDemoCircle(db.provisioner, first.userId, new Date());
     const [membership] = await asPerson(db.app, first.userId, (tx) => membershipsOf(tx, first.userId));
     expect(membership?.circleId).toBe(second.circleId);
   });

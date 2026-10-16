@@ -21,7 +21,7 @@ try {
       console.log(`Archived demo circle ${seat.circleId}`);
     }
   }
-  const circle = await provisionDemoCircle(provisioner, userId);
+  const circle = await provisionDemoCircle(provisioner, userId, new Date());
   console.log(`Provisioned Rose's circle ${circle.circleId}${userId === null ? "" : ` for ${userId}`}`);
 } finally {
   await Promise.all([app.$client.end(), provisioner.$client.end()]);
