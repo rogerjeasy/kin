@@ -1,6 +1,6 @@
 import { asPerson, takeDemoSeat, type CircleSnapshot } from "@kin/db";
 import { snapshotFor, testDatabases, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
-import type { Inbox, InboxMessage } from "@kin/paypal";
+import { PayPalShapeError, captureRequestId, type Inbox, type InboxMessage } from "@kin/paypal";
 import { fakePool, type FakePool } from "@kin/paypal/testing";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -93,7 +93,7 @@ describe("confirming a top-up", () => {
     const result = await confirmTopUp({ pool, inbox }, organizer, orderId);
     expect(result).toEqual({ ok: true, captureId: pool.orders.get(orderId)?.captures[0]?.id });
     expect(inbox.sent).toEqual([{ kind: "order_captured", circleId: ids.circleId, orderId }]);
-    expect(pool.requestIds.filter((id) => id === `kin-capture-${orderId}`)).toHaveLength(1);
+    expect(pool.requestIds.filter((id) => id === captureRequestId(orderId))).toHaveLength(1);
   });
 
   it("does not capture twice when the same order is confirmed again", async () => {
@@ -130,6 +130,38 @@ describe("confirming a top-up", () => {
     const orderId = await approvedOrder(pool);
     pool.failNext = "captureOrder";
     expect(await confirmTopUp({ pool, inbox }, organizer, orderId)).toEqual({ ok: true, captureId: null });
+    expect(inbox.sent).toEqual([{ kind: "order_captured", circleId: ids.circleId, orderId }]);
+  });
+
+  it("reports a capture PayPal declined as declined, not as one to wait for", async () => {
+    const pool = fakePool();
+    const inbox = fakeInbox();
+    const orderId = await approvedOrder(pool);
+    pool.captureStatus = "DECLINED";
+    expect(await confirmTopUp({ pool, inbox }, organizer, orderId)).toEqual({ ok: false, reason: "declined" });
+    expect(inbox.sent).toEqual([]);
+  });
+
+  it("waits for PayPal's word on a pending capture instead of watching the ledger for it", async () => {
+    const pool = fakePool();
+    const inbox = fakeInbox();
+    const orderId = await approvedOrder(pool);
+    pool.captureStatus = "PENDING";
+    expect(await confirmTopUp({ pool, inbox }, organizer, orderId)).toEqual({ ok: true, captureId: null });
+    expect(inbox.sent).toHaveLength(1);
+  });
+
+  it("treats a capture reply it cannot read as unknown, and asks the worker to look", async () => {
+    const pool = fakePool();
+    const inbox = fakeInbox();
+    const orderId = await approvedOrder(pool);
+    const garbled = {
+      ...pool,
+      captureOrder: async () => {
+        throw new PayPalShapeError("capture amount");
+      },
+    };
+    expect(await confirmTopUp({ pool: garbled, inbox }, organizer, orderId)).toEqual({ ok: true, captureId: null });
     expect(inbox.sent).toEqual([{ kind: "order_captured", circleId: ids.circleId, orderId }]);
   });
 

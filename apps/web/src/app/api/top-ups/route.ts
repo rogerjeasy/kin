@@ -4,6 +4,7 @@ import { localizedPath } from "@/i18n/routing";
 import { dashboardRoutes } from "@/content/dashboard-routes";
 import { fill } from "@/i18n/template";
 import { authConfig } from "@/server/auth/config";
+import { readCappedText } from "@/server/request-body";
 import { startTopUp } from "@/server/top-ups";
 import { json, topUpRequest } from "@/server/top-up-request";
 
@@ -27,8 +28,8 @@ export async function POST(request: Request): Promise<Response> {
 }
 
 async function readBody(request: Request): Promise<Record<string, unknown> | null> {
-  const text = await request.text();
-  if (text.length > MAX_BODY) return null;
+  const text = await readCappedText(request, MAX_BODY);
+  if (text === null) return null;
   try {
     const value: unknown = JSON.parse(text);
     return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;

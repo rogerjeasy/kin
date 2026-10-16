@@ -1,6 +1,7 @@
 import { webhookHeaders } from "@kin/paypal";
 
 import { topUpServices } from "@/server/paypal";
+import { readCappedText } from "@/server/request-body";
 
 /** PayPal's events are a few kilobytes. Anything far larger is not one. */
 const MAX_BODY = 64 * 1024;
@@ -17,8 +18,9 @@ export async function POST(request: Request): Promise<Response> {
   if (services === null) return new Response(null, { status: 404 });
   const headers = webhookHeaders((name) => request.headers.get(name));
   if (headers === null) return new Response(null, { status: 400 });
-  const body = await request.text();
-  if (body.length === 0 || body.length > MAX_BODY) return new Response(null, { status: 413 });
+  const body = await readCappedText(request, MAX_BODY);
+  if (body === null) return new Response(null, { status: 413 });
+  if (body === "") return new Response(null, { status: 400 });
   try {
     await services.inbox.send({ kind: "webhook", delivery: { body, headers } });
   } catch {

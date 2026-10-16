@@ -1,6 +1,6 @@
 import { checkTopUp, centsFromDecimal, InvalidDecimalError, type TopUpCheck } from "@kin/domain";
 import type { CircleSnapshot } from "@kin/db";
-import { PayPalError, type Inbox, type Order, type PayPalPool } from "@kin/paypal";
+import { PayPalError, captureRequestId, type Inbox, type Order, type PayPalPool } from "@kin/paypal";
 import { randomUUID } from "node:crypto";
 
 import { may } from "./dashboard-context";
@@ -51,8 +51,9 @@ export type ConfirmResult =
  * Captures an order the payer approved, then asks the worker to read the order
  * back from PayPal and record it. The capture's answer is never taken as proof:
  * the ledger is written only from what PayPal says when asked again
- * (AGENTS.md section 5, rule 3). When PayPal cannot be reached, whether the
- * capture happened is unknown, so the worker is asked to look either way.
+ * (AGENTS.md section 5, rule 3). A capture PayPal declined is reported as
+ * declined. Any other failure leaves it unknown whether the capture happened,
+ * so the worker is asked to look, and to finish the capture if it did not.
  */
 export async function confirmTopUp(services: Services, circle: CircleSnapshot, orderId: string): Promise<ConfirmResult> {
   if (!may(circle, "money.contribute")) return { ok: false, reason: "role" };
@@ -63,20 +64,23 @@ export async function confirmTopUp(services: Services, circle: CircleSnapshot, o
   let captured: Order = order;
   if (order.status !== "COMPLETED") {
     try {
-      // One request ID per order, so a repeated click or retry cannot capture twice.
-      captured = await services.pool.captureOrder(orderId, `kin-capture-${orderId}`);
+      // One request ID per order, so a repeated click, a retry or the worker cannot capture twice.
+      captured = await services.pool.captureOrder(orderId, captureRequestId(orderId));
     } catch (error) {
-      if (!(error instanceof PayPalError)) throw error;
-      if (error.outcome === "rejected") return { ok: false, reason: "declined" };
+      if (error instanceof PayPalError && error.outcome === "rejected") return { ok: false, reason: "declined" };
+      console.error(JSON.stringify({ message: "top_up.capture_unknown", error: error instanceof Error ? error.name : "unknown" }));
     }
   }
+  const capture = captured.captures[0];
+  if (capture?.status === "DECLINED" || capture?.status === "FAILED") return { ok: false, reason: "declined" };
   try {
     await services.inbox.send({ kind: "order_captured", circleId: circle.circle.id, orderId });
   } catch (error) {
     // The money is PayPal's to report: its webhook reaches the worker without this message.
     console.error(JSON.stringify({ message: "top_up.inbox_unavailable", error: error instanceof Error ? error.name : "unknown" }));
   }
-  return { ok: true, captureId: captured.captures[0]?.id ?? null };
+  // Only a completed capture is worth waiting for; a pending one is the webhook's to report.
+  return { ok: true, captureId: capture?.status === "COMPLETED" ? capture.id : null };
 }
 
 async function readOrder(pool: PayPalPool, orderId: string): Promise<Order | null> {
