@@ -1,4 +1,5 @@
 import { ConfigError } from "./config-error.ts";
+import { isLocalAddress } from "./local-address.ts";
 
 /** PayPal's sandbox, the only PayPal environment Kin talks to today. */
 export const PAYPAL_SANDBOX_API = "https://api-m.sandbox.paypal.com";
@@ -22,7 +23,6 @@ export type PayPalConfig =
 
 type Env = Readonly<Record<string, string | undefined>>;
 
-const LOCAL = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
 /**
  * Reads the pool's PayPal settings. The API is PayPal's sandbox, or a stand-in
@@ -34,7 +34,7 @@ export function readPayPalConfig(env: Env, needs: { webhook: boolean }): PayPalC
   if (clientId === "") return { enabled: false };
   const clientSecret = required(env, PAYPAL_ENV.clientSecret);
   const apiUrl = env[PAYPAL_ENV.apiUrl]?.trim() || PAYPAL_SANDBOX_API;
-  if (apiUrl !== PAYPAL_SANDBOX_API && !LOCAL.test(apiUrl)) {
+  if (apiUrl !== PAYPAL_SANDBOX_API && !isLocalAddress(apiUrl)) {
     throw new ConfigError(`${PAYPAL_ENV.apiUrl} must be PayPal's sandbox or a stand-in on this machine`);
   }
   const webhookId = needs.webhook ? required(env, PAYPAL_ENV.webhookId) : null;

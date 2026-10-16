@@ -747,15 +747,13 @@ describe("top-ups", () => {
   });
 
   it("wait out a paused Aurora before the inbox hands a message out again", () => {
-    data.hasResourceProperties("AWS::SQS::Queue", { QueueName: "kin-paypal-events.fifo", VisibilityTimeout: 180 });
+    data.hasResourceProperties("AWS::SQS::Queue", { QueueName: "kin-paypal-events.fifo", VisibilityTimeout: 300 });
   });
 
-  it("stay off until PayPal is configured, and leave out the worker until there is a webhook", () => {
+  it("stay off, in the web app and the worker alike, until PayPal is configured", () => {
     const off = buildKin(new App({ context: testContext }), { ...config, paypal: null });
     expect(off.worker).toBeNull();
     expect(actionsOf(Template.fromStack(off.web)).some((action) => action.startsWith("sqs:"))).toBe(false);
-    const noWebhook = buildKin(new App({ context: testContext }), { ...config, paypal: { clientId: "sandbox-client-id", webhookId: null } });
-    expect(noWebhook.worker).toBeNull();
-    expect(actionsOf(Template.fromStack(noWebhook.web))).toContain("sqs:SendMessage");
+    expect(JSON.stringify(Template.fromStack(off.web).toJSON())).not.toContain("KIN_PAYPAL");
   });
 });

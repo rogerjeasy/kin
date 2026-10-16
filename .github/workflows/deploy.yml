@@ -58,7 +58,7 @@ jobs:
       - name: Migrate the database
         working-directory: infra
         run: pnpm run migrate
-      # KinWorker exists once kin:paypal in infra/cdk.json names a webhook;
+      # KinWorker exists once kin:paypal in infra/cdk.json switches top-ups on;
       # until then the app has no such stack and only KinWeb is deployed.
       - name: Build and roll out the web and worker images
         working-directory: infra

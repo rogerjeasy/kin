@@ -18,7 +18,7 @@ export type KinStacks = {
   readonly data: DataStack;
   readonly ci: CiStack;
   readonly web: WebStack;
-  /** Deployed once top-ups have a PayPal app and a webhook (`kin:paypal` in cdk.json). */
+  /** Deployed with top-ups, when `kin:paypal` in cdk.json names the PayPal app and its webhook. */
   readonly worker: WorkerStack | null;
 };
 
@@ -47,16 +47,10 @@ export function buildKin(app: App, config: InfraConfig): KinStacks {
   const web = new WebStack(app, "KinWeb", config, { env });
   // The web app reads the sign-in settings KinData publishes.
   web.addDependency(data);
-  const webhookId = config.paypal?.webhookId ?? null;
   const worker =
-    config.paypal === null || webhookId === null
+    config.paypal === null
       ? null
-      : new WorkerStack(app, "KinWorker", {
-          env,
-          vpc: network.vpc,
-          servicesSecurityGroup: network.servicesSecurityGroup,
-          paypal: { clientId: config.paypal.clientId, webhookId },
-        });
+      : new WorkerStack(app, "KinWorker", { env, vpc: network.vpc, servicesSecurityGroup: network.servicesSecurityGroup, paypal: config.paypal });
   // It reads the database, queue and secret settings KinData publishes.
   worker?.addDependency(data);
 

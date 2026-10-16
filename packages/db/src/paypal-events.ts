@@ -23,7 +23,8 @@ export async function storePayPalEvent(
     .insert(paypalEvents)
     .values({ id: randomUUID(), circleId: event.circleId, eventId: event.eventId, eventType: event.eventType, rawBody: event.rawBody, headers: event.headers })
     .onConflictDoNothing({ target: paypalEvents.eventId });
-  // Locked, so a second worker given the same event waits for the first.
+  // Locked only for this transaction. Two copies of one event handled at once
+  // are kept apart by the ledger's one-entry-per-source rule, not by this.
   const [row] = await tx
     .select({ id: paypalEvents.id, state: paypalEvents.state })
     .from(paypalEvents)

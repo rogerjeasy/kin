@@ -1229,7 +1229,7 @@ The load balancer routes `/voice/*` to the voice service, with a long idle timeo
 
 | Queue             | Carries                              | Ordering    |
 | ----------------- | ------------------------------------ | ----------- |
-| `paypal-events` | Webhook deliveries as received, and captured orders to read back. A message stays hidden for 180 seconds while it is handled, longer than Aurora takes to resume | Per circle  |
+| `paypal-events` | Webhook deliveries as received, and captured orders to read back. The worker takes one message at a time, and a message stays hidden for 300 seconds while it is handled, longer than its slowest case (Aurora resuming, then three PayPal calls with retries) | Per circle  |
 | `executions`    | Approved proposals to carry out      | Per circle  |
 | `documents`     | Photographs to read                  | None needed |
 | `notifications` | Emails, pushes, alerts               | None needed |
@@ -1423,7 +1423,7 @@ The audit export assembles these into one dated record per movement.
 1. A pull request runs CI in GitHub Actions: lint, type-check, unit tests, the end-to-end and responsive tests, the infrastructure synth, and a build and start of the web image.
 2. A merge to main runs CI again on the merged code.
 3. When CI passes, the Deploy workflow (`.github/workflows/deploy.yml`) checks out that same commit and deploys every stack except KinGuardrails with the CDK.
-4. KinWeb's deploy builds the web image, pushes it to ECR, and App Runner rolls to it with its health check. KinWorker, which exists once `kin:paypal` names a webhook, is deployed in the same step: its image is built for Arm and its one task is replaced, the old one stopped before the new one starts.
+4. KinWeb's deploy builds the web image, pushes it to ECR, and App Runner rolls to it with its health check. KinWorker, which exists once `kin:paypal` switches top-ups on, is deployed in the same step: its image is built for Arm and its one task is replaced, the old one stopped before the new one starts.
 5. A smoke test (`pnpm --filter @kin/infra run smoke`) checks the live app from outside: pages load, the circle's screens need a session, and sign-in reaches Cognito and returns to the right address.
 6. Between deploying KinData and KinWeb, the workflow runs the migration task (`pnpm --filter @kin/infra run migrate`) and stops if it fails, so the web app never meets a schema older than its code. KinWeb reaches Aurora through an App Runner VPC connector in the services subnets.
 

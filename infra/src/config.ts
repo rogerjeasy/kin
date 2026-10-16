@@ -39,9 +39,11 @@ export type InfraConfig = {
    * The pool's PayPal sandbox app, or `null` to leave top-ups off. Neither
    * value is secret: PayPal's client ID is meant for the browser, and the
    * webhook ID only names the webhook. The client secret is in Secrets
-   * Manager (`paypal:store`). Without a webhook ID the worker is not deployed.
+   * Manager (`paypal:store`). Both are required, because they switch on the
+   * web app's top-ups and the worker that confirms them together: top-ups
+   * with nobody to record them would take money the ledger never shows.
    */
-  readonly paypal: { readonly clientId: string; readonly webhookId: string | null } | null;
+  readonly paypal: { readonly clientId: string; readonly webhookId: string } | null;
 };
 
 export class InfraConfigError extends Error {
@@ -82,9 +84,9 @@ export function readConfig({ context, env }: Source): InfraConfig {
 function paypalApp(value: unknown): InfraConfig["paypal"] {
   const key = "kin:paypal";
   if (value === undefined || value === null) return null;
-  if (typeof value !== "object") throw new InfraConfigError(`${key} must be { "clientId": string, "webhookId": string | null }`);
+  if (typeof value !== "object") throw new InfraConfigError(`${key} must be { "clientId": string, "webhookId": string }`);
   const { clientId, webhookId } = value as Record<string, unknown>;
-  return { clientId: text(clientId, `${key}.clientId`), webhookId: webhookId === null || webhookId === undefined ? null : text(webhookId, `${key}.webhookId`) };
+  return { clientId: text(clientId, `${key}.clientId`), webhookId: text(webhookId, `${key}.webhookId`) };
 }
 
 function account(value: unknown): string {
