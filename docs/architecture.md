@@ -157,7 +157,7 @@ flowchart TB
 
 | Part                            | Responsibility                                                                                                                               | Never does                             |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| **web**                   | Serves the app. Exposes the HTTP API. Receives PayPal and telephony webhooks. Hosts the Kin MCP server. Runs typed agent conversations.      | Call PayPal to move money in a request |
+| **web**                   | Serves the app. Exposes the HTTP API. Receives PayPal and telephony webhooks. Hosts the Kin MCP server. Runs typed agent conversations. Captures a top-up the payer has just approved, as PayPal requires while the payer waits. | Send money out of the pool in a request, or write the ledger |
 | **voice**                 | Holds live audio connections. Streams speech in and out. Runs spoken agent turns. Records voice approvals.                                   | Execute payments                       |
 | **worker**                | Verifies and applies PayPal events. Executes approved proposals. Reads photographed documents. Runs settlement, schedules and notifications. | Serve user requests                    |
 | **Aurora**                | Ledger, circles, bills, approvals, PayPal events, audit log                                                                                  |                                        |
@@ -508,9 +508,9 @@ Moving money involves a database and an outside API, which cannot share a transa
 
 Each circle has one PayPal account that holds its shared money. Kin does not hold funds.
 
-**In the hackathon,** each demo circle maps to a sandbox business account. Its API credentials are stored in Secrets Manager and referenced from `pool_accounts`.
+**In the hackathon,** every circle's pool is the one sandbox business account (decision 46). Each order Kin creates names its circle and member in `custom_id` (`kin1:<circle>:<member>`), PayPal copies it onto the capture, and Kin trusts it only after reading the capture back from PayPal, so PayPal's own record still says whose money each payment is. The app's client secret is in Secrets Manager (`kin/paypal/client-secret`); its client ID and webhook ID, which are not secret, are in `infra/cdk.json` under `kin:paypal`.
 
-**In production,** Kin would act on a family's account through PayPal's partner model, with the family's consent and without holding their credentials. The code reaches the pool through a credential provider interface, so that change is confined to one adapter. This is the largest open question in the architecture and is listed in section 22.
+**In production,** Kin would act on a family's account through PayPal's partner model, with the family's consent and without holding their credentials. The code reaches the pool through one function, `poolFor` in `packages/paypal`, so that change is confined to it. This is the largest open question in the architecture and is listed in section 22.
 
 ### 8.2 Which PayPal capability does what
 
@@ -548,12 +548,14 @@ Checking the APIs changed three things. The PayPal tables in `project-descriptio
 5. Kin credits the member in the ledger.
 6. A failed charge arrives as `BILLING.SUBSCRIPTION.PAYMENT.FAILED`. Kin tells the circle and the fairness ledger shows the gap.
 
-**Top-ups in the app**
+**Top-ups in the app** (built; "Add money" on the overview, for organizers and contributors)
 
-1. Kin creates an order in the pool account for the sibling's amount.
-2. The browser starts a one-time payment session with JavaScript SDK v6. Where the sibling is eligible, a Pay Later session is offered beside it.
-3. On approval the server captures the order.
-4. `PAYMENT.CAPTURE.COMPLETED` confirms it and Kin credits the member.
+1. The member chooses an amount between $1.00 and $5,000.00 (`checkTopUp` in `packages/domain`). The browser checks it for quick feedback; the server reads it again from the typed text, digit by digit, into integer cents (`centsFromDecimal`).
+2. The server (`POST /api/top-ups`) creates an Orders v2 order in the pool account: one unit, no shipping, `custom_id` naming the circle and the member.
+3. The browser runs a one-time payment session with JavaScript SDK v6, loaded from PayPal's sandbox. Where PayPal says the payer is eligible, a Pay Later button is offered beside PayPal's.
+4. On approval the server (`POST /api/top-ups/{order}/capture`) reads the order back, refuses it unless it is this member's in this circle, and captures it with the request ID `kin-capture-{order}`, so a repeated click cannot capture twice. It then puts `order_captured` on the PayPal inbox queue.
+5. The worker reads the order back from PayPal and records each completed capture (`recordContribution` in `packages/db`): the member is credited the gross, the pool receives the net, and PayPal's fee goes to `fees`. The capture's ID is the entry's source, so the webhook `PAYMENT.CAPTURE.COMPLETED` for the same capture finds the entry there and writes nothing (decision 47).
+6. The sheet asks `GET /api/top-ups/captures/{capture}` until the entry exists, then says the amount is in the pool. If PayPal could not be reached during the capture, whether it happened is unknown: the worker is asked to look anyway, and the sheet says the record will show it once PayPal confirms.
 
 **Requests by invoice**
 
@@ -600,25 +602,26 @@ Used for caregiver pay and for settlement payouts to siblings.
 sequenceDiagram
     participant PP as PayPal
     participant WEB as web
-    participant DB as Aurora
-    participant Q as SQS
+    participant Q as SQS (FIFO)
     participant WK as worker
+    participant DB as Aurora
 
     PP->>WEB: POST event with transmission headers
-    WEB->>DB: store raw body and headers, unique on event ID
-    WEB->>Q: enqueue event ID, grouped by circle
-    WEB-->>PP: 200 OK
-    Q->>WK: deliver event ID
-    WK->>WK: verify signature
+    WEB->>Q: the raw body and headers, grouped by circle
+    WEB-->>PP: 200 OK once SQS holds it
+    Q->>WK: deliver the delivery
+    WK->>DB: store raw body and headers, unique on event ID
+    WK->>PP: verify the signature
     WK->>PP: GET the resource the event names
     PP-->>WK: current state of the resource
-    WK->>DB: one transaction. advance state, write ledger entry, write outbox
-    WK->>Q: publish domain event for notifications and narration
+    WK->>DB: one transaction. write ledger entry, mark the event processed
 ```
+
+As built (decision 44), the web app does not write to Aurora: it holds no service role (decision 38). It hands the delivery, byte for byte, to the `kin-paypal-events.fifo` queue (`POST /api/paypal/webhook`), and the worker stores it in `paypal_events` before anything else reads it. SQS holds the delivery durably before PayPal hears 200, so nothing is lost between the two. The worker is `apps/worker` (`handleInboxMessage`); publishing domain events for notifications and narration comes with those features.
 
 **Rules**
 
-- **Store first.** The raw body is saved before anything else, so no event is lost and the signature can be checked against the exact bytes received.
+- **Store first.** The raw body is kept before anything else, so no event is lost and the signature can be checked against the exact bytes received: first on the queue, then in `paypal_events`. Verification sends PayPal the event exactly as received, never parsed and re-encoded. An event ID already stored under another circle is not stored again, so a genuine event replayed with a different circle in its body changes nothing.
 - **Answer quickly.** PayPal retries a delivery that does not return success, up to 25 times over three days. Kin returns success once the event is safely stored.
 - **Verify before applying.** An event that fails verification is kept for inspection and never applied.
 - **Read the resource back.** Kin does not trust the event body for amounts or status. It fetches the resource from PayPal and uses that.
@@ -1089,6 +1092,8 @@ A caregiver reads only the payees that are their own seat, the bills, proposals 
 
 **The money rules, again in the database.** Triggers refuse any update, delete or truncate of ledger entries and lines, approvals, agreement versions and the audit log, even by the tables' owner. A deferred check at commit refuses an entry that does not balance or has fewer than two lines. Lines can join an entry only in the transaction that wrote it. A reversal must cancel an original of the same kind and currency, once. An entry must be in its circle's currency. A proposal's, bill's or execution's state can move only along `kin_private.state_transitions`, which a test compares with `packages/domain`. After a proposal is raised, only its state and expiry can change.
 
+**Adding money.** Only organizers and contributors may top up the pool (`money.contribute`). The parent's money is the pool's purpose, and a caregiver or an observer has no share to pay.
+
 **Service access.** The worker acts for the system, not for a user. It uses a separate database role, and each job names the single circle it is working on. The web app holds only `kin_app` and, in the demo environment, `kin_provisioner`. It never holds the admin's or the service's password.
 
 ### 12.4 The parent on a call
@@ -1208,7 +1213,7 @@ flowchart TB
 | ------- | --------- | ----------------------------------------------------------------- |
 | web     | 1 to 2    | On App Runner today (decision 35), health-checked                 |
 | voice   | 1 or more | Connections are drained before a task stops, so calls are not cut |
-| worker  | 1 or more | Scales on queue depth                                             |
+| worker  | 1         | Fargate, Arm, 0.25 vCPU and 0.5 GB, about seven dollars a month (decision 45). Long-polls the PayPal inbox; scales on queue depth when there is depth to scale on |
 
 The load balancer routes `/voice/*` to the voice service, with a long idle timeout for live audio. Everything else goes to web.
 
@@ -1224,7 +1229,7 @@ The load balancer routes `/voice/*` to the voice service, with a long idle timeo
 
 | Queue             | Carries                              | Ordering    |
 | ----------------- | ------------------------------------ | ----------- |
-| `paypal-events` | Stored event IDs to verify and apply | Per circle  |
+| `paypal-events` | Webhook deliveries as received, and captured orders to read back. A message stays hidden for 180 seconds while it is handled, longer than Aurora takes to resume | Per circle  |
 | `executions`    | Approved proposals to carry out      | Per circle  |
 | `documents`     | Photographs to read                  | None needed |
 | `notifications` | Emails, pushes, alerts               | None needed |
@@ -1409,7 +1414,7 @@ The audit export assembles these into one dated record per movement.
 
 | Environment     | Purpose                                                                    | PayPal                   |
 | --------------- | -------------------------------------------------------------------------- | ------------------------ |
-| **Local** | Development. Services and PostgreSQL in containers. A tunnel for webhooks. | Sandbox                  |
+| **Local** | Development. PostgreSQL and an SQS stand-in (ElasticMQ, `pnpm queue:up`) in containers. No webhook reaches the machine; the worker confirms a top-up by reading the order back | Sandbox                  |
 | **Test**  | Automated tests in continuous integration                                  | Fake, plus the simulator |
 | **Demo**  | The hosted environment judges use                                          | Sandbox                  |
 
@@ -1418,7 +1423,7 @@ The audit export assembles these into one dated record per movement.
 1. A pull request runs CI in GitHub Actions: lint, type-check, unit tests, the end-to-end and responsive tests, the infrastructure synth, and a build and start of the web image.
 2. A merge to main runs CI again on the merged code.
 3. When CI passes, the Deploy workflow (`.github/workflows/deploy.yml`) checks out that same commit and deploys every stack except KinGuardrails with the CDK.
-4. KinWeb's deploy builds the web image, pushes it to ECR, and App Runner rolls to it with its health check.
+4. KinWeb's deploy builds the web image, pushes it to ECR, and App Runner rolls to it with its health check. KinWorker, which exists once `kin:paypal` names a webhook, is deployed in the same step: its image is built for Arm and its one task is replaced, the old one stopped before the new one starts.
 5. A smoke test (`pnpm --filter @kin/infra run smoke`) checks the live app from outside: pages load, the circle's screens need a session, and sign-in reaches Cognito and returns to the right address.
 6. Between deploying KinData and KinWeb, the workflow runs the migration task (`pnpm --filter @kin/infra run migrate`) and stops if it fails, so the web app never meets a schema older than its code. KinWeb reaches Aurora through an App Runner VPC connector in the services subnets.
 
@@ -1438,6 +1443,7 @@ The hackathon needs a month of family life to be shown in minutes.
 - **Demo and real never mix.** A database trigger seats demo visitors only in demo circles and people who signed in only in real ones. A person who signs in sees their own circles, joins any real circle that invited their verified address, and otherwise is offered to start one (`kin_private.create_circle`): they become its organizer and the parent its first member. Every screen of a circle with no data yet says so in plain words.
 - **Every role, from one seat.** The demo banner's role switcher moves the visitor into another persona's empty seat (`kin_private.take_demo_seat`), so the database then shows exactly what that role may see: a caregiver only their own pay, an observer everything and no buttons.
 - **Real operations on simulated money.** In the demo a visitor approves and declines proposals (the vote is recorded in their seat and role, and the approval engine decides), pauses and lifts the pause, invites someone, downloads the record as CSV, starts again and leaves. Approving moves a proposal to approved; the payment itself follows with PayPal payouts. In a real circle, answering a proposal waits for the fresh multi-factor check of section 12, so the screen says so and the server refuses it.
+- **Real sandbox top-ups.** "Add money" works in the demo with a PayPal sandbox buyer account. The circle's history stays simulated; the top-up is a real sandbox transaction, recorded with `simulated` false and tagged "PayPal sandbox" in the record and the activity list, never presented as the same thing as the simulated entries around it.
 - **Start again** archives the visitor's circle and gives them a fresh one; *Leave the demo* clears the visitor's cookie. Nothing is deleted: the old circle's ledger stays.
 - **What each person sees.** The circle-role check of section 12.3 (`authorize` in `packages/auth`) decides which screens a role may open, and a role refused a screen is sent to its first one.
 
@@ -1490,6 +1496,11 @@ The hackathon needs a month of family life to be shown in minutes.
 | 41 | Demo data only behind the Demo button, for an anonymous visitor with a signed session of Kin's own | Giving every signed-in person a demo circle; a demo that needs an account | Judges reach the demo in one click with no account, and a real account never shows example data. The session names only a `demo:` visitor, whom the database seats only in demo circles, so even a stolen or forged session cannot open a family's circle. Each press is a row Kin can count. |
 | 42 | A person's writes go through kin_app with row-level security, column grants and database guards; the decision is the approval engine's | Writing votes and states through the service role from the web app; deciding approvals in SQL | The web app never holds the service role (decision 38), and the rule stays in one place (`decideApprovals`). The database still refuses, from the plan stored with the proposal, an approval with fewer yeses than places, with a no, or with only the payee's yes; a move other than closing a pending proposal; an answer in another member's name or role; any person's answer or decision in a real circle; and a pause longer than 24 hours. |
 | 43 | Aurora stays at zero minimum capacity, and the first request after a pause waits for it to resume | 0.5 ACU minimum so it never pauses, about $44 a month | The project owner chose no standing cost. The first visitor after a quiet spell waits over a minute; everyone after them does not. The migration retries for up to five minutes, because the first deploy's migration failed at 30 seconds while Aurora resumed. |
+| 44 | PayPal's webhook is handed, raw, to a FIFO queue by the web app; the worker stores it, verifies it with PayPal and reads the resource back | The web app storing the event in Aurora before queueing it (section 8.7's first design); the web app applying it | The web app holds no service role (decision 38), and a new narrow database role for the web would weaken that line. SQS holds the delivery durably before PayPal hears 200. Long polling keeps the worker off the database while idle, so Aurora still pauses (decision 43). |
+| 45 | The worker is one Fargate task (Arm, 0.25 vCPU, 0.5 GB) long-polling SQS | An SQS-triggered Lambda; a second App Runner service; a scheduled task | The account allows Kin one Lambda function (decision 40), which Cognito's sender uses. App Runner throttles a service's CPU between requests, so it cannot poll. A scheduled task would confirm a top-up minutes late. About seven dollars a month. The work is one function (`handleInboxMessage`), so moving it to another runtime changes only `apps/worker/src/main.ts`. |
+| 46 | Every circle's pool is the one sandbox business account, with the circle and member in each order's `custom_id`, reached through `poolFor` | A `pool_accounts` table with credentials per circle | A demo circle is made for every visitor, and the sandbox cannot make a business account for each. PayPal's record still attributes every payment to one circle and member. Production's partner model (section 8.1) changes only `poolFor`. |
+| 47 | A top-up is recorded from the order or capture read back from PayPal; the capture's ID is the ledger entry's source | Waiting for the webhook alone; trusting the capture's response | AGENTS.md section 5, rule 3. Either path alone records the money, and together they write one entry: the read after capture confirms in seconds and works where no webhook arrives (locally), and the webhook covers a lost read. |
+| 48 | The PayPal client ID and webhook ID are in `infra/cdk.json`; the client secret is in Secrets Manager | All three in Secrets Manager | The two IDs are not secret (PayPal's client ID is meant for the browser). In `cdk.json` they are reviewed like any other change, and the deploy needs no extra CI secret. |
 
 ---
 
@@ -1566,7 +1577,21 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - The circle-role check (`authorize` in `packages/auth`), and the dashboard reading a visitor's own provisioned circle as that visitor, through every screen at the four viewports (unit and end-to-end tests against a migrated database).
 - The Demo button and the anonymous visitor's signed session, the role switcher (every role's screens), answering, pausing, inviting, the CSV record, starting again and leaving; and, for a person who signs in, starting a real circle, joining by invitation and every screen's empty state. Tested in `packages/db` against PostgreSQL, in `packages/auth`, and end to end.
 
+**Checked against the PayPal sandbox on 16 October 2026**
+
+- A top-up order created by `packages/paypal` reads back `PAYER_ACTION_REQUIRED` with its amount and `custom_id` intact (`packages/paypal/src/fixtures`). Capturing it before approval is refused with `ORDER_NOT_APPROVED`, which Kin treats as PayPal's answer and never retries.
+- PayPal answers a verification request with malformed headers with HTTP 400; Kin counts that as unverified.
+- JavaScript SDK v6 loads from the sandbox in the browser, offers PayPal (not Pay Later, for this sandbox payer), opens PayPal's window with Kin's order, and closing the window comes back as a cancel.
+
+**Built and tested: top-ups**
+
+- The money parsing and limits (`centsFromDecimal`, `checkTopUp`, `calendarDay`) with unit and property tests; the PayPal adapter (`packages/paypal`) against recorded responses: retries with the same request ID, no retry of a refusal, token renewal, webhook bytes passed through unchanged; recording a contribution and storing events against PostgreSQL, with isolation between circles; the worker's inbox (`apps/worker`) against PostgreSQL and the fake pool: the webhook and the read-back write one entry in either order, a forged or replayed event writes nothing, an outage is retried; the routes' rules; the "Add money" sheet end to end at the four viewports with a stand-in SDK; the infrastructure's grants and the worker's shape.
+
 **Not yet tested**
+
+- A top-up approved by a sandbox buyer and captured, through the screen. It needs a PayPal sandbox personal account to sign in with. The completed-order fixture follows PayPal's documented shape until one is recorded.
+- A real PayPal webhook delivery, which needs the deployed app's address registered (`webhook:register`), and KinWorker deployed. Neither has been deployed.
+- CI building the worker's Arm image on an x86 runner.
 
 - The migration task and the App Runner VPC connector against the real AWS account. They synthesise and their images build and run locally, but neither has been deployed. TLS to Aurora with the RDS certificate bundle is untested until it is.
 - Everything else in this document. Execution and the outbox in section 7.6 are not built. The latency figure is a target. The diagrams describe the intended design.
