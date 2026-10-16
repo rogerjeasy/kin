@@ -70,8 +70,13 @@ describe("the inbox message", () => {
     expect(inboxGroup({ kind: "webhook", delivery })).toBe(reference.circleId);
     expect(inboxGroup({ kind: "order_captured", circleId: reference.circleId, orderId: "ORDER1" })).toBe(reference.circleId);
     expect(inboxGroup({ kind: "webhook", delivery: { body: "{}", headers } })).toBe(UNPLACED_GROUP);
-    expect(inboxDeduplicationId({ kind: "webhook", delivery })).toBe("event-WH-1");
-    expect(inboxDeduplicationId({ kind: "webhook", delivery: { body: "garbage", headers } })).toBe("transmission-T-1");
+    // PayPal's redelivery has the same body under new transmission headers: one copy.
+    const redelivered = { body, headers: { ...headers, "paypal-transmission-id": "T-2", "paypal-transmission-sig": "b3RoZXI=" } };
+    expect(inboxDeduplicationId({ kind: "webhook", delivery: redelivered })).toBe(inboxDeduplicationId({ kind: "webhook", delivery }));
+    // A forged body that borrows the genuine event's ID cannot make the queue drop the real one.
+    const forged = { body: body.replace("25.00", "1.00"), headers };
+    expect(inboxDeduplicationId({ kind: "webhook", delivery: forged })).not.toBe(inboxDeduplicationId({ kind: "webhook", delivery }));
+    expect(inboxDeduplicationId({ kind: "webhook", delivery })).toMatch(/^webhook-[0-9a-f]{64}$/);
     expect(inboxDeduplicationId({ kind: "order_captured", circleId: reference.circleId, orderId: "ORDER1" })).toBe("order-ORDER1");
   });
 });

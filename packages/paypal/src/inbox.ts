@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+
+import { UUID_PATTERN } from "./contribution-reference.ts";
 import { parseWebhookEnvelope, WEBHOOK_HEADERS, type WebhookDelivery, type WebhookHeaders } from "./webhook.ts";
 import { isPayPalId } from "./pool.ts";
 
@@ -25,24 +28,22 @@ export function inboxGroup(message: InboxMessage): string {
 }
 
 /**
- * The queue's deduplication ID. PayPal redelivers an event with the same ID;
- * the worker also refuses a second copy by that ID, for repeats the queue's
- * five-minute window misses.
+ * The queue's deduplication ID. For a webhook it is a hash of the body:
+ * PayPal redelivers an event with the same body, so repeats collapse, while a
+ * forged body that merely borrows a genuine event's ID cannot make the queue
+ * drop the real one. The worker refuses a second copy of a verified event by
+ * its ID, for repeats the queue's five-minute window misses.
  */
 export function inboxDeduplicationId(message: InboxMessage): string {
   if (message.kind === "order_captured") return `order-${message.orderId}`;
-  try {
-    return `event-${parseWebhookEnvelope(message.delivery.body).eventId}`.slice(0, 128);
-  } catch {
-    return `transmission-${message.delivery.headers["paypal-transmission-id"]}`.slice(0, 128);
-  }
+  return `webhook-${createHash("sha256").update(message.delivery.body).digest("hex")}`;
 }
 
 export function encodeInboxMessage(message: InboxMessage): string {
   return JSON.stringify(message);
 }
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const UUID = new RegExp(`^${UUID_PATTERN}$`);
 
 /** Reads a message off the queue, or `null` when it is not one Kin wrote. */
 export function parseInboxMessage(text: string): InboxMessage | null {

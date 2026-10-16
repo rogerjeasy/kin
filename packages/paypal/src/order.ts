@@ -23,6 +23,14 @@ export type NewContributionOrder = {
   readonly returnUrl: string;
 };
 
+/**
+ * The one request ID an order's capture is ever sent with, by the web app or
+ * the worker, so PayPal captures each order at most once.
+ */
+export function captureRequestId(orderId: string): string {
+  return `kin-capture-${orderId}`;
+}
+
 /** The Orders v2 request for a member's top-up: one unit, no shipping, paid at once. */
 export function contributionOrderBody(order: NewContributionOrder): string {
   return JSON.stringify({

@@ -1,7 +1,7 @@
 import type { Money } from "@kin/domain";
 import { randomBytes } from "node:crypto";
 
-import type { Capture } from "../capture.ts";
+import type { Capture, CaptureStatus } from "../capture.ts";
 import { encodeContributionReference, type ContributionReference } from "../contribution-reference.ts";
 import type { Order } from "../order.ts";
 import { PayPalError } from "../paypal-error.ts";
@@ -15,6 +15,8 @@ export type FakePool = PayPalPool & {
   readonly approve: (orderId: string) => void;
   /** PayPal's fee on each capture, in cents. */
   feeCents: number;
+  /** The status PayPal gives the next captures, such as `DECLINED` for a refused card. */
+  captureStatus: CaptureStatus;
   /** Whether `verifyWebhook` says a delivery is genuine. */
   signaturesValid: boolean;
   /** Every request ID a write was sent with, in order. */
@@ -48,6 +50,7 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
 
   const pool: FakePool = {
     feeCents: 52,
+    captureStatus: "COMPLETED",
     signaturesValid: true,
     requestIds: [],
     orders,
@@ -75,11 +78,11 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
       }
       const capture: Capture = {
         id: nextId("CAPTURE"),
-        status: "COMPLETED",
+        status: pool.captureStatus,
         orderId,
         reference: order.reference,
         gross: order.amount,
-        fee: { cents: pool.feeCents, currency: order.amount.currency },
+        fee: { cents: pool.captureStatus === "COMPLETED" ? pool.feeCents : 0, currency: order.amount.currency },
         createdAt: now(),
       };
       captures.set(capture.id, capture);

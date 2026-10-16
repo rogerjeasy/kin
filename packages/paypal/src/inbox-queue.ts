@@ -14,7 +14,10 @@ export type Inbox = {
 };
 
 const WAIT_SECONDS = 20;
-const BATCH = 10;
+// One at a time. A FIFO queue hands out nothing more from a circle while one
+// of its messages is in flight, so a message that keeps failing holds its
+// circle's later ones back without their being received, and counted, at all.
+const BATCH = 1;
 
 /**
  * The PayPal inbox on SQS, or on a stand-in on this machine. Long polling

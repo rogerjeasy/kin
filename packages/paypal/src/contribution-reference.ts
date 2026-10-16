@@ -7,8 +7,9 @@
 export type ContributionReference = { readonly circleId: string; readonly memberId: string };
 
 const VERSION = "kin1";
-const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
-const SHAPE = new RegExp(`^${VERSION}:(${UUID}):(${UUID})$`);
+/** A row ID as Kin writes it. */
+export const UUID_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+const SHAPE = new RegExp(`^${VERSION}:(${UUID_PATTERN}):(${UUID_PATTERN})$`);
 
 export function encodeContributionReference(reference: ContributionReference): string {
   const text = `${VERSION}:${reference.circleId}:${reference.memberId}`;

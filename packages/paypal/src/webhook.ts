@@ -9,8 +9,11 @@ export type WebhookHeaders = Readonly<Record<(typeof WEBHOOK_HEADERS)[number], s
 /** One delivery exactly as it arrived: the raw body and PayPal's headers. */
 export type WebhookDelivery = { readonly body: string; readonly headers: WebhookHeaders };
 
+/** PayPal's event for money that has arrived: the one Kin records. */
+export const CAPTURE_COMPLETED = "PAYMENT.CAPTURE.COMPLETED";
+
 /** The event types Kin subscribes the pool's webhook to. */
-export const WEBHOOK_EVENT_TYPES = ["PAYMENT.CAPTURE.COMPLETED"] as const;
+export const WEBHOOK_EVENT_TYPES = [CAPTURE_COMPLETED] as const;
 
 /**
  * What Kin reads from an event's envelope before it is verified: enough to
