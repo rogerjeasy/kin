@@ -1,6 +1,7 @@
 import { asService, readLedger } from "@kin/db";
 import { paypalEventStates, testDatabases, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
 import { accountBalance, memberAccount, type LedgerEntry } from "@kin/domain";
+import { captureRequestId } from "@kin/paypal";
 import { fakePool, type FakePool } from "@kin/paypal/testing";
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
@@ -167,7 +168,29 @@ describe("the worker's PayPal inbox", () => {
     expect(await topUps(circle.circleId)).toEqual([]);
   });
 
-  it("records nothing for an order PayPal has not captured", async () => {
+  it("finishes a capture that never reached PayPal, with the same request ID, and records it", async () => {
+    const circle = await visitorWithCircle(db);
+    const pool = fakePool();
+    const { orderId } = await pool.createOrder(
+      { amount: { cents: 3000, currency: "USD" }, reference: { circleId: circle.circleId, memberId: circle.members.marcus }, description: "Top-up", returnUrl: "https://kin.test" },
+      "create-unfinished",
+    );
+    // The payer approved; the web app's capture timed out before PayPal saw it.
+    pool.approve(orderId);
+    const outcome = await handleInboxMessage({ db: db.service, pool }, { kind: "order_captured", circleId: circle.circleId, orderId });
+    expect(outcome).toEqual({ result: "applied", circleId: circle.circleId, captures: ["recorded"] });
+    expect(pool.requestIds.filter((id) => id === captureRequestId(orderId))).toHaveLength(1);
+    expect(await topUps(circle.circleId)).toHaveLength(1);
+  });
+
+  it("asks again later, never assumes, when PayPal cannot say what happened to the order", async () => {
+    const { circle, pool, deps, orderId } = await paid();
+    pool.failNext = "getOrder";
+    await expect(handleInboxMessage(deps, { kind: "order_captured", circleId: circle.circleId, orderId })).rejects.toMatchObject({ outcome: "unavailable" });
+    expect(await topUps(circle.circleId)).toEqual([]);
+  });
+
+  it("records nothing, and captures nothing, for an order the payer never approved", async () => {
     const circle = await visitorWithCircle(db);
     const pool = fakePool();
     const { orderId } = await pool.createOrder(

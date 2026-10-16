@@ -1,33 +1,30 @@
-import { PayPalError, inboxGroup, type Inbox } from "@kin/paypal";
+import { PayPalError, type Inbox } from "@kin/paypal";
 
 import { handleInboxMessage, type InboxDeps, type InboxOutcome } from "./handle-message.ts";
 
 export type InboxLog = (line: { readonly level: "info" | "error"; readonly message: string } & Readonly<Record<string, unknown>>) => void;
 
 /**
- * Handles one batch from the queue. A handled message is removed. A message
- * that throws stays, returns after the queue's visibility timeout, and after
- * five tries lands on the dead-letter queue, which alarms. Once a message of
- * a circle fails, the rest of that circle's batch waits too, so its events
- * are never applied out of order.
+ * Handles what the queue hands out: one message at a time (see `sqsInbox`).
+ * A handled message is removed. A message that throws stays, returns after
+ * the queue's visibility timeout, and after five tries lands on the
+ * dead-letter queue, which alarms. While it waits, the FIFO queue holds its
+ * circle's later messages back, so a circle's events are never applied out
+ * of order, and other circles carry on.
  */
 export async function runInboxBatch(inbox: Inbox, deps: InboxDeps, log: InboxLog): Promise<number> {
   const batch = await inbox.receive();
-  const held = new Set<string>();
   for (const { message, receipt } of batch) {
     if (message === null) {
       log({ level: "error", message: "inbox.unreadable_message" });
       await inbox.remove(receipt);
       continue;
     }
-    const group = inboxGroup(message);
-    if (held.has(group)) continue;
     try {
       const outcome = await handleInboxMessage(deps, message);
       log(lineFor(message.kind, outcome));
       await inbox.remove(receipt);
     } catch (error) {
-      held.add(group);
       log({ level: "error", message: "inbox.retry", kind: message.kind, error: describe(error) });
     }
   }

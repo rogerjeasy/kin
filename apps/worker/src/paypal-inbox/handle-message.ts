@@ -1,5 +1,5 @@
 import { ContributionMismatchError, asService, settlePayPalEvent, storePayPalEvent, type Database } from "@kin/db";
-import { parseWebhookEnvelope, type InboxMessage, type PayPalPool, type WebhookDelivery } from "@kin/paypal";
+import { CAPTURE_COMPLETED, captureRequestId, parseWebhookEnvelope, type InboxMessage, type PayPalPool, type WebhookDelivery } from "@kin/paypal";
 
 import { applyCapture, type CaptureOutcome } from "./apply-capture.ts";
 
@@ -64,7 +64,7 @@ async function handleWebhook({ db, pool }: InboxDeps, delivery: WebhookDelivery)
 
   await asService(db, circleId, (tx) => settlePayPalEvent(tx, stored.id, "verified"));
 
-  if (envelope.eventType !== "PAYMENT.CAPTURE.COMPLETED" || envelope.captureId === null) {
+  if (envelope.eventType !== CAPTURE_COMPLETED || envelope.captureId === null) {
     await asService(db, circleId, (tx) => settlePayPalEvent(tx, stored.id, "processed"));
     return { result: "ignored" };
   }
@@ -82,13 +82,19 @@ async function handleWebhook({ db, pool }: InboxDeps, delivery: WebhookDelivery)
 }
 
 /**
- * The web app captured an order: the worker reads the order back from PayPal
- * and records each completed capture. Whichever of this and the webhook
- * comes first writes the entry; the other finds it there.
+ * The web app captured an order, or tried to and could not tell whether it
+ * worked. The worker reads the order back from PayPal and records each
+ * completed capture; whichever of this and the webhook comes first writes the
+ * entry, and the other finds it there. An order still `APPROVED` was never
+ * captured: the payer said yes and the web app's capture did not reach
+ * PayPal, so the worker finishes it with the same request ID, which PayPal
+ * honours at most once. If PayPal cannot be reached, this throws and the
+ * message is tried again: uncertain means ask again, never assume.
  */
 async function handleCapturedOrder({ db, pool }: InboxDeps, circleId: string, orderId: string): Promise<InboxOutcome> {
-  const order = await pool.getOrder(orderId);
-  if (order.reference?.circleId !== circleId) return { result: "failed", circleId, reason: "other_circle" };
+  const read = await pool.getOrder(orderId);
+  if (read.reference?.circleId !== circleId) return { result: "failed", circleId, reason: "other_circle" };
+  const order = read.status === "APPROVED" ? await pool.captureOrder(orderId, captureRequestId(orderId)) : read;
   try {
     const captures = await asService(db, circleId, async (tx) => {
       const outcomes: CaptureOutcome[] = [];
