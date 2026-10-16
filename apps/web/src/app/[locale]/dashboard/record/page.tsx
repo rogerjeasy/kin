@@ -7,7 +7,7 @@ import { RecordList } from "@/components/dashboard/record/record-list";
 import { EmptyState } from "@/components/dashboard/ui/empty-state";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
-import { describeAccountCode, describeEntry } from "@/components/dashboard/words/entry-words";
+import { describeAccountCode, describeEntry, entryTag } from "@/components/dashboard/words/entry-words";
 import { Button } from "@/components/ui/button";
 import { dashboardRoutes } from "@/content/dashboard-routes";
 import { circleFormatters } from "@/content/circle/format";
@@ -46,7 +46,7 @@ export default async function RecordPage({ params }: PageProps<"/[locale]/dashbo
       amount: format.money(view.cents),
       flow: view.poolFlow,
       note,
-      tags: entry.simulated ? [common.simulated] : [],
+      tags: [entryTag(dictionary, entry)],
       lines: entry.lines.map((line) => {
         const account = describeAccount(line.account);
         const amount = format.money(line.cents);

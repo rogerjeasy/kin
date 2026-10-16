@@ -910,7 +910,7 @@
       },
       "demo": {
         "label": "Círculo de demostración",
-        "text": "Estás en el círculo de Rose como {name}, {role}. El dinero está simulado en el sandbox de PayPal, y lo que hagas aquí solo cambia tu propia copia del círculo.",
+        "text": "Estás en el círculo de Rose como {name}, {role}. Su historial está simulado; una aportación que hagas pasa de verdad por el sandbox de PayPal. Lo que hagas aquí solo cambia tu propia copia del círculo.",
         "restart": "Empezar de nuevo",
         "restartNote": "Recibes una copia nueva del círculo de Rose. La actual se archiva, no se borra.",
         "viewAs": "Ver el círculo como",
@@ -977,7 +977,8 @@
         "organizerAndSecond": "Dos síes",
         "refused": "Supera el límite del acuerdo",
         "paused": "Retenido por la pausa"
-      }
+      },
+      "sandbox": "Sandbox de PayPal"
     },
     "overview": {
       "greeting": "Buenas noches, {name}",
@@ -1048,6 +1049,28 @@
         "title": "Lo que viene",
         "link": "Todas las facturas"
       }
+    },
+    "topUp": {
+      "trigger": "Añadir dinero",
+      "title": "Añadir dinero al fondo",
+      "text": "Tu aportación entra en el fondo de {circle} a través de PayPal. Se te abona el importe completo, y el círculo comparte la comisión de PayPal.",
+      "sandbox": "Este es el sandbox de PayPal: no se mueve dinero real. Inicia sesión con una cuenta de comprador del sandbox de PayPal.",
+      "amount": "Importe",
+      "amountHint": "Entre {min} y {max}.",
+      "presets": "Importes rápidos",
+      "invalid": "Introduce un importe entre {min} y {max}.",
+      "loading": "Cargando PayPal…",
+      "unavailable": "No se pudo cargar PayPal aquí. Comprueba tu conexión e inténtalo de nuevo.",
+      "paying": "Termina en la ventana de PayPal. Kin espera aquí.",
+      "confirming": "PayPal aceptó el pago. Kin lo comprueba con PayPal antes de añadirlo al registro…",
+      "confirmed": "{amount} está en el fondo. PayPal lo confirmó y ya está en el registro.",
+      "slow": "PayPal aún no lo ha confirmado. Aparecerá en el registro en cuanto PayPal lo haga.",
+      "cancelled": "Cerraste PayPal. No se cobró nada.",
+      "declined": "PayPal rechazó el pago. No se cobró nada.",
+      "failed": "PayPal no pudo completar el pago. Si se te cobró, aparecerá en el registro cuando PayPal lo confirme.",
+      "again": "Añadir más",
+      "close": "Cerrar",
+      "orderDescription": "Aportación a {circle} en Kin"
     },
     "approvals": {
       "title": "Por aprobar",

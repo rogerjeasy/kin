@@ -58,9 +58,11 @@ jobs:
       - name: Migrate the database
         working-directory: infra
         run: pnpm run migrate
-      - name: Build and roll out the web image
+      # KinWorker exists once kin:paypal in infra/cdk.json switches top-ups on;
+      # until then the app has no such stack and only KinWeb is deployed.
+      - name: Build and roll out the web and worker images
         working-directory: infra
-        run: pnpm exec cdk deploy KinWeb --require-approval never --outputs-file cdk-outputs.json
+        run: pnpm exec cdk deploy KinWeb $(pnpm exec cdk list 2>/dev/null | grep -x KinWorker || true) --require-approval never --outputs-file cdk-outputs.json
         env:
           KIN_ALERT_EMAIL: ${{ secrets.KIN_ALERT_EMAIL }}
           KIN_SENDER_EMAIL: ${{ secrets.KIN_SENDER_EMAIL }}

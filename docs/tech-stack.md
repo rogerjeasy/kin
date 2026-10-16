@@ -243,7 +243,7 @@ A phone call is not a browser session, so Cognito does not sign the parent in th
 ## 11. Files, queues and schedules
 
 - **Amazon S3** stores photographs of receipts, bills and letters. Uploads go straight from the phone to S3 through short-lived signed links. Buckets are private and encrypted.
-- **Amazon SQS** carries work that should not block a request: processing a PayPal webhook, reading a photographed bill, sending a notification. Each queue has a dead-letter queue.
+- **Amazon SQS** carries work that should not block a request: processing a PayPal webhook, reading a photographed bill, sending a notification. Each queue has a dead-letter queue. Locally, ElasticMQ (`softwaremill/elasticmq-native` in Docker, `pnpm queue:up`) answers SQS's API, so the web app and the worker run the same code as in AWS. The SQS client is `@aws-sdk/client-sqs`, the same SDK family and version as the Secrets Manager client already in use.
 - **Amazon EventBridge Scheduler** triggers the timed work: monthly settlement, the monthly statement, refill reminders and the parent's scheduled calls.
 - **Amazon SES** sends email, including statements and sign-in codes.
 

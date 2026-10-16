@@ -3,14 +3,25 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing/index.ts"
+  },
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "sandbox:check": "node --env-file=../../.env scripts/sandbox-check.ts"
+    "sandbox:check": "node --env-file=../../.env scripts/sandbox-check.ts",
+    "webhook:register": "node --env-file=../../.env scripts/register-webhook.ts",
+    "local:queue:up": "node scripts/local-queue.ts up",
+    "local:queue:down": "node scripts/local-queue.ts down"
   },
   "devDependencies": {
     "@types/node": "^24.19.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sqs": "3.1143.0",
+    "@kin/config": "workspace:*",
+    "@kin/domain": "workspace:*"
   }
 }

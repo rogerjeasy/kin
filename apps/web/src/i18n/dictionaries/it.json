@@ -910,7 +910,7 @@
       },
       "demo": {
         "label": "Cerchia dimostrativa",
-        "text": "Sei nella cerchia di Rose come {name}, {role}. Il denaro è simulato nella sandbox di PayPal, e ciò che fai qui cambia solo la tua copia della cerchia.",
+        "text": "Sei nella cerchia di Rose come {name}, {role}. La sua storia è simulata; un versamento che fai passa davvero dalla sandbox di PayPal. Ciò che fai qui cambia solo la tua copia della cerchia.",
         "restart": "Ricomincia",
         "restartNote": "Ricevi una nuova copia della cerchia di Rose. Quella attuale viene archiviata, non cancellata.",
         "viewAs": "Vedi la cerchia come",
@@ -977,7 +977,8 @@
         "organizerAndSecond": "Due sì",
         "refused": "Oltre il limite dell’accordo",
         "paused": "Bloccato dalla pausa"
-      }
+      },
+      "sandbox": "Sandbox di PayPal"
     },
     "overview": {
       "greeting": "Buonasera, {name}",
@@ -1048,6 +1049,28 @@
         "title": "In arrivo",
         "link": "Tutte le bollette"
       }
+    },
+    "topUp": {
+      "trigger": "Aggiungi denaro",
+      "title": "Aggiungi denaro al fondo",
+      "text": "Il tuo versamento entra nel fondo di {circle} tramite PayPal. Ti viene accreditato l’intero importo, e la cerchia condivide la commissione di PayPal.",
+      "sandbox": "Questa è la sandbox di PayPal: non si muove denaro reale. Accedi con un account acquirente della sandbox di PayPal.",
+      "amount": "Importo",
+      "amountHint": "Tra {min} e {max}.",
+      "presets": "Importi rapidi",
+      "invalid": "Inserisci un importo tra {min} e {max}.",
+      "loading": "Caricamento di PayPal…",
+      "unavailable": "Non è stato possibile caricare PayPal qui. Controlla la connessione e riprova.",
+      "paying": "Completa nella finestra di PayPal. Kin aspetta qui.",
+      "confirming": "PayPal ha accettato il pagamento. Kin lo verifica con PayPal prima di aggiungerlo al registro…",
+      "confirmed": "{amount} è nel fondo. PayPal l’ha confermato, ed è nel registro.",
+      "slow": "PayPal non l’ha ancora confermato. Comparirà nel registro appena PayPal lo farà.",
+      "cancelled": "Hai chiuso PayPal. Non è stato addebitato nulla.",
+      "declined": "PayPal ha rifiutato il pagamento. Non è stato addebitato nulla.",
+      "failed": "PayPal non è riuscito a completare il pagamento. Se ti è stato addebitato, comparirà nel registro quando PayPal lo confermerà.",
+      "again": "Aggiungi ancora",
+      "close": "Chiudi",
+      "orderDescription": "Versamento a {circle} su Kin"
     },
     "approvals": {
       "title": "Decisioni",

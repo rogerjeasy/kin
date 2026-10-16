@@ -25,6 +25,15 @@ describe("what a member may do in a circle", () => {
     }
   });
 
+  it("lets only the members who share the cost add money to the pool", () => {
+    for (const role of ["observer", "caregiver", "parent"] as const) {
+      expect(authorize(active(role), "money.contribute")).toEqual({ allowed: false, reason: "role" });
+    }
+    for (const role of ["contributor", "organizer"] as const) {
+      expect(authorize(active(role), "money.contribute")).toEqual({ allowed: true });
+    }
+  });
+
   it("lets an organizer do everything", () => {
     expect(allowedActions(active("organizer"))).toEqual(Object.keys(CIRCLE_ACTIONS));
   });

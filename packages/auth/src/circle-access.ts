@@ -15,6 +15,12 @@ export const CIRCLE_ACTIONS = {
   "own_payments.view": ["organizer", "contributor", "parent", "caregiver", "observer"],
   /** What Kin told the parent, and the scam checks it ran. */
   "safety.view": ["organizer", "contributor", "parent", "observer"],
+  /**
+   * Add money to the pool from one's own PayPal account. The members who
+   * share the cost do; the parent's money is the pool's purpose, and a
+   * caregiver or an observer has no share to pay.
+   */
+  "money.contribute": ["organizer", "contributor"],
   /** Say yes or no to a proposal (section 7.5: caregivers and observers never answer). */
   "proposal.answer": ["organizer", "contributor", "parent"],
   /** Stop all approvals for 24 hours (section 15.3). An observer changes nothing. */

@@ -10,6 +10,7 @@ import { FairnessPanel } from "@/components/dashboard/overview/fairness-panel";
 import { RoseHeardPanel } from "@/components/dashboard/overview/rose-heard-panel";
 import { SafetyPanel } from "@/components/dashboard/overview/safety-panel";
 import { SpendingPanel } from "@/components/dashboard/overview/spending-panel";
+import { TopUpAction } from "@/components/dashboard/top-up/top-up-action";
 import { StatRow } from "@/components/dashboard/overview/stat-row";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
@@ -71,6 +72,7 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
         lede={fill(overview.lede, slots)}
         actions={
           <>
+            <TopUpAction locale={locale} dictionary={dictionary} circle={circle} />
             <ButtonLink href={path(dashboardRoutes.approvals)} size="sm">
               {overview.actions.approvals}
             </ButtonLink>
