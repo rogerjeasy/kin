@@ -1,4 +1,5 @@
 export { BASIS_POINTS } from "./agreement.ts";
+export { calendarDay } from "./calendar.ts";
 export type {
   Agreement,
   ApprovalTerms,
@@ -86,8 +87,10 @@ export {
 } from "./ledger.ts";
 export type { AppendResult, Ledger } from "./ledger.ts";
 export {
+  InvalidDecimalError,
   InvalidMoneyError,
   assertCents,
+  centsFromDecimal,
   decimalAmount,
   formatMoney,
   sumCents,
@@ -110,6 +113,8 @@ export {
 export { CIRCLE_ROLES, MEMBER_STATUSES, PARENT_LEVELS } from "./roles.ts";
 export type { CircleRole, MemberStatus, ParentLevel } from "./roles.ts";
 export { settlePeriod } from "./settle-period.ts";
+export { TOP_UP_LIMITS, checkTopUp } from "./top-up.ts";
+export type { TopUpCheck } from "./top-up.ts";
 export type { Settlement, SettlementQuery } from "./settle-period.ts";
 export {
   SettlementError,

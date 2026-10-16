@@ -48,12 +48,45 @@ export function formatMoney(money: Money, locale: string): string {
 
 /**
  * An amount as a plain decimal in its currency's minor digits ("84.00"), for
- * files a spreadsheet reads. Built from the integer's digits, never by division.
+ * files a spreadsheet reads and APIs such as PayPal's. Built from the
+ * integer's digits, never by division.
  */
 export function decimalAmount(money: Money): string {
   assertCents(money.cents);
-  const minorDigits = new Intl.NumberFormat("en", { style: "currency", currency: money.currency }).resolvedOptions().maximumFractionDigits ?? 0;
-  return toDecimalString(money.cents, minorDigits);
+  return toDecimalString(money.cents, minorDigitsOf(money.currency));
+}
+
+/**
+ * Reads a plain decimal ("84", "84.5", "84.00") as whole minor units of
+ * `currency`, from its digits alone, never through a floating-point number.
+ * Refuses a sign, a separator, an exponent, or more decimals than the
+ * currency has, so "84.005" is an error rather than a rounding.
+ */
+export function centsFromDecimal(text: string, currency: string): number {
+  const minorDigits = minorDigitsOf(currency);
+  const match = /^(\d+)(?:\.(\d+))?$/.exec(text);
+  const whole = match?.[1];
+  const fraction = match?.[2] ?? "";
+  if (whole === undefined || fraction.length > minorDigits) {
+    throw new InvalidDecimalError(text, currency);
+  }
+  const cents = Number(`${whole}${fraction.padEnd(minorDigits, "0")}`);
+  if (!Number.isSafeInteger(cents)) throw new InvalidDecimalError(text, currency);
+  return cents;
+}
+
+/** The text is not a plain decimal amount of the currency. Retrying cannot help. */
+export class InvalidDecimalError extends Error {
+  readonly retryable = false;
+
+  constructor(text: string, currency: string) {
+    super(`"${text}" is not an amount of ${currency}`);
+    this.name = "InvalidDecimalError";
+  }
+}
+
+function minorDigitsOf(currency: string): number {
+  return new Intl.NumberFormat("en", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 0;
 }
 
 // Intl formats a decimal string exactly, so no floating-point division ever
