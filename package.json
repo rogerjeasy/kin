@@ -15,7 +15,9 @@
     "build": "pnpm -r --if-present run build",
     "check": "pnpm run lint && pnpm run typecheck && pnpm run test",
     "db:up": "pnpm --filter @kin/db run local:up",
-    "db:down": "pnpm --filter @kin/db run local:down"
+    "db:down": "pnpm --filter @kin/db run local:down",
+    "queue:up": "pnpm --filter @kin/paypal run local:queue:up",
+    "queue:down": "pnpm --filter @kin/paypal run local:queue:down"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

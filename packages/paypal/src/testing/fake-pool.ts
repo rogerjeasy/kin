@@ -1,0 +1,139 @@
+import type { Money } from "@kin/domain";
+import { randomBytes } from "node:crypto";
+
+import type { Capture } from "../capture.ts";
+import { encodeContributionReference, type ContributionReference } from "../contribution-reference.ts";
+import type { Order } from "../order.ts";
+import { PayPalError } from "../paypal-error.ts";
+import type { PayPalPool } from "../pool.ts";
+import type { WebhookDelivery } from "../webhook.ts";
+
+type StoredOrder = { id: string; status: string; reference: ContributionReference; amount: Money; captures: Capture[]; requestIds: Set<string> };
+
+export type FakePool = PayPalPool & {
+  /** The payer approves the order on PayPal's page. */
+  readonly approve: (orderId: string) => void;
+  /** PayPal's fee on each capture, in cents. */
+  feeCents: number;
+  /** Whether `verifyWebhook` says a delivery is genuine. */
+  signaturesValid: boolean;
+  /** Every request ID a write was sent with, in order. */
+  readonly requestIds: string[];
+  /** A delivery of PAYMENT.CAPTURE.COMPLETED for a capture, as PayPal would send it. */
+  readonly completedEvent: (captureId: string, eventId?: string) => WebhookDelivery;
+  readonly orders: Map<string, StoredOrder>;
+  /** The next call to this method fails as PayPal being unreachable would. */
+  failNext: keyof PayPalPool | null;
+};
+
+/**
+ * PayPal's pool account in memory, for tests in every package. It keeps the
+ * rules the real one does that Kin relies on: a capture needs an approval,
+ * a repeated request ID repeats nothing, and only a completed capture has a fee.
+ */
+export function fakePool(options: { now?: () => Date } = {}): FakePool {
+  const now = options.now ?? (() => new Date("2026-10-16T15:00:00Z"));
+  const orders = new Map<string, StoredOrder>();
+  const captures = new Map<string, Capture>();
+  // PayPal's IDs are unique everywhere, so each fake draws its own.
+  const instance = randomBytes(4).toString("hex").toUpperCase();
+  let sequence = 0;
+  const nextId = (prefix: string) => `${prefix}${instance}${String((sequence += 1)).padStart(6, "0")}`;
+  const view = (order: StoredOrder): Order => ({ id: order.id, status: order.status, reference: order.reference, amount: order.amount, captures: [...order.captures] });
+  const find = (orderId: string): StoredOrder => {
+    const order = orders.get(orderId);
+    if (!order) throw new PayPalError({ outcome: "rejected", status: 404, issue: "RESOURCE_NOT_FOUND", debugId: "fake", operation: "orders" });
+    return order;
+  };
+
+  const pool: FakePool = {
+    feeCents: 52,
+    signaturesValid: true,
+    requestIds: [],
+    orders,
+    failNext: null,
+    async createOrder(order, requestId) {
+      fail("createOrder");
+      pool.requestIds.push(requestId);
+      const repeated = [...orders.values()].find((each) => each.requestIds.has(requestId));
+      if (repeated) return { orderId: repeated.id };
+      const id = nextId("ORDER");
+      orders.set(id, { id, status: "CREATED", reference: order.reference, amount: order.amount, captures: [], requestIds: new Set([requestId]) });
+      return { orderId: id };
+    },
+    async getOrder(orderId) {
+      fail("getOrder");
+      return view(find(orderId));
+    },
+    async captureOrder(orderId, requestId) {
+      fail("captureOrder");
+      pool.requestIds.push(requestId);
+      const order = find(orderId);
+      if (order.status === "COMPLETED" && order.requestIds.has(requestId)) return view(order);
+      if (order.status !== "APPROVED") {
+        throw new PayPalError({ outcome: "rejected", status: 422, issue: order.status === "COMPLETED" ? "ORDER_ALREADY_CAPTURED" : "ORDER_NOT_APPROVED", debugId: "fake", operation: "orders.capture" });
+      }
+      const capture: Capture = {
+        id: nextId("CAPTURE"),
+        status: "COMPLETED",
+        orderId,
+        reference: order.reference,
+        gross: order.amount,
+        fee: { cents: pool.feeCents, currency: order.amount.currency },
+        createdAt: now(),
+      };
+      captures.set(capture.id, capture);
+      order.captures.push(capture);
+      order.status = "COMPLETED";
+      order.requestIds.add(requestId);
+      return view(order);
+    },
+    async getCapture(captureId) {
+      fail("getCapture");
+      const capture = captures.get(captureId);
+      if (!capture) throw new PayPalError({ outcome: "rejected", status: 404, issue: "RESOURCE_NOT_FOUND", debugId: "fake", operation: "captures.get" });
+      return capture;
+    },
+    async verifyWebhook() {
+      fail("verifyWebhook");
+      return pool.signaturesValid;
+    },
+    approve(orderId) {
+      const order = find(orderId);
+      if (order.status === "CREATED") order.status = "APPROVED";
+    },
+    completedEvent(captureId, eventId = `WH-${captureId}`) {
+      const capture = captures.get(captureId);
+      if (!capture) throw new Error(`No capture ${captureId}`);
+      const body = JSON.stringify({
+        id: eventId,
+        event_type: "PAYMENT.CAPTURE.COMPLETED",
+        resource_type: "capture",
+        resource: {
+          id: capture.id,
+          status: capture.status,
+          custom_id: capture.reference === null ? undefined : encodeContributionReference(capture.reference),
+          amount: { currency_code: capture.gross.currency, value: "0.00" },
+        },
+      });
+      return {
+        body,
+        headers: {
+          "paypal-auth-algo": "SHA256withRSA",
+          "paypal-cert-url": "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-fake",
+          "paypal-transmission-id": `T-${eventId}`,
+          "paypal-transmission-sig": "c2lnbmF0dXJl",
+          "paypal-transmission-time": now().toISOString(),
+        },
+      };
+    },
+  };
+
+  function fail(method: keyof PayPalPool): void {
+    if (pool.failNext !== method) return;
+    pool.failNext = null;
+    throw new PayPalError({ outcome: "unavailable", status: 503, issue: null, debugId: "fake", operation: method });
+  }
+
+  return pool;
+}
