@@ -1233,7 +1233,7 @@
         "hint": "Selecciona una entrada para ver sus líneas contables."
       },
       "descriptions": {
-        "contribution": "Aporte mensual de {name}",
+        "contribution": "Aporte de {name}",
         "out_of_pocket": "Recibo de {name}: {category}",
         "bill_approved": "{payee}: factura aprobada",
         "payout_confirmed": "{payee}: pagado",

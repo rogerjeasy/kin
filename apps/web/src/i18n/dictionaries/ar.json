@@ -1233,7 +1233,7 @@
         "hint": "اختاروا قيدًا لعرض سطوره."
       },
       "descriptions": {
-        "contribution": "مساهمة {name} الشهرية",
+        "contribution": "مساهمة {name}",
         "out_of_pocket": "إيصال {name}: {category}",
         "bill_approved": "{payee}: الموافقة على الفاتورة",
         "payout_confirmed": "{payee}: دُفع",
