@@ -1,4 +1,4 @@
-import { optionalRecord, optionalText, parseJson, requiredText, asRecord } from "./json.ts";
+import { optionalRecord, optionalText, requiredText, asRecord } from "./json.ts";
 import { PayPalError } from "./paypal-error.ts";
 
 export type Fetch = (input: string, init: RequestInit) => Promise<Response>;
@@ -69,6 +69,7 @@ export function createPayPalClient(options: PayPalClientOptions): PayPalClient {
     for (let tryNumber = 1; tryNumber <= ATTEMPTS; tryNumber += 1) {
       if (tryNumber > 1) await options.sleep(FIRST_BACKOFF_MS * 2 ** (tryNumber - 2));
       let response: Response;
+      let text: string;
       try {
         response = await options.fetch(`${options.apiUrl}${request.path}`, {
           method: request.method,
@@ -76,16 +77,24 @@ export function createPayPalClient(options: PayPalClientOptions): PayPalClient {
           body: request.body,
           signal: AbortSignal.timeout(TIMEOUT_MS),
         });
+        // Reading the body is part of the attempt: the timeout can fire here too.
+        text = await response.text();
       } catch {
         options.log({ operation: request.operation, status: null, debugId: null, attempt: tryNumber });
         lastStatus = null;
         continue;
       }
-      const text = await response.text();
       lastStatus = response.status;
       lastDebugId = response.headers.get("paypal-debug-id");
       options.log({ operation: request.operation, status: response.status, debugId: lastDebugId, attempt: tryNumber });
-      if (response.ok) return text === "" ? {} : parseJson(text, request.operation);
+      if (response.ok) {
+        // A success Kin cannot read is not proof of anything: asked again with
+        // the same request ID, PayPal repeats its answer and does nothing twice.
+        if (text === "") return {};
+        const parsed = safeParse(text);
+        if (parsed !== null) return parsed;
+        continue;
+      }
       if (response.status !== 429 && response.status < 500) {
         const problem = optionalRecord(text === "" ? null : safeParse(text));
         throw new PayPalError({ outcome: "rejected", status: response.status, issue: issueOf(problem), debugId: lastDebugId, operation: request.operation });
