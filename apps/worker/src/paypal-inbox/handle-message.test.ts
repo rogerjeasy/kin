@@ -82,12 +82,31 @@ describe("the worker's PayPal inbox", () => {
     expect(await topUps(circle.circleId)).toHaveLength(1);
   });
 
-  it("keeps an event PayPal does not vouch for, marked rejected, and writes nothing", async () => {
+  it("stores nothing from an event PayPal does not vouch for, and writes nothing", async () => {
     const { circle, pool, deps, captureId } = await paid();
     pool.signaturesValid = false;
-    expect(await handleInboxMessage(deps, { kind: "webhook", delivery: pool.completedEvent(captureId) })).toEqual({ result: "rejected" });
+    const delivery = pool.completedEvent(captureId);
+    expect(await handleInboxMessage(deps, { kind: "webhook", delivery })).toEqual({
+      result: "rejected",
+      eventId: `WH-${captureId}`,
+      transmissionId: delivery.headers["paypal-transmission-id"],
+    });
     expect(await topUps(circle.circleId)).toEqual([]);
-    expect(await eventStates(circle.circleId)).toEqual([{ eventId: `WH-${captureId}`, state: "rejected" }]);
+    expect(await eventStates(circle.circleId)).toEqual([]);
+  });
+
+  it("cannot be blocked by a forged copy that arrives first carrying the genuine event's ID", async () => {
+    const { circle, pool, deps, captureId } = await paid();
+    const genuine = pool.completedEvent(captureId);
+    const decoy = await visitorWithCircle(db);
+    const forged = { ...genuine, body: genuine.body.replace(/kin1:[0-9a-f-]{36}:/, `kin1:${decoy.circleId}:`) };
+    pool.signaturesValid = false;
+    expect(await handleInboxMessage(deps, { kind: "webhook", delivery: forged })).toMatchObject({ result: "rejected" });
+    expect(await eventStates(decoy.circleId)).toEqual([]);
+
+    pool.signaturesValid = true;
+    expect(await handleInboxMessage(deps, { kind: "webhook", delivery: genuine })).toEqual({ result: "applied", circleId: circle.circleId, captures: ["recorded"] });
+    expect(await topUps(circle.circleId)).toHaveLength(1);
   });
 
   it("trusts the capture read back from PayPal, not the circle the event's body claims", async () => {

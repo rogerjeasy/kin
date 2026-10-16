@@ -610,20 +610,20 @@ sequenceDiagram
     WEB->>Q: the raw body and headers, grouped by circle
     WEB-->>PP: 200 OK once SQS holds it
     Q->>WK: deliver the delivery
-    WK->>DB: store raw body and headers, unique on event ID
     WK->>PP: verify the signature
+    WK->>DB: store raw body and headers, unique on event ID
     WK->>PP: GET the resource the event names
     PP-->>WK: current state of the resource
     WK->>DB: one transaction. write ledger entry, mark the event processed
 ```
 
-As built (decision 44), the web app does not write to Aurora: it holds no service role (decision 38). It hands the delivery, byte for byte, to the `kin-paypal-events.fifo` queue (`POST /api/paypal/webhook`), and the worker stores it in `paypal_events` before anything else reads it. SQS holds the delivery durably before PayPal hears 200, so nothing is lost between the two. The worker is `apps/worker` (`handleInboxMessage`); publishing domain events for notifications and narration comes with those features.
+As built (decision 44), the web app does not write to Aurora: it holds no service role (decision 38). It hands the delivery, byte for byte, to the `kin-paypal-events.fifo` queue (`POST /api/paypal/webhook`), and the worker verifies it with PayPal and then stores it in `paypal_events`. Nothing from a body PayPal has not vouched for is written anywhere, so a forged delivery cannot file an event ID that would make the genuine event look like a repeat. SQS holds the delivery durably before PayPal hears 200, so nothing is lost between the two. The worker is `apps/worker` (`handleInboxMessage`); publishing domain events for notifications and narration comes with those features.
 
 **Rules**
 
-- **Store first.** The raw body is kept before anything else, so no event is lost and the signature can be checked against the exact bytes received: first on the queue, then in `paypal_events`. Verification sends PayPal the event exactly as received, never parsed and re-encoded. An event ID already stored under another circle is not stored again, so a genuine event replayed with a different circle in its body changes nothing.
+- **Store first.** The raw body is kept before anything else, so no event is lost and the signature can be checked against the exact bytes received: on the queue before PayPal hears 200, then in `paypal_events` once verified. Verification sends PayPal the event exactly as received, never parsed and re-encoded. An event ID already stored under another circle is not stored again, so a genuine event replayed with a different circle in its body changes nothing.
 - **Answer quickly.** PayPal retries a delivery that does not return success, up to 25 times over three days. Kin returns success once the event is safely stored.
-- **Verify before applying.** An event that fails verification is kept for inspection and never applied.
+- **Verify before applying, and before storing.** An event that fails verification is never applied or stored; the worker logs its event ID and PayPal's transmission ID for inspection.
 - **Read the resource back.** Kin does not trust the event body for amounts or status. It fetches the resource from PayPal and uses that.
 - **Tolerate disorder.** Events can arrive late or out of order. State machines only move forward, so a stale event changes nothing.
 - **One circle at a time.** Events are queued in a group per circle, so they are processed in order for that circle.

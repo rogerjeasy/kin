@@ -14,7 +14,9 @@ export type InboxDeps = {
  * queue. A thrown error is not: the message returns and is tried again.
  */
 export type InboxOutcome =
-  | { readonly result: "unreadable" | "unplaced" | "duplicate" | "rejected" | "ignored" }
+  | { readonly result: "unreadable" | "unplaced" | "duplicate" | "ignored" }
+  /** PayPal did not vouch for it. Logged with its IDs for inspection, and stored nowhere. */
+  | { readonly result: "rejected"; readonly eventId: string; readonly transmissionId: string }
   | { readonly result: "applied"; readonly circleId: string; readonly captures: readonly CaptureOutcome[] }
   | { readonly result: "failed"; readonly circleId: string; readonly reason: string };
 
@@ -25,9 +27,12 @@ export async function handleInboxMessage(deps: InboxDeps, message: InboxMessage)
 }
 
 /**
- * A webhook delivery: stored raw first, verified with PayPal, and applied
- * from the resource read back from PayPal, never from the event's own body
- * (docs/architecture.md section 8.7).
+ * A webhook delivery: verified with PayPal first, then stored raw, then
+ * applied from the resource read back from PayPal, never from the event's own
+ * body (docs/architecture.md section 8.7). Nothing from an unverified body is
+ * written anywhere, so a forged delivery cannot file an event ID under a
+ * circle and make the genuine event look like a repeat. The delivery was
+ * already held durably by the queue before PayPal heard 200.
  */
 async function handleWebhook({ db, pool }: InboxDeps, delivery: WebhookDelivery): Promise<InboxOutcome> {
   let envelope;
@@ -36,6 +41,11 @@ async function handleWebhook({ db, pool }: InboxDeps, delivery: WebhookDelivery)
   } catch {
     return { result: "unreadable" };
   }
+  if (!(await pool.verifyWebhook(delivery))) {
+    return { result: "rejected", eventId: envelope.eventId, transmissionId: delivery.headers["paypal-transmission-id"] };
+  }
+  // PayPal signed the body, so the circle it names is the one Kin's server
+  // put on the order. The capture is still read back before any money moves.
   const circleId = envelope.reference?.circleId;
   if (circleId === undefined) return { result: "unplaced" };
 
@@ -52,10 +62,6 @@ async function handleWebhook({ db, pool }: InboxDeps, delivery: WebhookDelivery)
   if (stored === null) return { result: "duplicate" };
   if (stored.state === "processed" || stored.state === "rejected" || stored.state === "failed") return { result: "duplicate" };
 
-  if (!(await pool.verifyWebhook(delivery))) {
-    await asService(db, circleId, (tx) => settlePayPalEvent(tx, stored.id, "rejected"));
-    return { result: "rejected" };
-  }
   await asService(db, circleId, (tx) => settlePayPalEvent(tx, stored.id, "verified"));
 
   if (envelope.eventType !== "PAYMENT.CAPTURE.COMPLETED" || envelope.captureId === null) {
