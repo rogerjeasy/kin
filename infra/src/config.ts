@@ -35,6 +35,13 @@ export type InfraConfig = {
    * them.
    */
   readonly neighbourProjects: readonly string[];
+  /**
+   * The pool's PayPal sandbox app, or `null` to leave top-ups off. Neither
+   * value is secret: PayPal's client ID is meant for the browser, and the
+   * webhook ID only names the webhook. The client secret is in Secrets
+   * Manager (`paypal:store`). Without a webhook ID the worker is not deployed.
+   */
+  readonly paypal: { readonly clientId: string; readonly webhookId: string | null } | null;
 };
 
 export class InfraConfigError extends Error {
@@ -68,7 +75,16 @@ export function readConfig({ context, env }: Source): InfraConfig {
     githubDeploySubject: text(context("kin:githubDeploySubject"), "kin:githubDeploySubject"),
     neighbourPrincipalPatterns: texts(context("kin:neighbourPrincipalPatterns"), "kin:neighbourPrincipalPatterns"),
     neighbourProjects: texts(context("kin:neighbourProjects"), "kin:neighbourProjects"),
+    paypal: paypalApp(context("kin:paypal")),
   };
+}
+
+function paypalApp(value: unknown): InfraConfig["paypal"] {
+  const key = "kin:paypal";
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "object") throw new InfraConfigError(`${key} must be { "clientId": string, "webhookId": string | null }`);
+  const { clientId, webhookId } = value as Record<string, unknown>;
+  return { clientId: text(clientId, `${key}.clientId`), webhookId: webhookId === null || webhookId === undefined ? null : text(webhookId, `${key}.webhookId`) };
 }
 
 function account(value: unknown): string {

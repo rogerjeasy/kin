@@ -7,7 +7,7 @@ import type { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
 import type { InfraConfig } from "./config.ts";
-import { DATABASE_SETTINGS } from "./database-settings.ts";
+import { DATABASE_SETTINGS, PAYPAL_SETTINGS } from "./database-settings.ts";
 import { WEB_SETTINGS } from "./web-settings.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -73,7 +73,7 @@ export class WebStack extends Stack {
     const demoSessionKey = setting(DATABASE_SETTINGS.demoSessionKeyArn);
     const instance = new iam.Role(this, "Instance", {
       roleName: "kin-web-instance",
-      description: "What Kin's web app may reach in AWS: its two database passwords and the demo session key",
+      description: "What Kin's web app may reach in AWS: its database passwords, the demo session key, and PayPal's secret and inbox when top-ups are on",
       assumedBy: new iam.ServicePrincipal("tasks.apprunner.amazonaws.com"),
     });
     instance.addToPolicy(new iam.PolicyStatement({ actions: ["secretsmanager:GetSecretValue"], resources: [appSecret, provisionerSecret, demoSessionKey] }));
@@ -89,6 +89,28 @@ export class WebStack extends Stack {
       { name: "KIN_DATABASE_PROVISIONER_PASSWORD", value: provisionerSecret },
       { name: "KIN_DEMO_SESSION_KEY", value: demoSessionKey },
     ];
+
+    // Top-ups: the web opens and captures orders with the pool's PayPal app,
+    // and hands what it captured to the worker's queue. It may send to that
+    // queue and do nothing else with it.
+    if (config.paypal !== null) {
+      const paypalSecret = setting(PAYPAL_SETTINGS.secretArn);
+      instance.addToPolicy(new iam.PolicyStatement({ actions: ["secretsmanager:GetSecretValue"], resources: [paypalSecret] }));
+      instance.addToPolicy(new iam.PolicyStatement({ actions: ["sqs:SendMessage"], resources: [setting(PAYPAL_SETTINGS.inboxArn)] }));
+      instance.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ["kms:GenerateDataKey", "kms:Decrypt"],
+          resources: [setting(DATABASE_SETTINGS.keyArn)],
+          conditions: { StringEquals: { "kms:ViaService": `sqs.${this.region}.amazonaws.com` } },
+        }),
+      );
+      environment.push(
+        { name: "KIN_PAYPAL_CLIENT_ID", value: config.paypal.clientId },
+        { name: "KIN_PAYPAL_INBOX_URL", value: setting(PAYPAL_SETTINGS.inboxUrl) },
+        { name: "AWS_REGION", value: this.region },
+      );
+      secrets.push({ name: "KIN_PAYPAL_CLIENT_SECRET", value: paypalSecret });
+    }
 
     // Out through Kin's own network, where the database admits Kin's
     // services and the NAT gateway reaches Cognito.

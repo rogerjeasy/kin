@@ -15,7 +15,9 @@ import { denyNeighbours } from "./isolation.ts";
  * parent), so two workers never act on the same circle at once.
  */
 export const QUEUES = {
-  "paypal-events": { ordered: true, visibilityTimeout: Duration.seconds(60) },
+  // Long enough for the worker to wait out Aurora resuming from a pause (74
+  // seconds on 15 October 2026), so a message is not handed out twice meanwhile.
+  "paypal-events": { ordered: true, visibilityTimeout: Duration.seconds(180) },
   executions: { ordered: true, visibilityTimeout: Duration.seconds(120) },
   documents: { ordered: false, visibilityTimeout: Duration.minutes(5) },
   notifications: { ordered: false, visibilityTimeout: Duration.seconds(60) },

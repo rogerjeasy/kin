@@ -7,11 +7,22 @@ export const DATABASE_SETTINGS = {
   host: "kin-database-host",
   appSecretArn: "kin-database-app-secret-arn",
   provisionerSecretArn: "kin-database-provisioner-secret-arn",
+  /** Read by KinWorker only. The web app never holds the service role. */
+  serviceSecretArn: "kin-database-service-secret-arn",
   keyArn: "kin-database-key-arn",
   /** Not the database's, but read the same way: the key that signs demo sessions. */
   demoSessionKeyArn: "kin-web-demo-session-key-arn",
   servicesSubnets: "kin-services-subnets",
   servicesSecurityGroup: "kin-services-security-group",
+} as const;
+
+/** Where KinData leaves what the top-ups need, for KinWeb and KinWorker to read by name. */
+export const PAYPAL_SETTINGS = {
+  /** The pool app's client secret. `pnpm --filter @kin/infra run paypal:store` fills it. */
+  secretName: "kin/paypal/client-secret",
+  secretArn: "kin-paypal-client-secret-arn",
+  inboxUrl: "kin-paypal-inbox-url",
+  inboxArn: "kin-paypal-inbox-arn",
 } as const;
 
 /** The roles Kin connects as (packages/db/migrations/0001_security.sql). */

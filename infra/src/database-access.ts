@@ -119,6 +119,7 @@ export class DatabaseAccess extends Construct {
     value("Host", DATABASE_SETTINGS.host, cluster.clusterEndpoint.hostname);
     value("AppSecret", DATABASE_SETTINGS.appSecretArn, this.roleSecrets.app.secretArn);
     value("ProvisionerSecret", DATABASE_SETTINGS.provisionerSecretArn, this.roleSecrets.provisioner.secretArn);
+    value("ServiceSecret", DATABASE_SETTINGS.serviceSecretArn, this.roleSecrets.service.secretArn);
     value("Key", DATABASE_SETTINGS.keyArn, key.keyArn);
     value("SecurityGroup", DATABASE_SETTINGS.servicesSecurityGroup, servicesSecurityGroup.securityGroupId);
     new ssm.StringListParameter(this, "Subnets", {

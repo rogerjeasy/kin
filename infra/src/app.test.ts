@@ -22,6 +22,7 @@ const config: InfraConfig = {
   githubDeploySubject: "repo:owner@1/kin@2:ref:refs/heads/main",
   neighbourPrincipalPatterns: ["role/wick-*", "user/carecircle-*"],
   neighbourProjects: ["wick", "carecircle"],
+  paypal: { clientId: "sandbox-client-id", webhookId: "WH-SANDBOX" },
 };
 
 // The same feature flags as a real synth, so the tests see what is deployed.
@@ -37,7 +38,12 @@ const network = Template.fromStack(stacks.network);
 const ci = Template.fromStack(stacks.ci);
 const ops = Template.fromStack(stacks.ops);
 const web = Template.fromStack(stacks.web);
-const all = [data, network, ci, ops, web];
+if (stacks.worker === null) throw new Error("The test configuration has a PayPal app, so KinWorker exists");
+const worker = Template.fromStack(stacks.worker);
+const all = [data, network, ci, ops, web, worker];
+// The web app as it is before top-ups are configured. Its settings and
+// permissions are pinned here; what top-ups add is pinned under "top-ups".
+const webBefore = Template.fromStack(buildKin(new App({ context: testContext }), { ...config, paypal: null }).web);
 
 const neighbourDeny = expect.objectContaining({
   Effect: "Deny",
@@ -102,10 +108,10 @@ describe("Kin's place in the shared account", () => {
       ...policyStatements(data, "AWS::KMS::Key", "KeyPolicy"),
     ];
 
-    // Two buckets, ten queues, six secrets (the database admin's, the Gmail
-    // app password, the three database roles' passwords and the demo
-    // session key) and the key.
-    expect(statements).toHaveLength(2 + 10 + 6 + 1);
+    // Two buckets, ten queues, seven secrets (the database admin's, the Gmail
+    // app password, the three database roles' passwords, the demo session
+    // key and the PayPal client secret) and the key.
+    expect(statements).toHaveLength(2 + 10 + 7 + 1);
     for (const statement of statements) {
       expect(statement).toEqual(expect.arrayContaining([neighbourDeny]));
     }
@@ -407,7 +413,7 @@ describe("the web app", () => {
   });
 
   it("is told where sign-in and the database live, and has no secret in its settings", () => {
-    const [service] = Object.values(web.findResources("AWS::AppRunner::Service"));
+    const [service] = Object.values(webBefore.findResources("AWS::AppRunner::Service"));
     const image = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"];
     const variables = image["RuntimeEnvironmentVariables"] as { Name: string; Value: unknown }[];
 
@@ -426,14 +432,14 @@ describe("the web app", () => {
   });
 
   it("gets only the person's and the provisioner's database passwords and the demo key, from Secrets Manager", () => {
-    const [service] = Object.values(web.findResources("AWS::AppRunner::Service"));
+    const [service] = Object.values(webBefore.findResources("AWS::AppRunner::Service"));
     const secrets = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"]["RuntimeEnvironmentSecrets"] as { Name: string; Value: unknown }[];
 
     expect(secrets.map((secret) => secret.Name).toSorted()).toEqual(["KIN_DATABASE_APP_PASSWORD", "KIN_DATABASE_PROVISIONER_PASSWORD", "KIN_DEMO_SESSION_KEY"]);
     for (const name of ["kin-database-app-secret-arn", "kin-database-provisioner-secret-arn", "kin-web-demo-session-key-arn"]) {
       data.hasResourceProperties("AWS::SSM::Parameter", { Name: name, Type: "String" });
     }
-    expect(JSON.stringify(web.toJSON())).not.toMatch(/ADMIN|SERVICE_PASSWORD|kin-database-service/);
+    for (const template of [webBefore, web]) expect(JSON.stringify(template.toJSON())).not.toMatch(/ADMIN|SERVICE_PASSWORD|kin-database-service/);
   });
 
   it("reaches the database through Kin's services subnets, in the group the database admits", () => {
@@ -470,7 +476,7 @@ describe("the web app", () => {
   });
 
   it("lets App Runner only pull the image, and the app only read its own three secrets", () => {
-    const statements = Object.values(web.findResources("AWS::IAM::Policy")).flatMap(
+    const statements = Object.values(webBefore.findResources("AWS::IAM::Policy")).flatMap(
       (policy) => policy["Properties"]["PolicyDocument"]["Statement"] as { Action: string | string[]; Resource: unknown; Condition?: unknown }[],
     );
     const actions = statements.flatMap((statement) => [statement.Action].flat());
@@ -665,7 +671,7 @@ describe("the deployment boundary", () => {
 
   it("leaves room for every role Kin's stacks create", () => {
     for (const stack of Object.values(stacks)) {
-      expect(stack.stackName).toMatch(/^Kin/);
+      expect(stack?.stackName).toMatch(/^Kin/);
     }
     for (const template of all) {
       for (const role of Object.values(template.findResources("AWS::IAM::Role"))) {
@@ -690,5 +696,66 @@ describe("cost", () => {
 
   it("runs one NAT gateway, not one per zone", () => {
     network.resourceCountIs("AWS::EC2::NatGateway", 1);
+  });
+});
+
+describe("top-ups", () => {
+  const statementsOf = (template: Template) => Object.values(template.findResources("AWS::IAM::Policy")).flatMap((policy) => policy["Properties"]["PolicyDocument"]["Statement"] as { Action: string | string[] }[]);
+  const actionsOf = (template: Template) => statementsOf(template).flatMap((statement) => [statement.Action].flat());
+
+  it("let the web app send to the PayPal inbox and nothing more, with the client ID beside the client secret", () => {
+    expect(actionsOf(web).filter((action) => !action.startsWith("ecr:")).toSorted()).toEqual([
+      "kms:Decrypt",
+      "kms:Decrypt",
+      "kms:GenerateDataKey",
+      "secretsmanager:GetSecretValue",
+      "sqs:SendMessage",
+    ]);
+    // Its three secrets and PayPal's, in one statement.
+    const read = statementsOf(web).find((statement) => statement.Action === "secretsmanager:GetSecretValue") as { Resource?: unknown[] } | undefined;
+    expect(read?.Resource).toHaveLength(4);
+    const [service] = Object.values(web.findResources("AWS::AppRunner::Service"));
+    const image = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"];
+    const added = (list: { Name: string }[], before: { Name: string }[]) => list.map((each) => each.Name).filter((name) => !before.some((old) => old.Name === name)).toSorted();
+    const [old] = Object.values(webBefore.findResources("AWS::AppRunner::Service"));
+    const oldImage = old?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"];
+    expect(added(image["RuntimeEnvironmentVariables"], oldImage["RuntimeEnvironmentVariables"])).toEqual(["AWS_REGION", "KIN_PAYPAL_CLIENT_ID", "KIN_PAYPAL_INBOX_URL"]);
+    expect(image["RuntimeEnvironmentVariables"]).toContainEqual({ Name: "KIN_PAYPAL_CLIENT_ID", Value: "sandbox-client-id" });
+    expect(added(image["RuntimeEnvironmentSecrets"], oldImage["RuntimeEnvironmentSecrets"])).toEqual(["KIN_PAYPAL_CLIENT_SECRET"]);
+    const sqsKey = statementsOf(web).find((statement) => [statement.Action].flat().includes("kms:GenerateDataKey")) as { Condition?: unknown } | undefined;
+    expect(JSON.stringify(sqsKey?.Condition)).toContain("sqs.");
+  });
+
+  it("run the worker as one small Graviton task with no way in, taking messages off the inbox only", () => {
+    worker.hasResourceProperties("AWS::ECS::TaskDefinition", { Cpu: "256", Memory: "512", RuntimePlatform: { CpuArchitecture: "ARM64", OperatingSystemFamily: "LINUX" } });
+    worker.hasResourceProperties("AWS::ECS::Service", {
+      DesiredCount: 1,
+      DeploymentConfiguration: Match.objectLike({ MinimumHealthyPercent: 0, MaximumPercent: 100 }),
+      NetworkConfiguration: { AwsvpcConfiguration: Match.objectLike({ AssignPublicIp: "DISABLED" }) },
+    });
+    worker.resourceCountIs("AWS::ElasticLoadBalancingV2::LoadBalancer", 0);
+    worker.resourceCountIs("AWS::Lambda::Function", 0);
+    expect(actionsOf(worker).filter((action) => action.startsWith("sqs:")).toSorted()).toEqual(["sqs:ChangeMessageVisibility", "sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage"]);
+  });
+
+  it("give the service role's password to the worker alone", () => {
+    const container = JSON.stringify(worker.findResources("AWS::ECS::TaskDefinition"));
+    expect(container).toContain("KIN_DATABASE_SERVICE_PASSWORD");
+    expect(container).toContain("KIN_PAYPAL_CLIENT_SECRET");
+    expect(container).toContain("WH-SANDBOX");
+    expect(container).not.toMatch(/KIN_DATABASE_(ADMIN|APP|PROVISIONER)_PASSWORD/);
+  });
+
+  it("wait out a paused Aurora before the inbox hands a message out again", () => {
+    data.hasResourceProperties("AWS::SQS::Queue", { QueueName: "kin-paypal-events.fifo", VisibilityTimeout: 180 });
+  });
+
+  it("stay off until PayPal is configured, and leave out the worker until there is a webhook", () => {
+    const off = buildKin(new App({ context: testContext }), { ...config, paypal: null });
+    expect(off.worker).toBeNull();
+    expect(actionsOf(Template.fromStack(off.web)).some((action) => action.startsWith("sqs:"))).toBe(false);
+    const noWebhook = buildKin(new App({ context: testContext }), { ...config, paypal: { clientId: "sandbox-client-id", webhookId: null } });
+    expect(noWebhook.worker).toBeNull();
+    expect(actionsOf(Template.fromStack(noWebhook.web))).toContain("sqs:SendMessage");
   });
 });

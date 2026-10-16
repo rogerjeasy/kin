@@ -45,6 +45,14 @@ describe("readConfig", () => {
     expect(read({ "kin:senderEmail": "c@example.com" }).senderEmail).toBe("c@example.com");
   });
 
+  it("leaves top-ups off until the pool's PayPal app is configured", () => {
+    expect(read().paypal).toBeNull();
+    expect(read({ "kin:paypal": { clientId: "client", webhookId: null } }).paypal).toEqual({ clientId: "client", webhookId: null });
+    expect(read({ "kin:paypal": { clientId: "client", webhookId: "WH-1" } }).paypal).toEqual({ clientId: "client", webhookId: "WH-1" });
+    expect(() => read({ "kin:paypal": { clientId: "" } })).toThrow(InfraConfigError);
+    expect(() => read({ "kin:paypal": "client" })).toThrow(InfraConfigError);
+  });
+
   it("refuses a sender that is not an email address", () => {
     expect(() => read({}, { ...env, KIN_SENDER_EMAIL: "kin" })).toThrow(InfraConfigError);
   });
