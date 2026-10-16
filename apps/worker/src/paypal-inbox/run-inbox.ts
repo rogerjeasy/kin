@@ -1,4 +1,4 @@
-import { inboxGroup, type Inbox } from "@kin/paypal";
+import { PayPalError, inboxGroup, type Inbox } from "@kin/paypal";
 
 import { handleInboxMessage, type InboxDeps, type InboxOutcome } from "./handle-message.ts";
 
@@ -39,10 +39,11 @@ function lineFor(kind: string, outcome: InboxOutcome) {
   return { level, message: `inbox.${outcome.result}`, kind, ...outcome };
 }
 
-// The error's kind and PayPal's debug ID, never a body, token or personal detail.
+// The error's kind and, for PayPal's errors, what PayPal said and its debug
+// ID. Never a message from elsewhere: a database error's message can quote
+// the query's values, such as a stored webhook body (AGENTS.md section 6).
 function describe(error: unknown): Record<string, unknown> {
   if (!(error instanceof Error)) return { name: "unknown" };
-  const { name, message } = error;
-  const debugId = (error as { debugId?: unknown }).debugId;
-  return { name, message, ...(typeof debugId === "string" ? { debugId } : {}) };
+  if (!(error instanceof PayPalError)) return { name: error.name };
+  return { name: error.name, outcome: error.outcome, status: error.status, issue: error.issue, debugId: error.debugId };
 }
