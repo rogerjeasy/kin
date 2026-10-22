@@ -6,14 +6,16 @@ import type { ApprovalMethod, ClaimVerdict, DocumentKind } from "../values.ts";
  * Rose's circle from docs/project-description.md section 5, as the rows a
  * real circle would hold on the evening of 30 October 2026. The ledger and the
  * agreement are the money core's own example (`rosesMonth`); everything here
- * sits around them. Every figure is simulated and labelled so.
+ * sits around them. Every figure is simulated and labelled so. Each visitor's
+ * copy is moved to the moment they press the Demo button (`demoTime`), so the
+ * dates written here are the template's, not the ones a visitor sees.
  */
 
 export const ROSES_CIRCLE = {
   name: "Rose's circle",
   timezone: "America/New_York",
   currency: rosesMonth.ledger.currency,
-  /** The demo clock: Rose's month is ready to close. */
+  /** The template's clock: Rose's month is ready to close. Every date here is written around it. */
   clockAt: new Date("2026-10-30T18:00:00Z"),
   period: rosesMonth.period,
   /** The seat a visitor takes: Elena, the organizer. */

@@ -32,7 +32,7 @@ describe("recording a top-up PayPal confirmed", () => {
 
     const after = await ledgerOf(circle.circleId);
     const entry = after.entries.find((each) => each.source.id === paid.captureId);
-    // Rose's circle keeps Chicago time: 03:30 UTC on 1 November is still 31 October there.
+    // Rose's circle keeps New York time: 03:30 UTC on 1 November is still 31 October there.
     expect(entry).toMatchObject({ kind: "contribution", occurredOn: "2026-10-31", period: "2026-10", simulated: false, source: { type: "paypal_event" } });
     const marcus = memberAccount(circle.members.marcus);
     expect(accountBalance(after, marcus) - accountBalance(before, marcus)).toBe(2500);

@@ -6,6 +6,7 @@ import english from "../src/i18n/dictionaries/en.json" with { type: "json" };
 import { fill } from "../src/i18n/template";
 import { openAccountMenu } from "./support/account-menu";
 import { seatAs, startDemo } from "./support/demo";
+import { demoDates } from "./support/demo-dates";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
 import { laptop, phone, viewports } from "./support/viewports";
 
@@ -188,12 +189,13 @@ test.describe("the circle and its record in the demo", () => {
     const download = page.waitForEvent("download");
     await page.getByRole("link", { name: dashboard.record.download }).click();
     const file = await download;
-    expect(file.suggestedFilename()).toBe("kin-record-2026-10.csv");
+    const dates = demoDates();
+    expect(file.suggestedFilename()).toBe(`kin-record-${dates.period}.csv`);
     const response = await page.request.get("/en/dashboard/record/export");
     const lines = (await response.text()).trim().split("\r\n");
     expect(lines[0]).toBe("Date,Entry,Kind,Account,Debit,Credit,Simulated");
     expect(lines.slice(1).every((line) => line.endsWith(",yes"))).toBe(true);
-    expect(lines).toContain("2026-10-01,Marcus’s contribution,Contribution,Pool cash,409.13,,yes");
+    expect(lines).toContain(`${dates.day("2026-10-01")},Marcus’s contribution,Contribution,Pool cash,409.13,,yes`);
   });
 
   test("the record is a grid that filters by kind and shows the selected entry's balanced lines", async ({ page }) => {
@@ -223,7 +225,7 @@ test.describe("the circle and its record in the demo", () => {
   test("the fairness screen shows the settlement the money core planned", async ({ page }) => {
     await startDemo(page);
     await page.goto("/dashboard/fairness");
-    const settlement = page.getByRole("region", { name: fill(dashboard.fairness.settlement.title, { month: "October 2026" }) });
+    const settlement = page.getByRole("region", { name: fill(dashboard.fairness.settlement.title, { month: demoDates().monthName }) });
     await expect(settlement).toContainText(fill(dashboard.fairness.settlement.payout, { name: "Elena" }));
     await expect(settlement).toContainText("$126.00");
     await expect(settlement).toContainText("$166.00");

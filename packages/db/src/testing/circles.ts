@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 
 import type { Database } from "../connection.ts";
 import { provisionDemoCircle, type ProvisionedCircle } from "../demo/provision.ts";
+import { ROSES_CIRCLE } from "../demo/roses-circle.ts";
 import { createDemoVisitor, recordSignIn } from "../people.ts";
 import { members } from "../schema/index.ts";
 import { asPerson, asService } from "../scope.ts";
@@ -18,10 +19,14 @@ export async function signedIn(app: Database, name = "Visitor", email?: string):
 
 export type VisitorCircle = ProvisionedCircle & { readonly userId: string };
 
-/** A demo visitor and the demo circle provisioned for them, seated as the organizer. */
-export async function visitorWithCircle(db: TestDatabases): Promise<VisitorCircle> {
+/**
+ * A demo visitor and the demo circle provisioned for them, seated as the
+ * organizer. Pressed at the template's own clock unless `now` says otherwise,
+ * so the tests' dates never depend on the day they run.
+ */
+export async function visitorWithCircle(db: TestDatabases, now: Date = ROSES_CIRCLE.clockAt): Promise<VisitorCircle> {
   const userId = await createDemoVisitor(db.app);
-  return { ...(await provisionDemoCircle(db.provisioner, userId)), userId };
+  return { ...(await provisionDemoCircle(db.provisioner, userId, now)), userId };
 }
 
 /** Seats another demo visitor in an existing member's seat of a demo circle. */
