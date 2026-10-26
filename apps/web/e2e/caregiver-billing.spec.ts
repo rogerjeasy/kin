@@ -42,7 +42,7 @@ for (const viewport of [...viewports, { name: "narrow", width: 320, height: 740 
       await form.getByRole("button", { name: "Review bill" }).click();
       await expect(form).toContainText("$88.00");
       await expectNoHorizontalOverflow(page);
-      if (viewport.name === "phone" || viewport.name === "laptop") await page.screenshot({ path: `/private/tmp/kin-caregiver-bill-${viewport.name}.png`, fullPage: true });
+      if (viewport.name === "phone" || viewport.name === "laptop") await page.screenshot({ path: test.info().outputPath(`caregiver-bill-${viewport.name}.png`), fullPage: true });
       await form.getByRole("button", { name: "Submit bill" }).click();
       await expect(page.getByRole("status").filter({ hasText: "Bill submitted" })).toBeVisible();
       await page.reload();
