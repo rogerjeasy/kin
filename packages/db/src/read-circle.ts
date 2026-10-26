@@ -1,4 +1,4 @@
-import type { Agreement, CircleRole, Payee } from "@kin/domain";
+import { calculateCaregiverBill, type Agreement, type CircleRole, type Payee } from "@kin/domain";
 import { and, asc, desc, eq } from "drizzle-orm";
 
 import type {
@@ -136,6 +136,8 @@ async function readPayees(tx: Transaction, circleId: string, roleOf: (memberId: 
       id: row.id,
       name: row.name,
       category: row.category,
+      caregiverRateCentsPerHour: row.caregiverRateCentsPerHour,
+      receiver: maskEmail(row.paypalReceiver),
       payee: {
         status: row.status,
         member: row.memberId === null ? null : { memberId: row.memberId, role: roleOf(row.memberId) },
@@ -143,6 +145,13 @@ async function readPayees(tx: Transaction, circleId: string, roleOf: (memberId: 
       },
     };
   });
+}
+
+/** `amara@example.com` reads as `a••••@example.com`. */
+function maskEmail(email: string | null): string | null {
+  if (email === null) return null;
+  const at = email.lastIndexOf("@");
+  return at < 1 ? "••••" : `${email.slice(0, 1)}••••${email.slice(at)}`;
 }
 
 async function readProposals(tx: Transaction, circleId: string): Promise<ProposalRecord[]> {
@@ -188,11 +197,19 @@ async function readBills(tx: Transaction, circleId: string) {
     id: row.id,
     payeeId: row.payeeId,
     amountCents: row.amountCents,
+    caregiverDetails: caregiverDetails(row),
     receivedOn: row.receivedOn,
     dueOn: row.dueOn,
     state: row.state,
     documentId: row.documentId,
   }));
+}
+
+function caregiverDetails(row: { caregiverDetails: unknown; amountCents: number }) {
+  if (row.caregiverDetails === null) return null;
+  const bill = calculateCaregiverBill(row.caregiverDetails);
+  if (bill.cents !== row.amountCents) throw new Error("Stored caregiver bill does not match its service evidence");
+  return bill.details;
 }
 
 async function readExpectedBills(tx: Transaction, circleId: string) {

@@ -60,6 +60,18 @@ describe("the sign-in address", () => {
     for (const value of [null, "", "sign-in", "SIGN-UP", "/signup"]) expect(parseAuthScreen(value)).toBe("sign-in");
   });
 
+  it("asks for a fresh sign-in with an authenticator app for a step-up, and nothing more otherwise", () => {
+    const plain = new URL(authorizeUrl(config, secrets, "en", "sign-in"));
+    const stepUp = new URL(authorizeUrl(config, secrets, "en", "sign-in", true));
+    expect(["prompt", "max_age", "acr_values"].some((key) => plain.searchParams.has(key))).toBe(false);
+    expect(Object.fromEntries(stepUp.searchParams)).toEqual({
+      ...Object.fromEntries(plain.searchParams),
+      prompt: "login",
+      max_age: "0",
+      acr_values: "urn:cognito:loa:4",
+    });
+  });
+
   it("never sends the verifier itself", () => {
     expect(authorizeUrl(config, secrets, "en", "sign-in")).not.toContain(secrets.verifier);
   });

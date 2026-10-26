@@ -16,6 +16,17 @@ export type Session = {
   readonly emailVerified: boolean;
   readonly name: string;
   readonly accountTypes: readonly AccountType[];
+  /** How and when the person last proved who they are, as the ID token says. */
+  readonly authentication: Authentication;
+};
+
+export type Authentication = {
+  /** The `auth_time` claim: when the person last signed in, not when tokens were refreshed. */
+  readonly at: Date | null;
+  /** The `amr` claim: the methods they completed, such as `pwd`, `otp` and `mfa`. */
+  readonly methods: readonly string[];
+  /** The ID token's own ID, kept as evidence of a fresh check. */
+  readonly tokenId: string | null;
 };
 
 export type SessionTokens = { readonly accessToken: string; readonly idToken: string };
@@ -98,12 +109,24 @@ export function createSessionVerifier(config: AuthConfig, fetcher: Fetch = fetch
           emailVerified,
           name: typeof name === "string" && name.trim() !== "" ? name.trim() : email,
           accountTypes: accountTypesOf(accessClaims["cognito:groups"]),
+          authentication: authenticationOf(idClaims),
         };
       } catch (error) {
         if (isRejectedToken(error)) return null;
         throw error;
       }
     },
+  };
+}
+
+function authenticationOf(claims: Record<string, unknown>): Authentication {
+  const authTime = claims["auth_time"];
+  const methods = claims["amr"];
+  const tokenId = claims["jti"];
+  return {
+    at: typeof authTime === "number" && Number.isSafeInteger(authTime) && authTime > 0 ? new Date(authTime * 1000) : null,
+    methods: Array.isArray(methods) ? methods.filter((method): method is string => typeof method === "string") : [],
+    tokenId: typeof tokenId === "string" && tokenId !== "" ? tokenId : null,
   };
 }
 

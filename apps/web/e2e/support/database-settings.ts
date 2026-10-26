@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 
 /** Where the end-to-end database listens, and where it reports that it is ready. */
-export const E2E_DATABASE = { port: 54339, healthPort: 3102 } as const;
+export const E2E_DATABASE = { port: 54339, healthPort: 3102, envKey: "KIN_E2E_DATABASE" } as const;
 
 const secret = () => randomBytes(18).toString("base64url");
 

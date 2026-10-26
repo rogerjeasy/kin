@@ -3,6 +3,7 @@ import type {
   ApprovalPlan,
   BillState,
   CircleRole,
+  CaregiverBillDetails,
   Ledger,
   MemberStatus,
   ParentLevel,
@@ -81,6 +82,9 @@ export type PayeeRecord = {
   readonly id: string;
   readonly name: string;
   readonly category: string;
+  readonly caregiverRateCentsPerHour: number | null;
+  /** Where PayPal sends their money, masked: screens show that one is recorded, never the full address. */
+  readonly receiver: string | null;
   /** The payee as the approval engine reads it. */
   readonly payee: Payee;
 };
@@ -119,6 +123,7 @@ export type BillRecord = {
   readonly id: string;
   readonly payeeId: string;
   readonly amountCents: number;
+  readonly caregiverDetails: CaregiverBillDetails | null;
   readonly receivedOn: string;
   readonly dueOn: string | null;
   readonly state: BillState;

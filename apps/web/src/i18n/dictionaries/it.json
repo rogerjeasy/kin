@@ -1091,6 +1091,10 @@
         "settlement": {
           "title": "Conguaglio di {month} per {name}",
           "text": "In base al calcolo del mese fatto da Kin. La pagina Equità spiega perché."
+        },
+        "caregiver_bill": {
+          "title": "Fattura di {name} per le visite svolte",
+          "text": "I giorni di servizio e la tariffa concordata sono nella pagina Fatture. Il pagamento attende ogni sì richiesto dall’accordo."
         }
       },
       "raisedBy": "Proposto da {name}, {date}",
@@ -1123,12 +1127,16 @@
         "title": "Deciso",
         "text": "Le proposte su cui la cerchia ha deciso. Ogni risposta resta con chi l’ha data, come e quando.",
         "states": {
-          "approved": "Approvato · il pagamento parte con i bonifici PayPal, il prossimo passo",
+          "approved": "Approvata · Kin la paga con PayPal",
           "rejected": "Rifiutato · non si paga nulla",
-          "expired": "Scaduto · non si paga nulla"
+          "expired": "Scaduto · non si paga nulla",
+          "executing": "Approvata · in pagamento con PayPal",
+          "settled": "Approvata · pagata, come confermato da PayPal",
+          "failed": "Approvata · PayPal non l’ha pagata e l’organizzatrice è avvisata",
+          "cancelled": "Annullata · non si paga nulla"
         }
       },
-      "realLocked": "Rispondere a un pagamento vero richiede una nuova verifica che sei tu. Si aprirà con i pagamenti."
+      "freshCheckNote": "Approvare denaro reale ti chiede di accedere di nuovo con la tua app di autenticazione."
     },
     "bills": {
       "title": "Bollette",
@@ -1403,11 +1411,11 @@
     },
     "notices": {
       "answered": "La tua risposta è registrata. La proposta aspetta gli altri sì che le servono.",
-      "approved": "Approvato. Il pagamento parte con i bonifici PayPal, il prossimo passo di Kin.",
+      "approved": "Approvato. Kin lo paga con PayPal e lo registra quando PayPal lo conferma.",
       "rejected": "Rifiutato. Non si pagherà nulla.",
       "closed": "Su questa proposta si è già deciso.",
       "refused": "Il tuo ruolo non può farlo in questa cerchia.",
-      "freshCheck": "Approvare un pagamento vero richiede una nuova verifica che sei tu. Si aprirà con i pagamenti.",
+      "freshCheck": "Approvare un pagamento reale richiede un nuovo accesso con la tua app di autenticazione. Usa il pulsante Approva.",
       "paused": "In pausa. Per 24 ore nessun pagamento viene approvato, e tutti vengono avvisati.",
       "resumed": "La pausa è stata tolta.",
       "invited": "Invito registrato. La persona entrerà accedendo a Kin con quell’indirizzo.",
@@ -1416,7 +1424,9 @@
       "restarted": "Hai una nuova copia della cerchia di Rose.",
       "circleCreated": "La tua cerchia è pronta. Invita la famiglia dalla schermata Cerchia.",
       "invalidCircle": "Compila ogni campo per creare la cerchia.",
-      "dismiss": "Chiudi"
+      "dismiss": "Chiudi",
+      "stepUpMissing": "Il tuo sì non è stato registrato: quell’accesso non aveva un secondo fattore. Configura un’app di autenticazione per il tuo account Kin e riprova.",
+      "stepUpStale": "Il tuo sì non è stato registrato: quell’accesso non era recente. Riprova."
     },
     "empty": {
       "attention": "Al momento nulla aspetta un sì.",
@@ -1434,6 +1444,89 @@
       "record": "Il registro è vuoto. Ogni movimento di denaro confermato comparirà qui, in ordine.",
       "agreement": "Nessun accordo ancora. Quote, tariffa delle cure e soglie di approvazione si fissano quando la famiglia le concorda.",
       "payees": "Nessun beneficiario ancora. Le aziende e chi assiste che la cerchia paga compaiono qui appena vengono aggiunti."
+    },
+    "caregiverBilling": {
+      "setupTitle": "Tariffe degli assistenti",
+      "setupText": "Registra la tariffa concordata. Le fatture esistenti mantengono la tariffa originale.",
+      "name": "Nome del beneficiario",
+      "payee": "Beneficiario dell’assistente",
+      "rate": "Tariffa oraria",
+      "save": "Salva tariffa",
+      "saving": "Salvataggio…",
+      "saved": "Tariffa salvata",
+      "formTitle": "Fattura le tue visite",
+      "formText": "Una riga per giorno, raggruppando tutte le visite. Controlla i dettagli prima dell’invio.",
+      "missingRate": "Chiedi all’organizzatore di registrare la tua tariffa oraria prima di fatturare.",
+      "date": "Data del servizio",
+      "hours": "Ore",
+      "minutes": "Minuti",
+      "addVisit": "Aggiungi giorno",
+      "removeVisit": "Rimuovi giorno",
+      "review": "Controlla fattura",
+      "reviewTitle": "Controlla la tua fattura",
+      "change": "Modifica visite",
+      "submit": "Invia fattura",
+      "sending": "Attendi…",
+      "submitted": "Fattura inviata alla famiglia per la verifica. Nessun pagamento effettuato.",
+      "submittedTitle": "Fatture assistenziali inviate",
+      "rateLine": "{rate} all’ora",
+      "duration": "{minutes} min",
+      "total": "Totale",
+      "simulated": "Fattura simulata",
+      "errors": {
+        "invalid": "Controlla le date e i numeri interi di ore e minuti.",
+        "date": "Inserisci una data di servizio valida.",
+        "future": "Puoi fatturare solo giorni di servizio già completati.",
+        "duplicate_date": "Raggruppa le visite dello stesso giorno in una riga.",
+        "rate": "Inserisci una tariffa oraria positiva valida.",
+        "amount": "Controlla tariffa e visite: il totale non può essere calcolato in sicurezza.",
+        "refused": "Non puoi eseguire questa azione in questo gruppo.",
+        "missing_rate": "La tua tariffa oraria non è ancora registrata.",
+        "rate_changed": "La tariffa è cambiata. Modifica le visite e controlla di nuovo.",
+        "duplicate": "Questo giorno è già fatturato. Correggi le visite.",
+        "key_reused": "Questo invio appartiene a una fattura diversa. Controlla di nuovo.",
+        "unavailable": "Salvataggio non riuscito. Le visite sono conservate. Riprova.",
+        "not_waiting": "Questa fattura è già stata inviata o rifiutata. Ricarica per vedere a che punto è.",
+        "above_ceiling": "Questa fattura supera il limite dell’accordo per un singolo pagamento. Parlane con l’organizzatrice.",
+        "paused": "Il cerchio è in pausa. Inviala quando la pausa finisce.",
+        "no_agreement": "Il cerchio ha bisogno di un accordo prima di approvare fatture.",
+        "receiver": "Inserisci l’indirizzo email PayPal della badante.",
+        "payment_in_progress": "È in corso un pagamento a questa badante. Cambia l’indirizzo quando è concluso."
+      },
+      "states": {
+        "received": "In attesa della famiglia",
+        "extracted": "Dettagli registrati",
+        "needs_review": "Da verificare",
+        "ready": "Pronta per la verifica",
+        "proposed": "In attesa di approvazione",
+        "paid": "Pagata",
+        "rejected": "Rifiutata",
+        "duplicate": "Duplicata"
+      },
+      "viewEarlier": "Vedi la fattura precedente",
+      "choosePayee": "Scegli un beneficiario",
+      "reviewText": "Controlla i giorni e la tariffa. L’invio crea una proposta di pagamento da approvare in famiglia; per ora non si paga nulla.",
+      "sendForApproval": "Invia per l’approvazione",
+      "decline": "Rifiuta la fattura",
+      "declineConfirm": "Rifiutare questa fattura? La badante può inviarne una corretta.",
+      "declineYes": "Sì, rifiuta",
+      "declineKeep": "Tienila",
+      "followApproval": "Seguila in Approvazioni",
+      "proposalStates": {
+        "proposed": "Proposta",
+        "pending_approval": "In attesa dell’approvazione della famiglia",
+        "approved": "Approvata · il pagamento segue",
+        "executing": "In pagamento con PayPal",
+        "settled": "Pagata",
+        "failed": "Pagamento non riuscito · l’organizzatrice è avvisata",
+        "rejected": "Rifiutata dalla famiglia",
+        "expired": "Scaduta senza approvazione",
+        "cancelled": "Annullata"
+      },
+      "receiver": "Email PayPal per i pagamenti",
+      "receiverNone": "Nessuna registrata. I pagamenti attendono finché non c’è.",
+      "receiverRecorded": "I pagamenti vanno a {address}. Inserisci un nuovo indirizzo per cambiarlo.",
+      "receiverPlaceholder": "nome@esempio.it"
     }
   }
 }

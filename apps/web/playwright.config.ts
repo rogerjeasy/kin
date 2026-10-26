@@ -9,8 +9,11 @@ import { SIGNED_IN_STATE } from "./e2e/support/signed-in-state";
 const port = 3100;
 const baseURL = `http://localhost:${port}`;
 const identityProvider = `http://localhost:${IDENTITY_PROVIDER.port}`;
-// Read once, in the process that starts the servers, so both get the same passwords.
-const database = e2eDatabaseEnv();
+// Read once, in the process that starts the servers, so both get the same
+// passwords. Playwright loads this file again in each test worker; the
+// workers inherit the first draw through the environment, so a test that
+// seeds the database reaches the same one.
+const database = sharedDatabaseEnv();
 const ADMIN_ONLY = new Set(["KIN_DATABASE_ADMIN_USER", "KIN_DATABASE_ADMIN_PASSWORD", "KIN_DATABASE_SERVICE_PASSWORD"]);
 // Signs demo visitors' sessions for this run only.
 const demoSessionKey = randomBytes(36).toString("base64url");
@@ -93,3 +96,11 @@ export default defineConfig({
     },
   ],
 });
+
+function sharedDatabaseEnv(): Record<string, string> {
+  const inherited = process.env[E2E_DATABASE.envKey];
+  if (inherited) return JSON.parse(inherited) as Record<string, string>;
+  const drawn = e2eDatabaseEnv();
+  process.env[E2E_DATABASE.envKey] = JSON.stringify(drawn);
+  return drawn;
+}

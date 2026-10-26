@@ -2,6 +2,7 @@ import type { AuthConfig } from "@kin/config";
 
 import { AuthError } from "./auth-error.ts";
 import { pkceChallenge, type SignInSecrets } from "./pkce.ts";
+import { STEP_UP_LEVEL } from "./step-up.ts";
 
 /** The path the identity provider sends a person back to after signing in. */
 export const CALLBACK_PATH = "/auth/callback";
@@ -27,8 +28,12 @@ export function parseAuthScreen(value: string | null): AuthScreen {
   return value === "sign-up" ? "sign-up" : "sign-in";
 }
 
-/** Where to send the browser to sign in or sign up, carrying this attempt's secrets. */
-export function authorizeUrl(config: AuthConfig, secrets: SignInSecrets, language: string, screen: AuthScreen): string {
+/**
+ * Where to send the browser to sign in or sign up, carrying this attempt's
+ * secrets. A step-up asks the person to sign in again from scratch, with the
+ * second factor that approving real money needs.
+ */
+export function authorizeUrl(config: AuthConfig, secrets: SignInSecrets, language: string, screen: AuthScreen, stepUp = false): string {
   const url = new URL(SCREEN_PATHS[screen], config.loginUrl);
   url.search = new URLSearchParams({
     response_type: "code",
@@ -40,6 +45,7 @@ export function authorizeUrl(config: AuthConfig, secrets: SignInSecrets, languag
     code_challenge: pkceChallenge(secrets.verifier),
     code_challenge_method: "S256",
     ...(LOGIN_LANGUAGES.has(language) ? { lang: language } : {}),
+    ...(stepUp ? { prompt: "login", max_age: "0", acr_values: STEP_UP_LEVEL } : {}),
   }).toString();
   return url.href;
 }

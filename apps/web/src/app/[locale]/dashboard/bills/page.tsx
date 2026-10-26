@@ -1,5 +1,6 @@
 import { ShieldCheckIcon } from "lucide-react";
 import type { Metadata } from "next";
+import { CaregiverBills } from "@/components/dashboard/caregiver-billing/caregiver-bills";
 
 import { ChecksPanel } from "@/components/dashboard/bills/checks-panel";
 import { PayeeCell } from "@/components/dashboard/bills/payee-cell";
@@ -24,7 +25,7 @@ export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/bill
 }
 
 export default async function BillsPage({ params }: PageProps<"/[locale]/dashboard/bills">) {
-  const { locale, dictionary, circle } = await dashboardContext(params, "bills");
+  const { locale, dictionary, circle, viewer } = await dashboardContext(params, "bills");
   const { bills, common, empty } = dictionary.dashboard;
   const format = circleFormatters(locale, circle);
   const names = circleNames(circle, dictionary);
@@ -94,6 +95,7 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
   return (
     <>
       <PageHeader title={bills.title} lede={bills.lede} />
+      <CaregiverBills circle={circle} viewer={viewer} locale={locale} copy={dictionary.dashboard.caregiverBilling} />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         {upcoming.length > 0 ? (
           <Panel title={upcomingTitle} description={bills.upcoming.text} flush>

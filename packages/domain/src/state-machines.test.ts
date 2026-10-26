@@ -29,6 +29,8 @@ const DIAGRAMS = {
   ],
   Bill: [
     "received -> extracted",
+    "received -> ready",
+    "received -> rejected",
     "extracted -> needs_review",
     "extracted -> ready",
     "needs_review -> ready",

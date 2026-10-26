@@ -1,0 +1,161 @@
+{
+  "recordedOn": "2026-10-26",
+  "environment": "PayPal sandbox, Payouts v1",
+  "created": {
+    "batch_header": {
+      "payout_batch_id": "TW3HTYB8F9DX2",
+      "batch_status": "PENDING",
+      "sender_batch_header": {
+        "sender_batch_id": "kin-payout-verify-6df83905-5126-4717-9232-0a9a7e46da99",
+        "recipient_type": "EMAIL",
+        "email_subject": "You have a payment from Kin",
+        "email_message": "Kin adapter check: one sandbox dollar"
+      }
+    },
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/payments/payouts/TW3HTYB8F9DX2",
+        "rel": "self",
+        "method": "GET",
+        "encType": "application/json"
+      }
+    ]
+  },
+  "duplicate": {
+    "name": "USER_BUSINESS_ERROR",
+    "message": "User business error.",
+    "debug_id": "ca50c77c748ce",
+    "information_link": "https://developer.paypal.com/docs/api/payments.payouts-batch/#errors",
+    "details": [
+      {
+        "field": "SENDER_BATCH_ID",
+        "location": "body",
+        "issue": "Batch with given sender_batch_id already exists",
+        "link": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/payments/payouts/TW3HTYB8F9DX2",
+            "rel": "self",
+            "method": "GET",
+            "encType": "application/json"
+          }
+        ]
+      }
+    ],
+    "links": []
+  },
+  "pending": {
+    "batch_header": {
+      "payout_batch_id": "TW3HTYB8F9DX2",
+      "batch_status": "PENDING",
+      "time_created": "2026-10-26T21:13:57Z",
+      "sender_batch_header": {
+        "sender_batch_id": "kin-payout-verify-6df83905-5126-4717-9232-0a9a7e46da99",
+        "email_subject": "You have a payment from Kin",
+        "email_message": "Kin adapter check: one sandbox dollar"
+      },
+      "funding_source": "BALANCE",
+      "amount": {
+        "currency": "USD",
+        "value": "1.00"
+      }
+    },
+    "items": [
+      {
+        "payout_item_id": "S5BADM37D7LN8",
+        "transaction_status": "PENDING",
+        "payout_batch_id": "TW3HTYB8F9DX2",
+        "payout_item": {
+          "recipient_type": "EMAIL",
+          "amount": {
+            "currency": "USD",
+            "value": "1.00"
+          },
+          "note": "Kin adapter check: one sandbox dollar",
+          "receiver": "caregiver@example.com",
+          "sender_item_id": "kin-payout-verify-6df83905-5126-4717-9232-0a9a7e46da99",
+          "recipient_wallet": "PAYPAL",
+          "purpose": "GOODS"
+        },
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/payments/payouts-item/S5BADM37D7LN8",
+            "rel": "item",
+            "method": "GET",
+            "encType": "application/json"
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/payments/payouts/TW3HTYB8F9DX2?page_size=1000&page=1",
+        "rel": "self",
+        "method": "GET",
+        "encType": "application/json"
+      }
+    ]
+  },
+  "succeeded": {
+    "batch_header": {
+      "payout_batch_id": "TW3HTYB8F9DX2",
+      "batch_status": "PROCESSING",
+      "time_created": "2026-10-26T21:13:57Z",
+      "sender_batch_header": {
+        "sender_batch_id": "kin-payout-verify-6df83905-5126-4717-9232-0a9a7e46da99",
+        "email_subject": "You have a payment from Kin",
+        "email_message": "Kin adapter check: one sandbox dollar"
+      },
+      "funding_source": "BALANCE",
+      "amount": {
+        "currency": "USD",
+        "value": "1.00"
+      },
+      "fees": {
+        "currency": "USD",
+        "value": "0.25"
+      }
+    },
+    "items": [
+      {
+        "payout_item_id": "S5BADM37D7LN8",
+        "transaction_id": "216987905N375172M",
+        "activity_id": "1TA78393A51459643",
+        "transaction_status": "SUCCESS",
+        "payout_item_fee": {
+          "currency": "USD",
+          "value": "0.25"
+        },
+        "payout_batch_id": "TW3HTYB8F9DX2",
+        "payout_item": {
+          "recipient_type": "EMAIL",
+          "amount": {
+            "currency": "USD",
+            "value": "1.00"
+          },
+          "note": "Kin adapter check: one sandbox dollar",
+          "receiver": "caregiver@example.com",
+          "sender_item_id": "kin-payout-verify-6df83905-5126-4717-9232-0a9a7e46da99",
+          "recipient_wallet": "PAYPAL",
+          "purpose": "GOODS"
+        },
+        "time_processed": "2026-10-26T21:14:12Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/payments/payouts-item/S5BADM37D7LN8",
+            "rel": "item",
+            "method": "GET",
+            "encType": "application/json"
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/payments/payouts/TW3HTYB8F9DX2?page_size=1000&page=1",
+        "rel": "self",
+        "method": "GET",
+        "encType": "application/json"
+      }
+    ]
+  }
+}

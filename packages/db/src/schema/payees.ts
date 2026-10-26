@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, date, foreignKey, index, jsonb, pgTable, real, text, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, date, foreignKey, index, jsonb, pgTable, real, text, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 import { PROPOSAL_KINDS } from "@kin/domain";
 
@@ -19,6 +19,7 @@ export const payees = pgTable(
     status: payeeStatus("status").notNull().default("new"),
     /** Set when the money goes to a member of the circle. */
     memberId: uuid("member_id"),
+    caregiverRateCentsPerHour: cents("caregiver_rate_cents_per_hour"),
     /** Where PayPal sends the money: an email or a PayPal account ID. */
     paypalReceiver: text("paypal_receiver"),
     // A standing rule: the payee is paid without a new approval inside this range.
@@ -31,6 +32,8 @@ export const payees = pgTable(
     foreignKey({ name: "payees_circle_fk", columns: [t.circleId], foreignColumns: [circles.id] }),
     foreignKey({ name: "payees_member_fk", columns: [t.circleId, t.memberId], foreignColumns: [members.circleId, members.id] }),
     unique("payees_circle_row").on(t.circleId, t.id),
+    uniqueIndex("payees_one_caregiver_rate").on(t.circleId, t.memberId).where(sql`${t.caregiverRateCentsPerHour} is not null`),
+    check("payees_caregiver_rate", sql`${t.caregiverRateCentsPerHour} is null or (${t.memberId} is not null and ${t.caregiverRateCentsPerHour} > 0 and ${t.caregiverRateCentsPerHour} <= 9007199254740991)`),
     check("payees_name_present", sql`length(trim(${t.name})) > 0`),
     check("payees_category_code", sql`${t.category} ~ '^[a-z0-9_-]+$'`),
     check(
@@ -77,6 +80,8 @@ export const bills = pgTable(
     payeeId: uuid("payee_id").notNull(),
     documentId: uuid("document_id"),
     amountCents: cents("amount_cents").notNull(),
+    caregiverDetails: jsonb("caregiver_details"),
+    submissionKey: uuid("submission_key"),
     dueOn: date("due_on", { mode: "string" }),
     receivedOn: date("received_on", { mode: "string" }).notNull(),
     state: billState("state").notNull().default("received"),
@@ -89,6 +94,8 @@ export const bills = pgTable(
     foreignKey({ name: "bills_document_fk", columns: [t.circleId, t.documentId], foreignColumns: [documents.circleId, documents.id] }),
     foreignKey({ name: "bills_duplicate_fk", columns: [t.circleId, t.duplicateOf], foreignColumns: [t.circleId, t.id] }),
     unique("bills_circle_row").on(t.circleId, t.id),
+    unique("bills_submission_once").on(t.circleId, t.submissionKey),
+    check("bills_caregiver_complete", sql`(${t.caregiverDetails} is null) = (${t.submissionKey} is null)`),
     index("bills_payee_idx").on(t.circleId, t.payeeId),
     check("bills_amount_positive", sql`${t.amountCents} > 0`),
     check("bills_duplicate_state", sql`(${t.state} = 'duplicate') = (${t.duplicateOf} is not null)`),

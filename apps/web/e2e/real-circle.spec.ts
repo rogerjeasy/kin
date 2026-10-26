@@ -5,6 +5,7 @@ import english from "../src/i18n/dictionaries/en.json" with { type: "json" };
 import { fill } from "../src/i18n/template";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
 import { IDENTITY_PROVIDER } from "./support/identity-provider";
+import { seedRealProposal } from "./support/real-proposal";
 import { laptop, viewports } from "./support/viewports";
 
 const { dashboard } = english;
@@ -75,3 +76,49 @@ test.describe("a person's own circle", () => {
     });
   }
 });
+
+// After every test that expects the circle to be empty: these put real
+// payments into it.
+test.describe("a yes to real money", () => {
+  test.use({ viewport: { width: laptop.width, height: laptop.height } });
+  const { approvals, notices, common } = dashboard;
+  const card = (page: import("@playwright/test").Page, name: string) => page.getByRole("article", { name });
+
+  test("is recorded only after a fresh sign-in with a second factor", async ({ page }) => {
+    await seedRealProposal("City Water", 4_000);
+    await page.goto("/dashboard/approvals");
+    const water = card(page, "City Water");
+    await expect(water).toContainText(approvals.freshCheckNote);
+    await water.getByRole("button", { name: common.approve }).click();
+
+    await expect(page).toHaveURL("/dashboard/approvals?notice=approved");
+    await expect(page.getByRole("status").filter({ hasText: notices.approved })).toBeVisible();
+    await expect(card(page, "City Water")).toHaveCount(0);
+    await expect(page.getByRole("main")).toContainText(approvals.answered.states.approved);
+  });
+
+  test("is not recorded when the sign-in had no second factor", async ({ page, request }) => {
+    await seedRealProposal("Gas Board", 5_500);
+    await request.post(`http://localhost:${IDENTITY_PROVIDER.port}/test/next-step-up-without-mfa`);
+    await page.goto("/dashboard/approvals");
+    await card(page, "Gas Board").getByRole("button", { name: common.approve }).click();
+
+    await expect(page).toHaveURL("/dashboard/approvals?notice=stepUpMissing");
+    await expect(page.getByRole("status").filter({ hasText: notices.stepUpMissing })).toBeVisible();
+    await expect(card(page, "Gas Board").getByRole("button", { name: common.approve })).toBeVisible();
+  });
+
+  test("is refused when posted without the fresh check, while a no needs none", async ({ page }) => {
+    await seedRealProposal("Phone Company", 2_900);
+    await page.goto("/dashboard/approvals");
+    await card(page, "Phone Company").getByRole("button", { name: common.decline }).click();
+    await expect(page).toHaveURL("/dashboard/approvals?notice=rejected");
+    await expect(card(page, "Phone Company")).toHaveCount(0);
+  });
+
+  test("cannot be started from another site", async ({ request }) => {
+    const response = await request.post("/auth/step-up", { form: { proposal: "00000000-0000-4000-8000-000000000000", locale: "en" }, headers: { origin: "https://evil.example" }, maxRedirects: 0 });
+    expect(response.status()).toBe(403);
+  });
+});
+

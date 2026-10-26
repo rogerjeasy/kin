@@ -1,8 +1,9 @@
 import { readDatabaseConfig, readInboxConfig, readPayPalConfig } from "@kin/config";
 import { connect } from "@kin/db";
-import { poolFor, sqsInbox } from "@kin/paypal";
+import { payoutFeeReserve, poolFor, sqsInbox } from "@kin/paypal";
 
 import { runInboxBatch, type InboxLog } from "./paypal-inbox/run-inbox.ts";
+import { runPayoutBatch } from "./payouts/run-payouts.ts";
 
 /**
  * Kin's worker: it applies PayPal's events to the ledger as Kin's service
@@ -13,6 +14,8 @@ import { runInboxBatch, type InboxLog } from "./paypal-inbox/run-inbox.ts";
 // Aurora pauses when idle and took 74 seconds to resume (decision 43).
 const CONNECT_TIMEOUT_MS = 90_000;
 const PAUSE_AFTER_ERROR_MS = 5_000;
+/** How often the outbox is asked for approved payouts when it had none. */
+const PAYOUT_POLL_MS = 5_000;
 
 const log: InboxLog = (line) => console.log(JSON.stringify({ at: new Date().toISOString(), ...line }));
 
@@ -36,14 +39,34 @@ for (const signal of ["SIGTERM", "SIGINT"] as const) {
   });
 }
 
-log({ level: "info", message: "worker.started" });
-while (running) {
-  try {
-    await runInboxBatch(inbox, deps, log);
-  } catch (error) {
-    log({ level: "error", message: "inbox.receive_failed", error: error instanceof Error ? error.name : "unknown" });
-    await new Promise((resolve) => setTimeout(resolve, PAUSE_AFTER_ERROR_MS));
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// PayPal's events, from the inbox queue.
+async function inboxLoop(): Promise<void> {
+  while (running) {
+    try {
+      await runInboxBatch(inbox, deps, log);
+    } catch (error) {
+      log({ level: "error", message: "inbox.receive_failed", error: error instanceof Error ? error.name : "unknown" });
+      await pause(PAUSE_AFTER_ERROR_MS);
+    }
   }
 }
+
+// Approved payouts, from the outbox the approval wrote in its own transaction.
+async function payoutLoop(): Promise<void> {
+  const payouts = { ...deps, now: () => new Date(), feeReserve: (currency: string) => payoutFeeReserve(currency)() };
+  while (running) {
+    try {
+      if ((await runPayoutBatch(payouts, log)) === 0) await pause(PAYOUT_POLL_MS);
+    } catch (error) {
+      log({ level: "error", message: "payout.claim_failed", error: error instanceof Error ? error.name : "unknown" });
+      await pause(PAUSE_AFTER_ERROR_MS);
+    }
+  }
+}
+
+log({ level: "info", message: "worker.started" });
+await Promise.all([inboxLoop(), payoutLoop()]);
 await deps.db.$client.end();
 log({ level: "info", message: "worker.stopped" });

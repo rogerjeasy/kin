@@ -277,12 +277,12 @@ Every table except `users` carries a `circle_id`. Built in `packages/db/src/sche
 | `agreement_shares` | Each member's share of a version in basis points, in the family's order. A version's shares total 10 000, checked at commit. |
 | `agreement_acceptances` | Who accepted a version, how (app or voice) and when                         |
 | `pool_accounts`   | *Not yet.* PayPal merchant ID, credential reference, webhook ID, mode               |
-| `payees`          | Name, spending category, status, the member it pays, PayPal recipient, auto-pay rule and range |
+| `payees`          | Name, spending category, status, the member it pays, PayPal recipient, auto-pay rule and range; a nullable caregiver hourly rate, distinct from the family care-credit rate. At most one rate-configured payee per caregiver and circle. |
 | `subscriptions`   | *Not yet.* Member, PayPal subscription ID, plan ID, amount, state                    |
 | `contributions`   | *Not yet.* Member, kind, amount, period, source reference                            |
 | `care_entries`    | Member, date, minutes, note, approved, the care-credit entry that values it         |
 | `documents`       | S3 key (none for a simulated document), kind, uploader, extraction result, confidence, simulated |
-| `bills`           | Payee, document, amount, received and due dates, state, duplicate link              |
+| `bills`           | Payee, document, amount, received and due dates, state, duplicate link; caregiver bills additionally hold immutable versioned service-day details, the original rate and currency, and a submission key unique within the circle. |
 | `expected_bills`  | Payee, kind, expected amount, due date: what the family expects before the bill arrives |
 | `proposals`       | Kind, amount, payee or member paid, purpose and the family's note, who raised it (none for Kin), state, expiry, agreement version, the approval plan made when it was raised, bill, settlement and document links. Only the state and expiry can change. |
 | `approvals`       | Proposal, member, role when answering, decision, method, evidence reference, time. Never changed. |
@@ -417,6 +417,8 @@ stateDiagram-v2
 stateDiagram-v2
     [*] --> received
     received --> extracted
+    received --> ready
+    received --> rejected
     extracted --> needs_review
     extracted --> ready
     needs_review --> ready
@@ -487,18 +489,18 @@ The agreement holds three amounts for these rules: the ceiling (rule 2), the lar
 
 Moving money involves a database and an outside API, which cannot share a transaction. Kin handles this with the outbox pattern.
 
-1. In one database transaction, Kin marks the proposal approved, creates an execution with a fresh idempotency key, and writes an outbox row.
-2. The worker reads the outbox and sends the message to the executions queue.
-3. The worker calls PayPal, passing the idempotency key.
-4. The worker records PayPal's reply and marks the execution submitted.
-5. The execution is confirmed only when the matching PayPal event is verified and applied.
+1. In one database transaction, Kin marks the proposal approved, creates an execution with a fresh idempotency key, and writes an outbox row. Built: the trigger `queue_payout` does both for a caregiver payout, in the transaction of the answer that approves it (migration `0008_payouts`). The key is `kin-payout-{proposal}`.
+2. The worker leases the outbox row from PostgreSQL (`kin_private.claim_outbox`, callable by `kin_service` alone, `FOR UPDATE SKIP LOCKED`, hidden for 120 seconds) instead of passing it through an executions queue (decision 53).
+3. The worker checks the pool can pay the bill and PayPal's fee from money that has arrived (`canPayOut`), writes the family's approval to the ledger once, moves the proposal to executing, and calls PayPal, passing the idempotency key.
+4. The worker records PayPal's reply and marks the execution submitted. No reply means unknown: the same key is sent again later, and PayPal answers with the batch it already made (decision 55).
+5. The execution is confirmed only when PayPal's record says the item succeeded: today by reading the batch back (`GET /v1/payments/payouts/{batch}`); the payout-item webhook is not yet handled.
 
 **Idempotency at each layer**
 
 - **To PayPal:** the `PayPal-Request-Id` header carries the execution's key. For payouts, the `sender_batch_id` does. A retry cannot pay twice.
 - **From PayPal:** each event's ID is unique in `paypal_events`. A redelivered event is ignored.
 - **In the ledger:** each entry has a unique source reference. Applying the same event twice cannot write two entries.
-- **In the queues:** per-circle ordering means two workers never act on the same circle at once.
+- **In the queues:** per-circle ordering means two workers never act on the same circle at once. The payout outbox is leased row by row instead, and each database step locks the execution, so two workers never move one payout at once.
 
 ---
 
@@ -575,10 +577,11 @@ Used for caregiver pay and for settlement payouts to siblings.
 
 | Item outcome                           | Kin's action                                                                     |
 | -------------------------------------- | -------------------------------------------------------------------------------- |
-| Succeeded                              | Confirm the execution, write the ledger entry, tell the recipient and the circle |
-| Unclaimed                              | Tell the recipient how to claim. Keep the money in`pool_clearing`              |
-| Returned, failed, blocked or cancelled | Reverse the clearing entry, mark the execution failed, alert the organizer       |
-| Held                                   | Wait and tell the organizer                                                      |
+| Succeeded                              | Confirm the execution, write the payout and PayPal's fee to the ledger, settle the proposal and mark the bill paid. *Telling the recipient and the circle is not built.* |
+| Pending, unclaimed or held             | Wait, and read the batch again later. The family's approval already holds the money back as owed to the payee (decision 54). *Telling anyone is not built.* |
+| Returned, failed, blocked, refunded or reversed; or PayPal refuses the request | Mark the execution and proposal failed. The payee is still owed. *Alerting the organizer is not built.* |
+
+**Built for caregiver payouts** (`packages/paypal` `payout.ts`, `packages/db` `payouts.ts`, `apps/worker/src/payouts`). The organizer records the caregiver's PayPal email with their rate (`set_caregiver_receiver`); it cannot change while a payment to them is approved or being paid, and screens show it masked. A demo circle's payout is simulated: no PayPal call, and both ledger entries say so. A payout waits, recorded once as held, while the circle is paused (section 15.3: a payout already at PayPal is still tracked), while the payee has no address, or while the pool cannot pay it and the fee.
 
 ### 8.6 Purchases for the parent
 
@@ -1057,7 +1060,7 @@ Cognito's pages carry Kin's look (decision 36). `infra/src/managed-login/brandin
 
 - **Amazon Cognito** holds one user pool for every person.
 - **Passwordless sign-in** by emailed code or passkey, through Cognito's managed pages.
-- **Multi-factor authentication** is required for organizers and for anyone approving a payout. Approving a payout asks for a fresh check even inside an active session.
+- **Multi-factor authentication** is required for organizers and for anyone approving a payout. Approving a payout asks for a fresh check even inside an active session. Built for a yes to real money: **Approve** posts to `/auth/step-up`, which sends the person back through Cognito with `prompt=login`, `max_age=0` and `acr_values=urn:cognito:loa:4`. The callback records the yes only if the same person returns with an ID token whose `amr` lists `mfa` and whose `auth_time` is under five minutes old (`assessStepUp` in `packages/auth`); the token's ID, time and methods are stored as the approval's evidence, and the database refuses a real yes without it. A no needs no step-up. The demo's simulated money is answered without one. Enforcing MFA at sign-in for organizers is not built.
 - **Tokens** are verified by every service on every request.
 
 ### 12.2 Linking a PayPal account
@@ -1084,8 +1087,8 @@ Three layers, each independent of the others.
 
 | Role | Acts as | May |
 | ---- | ------- | --- |
-| `kin_app` | A signed-in person or a demo visitor (`kin.user_id`) | Read what their role in each of their circles allows. Write their own `users` row; in a demo circle only, until the fresh multi-factor check of real payments exists: answer a pending proposal in their own seat and role (organizer, contributor or parent), and close it only as the stored plan allows (approved needs as many different members' yeses as the plan has places, no no, and someone other than the member being paid; rejected needs a no; expired needs the time to be up); pause the circle in their own name for at most 24 hours (not an observer), and lift it if they paused it or organize it; invite someone (organizers); and record what they did in the audit log. Through `kin_private` functions: start a real circle, join the circles that invited their verified address, take another seat or give up their own in a demo circle. Each grant is column by column where a table is shared. |
-| `kin_service` | Kin's worker, for the one circle a job names (`kin.circle_id`) | Read, add and change rows of that circle. Never delete. |
+| `kin_app` | A signed-in person or a demo visitor (`kin.user_id`) | Read what their role in each of their circles allows. Write their own `users` row; answer a pending proposal in their own seat and role (organizer, contributor or parent) — in a real circle a yes must carry the fresh multi-factor check's evidence, and a no needs none — and close it only as the stored plan allows (approved needs as many different members' yeses as the plan has places, no no, and someone other than the member being paid; rejected needs a no; expired needs the time to be up); pause the circle in their own name for at most 24 hours (not an observer), and lift it if they paused it or organize it; invite someone (organizers); and record what they did in the audit log. Through `kin_private` functions: start a real circle, join the circles that invited their verified address, take another seat or give up their own in a demo circle. Each grant is column by column where a table is shared. |
+| `kin_service` | Kin's worker, for the one circle a job names (`kin.circle_id`) | Read, add and change rows of that circle. Never delete. Across circles, only lease outbox messages through `kin_private.claim_outbox`, which returns each message's circle so the work is then done in that circle's scope. |
 | `kin_provisioner` | The demo provisioner | Add rows only to a demo circle created in the same transaction (the circle records the transaction's ID). It cannot read anything, so it cannot reach an existing family. |
 
 A caregiver reads only the payees that are their own seat, the bills, proposals and ledger entries that pay them or that they raised, and their own care entries and documents. They read no agreement, settlement, claim check or narration. An observer reads everything a contributor reads and writes nothing. The audit log and invitations are for organizers.
@@ -1106,7 +1109,7 @@ Covered in section 10. A phone call has no browser session, so identity comes fr
 
 ### 13.1 HTTP API
 
-Served by `web`. All routes require a Cognito token except webhooks, which carry their own signatures.
+Served by `web`. A person's routes require a verified Cognito session; the isolated demo uses its verified signed visitor session. Webhooks carry their own signatures. The table includes intended routes; entries explicitly marked built are implemented.
 
 | Group                   | Purpose                                         |
 | ----------------------- | ----------------------------------------------- |
@@ -1115,7 +1118,8 @@ Served by `web`. All routes require a Cognito token except webhooks, which carry
 | `/api/care`           | Log and approve care hours                      |
 | `/api/documents`      | Upload links, document status                   |
 | `/api/bills`          | List, review, approve payees                    |
-| `/api/proposals`      | List, approve, reject, cancel                   |
+| `/api/caregiver-billing` | Built: POST `configure` (rate, and optionally the caregiver's PayPal email), `review`, `submit`, and the family's `send` (raise the payout proposal) and `decline`, for caregiver rates and own bills. Uses the authenticated circle, independent account and role checks, same-origin enforcement and a capped JSON body. Review and submission do not approve or pay. |
+| `/api/proposals`      | List, approve, reject, cancel. *Built instead as server actions on the Approvals screen; a yes to real money goes through `POST /auth/step-up` (section 12.1).* |
 | `/api/ledger`         | Entries, balances, fairness positions           |
 | `/api/settlements`    | Preview, approve, history                       |
 | `/api/statements`     | Monthly statement, yearly review, audit export  |
@@ -1230,7 +1234,7 @@ The load balancer routes `/voice/*` to the voice service, with a long idle timeo
 | Queue             | Carries                              | Ordering    |
 | ----------------- | ------------------------------------ | ----------- |
 | `paypal-events` | Webhook deliveries as received, and captured orders to read back. The worker takes one message at a time, and a message stays hidden for 300 seconds while it is handled, longer than its slowest case (Aurora resuming, then three PayPal calls with retries) | Per circle  |
-| `executions`    | Approved proposals to carry out      | Per circle  |
+| `executions`    | *Not created.* Approved payouts are leased from the outbox table instead (decision 53) | Per circle  |
 | `documents`     | Photographs to read                  | None needed |
 | `notifications` | Emails, pushes, alerts               | None needed |
 | `narration`     | Items for the parent to hear         | Per parent  |
@@ -1442,7 +1446,7 @@ The hackathon needs a month of family life to be shown in minutes.
 - **The Demo button, and only the Demo button, opens demo data.** It is on the home page, the site header and the start page (`startDemo` in `apps/web/src/server/demo-actions.ts`). Pressing it creates an anonymous visitor: a `users` row of kind `demo_visitor` whose ID starts `demo:`, so every press can be counted with no account and no personal details. The visitor's session is a token signed with a key from Secrets Manager (`issueDemoSession` in `packages/auth`), in an httpOnly `__Host-` cookie that lasts 14 days. The visitor gets their own copy of Rose's circle (`provisionDemoCircle` in `packages/db`), isolated from every other by row-level security, so one judge's actions never show up in another's. The demo clock is the circle's own (`circles.clock_at`): the moment the visitor pressed the button. Rose's month is written once around the evening of 30 October 2026, and each copy is moved to end at the press (`demoTime` in `packages/db`): every moment moves by the same span, every date by the same number of days in the circle's timezone, and the month's entries count toward the period open on the new clock, so it settles as one month whatever the day. The clock then stays where it was set, so nothing in a visitor's copy expires while they explore it; *Start again* sets it to the new moment. Tests press at the template's own clock, so their dates never depend on the day they run.
 - **Demo and real never mix.** A database trigger seats demo visitors only in demo circles and people who signed in only in real ones. A person who signs in sees their own circles, joins any real circle that invited their verified address, and otherwise is offered to start one (`kin_private.create_circle`): they become its organizer and the parent its first member. Every screen of a circle with no data yet says so in plain words.
 - **Every role, from one seat.** The demo banner's role switcher moves the visitor into another persona's empty seat (`kin_private.take_demo_seat`), so the database then shows exactly what that role may see: a caregiver only their own pay, an observer everything and no buttons.
-- **Real operations on simulated money.** In the demo a visitor approves and declines proposals (the vote is recorded in their seat and role, and the approval engine decides), pauses and lifts the pause, invites someone, downloads the record as CSV, starts again and leaves. Approving moves a proposal to approved; the payment itself follows with PayPal payouts. In a real circle, answering a proposal waits for the fresh multi-factor check of section 12, so the screen says so and the server refuses it.
+- **Real operations on simulated money.** In the demo a visitor approves and declines proposals (the vote is recorded in their seat and role, and the approval engine decides), pauses and lifts the pause, invites someone, downloads the record as CSV, starts again and leaves. Approving a caregiver payout moves it to approved, and the worker then pays it as a simulated payout, labelled so in the record. In a real circle, a yes goes through the fresh multi-factor check of section 12.1, and the payout goes through PayPal's sandbox.
 - **Real sandbox top-ups.** "Add money" works in the demo with a PayPal sandbox buyer account. The circle's history stays simulated; the top-up is a real sandbox transaction, recorded with `simulated` false and tagged "PayPal sandbox" in the record and the activity list, never presented as the same thing as the simulated entries around it.
 - **Start again** archives the visitor's circle and gives them a fresh one; *Leave the demo* clears the visitor's cookie. Nothing is deleted: the old circle's ledger stays.
 - **What each person sees.** The circle-role check of section 12.3 (`authorize` in `packages/auth`) decides which screens a role may open, and a role refused a screen is sent to its first one.
@@ -1502,6 +1506,12 @@ The hackathon needs a month of family life to be shown in minutes.
 | 47 | A top-up is recorded from the order or capture read back from PayPal; the capture's ID is the ledger entry's source | Waiting for the webhook alone; trusting the capture's response | AGENTS.md section 5, rule 3. Either path alone records the money, and together they write one entry: the read after capture confirms in seconds and works where no webhook arrives (locally), and the webhook covers a lost read. |
 | 48 | The PayPal client ID and webhook ID are in `infra/cdk.json`; the client secret is in Secrets Manager | All three in Secrets Manager | The two IDs are not secret (PayPal's client ID is meant for the browser). In `cdk.json` they are reviewed like any other change, and the deploy needs no extra CI secret. |
 | 49 | A demo circle's clock is the moment its visitor pressed the Demo button, with Rose's month moved to end there | One fixed evening, 30 October 2026, for every visitor; the real time, moving on | A judge sees today's date, and a real sandbox top-up lands on the same day as the story around it. A clock that stood still at a fixed date read as stale. One that moved on would expire the waiting proposals after 72 hours of exploring. The month counts toward the period open on the clock, even where its first days fall in the month before, so the story settles as one month. |
+| 50 | A caregiver rate belongs to their payee; each submitted bill keeps a versioned snapshot of service days, rate and currency, entered through narrow database operations | Reusing relatives' care-credit rate; free-text bill amounts; new timesheet tables | Paid caregiver work is distinct from family fairness credits. The domain values each service day with the existing integer care arithmetic, and the bill retains the rate it used. Member and payee locks serialize setup, rate changes and duplicate service dates. The web identity gains no direct writes to payees or bills and cannot use submission as payment approval. Approved in `docs/superpowers/specs/2026-10-22-caregiver-billing-design.md`. |
+| 51 | A yes to real money is a fresh Cognito sign-in at level 4 (`acr_values`, `max_age=0`), accepted only if the token's `amr` has `mfa` and `auth_time` is under five minutes old; the yes is recorded by the callback itself | Trusting `auth_time` alone; a Kin-sent email code; a short-lived grant cookie | Cognito states which methods a sign-in used. An email code is the same factor that signs people in. Recording the answer in the callback leaves nothing to replay. Without the claims, the answer is refused. |
+| 52 | A structured caregiver bill moves `received → ready → proposed` when an organizer or contributor sends it, or `received → rejected` when they decline it | Walking it through `extracted`, which records an extraction that never happened | Its details were entered and checked as structure. Declining frees its service days for a corrected bill. The database checks the plan it is given against the agreement in force, so a forged plan cannot ask for fewer yeses. |
+| 53 | The worker leases payout messages from the outbox table (`claim_outbox`) | An SQS `executions` queue fed from the outbox | One table is the queue, written in the approval's own transaction; no new service. The lease and the execution's row lock keep two workers off one payout, and the idempotency key keeps PayPal from paying twice. |
+| 54 | A payout writes no `pool_clearing` entry while PayPal holds it; the payable from the family's approval holds the money back until PayPal's item reads `SUCCESS` | Moving the money to `pool_clearing` on submission | The ledger records money as moved only on PayPal's record (rule 3), and the payable already keeps that money from any other payout (rule 8). |
+| 55 | A lost reply is recovered by sending the payout again with the same batch ID and reading the batch PayPal links | Searching recent payouts | PayPal's sandbox refused a repeated `sender_batch_id` with 400 and linked the original batch, even with the same `PayPal-Request-Id` (seen on 26 October 2026). Kin follows the link only when the batch it reads back carries the execution's own key and amount. |
 
 ---
 
@@ -1597,6 +1607,19 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 
 - The money parsing and limits (`centsFromDecimal`, `checkTopUp`, `calendarDay`) with unit and property tests; the PayPal adapter (`packages/paypal`) against recorded responses: retries with the same request ID, no retry of a refusal, token renewal, webhook bytes passed through unchanged; recording a contribution and storing events against PostgreSQL, with isolation between circles; the worker's inbox (`apps/worker`) against PostgreSQL and the fake pool: the webhook and the read-back write one entry in either order, a forged or replayed event writes nothing, an outage is retried; the routes' rules; the "Add money" sheet end to end at the four viewports with a stand-in SDK; the infrastructure's grants and the worker's shape.
 
+**Built and tested: structured caregiver billing (22 October 2026)**
+
+- The organizer records a caregiver's rate separately from family care credits. A caregiver enters completed service days, reviews server-calculated amounts, and explicitly submits a received bill. Bill details preserve the original rate, currency and whole minutes, and remain immutable. The family reads the same details; submission neither approves nor pays.
+- `packages/domain` owns the versioned details schema and uses the existing per-entry integer valuation. Database operations check active membership, serialize rate changes and submissions, return the original bill for retries, refuse duplicate service dates and expose only the caller-visible earlier bill's ID. A database integrity assertion also refuses totals that disagree with the evidence. No direct payee, bill or money-table write grant is added to the web role.
+- Unit and property tests cover validation, exact valuation and visit order. Disposable PostgreSQL tests cover role and circle refusals, concurrent retries and rate changes, original rates, duplicate references, rollback and immutable evidence; the web tests cover forged input and independent account-group restrictions. `pnpm check` passed with 797 tests. All 247 browser tests passed against the production standalone build, including the billing journey at the four required viewports, 320-pixel reflow, keyboard submission, 200% text, French and Arabic long names, and duplicate feedback across tabs. Header controls wrap at enlarged text sizes. The production build passed with Next.js's webpack builder; Turbopack could not bind its internal port in the execution environment. These migrations have not been applied to shared data, and the milestone has not been deployed.
+
+**Built and tested: caregiver bill review, fresh approval and payouts (26 October 2026)**
+
+- Review: `planCaregiverPayout` (domain, unit and property tests: it plans exactly what `planApprovals` plans for the evidence's own total, and the caregiver's yes alone can never approve). `send_caregiver_bill` and `decline_caregiver_bill` against disposable PostgreSQL: the plan's places, payee, expiry and outcome are checked against the agreement; retries return one proposal; caregivers, observers and parents are refused; a paused circle raises nothing.
+- Fresh approval: `assessStepUp` unit tests (methods, window, clock skew); the session carries `auth_time`, `amr` and the token ID; real-circle answers in PostgreSQL (a yes without evidence is refused, a no is not); in the browser, against the stand-in identity provider, a yes is recorded only after a step-up with a second factor, not after one without, and the step-up cannot be started from another site.
+- Payouts: the adapter against PayPal's recorded sandbox replies (`fixtures/payout-sandbox-2026-10-26.json`); the worker against PostgreSQL and the fake pool: simulated in a demo, paid once in a real circle on PayPal's record with PayPal's fee, pending then paid, a lost reply and an outage each paid once, a refusal and a returned item failed with the payee still owed, held without an address, without the money or during a pause (and tracked through a pause once at PayPal), a foreign batch refused, the outbox leased only by the service. A scripted rehearsal on the local database then paid $264.00 through the real PayPal sandbox to a sandbox personal account: three reads of PENDING, then SUCCESS; one approval and one payout entry, with PayPal's $0.25 fee. That rehearsal turned a demo circle real and scripted the step-up evidence, because no screen yet makes a real circle's agreement.
+- Not verified: Cognito's ACR and AMR claims on Kin's own user pool (AWS says the feature is "rolling out gradually"; without them every real yes is refused); the payout-item webhook; MFA enrolment in Kin; telling the recipient, the circle or the organizer of a payout's outcome. These migrations have not been applied to shared data, and nothing has been deployed.
+
 **Not yet tested**
 
-- Everything else in this document. Execution and the outbox in section 7.6 are not built. The latency figure is a target. The diagrams describe the intended design.
+- Everything else in this document. Executions other than caregiver payouts are not built. The latency figure is a target. The diagrams describe the intended design.

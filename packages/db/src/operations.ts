@@ -23,6 +23,8 @@ type Answer = {
   readonly proposalId: string;
   readonly decision: "approve" | "reject";
   readonly method: ApprovalMethod;
+  /** What proves the answer: in a real circle, a yes needs the fresh multi-factor check. */
+  readonly evidenceRef?: string | null;
   /** The circle's clock, which the approval engine decides on. */
   readonly now: Date;
   readonly pausedUntil: Date | null;
@@ -52,6 +54,7 @@ export async function answerProposal(tx: Transaction, seat: Seat, answer: Answer
     role: seat.role,
     decision: answer.decision,
     method: answer.method,
+    evidenceRef: answer.evidenceRef ?? null,
     decidedAt: answer.now,
   });
   const decision = decideApprovals({ plan, votes: [...given, { memberId: seat.memberId, role: seat.role, decision: answer.decision }], pausedUntil: answer.pausedUntil, now: answer.now });

@@ -30,6 +30,10 @@ export type {
   ProposalKind,
 } from "./approval-plan.ts";
 export { CareValueError, careValueCents } from "./care.ts";
+export { CaregiverBillError, calculateCaregiverBill, parseCaregiverBillDetails } from "./caregiver-bill.ts";
+export type { CaregiverBill, CaregiverBillDetails, CaregiverVisit } from "./caregiver-bill.ts";
+export { CAREGIVER_BILL_PURPOSE, CaregiverPayoutError, planCaregiverPayout } from "./caregiver-payout.ts";
+export type { CaregiverPayoutPlan, CaregiverPayoutRequest } from "./caregiver-payout.ts";
 export { entryHeadline } from "./entry-headline.ts";
 export type { EntryHeadline } from "./entry-headline.ts";
 export { rosesMonth } from "./examples/roses-month.ts";
@@ -97,7 +101,7 @@ export {
 } from "./money.ts";
 export type { Money } from "./money.ts";
 export { PAUSE_HOURS, isPaused, pauseEndsAt } from "./pause.ts";
-export { cashAvailableForPayouts } from "./payout-cash.ts";
+export { canPayOut, cashAvailableForPayouts } from "./payout-cash.ts";
 export { PeriodInputError, periodInputs } from "./period-inputs.ts";
 export type { PeriodQuery } from "./period-inputs.ts";
 export {

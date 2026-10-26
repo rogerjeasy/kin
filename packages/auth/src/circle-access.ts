@@ -27,6 +27,10 @@ export const CIRCLE_ACTIONS = {
   "circle.pause": ["organizer", "contributor", "parent", "caregiver"],
   "member.invite": ["organizer"],
   "audit.view": ["organizer"],
+  "caregiver_rate.manage": ["organizer"],
+  "caregiver_bill.submit": ["caregiver"],
+  /** Send a caregiver's bill for the family's approval, or decline it: the members who share the cost. */
+  "caregiver_bill.review": ["organizer", "contributor"],
 } as const satisfies Record<string, readonly CircleRole[]>;
 
 export type CircleAction = keyof typeof CIRCLE_ACTIONS;

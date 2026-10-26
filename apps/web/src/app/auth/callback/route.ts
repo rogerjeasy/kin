@@ -9,6 +9,8 @@ import { signInPath } from "@/server/auth/next-path";
 import { redirectWithCookies } from "@/server/auth/respond";
 import { decodeFlow } from "@/server/auth/sign-in-flow";
 import { dashboardRoutes } from "@/content/dashboard-routes";
+import { withNotice } from "@/content/dashboard-notices";
+import { approveWithFreshCheck } from "@/server/fresh-approval";
 
 /**
  * Where the identity provider sends the browser back. The answer counts only
@@ -33,7 +35,13 @@ export async function GET(request: NextRequest) {
     const tokens = await exchangeCode(config, code, flow.verifier);
     const session = await sessionVerifier().verify(tokens, { nonce: flow.nonce });
     if (!session) return back("failed");
-    return redirectWithCookies(flow.next, config.webOrigin, [clearedSignInCookie(), ...sessionCookies(tokens)]);
+    const cookies = [clearedSignInCookie(), ...sessionCookies(tokens)];
+    if (!flow.stepUp) return redirectWithCookies(flow.next, config.webOrigin, cookies);
+    // A step-up counts only for the person who asked for it. Someone else
+    // signing in on this browser is not their yes, and keeps the old session.
+    if (session.userId !== flow.stepUp.userId) return redirectWithCookies(withNotice(flow.next, "refused"), config.webOrigin, [clearedSignInCookie()]);
+    const notice = await approveWithFreshCheck(session, flow.stepUp.proposalId, new Date());
+    return redirectWithCookies(withNotice(flow.next, notice), config.webOrigin, cookies);
   } catch (error) {
     if (error instanceof AuthError) return back(error.retryable ? "unavailable" : "failed");
     throw error;

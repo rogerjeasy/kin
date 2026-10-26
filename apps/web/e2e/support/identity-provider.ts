@@ -21,12 +21,19 @@ const redirectUri = "http://localhost:3100/auth/callback";
 const logoutUri = "http://localhost:3100/";
 const signer = createTokenSigner("e2e-key");
 
-type PendingCode = { challenge: string; nonce: string };
+/** What Cognito's step-up returns: a password and an authenticator code. */
+const STEP_UP_METHODS = ["pwd", "otp", "mfa"] as const;
+
+type PendingCode = { challenge: string; nonce: string; methods: readonly string[] | null };
 const codes = new Map<string, PendingCode>();
 const refreshTokens = new Set<string>();
+// A test can ask for the next step-up to come back with one factor only, as
+// for a person who has no authenticator app.
+let nextStepUpMethods: readonly string[] = STEP_UP_METHODS;
 
-function tokens(nonce?: string, refresh = true) {
-  const claims = cognitoClaims({ issuer, clientId: IDENTITY_PROVIDER.clientId, ...IDENTITY_PROVIDER.person, nonce, groups: ["family_member"] });
+function tokens(nonce?: string, refresh = true, methods: readonly string[] | null = null) {
+  const stepUp = methods ? { amr: methods, acr: methods.includes("mfa") ? "urn:cognito:loa:4" : "urn:cognito:loa:1", jti: randomUUID() } : {};
+  const claims = cognitoClaims({ issuer, clientId: IDENTITY_PROVIDER.clientId, ...IDENTITY_PROVIDER.person, nonce, groups: ["family_member"], ...stepUp });
   const refreshToken = randomUUID();
   if (refresh) refreshTokens.add(refreshToken);
   return {
@@ -66,7 +73,12 @@ function authorize(url: URL, response: ServerResponse) {
     return redirect(response, back.href);
   }
   const code = randomUUID();
-  codes.set(code, { challenge, nonce: params.get("nonce") ?? "" });
+  // Like Cognito: a step-up asks for a fresh sign-in at a level, and the
+  // tokens say which methods the person completed.
+  const stepUp = params.get("acr_values") !== null && params.get("prompt") === "login" && params.get("max_age") === "0";
+  codes.set(code, { challenge, nonce: params.get("nonce") ?? "", methods: stepUp ? nextStepUpMethods : null });
+  // Only a step-up uses the switch up, so a plain sign-in in another test cannot reset it.
+  if (stepUp) nextStepUpMethods = STEP_UP_METHODS;
   back.searchParams.set("code", code);
   return redirect(response, back.href);
 }
@@ -81,7 +93,7 @@ async function token(request: IncomingMessage, response: ServerResponse) {
     const verifier = params.get("code_verifier") ?? "";
     const proved = pending && createHash("sha256").update(verifier).digest("base64url") === pending.challenge;
     if (!proved || params.get("redirect_uri") !== redirectUri) return send(response, 400, { error: "invalid_grant" });
-    return send(response, 200, tokens(pending.nonce || undefined));
+    return send(response, 200, tokens(pending.nonce || undefined, true, pending.methods));
   }
   if (params.get("grant_type") === "refresh_token" && refreshTokens.has(params.get("refresh_token") ?? "")) {
     return send(response, 200, tokens(undefined, false));
@@ -92,6 +104,10 @@ async function token(request: IncomingMessage, response: ServerResponse) {
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? "/", issuer);
   if (request.method === "GET" && url.pathname === "/health") return send(response, 200, { ok: true });
+  if (request.method === "POST" && url.pathname === "/test/next-step-up-without-mfa") {
+    nextStepUpMethods = ["pwd"];
+    return send(response, 200, { ok: true });
+  }
   if (request.method === "GET" && url.pathname === "/.well-known/jwks.json") return send(response, 200, signer.jwks);
   // Cognito's sign-up page takes the authorize parameters and answers the same way.
   if (request.method === "GET" && (url.pathname === "/oauth2/authorize" || url.pathname === "/signup")) return authorize(url, response);

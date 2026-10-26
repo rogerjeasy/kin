@@ -1,4 +1,6 @@
 export { ACCOUNT_TYPES } from "./account-types.ts";
+export { caregiverAccess } from "./caregiver-access.ts";
+export type { BillingAccount, CaregiverAction } from "./caregiver-access.ts";
 export type { AccountType } from "./account-types.ts";
 export { AuthError } from "./auth-error.ts";
 export type { AuthErrorReason } from "./auth-error.ts";
@@ -7,7 +9,9 @@ export type { AuthScreen, Fetch, TokenSet } from "./oauth.ts";
 export { createSignInSecrets, pkceChallenge } from "./pkce.ts";
 export type { RandomBytes, SignInSecrets } from "./pkce.ts";
 export { createSessionVerifier } from "./session.ts";
-export type { Session, SessionTokens, SessionVerifier } from "./session.ts";
+export type { Authentication, Session, SessionTokens, SessionVerifier } from "./session.ts";
+export { STEP_UP_LEVEL, STEP_UP_WINDOW_SECONDS, assessStepUp } from "./step-up.ts";
+export type { StepUpVerdict } from "./step-up.ts";
 export { AccessDenied, CIRCLE_ACTIONS, allowedActions, authorize, requireAccess } from "./circle-access.ts";
 export type { AccessDecision, CircleAction, Seat } from "./circle-access.ts";
 export { DEMO_SESSION_DAYS, issueDemoSession, readDemoSession } from "./demo-session.ts";

@@ -34,10 +34,18 @@ export function cognitoClaims(options: {
   emailVerified?: boolean | "true" | "false";
   now?: Date;
   lifetimeSeconds?: number;
+  /** A step-up's claims: the methods completed, the level reached and the token's ID. */
+  amr?: readonly string[];
+  acr?: string;
+  jti?: string;
+  /** When the person last signed in, if not at `now`. */
+  authTime?: Date;
 }): { access: Record<string, unknown>; id: Record<string, unknown> } {
   const iat = Math.floor((options.now ?? new Date()).getTime() / 1000);
   const exp = iat + (options.lifetimeSeconds ?? 3600);
-  const common = { iss: options.issuer, sub: options.sub, iat, exp, auth_time: iat };
+  const authTime = options.authTime ? Math.floor(options.authTime.getTime() / 1000) : iat;
+  const stepUp = { ...(options.amr ? { amr: options.amr } : {}), ...(options.acr ? { acr: options.acr } : {}) };
+  const common = { iss: options.issuer, sub: options.sub, iat, exp, auth_time: authTime, ...stepUp };
   return {
     access: { ...common, token_use: "access", client_id: options.clientId, scope: "openid email profile", "cognito:groups": options.groups ?? [] },
     id: {
@@ -48,6 +56,7 @@ export function cognitoClaims(options: {
       email_verified: options.emailVerified ?? true,
       name: options.name,
       ...(options.nonce ? { nonce: options.nonce } : {}),
+      ...(options.jti ? { jti: options.jti } : {}),
     },
   };
 }

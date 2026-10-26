@@ -1091,6 +1091,10 @@
         "settlement": {
           "title": "Régularisation de {month} pour {name}",
           "text": "Issue du calcul du mois par Kin. La page Équité explique pourquoi."
+        },
+        "caregiver_bill": {
+          "title": "Facture de {name} pour les visites effectuées",
+          "text": "Les jours de service et le tarif convenu figurent sur la page Factures. Le paiement attend chaque accord exigé."
         }
       },
       "raisedBy": "Proposé par {name} le {date}",
@@ -1123,12 +1127,16 @@
         "title": "Décidé",
         "text": "Les propositions sur lesquelles le cercle s’est prononcé. Chaque réponse est conservée avec son auteur, la manière et le moment.",
         "states": {
-          "approved": "Approuvé · le paiement partira avec les virements PayPal, la prochaine étape",
+          "approved": "Approuvée · Kin la paie via PayPal",
           "rejected": "Refusé · rien n’est payé",
-          "expired": "Expiré · rien n’est payé"
+          "expired": "Expiré · rien n’est payé",
+          "executing": "Approuvée · paiement en cours via PayPal",
+          "settled": "Approuvée · payée, confirmé par PayPal",
+          "failed": "Approuvée · PayPal ne l’a pas payée, l’organisateur est prévenu",
+          "cancelled": "Annulée · rien n’est payé"
         }
       },
-      "realLocked": "Répondre à un vrai paiement demande de vérifier à nouveau que c’est bien vous. Cela ouvrira avec les paiements."
+      "freshCheckNote": "Approuver de l’argent réel vous demande de vous reconnecter avec votre application d’authentification."
     },
     "bills": {
       "title": "Factures",
@@ -1403,11 +1411,11 @@
     },
     "notices": {
       "answered": "Votre réponse est enregistrée. La proposition attend les autres oui nécessaires.",
-      "approved": "Approuvé. Le paiement partira avec les virements PayPal, la prochaine étape de Kin.",
+      "approved": "Approuvé. Kin le paie via PayPal et l’enregistre dès que PayPal le confirme.",
       "rejected": "Refusé. Rien ne sera payé.",
       "closed": "Cette proposition a déjà été décidée.",
       "refused": "Votre rôle ne permet pas cette action dans ce cercle.",
-      "freshCheck": "Approuver un vrai paiement demande de vérifier à nouveau que c’est bien vous. Cela ouvrira avec les paiements.",
+      "freshCheck": "Approuver un paiement réel exige une nouvelle connexion avec votre application d’authentification. Utilisez le bouton Approuver.",
       "paused": "En pause. Aucun paiement n’est approuvé pendant 24 heures, et tout le monde est prévenu.",
       "resumed": "La pause est levée.",
       "invited": "Invitation enregistrée. La personne rejoindra le cercle en se connectant à Kin avec cette adresse.",
@@ -1416,7 +1424,9 @@
       "restarted": "Vous avez une nouvelle copie du cercle de Rose.",
       "circleCreated": "Votre cercle est prêt. Invitez votre famille depuis l’écran Cercle.",
       "invalidCircle": "Veuillez remplir chaque champ pour créer le cercle.",
-      "dismiss": "Fermer"
+      "dismiss": "Fermer",
+      "stepUpMissing": "Votre accord n’a pas été enregistré : cette connexion n’avait pas de second facteur. Configurez une application d’authentification pour votre compte Kin, puis réessayez.",
+      "stepUpStale": "Votre accord n’a pas été enregistré : cette connexion n’était pas récente. Veuillez réessayer."
     },
     "empty": {
       "attention": "Rien n’attend de oui pour l’instant.",
@@ -1434,6 +1444,89 @@
       "record": "Le registre est vide. Chaque mouvement d’argent confirmé apparaîtra ici, dans l’ordre.",
       "agreement": "Pas encore d’accord. Les parts, le tarif des soins et les seuils d’approbation sont fixés quand la famille se met d’accord.",
       "payees": "Pas encore de bénéficiaires. Les entreprises et les aides que paie le cercle apparaissent ici dès qu’elles sont ajoutées."
+    },
+    "caregiverBilling": {
+      "setupTitle": "Tarifs des aides",
+      "setupText": "Enregistrez le tarif convenu avec chaque aide. Les factures existantes conservent leur tarif initial.",
+      "name": "Nom du bénéficiaire",
+      "payee": "Bénéficiaire des soins",
+      "rate": "Tarif horaire",
+      "save": "Enregistrer le tarif",
+      "saving": "Enregistrement…",
+      "saved": "Tarif enregistré",
+      "formTitle": "Facturer vos visites",
+      "formText": "Une ligne par jour, regroupant toutes les visites. Vérifiez les détails avant l’envoi.",
+      "missingRate": "Demandez à l’organisateur d’enregistrer votre tarif horaire avant de facturer.",
+      "date": "Date du service",
+      "hours": "Heures",
+      "minutes": "Minutes",
+      "addVisit": "Ajouter un jour",
+      "removeVisit": "Supprimer le jour",
+      "review": "Vérifier la facture",
+      "reviewTitle": "Vérifiez votre facture",
+      "change": "Modifier les visites",
+      "submit": "Envoyer la facture",
+      "sending": "Veuillez patienter…",
+      "submitted": "Facture transmise à la famille. Aucun paiement effectué.",
+      "submittedTitle": "Factures de soins transmises",
+      "rateLine": "{rate} par heure",
+      "duration": "{minutes} min",
+      "total": "Total",
+      "simulated": "Facture simulée",
+      "errors": {
+        "invalid": "Vérifiez les dates et les heures et minutes entières.",
+        "date": "Saisissez une date de service valide.",
+        "future": "Seuls les jours de service terminés peuvent être facturés.",
+        "duplicate_date": "Regroupez les visites du même jour sur une ligne.",
+        "rate": "Saisissez un tarif horaire positif valide.",
+        "amount": "Vérifiez le tarif et les visites : le montant ne peut pas être calculé.",
+        "refused": "Vous ne pouvez pas effectuer cette action dans ce cercle.",
+        "missing_rate": "Votre tarif horaire n’est pas encore enregistré.",
+        "rate_changed": "Votre tarif a changé. Modifiez les visites et vérifiez à nouveau.",
+        "duplicate": "Ce jour a déjà été facturé. Modifiez les visites pour le corriger.",
+        "key_reused": "Cet envoi correspond à une autre facture. Vérifiez à nouveau.",
+        "unavailable": "Enregistrement impossible. Vos visites sont conservées. Réessayez.",
+        "not_waiting": "Cette facture a déjà été envoyée ou refusée. Rechargez pour voir où elle en est.",
+        "above_ceiling": "Cette facture dépasse la limite de l’accord pour un seul paiement. Parlez-en à l’organisateur.",
+        "paused": "Le cercle est en pause. Envoyez-la quand la pause sera levée.",
+        "no_agreement": "Le cercle a besoin d’un accord avant que des factures puissent être approuvées.",
+        "receiver": "Saisissez l’adresse e-mail PayPal de l’aidant.",
+        "payment_in_progress": "Un paiement à cet aidant est en cours. Changez l’adresse quand il sera terminé."
+      },
+      "states": {
+        "received": "En attente de la famille",
+        "extracted": "Détails enregistrés",
+        "needs_review": "À vérifier",
+        "ready": "Prête à vérifier",
+        "proposed": "En attente d’approbation",
+        "paid": "Payée",
+        "rejected": "Refusée",
+        "duplicate": "Doublon"
+      },
+      "viewEarlier": "Voir la facture précédente",
+      "choosePayee": "Choisir un bénéficiaire",
+      "reviewText": "Vérifiez les jours et le tarif. L’envoi crée une proposition de paiement soumise à l’accord de la famille ; rien n’est encore payé.",
+      "sendForApproval": "Envoyer pour accord",
+      "decline": "Refuser la facture",
+      "declineConfirm": "Refuser cette facture ? L’aidant pourra en soumettre une corrigée.",
+      "declineYes": "Oui, refuser",
+      "declineKeep": "La garder",
+      "followApproval": "La suivre dans Accords",
+      "proposalStates": {
+        "proposed": "Proposée",
+        "pending_approval": "En attente de l’accord de la famille",
+        "approved": "Approuvée · le paiement suit",
+        "executing": "Paiement en cours via PayPal",
+        "settled": "Payée",
+        "failed": "Échec du paiement · l’organisateur est prévenu",
+        "rejected": "Refusée par la famille",
+        "expired": "Expirée sans accord",
+        "cancelled": "Annulée"
+      },
+      "receiver": "E-mail PayPal pour les paiements",
+      "receiverNone": "Aucun pour l’instant. Les paiements attendent qu’il soit enregistré.",
+      "receiverRecorded": "Les paiements vont à {address}. Saisissez une nouvelle adresse pour la changer.",
+      "receiverPlaceholder": "nom@exemple.com"
     }
   }
 }

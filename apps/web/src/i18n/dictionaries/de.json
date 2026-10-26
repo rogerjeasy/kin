@@ -1091,6 +1091,10 @@
         "settlement": {
           "title": "Ausgleich {month} für {name}",
           "text": "Aus der Monatsberechnung von Kin. Warum, zeigt die Seite „Fairness“."
+        },
+        "caregiver_bill": {
+          "title": "Rechnung von {name} für erledigte Besuche",
+          "text": "Die Einsatztage und der vereinbarte Stundensatz stehen auf der Seite Rechnungen. Die Zahlung wartet auf jedes Ja, das die Vereinbarung verlangt."
         }
       },
       "raisedBy": "Eingereicht von {name}, {date}",
@@ -1123,12 +1127,16 @@
         "title": "Entschieden",
         "text": "Vorschläge, über die der Kreis entschieden hat. Jede Antwort bleibt mit Person, Weg und Zeitpunkt erhalten.",
         "states": {
-          "approved": "Genehmigt · die Zahlung geht mit den PayPal-Auszahlungen raus, die als Nächstes kommen",
+          "approved": "Zugestimmt · Kin zahlt über PayPal",
           "rejected": "Abgelehnt · nichts wird gezahlt",
-          "expired": "Abgelaufen · nichts wird gezahlt"
+          "expired": "Abgelaufen · nichts wird gezahlt",
+          "executing": "Zugestimmt · wird über PayPal bezahlt",
+          "settled": "Zugestimmt · bezahlt, von PayPal bestätigt",
+          "failed": "Zugestimmt · PayPal hat nicht gezahlt, die Organisatorin wird informiert",
+          "cancelled": "Abgebrochen · nichts wird bezahlt"
         }
       },
-      "realLocked": "Eine echte Zahlung zu beantworten, erfordert eine neue Bestätigung, dass Sie es sind. Das öffnet mit den Zahlungen."
+      "freshCheckNote": "Für echtes Geld melden Sie sich erneut mit Ihrer Authenticator-App an."
     },
     "bills": {
       "title": "Rechnungen",
@@ -1403,11 +1411,11 @@
     },
     "notices": {
       "answered": "Ihre Antwort ist festgehalten. Der Vorschlag wartet auf die übrigen Jas, die er braucht.",
-      "approved": "Genehmigt. Die Zahlung geht mit den PayPal-Auszahlungen raus, dem nächsten Schritt von Kin.",
+      "approved": "Zugestimmt. Kin zahlt über PayPal und verbucht es, sobald PayPal bestätigt.",
       "rejected": "Abgelehnt. Es wird nichts gezahlt.",
       "closed": "Über diesen Vorschlag wurde bereits entschieden.",
       "refused": "Ihre Rolle darf das in diesem Kreis nicht.",
-      "freshCheck": "Eine echte Zahlung zu genehmigen, erfordert eine neue Bestätigung, dass Sie es sind. Das öffnet mit den Zahlungen.",
+      "freshCheck": "Eine echte Zahlung zu genehmigen erfordert eine neue Anmeldung mit Ihrer Authenticator-App. Nutzen Sie die Schaltfläche Zustimmen.",
       "paused": "Pausiert. 24 Stunden lang wird keine Zahlung genehmigt, und alle werden informiert.",
       "resumed": "Die Pause ist aufgehoben.",
       "invited": "Einladung festgehalten. Die Person tritt bei, wenn sie sich mit dieser Adresse bei Kin anmeldet.",
@@ -1416,7 +1424,9 @@
       "restarted": "Sie haben eine neue Kopie von Roses Kreis.",
       "circleCreated": "Ihr Kreis ist bereit. Laden Sie Ihre Familie über die Seite Kreis ein.",
       "invalidCircle": "Bitte füllen Sie jedes Feld aus, um den Kreis zu gründen.",
-      "dismiss": "Schließen"
+      "dismiss": "Schließen",
+      "stepUpMissing": "Ihr Ja wurde nicht gespeichert: Diese Anmeldung hatte keinen zweiten Faktor. Richten Sie eine Authenticator-App für Ihr Kin-Konto ein und versuchen Sie es erneut.",
+      "stepUpStale": "Ihr Ja wurde nicht gespeichert: Diese Anmeldung war nicht frisch. Bitte versuchen Sie es erneut."
     },
     "empty": {
       "attention": "Gerade wartet nichts auf ein Ja.",
@@ -1434,6 +1444,89 @@
       "record": "Die Aufzeichnung ist leer. Jede bestätigte Geldbewegung erscheint hier, der Reihe nach.",
       "agreement": "Noch keine Vereinbarung. Anteile, Pflegesatz und Genehmigungsgrenzen werden festgelegt, wenn die Familie sie vereinbart.",
       "payees": "Noch keine Empfänger. Die Firmen und Pflegekräfte, die der Kreis bezahlt, erscheinen hier, sobald sie hinzugefügt sind."
+    },
+    "caregiverBilling": {
+      "setupTitle": "Stundensätze der Pflegekräfte",
+      "setupText": "Halten Sie den vereinbarten Stundensatz fest. Bestehende Rechnungen behalten ihren ursprünglichen Satz.",
+      "name": "Name des Zahlungsempfängers",
+      "payee": "Zahlungsempfänger der Pflegekraft",
+      "rate": "Stundensatz",
+      "save": "Stundensatz speichern",
+      "saving": "Wird gespeichert…",
+      "saved": "Stundensatz gespeichert",
+      "formTitle": "Besuche abrechnen",
+      "formText": "Eine Zeile pro Tag für alle Besuche dieses Tages. Prüfen Sie alle Angaben vor dem Einreichen.",
+      "missingRate": "Bitten Sie die organisierende Person, zuerst Ihren Stundensatz festzuhalten.",
+      "date": "Leistungsdatum",
+      "hours": "Stunden",
+      "minutes": "Minuten",
+      "addVisit": "Tag hinzufügen",
+      "removeVisit": "Tag entfernen",
+      "review": "Rechnung prüfen",
+      "reviewTitle": "Prüfen Sie Ihre Rechnung",
+      "change": "Besuche ändern",
+      "submit": "Rechnung einreichen",
+      "sending": "Bitte warten…",
+      "submitted": "Rechnung zur Prüfung eingereicht. Es wurde nichts ausgezahlt.",
+      "submittedTitle": "Eingereichte Pflegerechnungen",
+      "rateLine": "{rate} pro Stunde",
+      "duration": "{minutes} Min.",
+      "total": "Gesamt",
+      "simulated": "Simulierte Rechnung",
+      "errors": {
+        "invalid": "Prüfen Sie die Daten sowie ganze Stunden und Minuten.",
+        "date": "Geben Sie ein gültiges Leistungsdatum ein.",
+        "future": "Nur abgeschlossene Leistungstage können abgerechnet werden.",
+        "duplicate_date": "Fassen Sie Besuche am selben Tag in einer Zeile zusammen.",
+        "rate": "Geben Sie einen gültigen positiven Stundensatz ein.",
+        "amount": "Prüfen Sie Satz und Besuche. Der Betrag kann nicht sicher berechnet werden.",
+        "refused": "Diese Aktion ist Ihnen in diesem Kreis nicht erlaubt.",
+        "missing_rate": "Ihr Stundensatz wurde noch nicht erfasst.",
+        "rate_changed": "Ihr Satz wurde geändert. Ändern und prüfen Sie die Besuche erneut.",
+        "duplicate": "Dieser Tag wurde bereits abgerechnet. Korrigieren Sie die Besuche.",
+        "key_reused": "Diese Einreichung gehört zu einer anderen Rechnung. Prüfen Sie erneut.",
+        "unavailable": "Speichern fehlgeschlagen. Ihre Besuche bleiben erhalten. Versuchen Sie es erneut.",
+        "not_waiting": "Diese Rechnung wurde bereits gesendet oder abgelehnt. Neu laden, um den Stand zu sehen.",
+        "above_ceiling": "Diese Rechnung liegt über dem Limit der Vereinbarung für eine Zahlung. Sprechen Sie mit der Organisatorin.",
+        "paused": "Der Kreis ist pausiert. Senden Sie sie, sobald die Pause endet.",
+        "no_agreement": "Der Kreis braucht eine Vereinbarung, bevor Rechnungen zugestimmt werden können.",
+        "receiver": "Geben Sie die PayPal-E-Mail-Adresse der Pflegekraft ein.",
+        "payment_in_progress": "Eine Zahlung an diese Pflegekraft läuft. Ändern Sie die Adresse, wenn sie abgeschlossen ist."
+      },
+      "states": {
+        "received": "Wartet auf die Familie",
+        "extracted": "Details erfasst",
+        "needs_review": "Prüfung erforderlich",
+        "ready": "Zur Prüfung bereit",
+        "proposed": "Wartet auf Zustimmung",
+        "paid": "Bezahlt",
+        "rejected": "Abgelehnt",
+        "duplicate": "Duplikat"
+      },
+      "viewEarlier": "Frühere Rechnung ansehen",
+      "choosePayee": "Zahlungsempfänger wählen",
+      "reviewText": "Prüfen Sie die Tage und den Stundensatz. Das Senden erstellt einen Zahlungsvorschlag zur Zustimmung der Familie; bezahlt wird noch nichts.",
+      "sendForApproval": "Zur Zustimmung senden",
+      "decline": "Rechnung ablehnen",
+      "declineConfirm": "Diese Rechnung ablehnen? Die Pflegekraft kann eine korrigierte einreichen.",
+      "declineYes": "Ja, ablehnen",
+      "declineKeep": "Behalten",
+      "followApproval": "In Zustimmungen verfolgen",
+      "proposalStates": {
+        "proposed": "Vorgeschlagen",
+        "pending_approval": "Wartet auf die Zustimmung der Familie",
+        "approved": "Zugestimmt · Zahlung folgt",
+        "executing": "Wird über PayPal bezahlt",
+        "settled": "Bezahlt",
+        "failed": "Zahlung fehlgeschlagen · die Organisatorin wird informiert",
+        "rejected": "Von der Familie abgelehnt",
+        "expired": "Ohne Zustimmung abgelaufen",
+        "cancelled": "Abgebrochen"
+      },
+      "receiver": "PayPal-E-Mail für Auszahlungen",
+      "receiverNone": "Noch keine hinterlegt. Auszahlungen warten, bis eine hinterlegt ist.",
+      "receiverRecorded": "Auszahlungen gehen an {address}. Geben Sie eine neue Adresse ein, um sie zu ändern.",
+      "receiverPlaceholder": "name@beispiel.de"
     }
   }
 }

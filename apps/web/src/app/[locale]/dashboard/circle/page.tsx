@@ -1,5 +1,7 @@
 import { APPROVAL_WINDOW_HOURS, CIRCLE_ROLES, PARENT_LEVELS, PAUSE_HOURS } from "@kin/domain";
 import type { Metadata } from "next";
+import { caregiverAccess } from "@kin/auth";
+import { CaregiverRates } from "@/components/dashboard/caregiver-billing/caregiver-rates";
 
 import { MemberList } from "@/components/dashboard/circle/member-list";
 import { ParentPanel } from "@/components/dashboard/circle/parent-panel";
@@ -23,7 +25,7 @@ export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/circ
 }
 
 export default async function CirclePage({ params }: PageProps<"/[locale]/dashboard/circle">) {
-  const { locale, dictionary, circle } = await dashboardContext(params, "circle");
+  const { locale, dictionary, circle, viewer } = await dashboardContext(params, "circle");
   const { circle: copy, common, empty } = dictionary.dashboard;
   const format = circleFormatters(locale, circle);
   const names = circleNames(circle, dictionary);
@@ -37,6 +39,7 @@ export default async function CirclePage({ params }: PageProps<"/[locale]/dashbo
   return (
     <>
       <PageHeader title={copy.title} lede={copy.lede} />
+      {caregiverAccess({ role: circle.viewer.role, status: "active" }, "caregiver_rate.manage", viewer.kind === "visitor" ? "demo" : viewer.session.accountTypes) ? <CaregiverRates circle={circle} copy={dictionary.dashboard.caregiverBilling} /> : null}
       <div className="grid gap-6 lg:grid-cols-3">
         {parent ? (
           <ParentPanel

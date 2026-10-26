@@ -1091,6 +1091,10 @@
         "settlement": {
           "title": "{month} settlement for {name}",
           "text": "From Kin’s calculation of the month. The Fairness page shows why."
+        },
+        "caregiver_bill": {
+          "title": "{name}’s bill for completed visits",
+          "text": "The service days and the agreed rate are on the Bills page. Payment waits for every yes the agreement asks for."
         }
       },
       "raisedBy": "Raised by {name}, {date}",
@@ -1123,12 +1127,16 @@
         "title": "Answered",
         "text": "Proposals the circle has decided. Each answer is kept with who gave it, how and when.",
         "states": {
-          "approved": "Approved · the payment goes out with PayPal payouts, which come next",
+          "approved": "Approved · Kin is paying it through PayPal",
           "rejected": "Declined · nothing is paid",
-          "expired": "Expired · nothing is paid"
+          "expired": "Expired · nothing is paid",
+          "executing": "Approved · being paid through PayPal",
+          "settled": "Approved · paid, as PayPal confirmed",
+          "failed": "Approved · PayPal did not pay it, and the organizer is told",
+          "cancelled": "Cancelled · nothing is paid"
         }
       },
-      "realLocked": "Answering a real payment needs a fresh check that it is you. It opens with payments."
+      "freshCheckNote": "Approving real money asks you to sign in again with your authenticator app."
     },
     "bills": {
       "title": "Bills",
@@ -1403,11 +1411,11 @@
     },
     "notices": {
       "answered": "Your answer is recorded. The proposal waits for the other yeses it needs.",
-      "approved": "Approved. The payment goes out with PayPal payouts, which come next in Kin.",
+      "approved": "Approved. Kin pays it through PayPal and records it once PayPal confirms.",
       "rejected": "Declined. Nothing will be paid.",
       "closed": "That proposal was already decided.",
       "refused": "Your role cannot do that in this circle.",
-      "freshCheck": "Approving a real payment needs a fresh check that it is you. It opens with payments.",
+      "freshCheck": "Approving a real payment needs a fresh sign-in with your authenticator app. Use the Approve button.",
       "paused": "Paused. No payment is approved for 24 hours, and everyone is told.",
       "resumed": "The pause is lifted.",
       "invited": "Invitation recorded. They join when they sign in to Kin with that address.",
@@ -1416,7 +1424,9 @@
       "restarted": "You have a fresh copy of Rose’s circle.",
       "circleCreated": "Your circle is ready. Invite your family from the Circle screen.",
       "invalidCircle": "Please fill in every field to start the circle.",
-      "dismiss": "Dismiss"
+      "dismiss": "Dismiss",
+      "stepUpMissing": "Your yes was not recorded: that sign-in had no second factor. Set up an authenticator app for your Kin account, then try again.",
+      "stepUpStale": "Your yes was not recorded: that sign-in was not fresh. Please try again."
     },
     "empty": {
       "attention": "Nothing needs a yes right now.",
@@ -1434,6 +1444,89 @@
       "record": "The record is empty. Every confirmed movement of money will appear here, in order.",
       "agreement": "No agreement yet. The shares, the care rate and the approval thresholds are set when the family agrees them.",
       "payees": "No payees yet. The companies and caregivers the circle pays appear here once they are added."
+    },
+    "caregiverBilling": {
+      "setupTitle": "Caregiver rates",
+      "setupText": "Record the rate agreed with each caregiver. Existing bills keep their original rate.",
+      "name": "Payee name",
+      "payee": "Caregiver payee",
+      "rate": "Hourly rate",
+      "save": "Save rate",
+      "saving": "Saving…",
+      "saved": "Rate saved",
+      "formTitle": "Bill for your visits",
+      "formText": "Enter one row per day, combining all visits on that day. Review every detail before submitting.",
+      "missingRate": "Ask the organizer to record your hourly rate before you bill.",
+      "date": "Service date",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "addVisit": "Add service day",
+      "removeVisit": "Remove day",
+      "review": "Review bill",
+      "reviewTitle": "Check your bill",
+      "change": "Change visits",
+      "submit": "Submit bill",
+      "sending": "Please wait…",
+      "submitted": "Bill submitted for family review. No payment has been made.",
+      "submittedTitle": "Submitted caregiver bills",
+      "rateLine": "{rate} per hour",
+      "duration": "{minutes} min",
+      "total": "Total",
+      "simulated": "Simulated bill",
+      "errors": {
+        "invalid": "Check the service dates and whole hours and minutes.",
+        "date": "Enter a valid service date.",
+        "future": "Only completed service days can be billed.",
+        "duplicate_date": "Combine visits on the same day into one row.",
+        "rate": "Enter a valid positive hourly rate.",
+        "amount": "This bill cannot be valued safely. Check the rate and visits.",
+        "refused": "You cannot perform this action in this circle.",
+        "missing_rate": "Your hourly rate has not been recorded yet.",
+        "rate_changed": "Your rate changed. Change visits and review the bill again.",
+        "duplicate": "This service day is already billed. Change visits to correct it.",
+        "key_reused": "This submission was already used for a different bill. Review again.",
+        "unavailable": "We could not save this. Your visits are kept; please try again.",
+        "not_waiting": "This bill was already sent or declined. Reload to see where it stands.",
+        "above_ceiling": "This bill is above the agreement’s limit for one payment. Talk to the organizer.",
+        "paused": "The circle is paused. Send it once the pause lifts.",
+        "no_agreement": "The circle needs an agreement before bills can be approved.",
+        "receiver": "Enter the caregiver’s PayPal email address.",
+        "payment_in_progress": "A payment to this caregiver is under way. Change the address once it is finished."
+      },
+      "states": {
+        "received": "Awaiting family review",
+        "extracted": "Details recorded",
+        "needs_review": "Needs review",
+        "ready": "Ready for review",
+        "proposed": "Awaiting approval",
+        "paid": "Paid",
+        "rejected": "Rejected",
+        "duplicate": "Duplicate"
+      },
+      "viewEarlier": "View earlier bill",
+      "choosePayee": "Choose a payee",
+      "reviewText": "Check the days and the rate. Sending raises a payment proposal for the family’s approval; it pays nothing yet.",
+      "sendForApproval": "Send for approval",
+      "decline": "Decline bill",
+      "declineConfirm": "Decline this bill? The caregiver can submit a corrected one.",
+      "declineYes": "Yes, decline",
+      "declineKeep": "Keep it",
+      "followApproval": "Follow it in Approvals",
+      "proposalStates": {
+        "proposed": "Proposed",
+        "pending_approval": "Waiting for the family’s approval",
+        "approved": "Approved · payment comes next",
+        "executing": "Being paid through PayPal",
+        "settled": "Paid",
+        "failed": "Payment failed · the organizer is told",
+        "rejected": "Declined by the family",
+        "expired": "Expired without approval",
+        "cancelled": "Cancelled"
+      },
+      "receiver": "PayPal email for payouts",
+      "receiverNone": "None recorded yet. Payouts wait until one is.",
+      "receiverRecorded": "Payouts go to {address}. Enter a new address to change it.",
+      "receiverPlaceholder": "name@example.com"
     }
   }
 }
