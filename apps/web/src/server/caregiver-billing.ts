@@ -1,5 +1,5 @@
 import { caregiverAccess, type BillingAccount, type CaregiverAction } from "@kin/auth";
-import { asPerson, CaregiverBillingError, configureCaregiver, declineCaregiverBill, sendCaregiverBill, setCaregiverReceiver, submitCaregiverBill, type CircleSnapshot, type Database, type CaregiverBillingReason } from "@kin/db";
+import { asPerson, CaregiverBillingError, configureCaregiver, declineCaregiverBill, sendCaregiverBill, setOwnReceiver, submitCaregiverBill, type CircleSnapshot, type Database, type CaregiverBillingReason } from "@kin/db";
 import { calculateCaregiverBill, CaregiverBillError, calendarDay, centsFromDecimal, InvalidDecimalError, type CaregiverBill } from "@kin/domain";
 import { randomUUID } from "node:crypto";
 
@@ -16,6 +16,7 @@ const ACTIONS = {
   submit: "caregiver_bill.submit",
   send: "caregiver_bill.review",
   decline: "caregiver_bill.review",
+  receiver: "caregiver_receiver.set",
 } as const satisfies Record<string, CaregiverAction>;
 
 /**
@@ -32,6 +33,7 @@ export async function runCaregiverBilling(context: BillingContext, input: unknow
     if (operation === "configure") return await configure(context, row);
     if (operation === "review") return review(context.circle, row);
     if (operation === "send" || operation === "decline") return await decide(context, row, operation);
+    if (operation === "receiver") return await receiver(context, row);
     return await submit(context, row);
   } catch (error) {
     if (error instanceof CaregiverBillingError && error.billId !== null) return { ok: false, reason: error.reason, billId: error.billId };
@@ -42,19 +44,19 @@ export async function runCaregiverBilling(context: BillingContext, input: unknow
 }
 
 async function configure(context: BillingContext, row: Record<string, unknown>): Promise<BillingResult> {
-  if (!keys(row, ["operation", "memberId", "payeeId", "name", "rate", "receiver"]) || typeof row.memberId !== "string" || typeof row.name !== "string" || typeof row.rate !== "string" || (row.payeeId !== null && typeof row.payeeId !== "string")) return refusal("invalid");
-  if (row.receiver !== undefined && row.receiver !== null && typeof row.receiver !== "string") return refusal("invalid");
+  if (!keys(row, ["operation", "memberId", "payeeId", "name", "rate"]) || typeof row.memberId !== "string" || typeof row.name !== "string" || typeof row.rate !== "string" || (row.payeeId !== null && typeof row.payeeId !== "string")) return refusal("invalid");
   const rateCentsPerHour = centsFromDecimal(row.rate.trim(), context.circle.circle.currency);
   const { memberId, name, payeeId } = row;
-  // An empty address leaves the recorded one as it is; the database checks a new one.
-  const receiver = typeof row.receiver === "string" && row.receiver.trim() !== "" ? row.receiver.trim() : null;
-  const circleId = context.circle.circle.id;
-  const id = await asPerson(context.db, context.userId, async (tx) => {
-    const configured = await configureCaregiver(tx, { circleId, memberId, payeeId, name, rateCentsPerHour });
-    if (receiver !== null) await setCaregiverReceiver(tx, { circleId, payeeId: configured, email: receiver });
-    return configured;
-  });
+  const id = await asPerson(context.db, context.userId, (tx) => configureCaregiver(tx, { circleId: context.circle.circle.id, memberId, payeeId, name, rateCentsPerHour }));
   return { ok: true, id };
+}
+
+/** The caregiver says where their own pay goes. */
+async function receiver(context: BillingContext, row: Record<string, unknown>): Promise<BillingResult> {
+  if (!keys(row, ["operation", "email"]) || typeof row.email !== "string") return refusal("invalid");
+  const email = row.email;
+  await asPerson(context.db, context.userId, (tx) => setOwnReceiver(tx, { circleId: context.circle.circle.id, email }));
+  return { ok: true, id: context.circle.viewer.memberId };
 }
 
 function review(circle: CircleSnapshot, row: Record<string, unknown>): BillingResult {

@@ -1121,7 +1121,9 @@
       "notes": {
         "newPayee": "Un destinatario nuevo. Se avisó a todo el círculo.",
         "payeeIsMember": "El pago es para {name}, así que otra persona también debe decir que sí.",
-        "abovePool": "Supera lo que hay hoy en el fondo ({pool}). Solo se paga cuando haya llegado suficiente dinero."
+        "abovePool": "Supera lo que hay hoy en el fondo ({pool}). Solo se paga cuando haya llegado suficiente dinero.",
+        "receiver": "Pagado por PayPal a {address}, la dirección que dio {name}",
+        "noReceiver": "{name} aún no ha añadido una dirección de PayPal. El pago la espera."
       },
       "answered": {
         "title": "Decidido",
@@ -1491,7 +1493,7 @@
         "paused": "El círculo está en pausa. Envíala cuando termine la pausa.",
         "no_agreement": "El círculo necesita un acuerdo antes de aprobar facturas.",
         "receiver": "Escribe el email de PayPal de la cuidadora.",
-        "payment_in_progress": "Hay un pago en curso a esta cuidadora. Cambia la dirección cuando termine."
+        "payment_in_progress": "Un pago para ti espera aprobación o está en curso. Cambia la dirección cuando termine."
       },
       "states": {
         "received": "Pendiente de revisión familiar",
@@ -1523,10 +1525,15 @@
         "expired": "Caducada sin aprobación",
         "cancelled": "Cancelada"
       },
-      "receiver": "Email de PayPal para los pagos",
-      "receiverNone": "Aún no hay ninguno. Los pagos esperan hasta que se registre.",
-      "receiverRecorded": "Los pagos van a {address}. Escribe una dirección nueva para cambiarla.",
-      "receiverPlaceholder": "nombre@ejemplo.com"
+      "receiver": "Tu email de PayPal para los pagos",
+      "receiverNone": "Aún no hay ninguno. Tu pago espera hasta que añadas uno.",
+      "receiverRecorded": "Los pagos van a {address}.",
+      "receiverPlaceholder": "nombre@ejemplo.com",
+      "receiverTitle": "Adónde va tu pago",
+      "receiverText": "Solo tú puedes indicarlo. No puede cambiar mientras un pago para ti esté pendiente o en curso.",
+      "receiverSave": "Guardar dirección",
+      "receiverSaved": "Dirección guardada",
+      "receiverMissing": "{name} aún no ha añadido una dirección de PayPal. Sus pagos esperan hasta que lo haga."
     }
   }
 }

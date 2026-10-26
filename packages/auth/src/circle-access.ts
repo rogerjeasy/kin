@@ -29,6 +29,8 @@ export const CIRCLE_ACTIONS = {
   "audit.view": ["organizer"],
   "caregiver_rate.manage": ["organizer"],
   "caregiver_bill.submit": ["caregiver"],
+  /** Say where one's own pay goes. Nobody else may, so nobody can redirect it. */
+  "caregiver_receiver.set": ["caregiver"],
   /** Send a caregiver's bill for the family's approval, or decline it: the members who share the cost. */
   "caregiver_bill.review": ["organizer", "contributor"],
 } as const satisfies Record<string, readonly CircleRole[]>;

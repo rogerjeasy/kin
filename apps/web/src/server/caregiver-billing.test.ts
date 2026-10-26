@@ -59,19 +59,21 @@ describe("caregiver billing at the untrusted request boundary", () => {
     expect(await runCaregiverBilling({ db: db.app, userId: circle.userId, circle: await snapshot(circle.userId), accountTypes: "demo" }, { operation: "review", visits })).toEqual({ ok: false, reason: "refused" });
   });
 
-  it("records the caregiver's PayPal address with the rate, in one step, and refuses one that is not an address", async () => {
-    const { circle, snapshot } = await setup();
+  it("lets only the caregiver record where their own pay goes, and refuses an address that is not one", async () => {
+    const { circle, caregiver, snapshot } = await setup();
+    const asCaregiver = { db: db.app, userId: caregiver, circle: await snapshot(caregiver), accountTypes: ["caregiver" as const] };
+    expect(await runCaregiverBilling(asCaregiver, { operation: "receiver", email: "amara@example.com" })).toMatchObject({ ok: true });
+    expect((await snapshot(circle.userId)).payees.find((payee) => payee.id === circle.payees.amara)?.receiver).toBe("a••••@example.com");
+    expect(await runCaregiverBilling(asCaregiver, { operation: "receiver", email: "not an address" })).toEqual({ ok: false, reason: "receiver" });
+    for (const input of [{ operation: "receiver", email: 42 }, { operation: "receiver", email: "a@example.com", payeeId: circle.payees.amara }]) {
+      expect(await runCaregiverBilling(asCaregiver, input)).toEqual({ ok: false, reason: "invalid" });
+    }
+    // The organizer may not, through the request boundary or by naming the old field.
     const organizer = { db: db.app, userId: circle.userId, circle: await snapshot(circle.userId), accountTypes: ["family_member" as const] };
-    const configure = (receiver: unknown, rate = "23.00") => runCaregiverBilling(organizer, { operation: "configure", memberId: circle.members.amara, payeeId: circle.payees.amara, name: "Amara", rate, receiver });
-    expect(await configure("amara@example.com")).toMatchObject({ ok: true });
-    expect((await snapshot(circle.userId)).payees.find((payee) => payee.id === circle.payees.amara)?.receiver).toBe("a••••@example.com");
-    // A bad address undoes the rate change made beside it.
-    expect(await configure("not an address", "99.00")).toEqual({ ok: false, reason: "receiver" });
-    expect((await snapshot(circle.userId)).payees.find((payee) => payee.id === circle.payees.amara)?.caregiverRateCentsPerHour).toBe(2300);
-    expect(await configure(42)).toEqual({ ok: false, reason: "invalid" });
-    // Left empty, the recorded address stays.
-    expect(await configure("")).toMatchObject({ ok: true });
-    expect((await snapshot(circle.userId)).payees.find((payee) => payee.id === circle.payees.amara)?.receiver).toBe("a••••@example.com");
+    expect(await runCaregiverBilling(organizer, { operation: "receiver", email: "elena@example.com" })).toEqual({ ok: false, reason: "refused" });
+    expect(await runCaregiverBilling(organizer, { operation: "configure", memberId: circle.members.amara, payeeId: circle.payees.amara, name: "Amara", rate: "22.00", receiver: "elena@example.com" })).toEqual({ ok: false, reason: "invalid" });
+    // A caregiver's account type is needed as well as the caregiver seat.
+    expect(await runCaregiverBilling({ ...asCaregiver, accountTypes: ["family_member"] }, { operation: "receiver", email: "a@example.com" })).toEqual({ ok: false, reason: "refused" });
   });
 
   describe("the family's review", () => {

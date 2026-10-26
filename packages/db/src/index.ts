@@ -1,5 +1,5 @@
 export { connect } from "./connection.ts";
-export { CaregiverBillingError, configureCaregiver, setCaregiverReceiver, submitCaregiverBill } from "./caregiver-billing.ts";
+export { CaregiverBillingError, configureCaregiver, setOwnReceiver, submitCaregiverBill } from "./caregiver-billing.ts";
 export type { CaregiverBillingReason } from "./caregiver-billing.ts";
 export { declineCaregiverBill, sendCaregiverBill } from "./caregiver-review.ts";
 export {

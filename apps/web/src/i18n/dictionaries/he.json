@@ -1121,7 +1121,9 @@
       "notes": {
         "newPayee": "מוטב חדש. כל המעגל קיבל הודעה.",
         "payeeIsMember": "התשלום הוא ל{name}, ולכן נדרש גם ״כן״ מצד נוסף במעגל.",
-        "abovePool": "יותר ממה שיש היום בקופה ({pool}). הסכום ישולם רק אחרי שיגיע מספיק כסף."
+        "abovePool": "יותר ממה שיש היום בקופה ({pool}). הסכום ישולם רק אחרי שיגיע מספיק כסף.",
+        "receiver": "ישולם ב-PayPal אל {address}, הכתובת ש-{name} מסרה",
+        "noReceiver": "{name} עדיין לא הוסיפה כתובת PayPal. התשלום ממתין לכך."
       },
       "answered": {
         "title": "הוחלט",
@@ -1491,7 +1493,7 @@
         "paused": "המעגל מושהה. שלחו אותו כשההשהיה תסתיים.",
         "no_agreement": "המעגל צריך הסכם לפני שאפשר לאשר חשבונות.",
         "receiver": "הזינו את כתובת האימייל של PayPal של המטפלת.",
-        "payment_in_progress": "תשלום למטפלת הזו מתבצע כעת. שנו את הכתובת כשיסתיים."
+        "payment_in_progress": "תשלום אליכם ממתין לאישור או מתבצע. שנו את הכתובת כשיסתיים."
       },
       "states": {
         "received": "ממתין לבדיקת המשפחה",
@@ -1523,10 +1525,15 @@
         "expired": "פג תוקף ללא אישור",
         "cancelled": "בוטל"
       },
-      "receiver": "אימייל PayPal לתשלומים",
-      "receiverNone": "עדיין לא נרשם. התשלומים ממתינים עד שיירשם.",
-      "receiverRecorded": "התשלומים נשלחים אל {address}. הזינו כתובת חדשה כדי לשנות.",
-      "receiverPlaceholder": "name@example.com"
+      "receiver": "האימייל שלכם ב-PayPal לתשלומים",
+      "receiverNone": "עדיין לא נרשם. השכר שלכם ממתין עד שתוסיפו.",
+      "receiverRecorded": "התשלומים נשלחים אל {address}.",
+      "receiverPlaceholder": "name@example.com",
+      "receiverTitle": "לאן השכר שלכם הולך",
+      "receiverText": "רק אתם יכולים לקבוע זאת. אי אפשר לשנות כל עוד תשלום אליכם ממתין או מתבצע.",
+      "receiverSave": "שמירת הכתובת",
+      "receiverSaved": "הכתובת נשמרה",
+      "receiverMissing": "{name} עדיין לא הוסיפה כתובת PayPal. התשלומים שלה ממתינים עד שתוסיף."
     }
   }
 }

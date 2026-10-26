@@ -47,6 +47,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
     poolCents: may(circle, "money.view") ? monthTotals(circle, period).poolCents : null,
     now: circle.circle.now,
     month: slots.month,
+    receiverOf: (payeeId) => circle.payees.find((payee) => payee.id === payeeId)?.receiver ?? null,
   };
   const waiting = waitingProposals(circle).toSorted((a, b) => Number(b.viewerCanAnswer) - Number(a.viewerCanAnswer));
   const answered = circle.proposals.filter((proposal) => DECIDED.some((state) => state === proposal.state)).toReversed();

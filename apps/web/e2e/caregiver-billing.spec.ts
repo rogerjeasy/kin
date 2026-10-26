@@ -6,16 +6,23 @@ import { viewports } from "./support/viewports";
 import french from "../src/i18n/dictionaries/fr.json" with { type: "json" };
 import arabic from "../src/i18n/dictionaries/ar.json" with { type: "json" };
 
-async function configure(page: Page, name?: string, receiver?: string) {
+async function configure(page: Page, name?: string) {
   await page.goto("/dashboard/circle");
   const setup = page.getByRole("region", { name: "Caregiver rates" });
   if (name) await setup.getByLabel("Payee name").fill(name);
   await setup.getByLabel("Hourly rate").fill("22.00");
-  if (receiver) await setup.getByLabel("PayPal email for payouts").fill(receiver);
   await setup.getByRole("button", { name: "Save rate" }).click();
   await expect(setup.getByRole("status")).toContainText("Rate saved");
-  // Only a masked address is ever shown back.
-  if (receiver) await expect(setup.getByText(`Payouts go to ${receiver.slice(0, 1)}••••${receiver.slice(receiver.indexOf("@"))}`)).toBeVisible();
+}
+
+/** The caregiver says where their own pay goes; only a masked address is ever shown back. */
+async function addReceiver(page: Page, email: string) {
+  await page.goto("/dashboard/bills");
+  const panel = page.getByRole("region", { name: "Where your pay goes" });
+  await panel.getByLabel("Your PayPal email for payouts").fill(email);
+  await panel.getByRole("button", { name: "Save address" }).click();
+  await expect(panel.getByRole("status")).toContainText("Address saved");
+  await expect(panel.getByText(`Payouts go to ${email.slice(0, 1)}••••${email.slice(email.indexOf("@"))}`)).toBeVisible();
 }
 
 for (const viewport of [...viewports, { name: "narrow", width: 320, height: 740 }]) {
@@ -23,9 +30,11 @@ for (const viewport of [...viewports, { name: "narrow", width: 320, height: 740 
     test.use({ viewport });
     test("sets the rate, reviews and submits a bill that the family can inspect", async ({ page }) => {
       await startDemo(page);
-      await configure(page, undefined, "amara.ndlovu@personal.example.com");
+      await configure(page);
       await expectNoHorizontalOverflow(page);
       await seatAs(page, "Amara");
+      await addReceiver(page, "amara.ndlovu@personal.example.com");
+      await expectNoHorizontalOverflow(page);
       await page.goto("/dashboard/bills");
       const form = page.getByRole("region", { name: "Bill for your visits" });
       await form.getByLabel("Service date").fill("2026-10-01");
@@ -53,6 +62,8 @@ for (const viewport of [...viewports, { name: "narrow", width: 320, height: 740 
       await review.getByRole("link", { name: "Follow it in Approvals" }).click();
       const proposal = page.getByRole("article", { name: "Amara’s bill for completed visits" });
       await expect(proposal).toContainText("$88.00");
+      // The family sees where the money will go before saying yes.
+      await expect(proposal).toContainText("Paid by PayPal to a••••@personal.example.com, the address Amara gave");
       await expectNoHorizontalOverflow(page);
 
       // $88.00 is above Rose's $50.00, so Rose decides.

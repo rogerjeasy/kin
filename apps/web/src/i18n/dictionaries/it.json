@@ -1121,7 +1121,9 @@
       "notes": {
         "newPayee": "Un nuovo beneficiario. Tutta la cerchia è stata avvisata.",
         "payeeIsMember": "Il pagamento va a {name}, quindi serve anche il sì di qualcun altro.",
-        "abovePool": "Più di quanto c’è oggi nella cassa comune ({pool}). Viene pagato solo quando arriva abbastanza denaro."
+        "abovePool": "Più di quanto c’è oggi nella cassa comune ({pool}). Viene pagato solo quando arriva abbastanza denaro.",
+        "receiver": "Pagato con PayPal a {address}, l’indirizzo dato da {name}",
+        "noReceiver": "{name} non ha ancora aggiunto un indirizzo PayPal. Il pagamento lo attende."
       },
       "answered": {
         "title": "Deciso",
@@ -1491,7 +1493,7 @@
         "paused": "Il cerchio è in pausa. Inviala quando la pausa finisce.",
         "no_agreement": "Il cerchio ha bisogno di un accordo prima di approvare fatture.",
         "receiver": "Inserisci l’indirizzo email PayPal della badante.",
-        "payment_in_progress": "È in corso un pagamento a questa badante. Cambia l’indirizzo quando è concluso."
+        "payment_in_progress": "Un pagamento per te attende l’approvazione o è in corso. Cambia l’indirizzo quando è concluso."
       },
       "states": {
         "received": "In attesa della famiglia",
@@ -1523,10 +1525,15 @@
         "expired": "Scaduta senza approvazione",
         "cancelled": "Annullata"
       },
-      "receiver": "Email PayPal per i pagamenti",
-      "receiverNone": "Nessuna registrata. I pagamenti attendono finché non c’è.",
-      "receiverRecorded": "I pagamenti vanno a {address}. Inserisci un nuovo indirizzo per cambiarlo.",
-      "receiverPlaceholder": "nome@esempio.it"
+      "receiver": "La tua email PayPal per i pagamenti",
+      "receiverNone": "Nessuna registrata. La tua paga attende finché non ne aggiungi una.",
+      "receiverRecorded": "I pagamenti vanno a {address}.",
+      "receiverPlaceholder": "nome@esempio.it",
+      "receiverTitle": "Dove va la tua paga",
+      "receiverText": "Solo tu puoi indicarla. Non può cambiare mentre un pagamento per te è in attesa o in corso.",
+      "receiverSave": "Salva indirizzo",
+      "receiverSaved": "Indirizzo salvato",
+      "receiverMissing": "{name} non ha ancora aggiunto un indirizzo PayPal. I suoi pagamenti attendono."
     }
   }
 }

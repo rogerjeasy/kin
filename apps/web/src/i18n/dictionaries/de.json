@@ -1121,7 +1121,9 @@
       "notes": {
         "newPayee": "Ein neuer Zahlungsempfänger. Alle im Kreis wurden benachrichtigt.",
         "payeeIsMember": "{name} erhält das Geld, deshalb muss auch jemand anderes Ja sagen.",
-        "abovePool": "Mehr, als heute in der Kasse ist ({pool}). Es wird erst bezahlt, wenn genug Geld eingegangen ist."
+        "abovePool": "Mehr, als heute in der Kasse ist ({pool}). Es wird erst bezahlt, wenn genug Geld eingegangen ist.",
+        "receiver": "Über PayPal an {address}, die Adresse von {name}",
+        "noReceiver": "{name} hat noch keine PayPal-Adresse angegeben. Die Zahlung wartet darauf."
       },
       "answered": {
         "title": "Entschieden",
@@ -1491,7 +1493,7 @@
         "paused": "Der Kreis ist pausiert. Senden Sie sie, sobald die Pause endet.",
         "no_agreement": "Der Kreis braucht eine Vereinbarung, bevor Rechnungen zugestimmt werden können.",
         "receiver": "Geben Sie die PayPal-E-Mail-Adresse der Pflegekraft ein.",
-        "payment_in_progress": "Eine Zahlung an diese Pflegekraft läuft. Ändern Sie die Adresse, wenn sie abgeschlossen ist."
+        "payment_in_progress": "Eine Zahlung an Sie wartet auf Zustimmung oder läuft. Ändern Sie die Adresse, wenn sie abgeschlossen ist."
       },
       "states": {
         "received": "Wartet auf die Familie",
@@ -1523,10 +1525,15 @@
         "expired": "Ohne Zustimmung abgelaufen",
         "cancelled": "Abgebrochen"
       },
-      "receiver": "PayPal-E-Mail für Auszahlungen",
-      "receiverNone": "Noch keine hinterlegt. Auszahlungen warten, bis eine hinterlegt ist.",
-      "receiverRecorded": "Auszahlungen gehen an {address}. Geben Sie eine neue Adresse ein, um sie zu ändern.",
-      "receiverPlaceholder": "name@beispiel.de"
+      "receiver": "Ihre PayPal-E-Mail für Auszahlungen",
+      "receiverNone": "Noch keine hinterlegt. Ihr Lohn wartet, bis Sie eine angeben.",
+      "receiverRecorded": "Auszahlungen gehen an {address}.",
+      "receiverPlaceholder": "name@beispiel.de",
+      "receiverTitle": "Wohin Ihr Lohn geht",
+      "receiverText": "Nur Sie können das festlegen. Solange eine Zahlung an Sie wartet oder läuft, lässt es sich nicht ändern.",
+      "receiverSave": "Adresse speichern",
+      "receiverSaved": "Adresse gespeichert",
+      "receiverMissing": "{name} hat noch keine PayPal-Adresse angegeben. Die Auszahlungen warten darauf."
     }
   }
 }

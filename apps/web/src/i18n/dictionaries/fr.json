@@ -1121,7 +1121,9 @@
       "notes": {
         "newPayee": "Un nouveau bénéficiaire. Tout le cercle a été prévenu.",
         "payeeIsMember": "Ce paiement va à {name} : une autre personne doit donc aussi dire oui.",
-        "abovePool": "Plus que ce que contient la cagnotte aujourd’hui ({pool}). Le paiement n’aura lieu qu’une fois assez d’argent arrivé."
+        "abovePool": "Plus que ce que contient la cagnotte aujourd’hui ({pool}). Le paiement n’aura lieu qu’une fois assez d’argent arrivé.",
+        "receiver": "Payé par PayPal à {address}, l’adresse donnée par {name}",
+        "noReceiver": "{name} n’a pas encore ajouté d’adresse PayPal. Le paiement l’attend."
       },
       "answered": {
         "title": "Décidé",
@@ -1491,7 +1493,7 @@
         "paused": "Le cercle est en pause. Envoyez-la quand la pause sera levée.",
         "no_agreement": "Le cercle a besoin d’un accord avant que des factures puissent être approuvées.",
         "receiver": "Saisissez l’adresse e-mail PayPal de l’aidant.",
-        "payment_in_progress": "Un paiement à cet aidant est en cours. Changez l’adresse quand il sera terminé."
+        "payment_in_progress": "Un paiement vous concernant attend un accord ou est en cours. Changez l’adresse quand il sera terminé."
       },
       "states": {
         "received": "En attente de la famille",
@@ -1523,10 +1525,15 @@
         "expired": "Expirée sans accord",
         "cancelled": "Annulée"
       },
-      "receiver": "E-mail PayPal pour les paiements",
-      "receiverNone": "Aucun pour l’instant. Les paiements attendent qu’il soit enregistré.",
-      "receiverRecorded": "Les paiements vont à {address}. Saisissez une nouvelle adresse pour la changer.",
-      "receiverPlaceholder": "nom@exemple.com"
+      "receiver": "Votre e-mail PayPal pour les paiements",
+      "receiverNone": "Aucune pour l’instant. Votre paie attend que vous en ajoutiez une.",
+      "receiverRecorded": "Les paiements vont à {address}.",
+      "receiverPlaceholder": "nom@exemple.com",
+      "receiverTitle": "Où va votre paie",
+      "receiverText": "Vous seul pouvez la définir. Elle ne peut pas changer tant qu’un paiement vous concernant est en attente ou en cours.",
+      "receiverSave": "Enregistrer l’adresse",
+      "receiverSaved": "Adresse enregistrée",
+      "receiverMissing": "{name} n’a pas encore ajouté d’adresse PayPal. Ses paiements attendent qu’elle soit ajoutée."
     }
   }
 }

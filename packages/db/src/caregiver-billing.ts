@@ -30,10 +30,14 @@ export async function configureCaregiver(tx: Transaction, input: Configuration):
   });
 }
 
-/** Records where an organizer says a caregiver's pay goes. The database checks the address and refuses a change mid-payment. */
-export async function setCaregiverReceiver(tx: Transaction, input: { readonly circleId: string; readonly payeeId: string; readonly email: string }): Promise<void> {
+/**
+ * Records where the caregiver's own pay goes. Only the caregiver may, for
+ * their own payee; the database checks the address and refuses to change it
+ * while a payment to them is waiting for approval or under way.
+ */
+export async function setOwnReceiver(tx: Transaction, input: { readonly circleId: string; readonly email: string }): Promise<void> {
   try {
-    await operation(() => tx.execute(sql`select kin_private.set_caregiver_receiver(${input.circleId}::uuid, ${input.payeeId}::uuid, ${input.email})`));
+    await operation(() => tx.execute(sql`select kin_private.set_own_receiver(${input.circleId}::uuid, ${input.email})`));
   } catch (error) {
     // The database's only check_violation here is the address itself.
     if (error instanceof CaregiverBillingError && error.reason === "invalid") throw new CaregiverBillingError("receiver");

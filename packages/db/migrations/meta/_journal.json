@@ -64,6 +64,13 @@
       "when": 1793049332106,
       "tag": "0008_payouts",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793050602616,
+      "tag": "0009_own-receiver",
+      "breakpoints": true
     }
   ]
 }

@@ -12,7 +12,7 @@ describe("what a member may do in a circle", () => {
   });
 
   it("lets a caregiver see only their own payments, and pull the pause switch", () => {
-    expect(allowedActions(active("caregiver"))).toEqual(["circle.view", "own_payments.view", "circle.pause", "caregiver_bill.submit"]);
+    expect(allowedActions(active("caregiver"))).toEqual(["circle.view", "own_payments.view", "circle.pause", "caregiver_bill.submit", "caregiver_receiver.set"]);
     expect(authorize(active("caregiver"), "money.view")).toEqual({ allowed: false, reason: "role" });
     expect(authorize(active("caregiver"), "proposal.answer")).toEqual({ allowed: false, reason: "role" });
   });
@@ -39,11 +39,12 @@ describe("what a member may do in a circle", () => {
       expect(authorize(active(role), "caregiver_bill.submit").allowed).toBe(role === "caregiver");
       expect(authorize(active(role), "caregiver_rate.manage").allowed).toBe(role === "organizer");
       expect(authorize(active(role), "caregiver_bill.review").allowed).toBe(role === "organizer" || role === "contributor");
+      expect(authorize(active(role), "caregiver_receiver.set").allowed).toBe(role === "caregiver");
     }
   });
 
   it("lets an organizer run the circle but not submit a caregiver's own bill", () => {
-    expect(allowedActions(active("organizer"))).toEqual(Object.keys(CIRCLE_ACTIONS).filter((action) => action !== "caregiver_bill.submit"));
+    expect(allowedActions(active("organizer"))).toEqual(Object.keys(CIRCLE_ACTIONS).filter((action) => action !== "caregiver_bill.submit" && action !== "caregiver_receiver.set"));
   });
 
   it.each(Object.keys(CIRCLE_ACTIONS) as CircleAction[])("refuses %s to anyone without an active seat", (action) => {

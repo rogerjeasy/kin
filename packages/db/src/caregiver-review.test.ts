@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { configureCaregiver, setCaregiverReceiver, submitCaregiverBill } from "./caregiver-billing.ts";
+import { configureCaregiver, setOwnReceiver, submitCaregiverBill } from "./caregiver-billing.ts";
 import { declineCaregiverBill, sendCaregiverBill } from "./caregiver-review.ts";
 import { answerProposal, type Seat } from "./operations.ts";
 import { createCircle, membershipsOf, takeDemoSeat } from "./people.ts";
@@ -228,44 +228,54 @@ describe("answers to real money", () => {
 });
 
 describe("where a caregiver's pay goes", () => {
-  const setReceiver = (circle: Family, email: string, userId = circle.userId) =>
-    asPerson(db.app, userId, (tx) => setCaregiverReceiver(tx, { circleId: circle.circleId, payeeId: circle.payees.amara, email }));
+  const setReceiver = (circle: Family, email: string, userId = circle.caregiver) =>
+    asPerson(db.app, userId, (tx) => setOwnReceiver(tx, { circleId: circle.circleId, email }));
   const stored = async (circle: Family) => {
     const [row] = await asService(db.service, circle.circleId, (tx) => tx.select({ receiver: payees.paypalReceiver }).from(payees).where(eq(payees.id, circle.payees.amara)));
     return row?.receiver;
   };
 
-  it("is recorded by the organizer, normalized, audited without the address, and read back masked", async () => {
+  it("is recorded by the caregiver for their own payee, normalized, audited without the address, and read back masked", async () => {
     const circle = await familyWithBill();
     await setReceiver(circle, "  Amara.Doe@Personal.Example.com ");
     expect(await stored(circle)).toBe("amara.doe@personal.example.com");
     const audit = await asService(db.service, circle.circleId, (tx) => tx.select().from(auditLog).where(and(eq(auditLog.subjectId, circle.payees.amara), eq(auditLog.action, "caregiver_receiver.set"))));
-    expect(audit).toHaveLength(1);
-    expect(JSON.stringify(audit[0]?.details)).not.toContain("amara.doe");
-    const seen = await asPerson(db.app, circle.userId, (tx) => readCircle(tx, { circleId: circle.circleId, userId: circle.userId, now: CLOCK }));
-    expect(seen.payees.find((payee) => payee.id === circle.payees.amara)?.receiver).toBe("a••••@personal.example.com");
+    expect(audit.map((row) => row.details)).toEqual([{ replaced: false }]);
+    for (const userId of [circle.userId, circle.caregiver]) {
+      const seen = await asPerson(db.app, userId, (tx) => readCircle(tx, { circleId: circle.circleId, userId, now: CLOCK }));
+      expect(seen.payees.find((payee) => payee.id === circle.payees.amara)?.receiver).toBe("a••••@personal.example.com");
+    }
   });
 
-  it("refuses everyone but the organizer, and an address that is not one", async () => {
+  it("refuses every other member, the organizer included, and an address that is not one", async () => {
     const circle = await familyWithBill();
-    await expect(setReceiver(circle, "amara@example.com", circle.caregiver)).rejects.toMatchObject({ reason: "refused" });
-    await as(circle, "marcus");
-    await expect(setReceiver(circle, "amara@example.com")).rejects.toMatchObject({ reason: "refused" });
-    await as(circle, "elena");
+    for (const persona of ["elena", "marcus", "rose", "daniel"] as const) {
+      await as(circle, persona);
+      await expect(setReceiver(circle, "elsewhere@example.com", circle.userId)).rejects.toMatchObject({ reason: "refused" });
+    }
     for (const email of ["amara", "amara@", "a b@example.com", `${"a".repeat(130)}@example.com`]) {
       await expect(setReceiver(circle, email)).rejects.toMatchObject({ reason: "receiver" });
     }
     expect(await stored(circle)).toBeNull();
   });
 
-  it("cannot change while a payment to the caregiver is approved and not yet paid", async () => {
+  it("cannot change once the family is asked to pay it, until the payment is finished", async () => {
     const circle = await familyWithBill();
     await setReceiver(circle, "amara@example.com");
     const proposalId = await send(circle, circle.billId);
+    await expect(setReceiver(circle, "someone.else@example.com")).rejects.toMatchObject({ reason: "payment_in_progress" });
     await as(circle, "rose");
     expect(await answer(circle, proposalId, "approve")).toBe("approved");
-    await as(circle, "elena");
     await expect(setReceiver(circle, "someone.else@example.com")).rejects.toMatchObject({ reason: "payment_in_progress" });
+    // Setting the same address again changes nothing and is not refused.
+    await setReceiver(circle, "amara@example.com");
+    expect(await stored(circle)).toBe("amara@example.com");
+  });
+
+  it("can be given for the first time while a payment waits, since that redirects nothing", async () => {
+    const circle = await familyWithBill();
+    await send(circle, circle.billId);
+    await setReceiver(circle, "amara@example.com");
     expect(await stored(circle)).toBe("amara@example.com");
   });
 });
