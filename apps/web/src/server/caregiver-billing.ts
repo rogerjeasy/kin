@@ -4,7 +4,7 @@ import { asPerson, CaregiverBillingError, configureCaregiver, declineCaregiverBi
 import { calculateCaregiverBill, CaregiverBillError, calendarDay, centsFromDecimal, InvalidDecimalError, type CaregiverBill } from "@kin/domain";
 import { randomUUID } from "node:crypto";
 
-import type { RateLimiter } from "./model";
+import { WHOLE_SERVER, type RateLimiter } from "./model";
 
 export type BillingContext = {
   readonly db: Database;
@@ -13,7 +13,10 @@ export type BillingContext = {
   readonly accountTypes: BillingAccount;
   /** Claude, to read a description of visits; `null` when this deployment has none. */
   readonly model?: StructuredModel | null;
+  /** Per person. */
   readonly limiter?: RateLimiter;
+  /** For the whole server, whoever asks. */
+  readonly budget?: RateLimiter;
   readonly now?: () => number;
 };
 export type BillingFailure = CaregiverBillingReason | CaregiverBillError["reason"] | "unavailable" | "model_unavailable" | "model_refused" | "description" | "busy";
@@ -78,7 +81,9 @@ async function describe(context: BillingContext, row: Record<string, unknown>): 
   const model = context.model ?? null;
   if (model === null) return refusal("model_unavailable");
   if (row.description.trim() === "" || row.description.length > MAX_DESCRIPTION_LENGTH) return refusal("description");
-  if (context.limiter && !context.limiter.take(context.userId, (context.now ?? Date.now)())) return refusal("busy");
+  const at = (context.now ?? Date.now)();
+  if (context.limiter && !context.limiter.take(context.userId, at)) return refusal("busy");
+  if (context.budget && !context.budget.take(WHOLE_SERVER, at)) return refusal("busy");
   const { now, timezone } = context.circle.circle;
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: timezone }).format(now);
   try {

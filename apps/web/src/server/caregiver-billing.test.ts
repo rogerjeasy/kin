@@ -164,6 +164,11 @@ describe("caregiver billing at the untrusted request boundary", () => {
       expect(await runCaregiverBilling(context, { operation: "describe", description: text })).toMatchObject({ ok: true });
       expect(await runCaregiverBilling(context, { operation: "describe", description: text })).toEqual({ ok: false, reason: "busy" });
       expect(await runCaregiverBilling({ ...context, now: () => 61_001 }, { operation: "describe", description: text })).toMatchObject({ ok: true });
+      // Fresh identities do not escape the server-wide budget.
+      const budget = createRateLimiter(1, 60_000);
+      const first = { ...context, limiter: createRateLimiter(10, 60_000), budget, model: fakeModel(reply) };
+      expect(await runCaregiverBilling(first, { operation: "describe", description: text })).toMatchObject({ ok: true });
+      expect(await runCaregiverBilling({ ...first, userId: "demo:another-visitor" }, { operation: "describe", description: text })).toEqual({ ok: false, reason: "busy" });
       const organizer = { db: db.app, userId: circle.userId, circle: await snapshot(circle.userId), accountTypes: "demo" as const, model: fakeModel(reply) };
       expect(await runCaregiverBilling(organizer, { operation: "describe", description: text })).toEqual({ ok: false, reason: "refused" });
     });
