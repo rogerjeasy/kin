@@ -23,6 +23,7 @@ const config: InfraConfig = {
   neighbourPrincipalPatterns: ["role/wick-*", "user/carecircle-*"],
   neighbourProjects: ["wick", "carecircle"],
   paypal: { clientId: "sandbox-client-id", webhookId: "WH-SANDBOX" },
+  speech: false,
 };
 
 // The same feature flags as a real synth, so the tests see what is deployed.
@@ -748,6 +749,14 @@ describe("top-ups", () => {
 
   it("wait out a paused Aurora before the inbox hands a message out again", () => {
     data.hasResourceProperties("AWS::SQS::Queue", { QueueName: "kin-paypal-events.fifo", VisibilityTimeout: 300 });
+  });
+
+  it("let the web app listen and speak only when speech is switched on", () => {
+    expect(actionsOf(webBefore).some((action) => action.startsWith("transcribe:") || action.startsWith("polly:"))).toBe(false);
+    expect(JSON.stringify(webBefore.toJSON())).not.toContain("KIN_SPEECH_REGION");
+    const on = Template.fromStack(buildKin(new App({ context: testContext }), { ...config, speech: true }).web);
+    expect(actionsOf(on)).toEqual(expect.arrayContaining(["transcribe:StartStreamTranscription", "polly:SynthesizeSpeech"]));
+    expect(JSON.stringify(on.toJSON())).toContain("KIN_SPEECH_REGION");
   });
 
   it("stay off, in the web app and the worker alike, until PayPal is configured", () => {

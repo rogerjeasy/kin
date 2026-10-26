@@ -4,9 +4,15 @@
  * never buffered whole before its size is known.
  */
 export async function readCappedText(request: Request, maxBytes: number): Promise<string | null> {
+  const bytes = await readCappedBytes(request, maxBytes);
+  return bytes === null ? null : new TextDecoder().decode(bytes);
+}
+
+/** A request's body as bytes, read no further than `maxBytes`: `null` when it is larger. */
+export async function readCappedBytes(request: Request, maxBytes: number): Promise<Uint8Array | null> {
   const declared = Number(request.headers.get("content-length") ?? "0");
   if (declared > maxBytes) return null;
-  if (request.body === null) return "";
+  if (request.body === null) return new Uint8Array();
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
   let size = 0;
@@ -20,5 +26,5 @@ export async function readCappedText(request: Request, maxBytes: number): Promis
     }
     chunks.push(value);
   }
-  return new TextDecoder().decode(Buffer.concat(chunks));
+  return Buffer.concat(chunks);
 }

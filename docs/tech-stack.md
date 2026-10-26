@@ -156,6 +156,8 @@ Claude's API takes text and images, not audio, so speech needs its own services.
 | Text to speech | ElevenLabs | Amazon Polly |
 | Phone calls to and from the parent | Twilio voice | Amazon Connect or the Amazon Chime SDK |
 
+**Chosen: Amazon Transcribe and Amazon Polly** (decision 59 in `architecture.md`), in the same AWS account as Bedrock, with no new vendor keys. Transcribe streaming hears all seven of Kin's languages; Polly has neural voices for all but Hebrew (Danielle, Léa, Vicki, Lucia, Bianca, Hala), so in Hebrew Kin's words are shown, not spoken.
+
 - **Phone calls are the parent's main channel.** Kin rings an ordinary phone, including a landline, and speaks. This avoids the limit that a web app cannot wake a locked phone.
 - **In the app,** the same speech services run through the browser microphone.
 - **Choose the voice by ear.** Warmth and clarity matter more for an 81-year-old listener than any benchmark. Compare the candidates with a real older listener before deciding.

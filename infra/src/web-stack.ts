@@ -112,6 +112,13 @@ export class WebStack extends Stack {
       secrets.push({ name: "KIN_PAYPAL_CLIENT_SECRET", value: paypalSecret });
     }
 
+    // Speech: Transcribe hears a recording and Polly reads Kin's own words
+    // aloud. Neither action names a resource, so neither can be narrowed.
+    if (config.speech) {
+      instance.addToPolicy(new iam.PolicyStatement({ actions: ["transcribe:StartStreamTranscription", "polly:SynthesizeSpeech"], resources: ["*"] }));
+      environment.push({ name: "KIN_SPEECH_REGION", value: this.region });
+    }
+
     // Out through Kin's own network, where the database admits Kin's
     // services and the NAT gateway reaches Cognito.
     const connector = new apprunner.CfnVpcConnector(this, "Network", {

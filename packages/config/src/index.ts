@@ -11,3 +11,5 @@ export { PAYPAL_ENV, PAYPAL_SANDBOX_API, readPayPalConfig } from "./paypal-confi
 export type { PayPalConfig } from "./paypal-config.ts";
 export { BEDROCK_DEFAULT_MODEL, MODEL_ENV, readModelConfig } from "./model-config.ts";
 export type { ModelConfig } from "./model-config.ts";
+export { SPEECH_ENV, readSpeechConfig } from "./speech-config.ts";
+export type { SpeechConfig } from "./speech-config.ts";

@@ -206,6 +206,9 @@ importers:
       '@kin/paypal':
         specifier: workspace:*
         version: link:../../packages/paypal
+      '@kin/speech':
+        specifier: workspace:*
+        version: link:../../packages/speech
       ag-grid-community:
         specifier: ^36.2.0
         version: 36.2.0
@@ -401,7 +404,18 @@ importers:
         specifier: ^24.19.2
         version: 24.19.2
 
-  packages/speech: {}
+  packages/speech:
+    dependencies:
+      '@aws-sdk/client-polly':
+        specifier: 3.1143.0
+        version: 3.1143.0
+      '@aws-sdk/client-transcribe-streaming':
+        specifier: 3.1143.0
+        version: 3.1143.0
+    devDependencies:
+      '@types/node':
+        specifier: ^24.19.2
+        version: 24.19.2
 
   packages/telephony: {}
 
@@ -508,12 +522,20 @@ packages:
     resolution: {integrity: sha512-08fLhoL25hIt4cRNWebRVusJfQGaNEUln/uXUUGB7z/ajpcWbqW2imsQu7jhqFIQnXl5vXQC9lyzpVOMZSbjYg==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/client-polly@3.1143.0':
+    resolution: {integrity: sha512-AIImFvuskgcp5RQEWio+37cP3fZimvwR2IGMkh8TTN+pfFOCfKrgIae8+qoKa+DWyWrVmKjc1/9xmuMo/LLtLA==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/client-secrets-manager@3.1143.0':
     resolution: {integrity: sha512-xA6gSweqgSeYg8A0RQ2E5taCmhVxbuuVAXaJCiHRpuVsM/rj2apDJV3gBndlpBiPLwqlXbfZQj1MYLisrhDKZQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-sqs@3.1143.0':
     resolution: {integrity: sha512-+6ucHBaIcVpFgtmnZxK8gWOlIdFjnnNlTt53gRVsZrWeMi9w9SwSpSeYllJ6422XFzZuERPJu5HVkntJjavUYA==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-transcribe-streaming@3.1143.0':
+    resolution: {integrity: sha512-/BfSxqdbiEGXgGiuebwWpQiMQZOW6XnGDoYYAMObJnfagVxxY5CKoyCOuRX6J2/PMpestR1NxT0LaPWwylp8jg==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.978.3':
@@ -618,6 +640,10 @@ packages:
 
   '@aws-sdk/middleware-sdk-sqs@3.972.44':
     resolution: {integrity: sha512-T+wrtyEE1z9BKlo0PH+2NXpikhOJfvq8Zg1QJuAE/GXV5YPTHruYWjsrpG4VGZNfYon9sXHCsIQBwNkd7J3Few==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/middleware-sdk-transcribe-streaming@3.972.36':
+    resolution: {integrity: sha512-zUuI13JXBTHIFCEllcXLwcN+WRg6G5Y9U4911NtY0B52O4vJXQfX5zTbCzP2VGhJIum/N10/fE1DeBlY2B45qg==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/middleware-websocket@3.972.58':
@@ -5035,6 +5061,19 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
+  '@aws-sdk/client-polly@3.1143.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.5
+      '@aws-sdk/credential-provider-node': 3.972.88
+      '@aws-sdk/eventstream-handler-node': 3.972.38
+      '@aws-sdk/middleware-eventstream': 3.972.33
+      '@aws-sdk/types': 3.975.0
+      '@smithy/core': 3.36.2
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
   '@aws-sdk/client-secrets-manager@3.1143.0':
     dependencies:
       '@aws-sdk/core': 3.978.3
@@ -5053,6 +5092,21 @@ snapshots:
       '@aws-sdk/middleware-sdk-sqs': 3.972.44
       '@aws-sdk/types': 3.974.6
       '@smithy/core': 3.36.0
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-transcribe-streaming@3.1143.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.5
+      '@aws-sdk/credential-provider-node': 3.972.88
+      '@aws-sdk/eventstream-handler-node': 3.972.38
+      '@aws-sdk/middleware-eventstream': 3.972.33
+      '@aws-sdk/middleware-sdk-transcribe-streaming': 3.972.36
+      '@aws-sdk/middleware-websocket': 3.972.58
+      '@aws-sdk/types': 3.975.0
+      '@smithy/core': 3.36.2
       '@smithy/fetch-http-handler': 5.8.0
       '@smithy/node-http-handler': 4.12.1
       '@smithy/types': 4.19.0
@@ -5313,6 +5367,13 @@ snapshots:
     dependencies:
       '@aws-sdk/types': 3.974.6
       '@smithy/core': 3.36.0
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/middleware-sdk-transcribe-streaming@3.972.36':
+    dependencies:
+      '@aws-sdk/types': 3.975.0
+      '@smithy/core': 3.36.2
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 

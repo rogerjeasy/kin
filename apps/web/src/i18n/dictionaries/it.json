@@ -1138,7 +1138,16 @@
           "cancelled": "Annullata · non si paga nulla"
         }
       },
-      "freshCheckNote": "Approvare denaro reale ti chiede di accedere di nuovo con la tua app di autenticazione."
+      "freshCheckNote": "Approvare denaro reale ti chiede di accedere di nuovo con la tua app di autenticazione.",
+      "voice": {
+        "start": "Ascolta e rispondi a voce",
+        "readBack": "{title}: {amount} a {payee}. Approvi? Di’ sì o no.",
+        "confirmApprove": "Hai detto sì al pagamento di {amount} a {payee}. Di’ di nuovo sì per confermare.",
+        "confirmReject": "Hai detto no al pagamento di {amount} a {payee}. Di’ sì per confermare il rifiuto.",
+        "heardApprove": "Kin ha sentito sì. Ascolta, poi conferma a voce.",
+        "heardReject": "Kin ha sentito no. Ascolta, poi conferma a voce.",
+        "confirm": "Conferma a voce"
+      }
     },
     "bills": {
       "title": "Bollette",
@@ -1544,7 +1553,18 @@
       "describing": "Lettura…",
       "described": "Kin ha compilato i giorni qui sotto dalle tue parole. Controllali uno per uno, poi la fattura.",
       "unclearNote": "Kin non ha potuto collocare: {items}. Aggiungili tu se fanno parte di questa fattura.",
-      "droppedNote": "Kin ha tralasciato {count} voci che non ha trovato nelle tue parole."
+      "droppedNote": "Kin ha tralasciato {count} voci che non ha trovato nelle tue parole.",
+      "speech": {
+        "speakVisits": "Detta le tue visite",
+        "hearBill": "Ascolta la fattura",
+        "answer": "Rispondi a voce",
+        "readBack": "{name}, ecco la tua fattura: {days}. A {rate} l’ora, il totale è {total}. Di’ sì per inviarla, o no per cambiarla.",
+        "readBackDay": "{day}, {duration}",
+        "hoursOne": "{hours} ora",
+        "hoursOther": "{hours} ore",
+        "saidYes": "Hai detto sì. Invio della fattura.",
+        "saidNo": "Hai detto no. Cambia le visite, poi controlla di nuovo."
+      }
     },
     "agreement": {
       "title": "Accordo di famiglia",
@@ -1650,6 +1670,27 @@
       "open": "Apri l’accordo",
       "attention": "La versione {version} dell’accordo di famiglia attende la tua accettazione",
       "parentNotDeciding": "{amount}, non usato finché {parent} non decide i pagamenti"
+    },
+    "speech": {
+      "record": "Parla",
+      "stop": "Ferma",
+      "listening": "Kin ascolta. Premi Ferma quando hai finito.",
+      "working": "Kin sta scrivendo ciò che hai detto…",
+      "heard": "Kin ha sentito: «{transcript}»",
+      "micDenied": "Kin non può usare il microfono. Consentilo nel browser, oppure scrivi.",
+      "noVoice": "Kin non sa ancora parlare questa lingua ad alta voce. Le parole sono sullo schermo.",
+      "errors": {
+        "refused": "Il tuo ruolo non può farlo in questo cerchio.",
+        "invalid": "Kin non ha potuto usarlo. Riprova.",
+        "speech_unavailable": "Kin non può ascoltare né parlare ora. Usa pulsanti e campi.",
+        "recording": "La registrazione era vuota o più lunga di un minuto. Riprova.",
+        "busy": "Hai usato molto la voce di Kin di recente. Attendi un po’.",
+        "no_voice": "Kin non sa ancora parlare questa lingua ad alta voce. Le parole sono sullo schermo.",
+        "closed": "Quella proposta è già stata decisa.",
+        "unclear": "Kin non ha sentito un sì o un no chiari. Riprova.",
+        "not_confirmed": "Nulla è stato registrato: Kin non ha sentito un sì chiaro per confermare.",
+        "unavailable": "Qualcosa è andato storto. Riprova."
+      }
     }
   }
 }

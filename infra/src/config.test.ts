@@ -55,6 +55,12 @@ describe("readConfig", () => {
     expect(() => read({ "kin:paypal": "client" })).toThrow(InfraConfigError);
   });
 
+  it("leaves speech off unless switched on, and refuses anything but true or false", () => {
+    expect(read().speech).toBe(false);
+    expect(read({ "kin:speech": true }).speech).toBe(true);
+    expect(() => read({ "kin:speech": "yes" })).toThrow(InfraConfigError);
+  });
+
   it("refuses a sender that is not an email address", () => {
     expect(() => read({}, { ...env, KIN_SENDER_EMAIL: "kin" })).toThrow(InfraConfigError);
   });

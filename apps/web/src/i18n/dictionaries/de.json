@@ -1138,7 +1138,16 @@
           "cancelled": "Abgebrochen · nichts wird bezahlt"
         }
       },
-      "freshCheckNote": "Für echtes Geld melden Sie sich erneut mit Ihrer Authenticator-App an."
+      "freshCheckNote": "Für echtes Geld melden Sie sich erneut mit Ihrer Authenticator-App an.",
+      "voice": {
+        "start": "Anhören und per Stimme antworten",
+        "readBack": "{title}: {amount} an {payee}. Stimmen Sie zu? Sagen Sie Ja oder Nein.",
+        "confirmApprove": "Sie haben Ja zur Zahlung von {amount} an {payee} gesagt. Sagen Sie zur Bestätigung noch einmal Ja.",
+        "confirmReject": "Sie haben Nein zur Zahlung von {amount} an {payee} gesagt. Sagen Sie Ja, um die Ablehnung zu bestätigen.",
+        "heardApprove": "Kin hat Ja gehört. Hören Sie zu und bestätigen Sie per Stimme.",
+        "heardReject": "Kin hat Nein gehört. Hören Sie zu und bestätigen Sie per Stimme.",
+        "confirm": "Per Stimme bestätigen"
+      }
     },
     "bills": {
       "title": "Rechnungen",
@@ -1544,7 +1553,18 @@
       "describing": "Wird gelesen…",
       "described": "Kin hat die Tage unten aus Ihren Worten eingetragen. Prüfen Sie jeden und dann die Rechnung.",
       "unclearNote": "Kin konnte nicht zuordnen: {items}. Tragen Sie es selbst ein, wenn es zu dieser Rechnung gehört.",
-      "droppedNote": "Kin hat {count} Einträge weggelassen, die nicht in Ihren Worten stehen."
+      "droppedNote": "Kin hat {count} Einträge weggelassen, die nicht in Ihren Worten stehen.",
+      "speech": {
+        "speakVisits": "Besuche einsprechen",
+        "hearBill": "Rechnung anhören",
+        "answer": "Per Stimme antworten",
+        "readBack": "{name}, hier ist Ihre Rechnung: {days}. Bei {rate} pro Stunde beträgt die Summe {total}. Sagen Sie Ja zum Einreichen oder Nein zum Ändern.",
+        "readBackDay": "{day}, {duration}",
+        "hoursOne": "{hours} Stunde",
+        "hoursOther": "{hours} Stunden",
+        "saidYes": "Sie haben Ja gesagt. Ihre Rechnung wird eingereicht.",
+        "saidNo": "Sie haben Nein gesagt. Ändern Sie Ihre Besuche und prüfen Sie erneut."
+      }
     },
     "agreement": {
       "title": "Familienvereinbarung",
@@ -1650,6 +1670,27 @@
       "open": "Vereinbarung öffnen",
       "attention": "Version {version} der Familienvereinbarung wartet auf Ihre Zustimmung",
       "parentNotDeciding": "{amount}, unwirksam, solange {parent} nicht über Zahlungen entscheidet"
+    },
+    "speech": {
+      "record": "Sprechen",
+      "stop": "Stopp",
+      "listening": "Kin hört zu. Drücken Sie Stopp, wenn Sie fertig sind.",
+      "working": "Kin schreibt auf, was Sie gesagt haben…",
+      "heard": "Kin hat gehört: „{transcript}“",
+      "micDenied": "Kin kann Ihr Mikrofon nicht nutzen. Erlauben Sie es im Browser oder tippen Sie.",
+      "noVoice": "Kin kann diese Sprache noch nicht laut sprechen. Die Worte stehen auf dem Bildschirm.",
+      "errors": {
+        "refused": "Ihre Rolle erlaubt das in diesem Kreis nicht.",
+        "invalid": "Kin konnte das nicht verwenden. Bitte erneut versuchen.",
+        "speech_unavailable": "Kin kann gerade weder zuhören noch sprechen. Nutzen Sie Schaltflächen und Felder.",
+        "recording": "Die Aufnahme war leer oder länger als eine Minute. Bitte erneut versuchen.",
+        "busy": "Sie haben Kins Stimme zuletzt oft genutzt. Bitte warten Sie etwas.",
+        "no_voice": "Kin kann diese Sprache noch nicht laut sprechen. Die Worte stehen auf dem Bildschirm.",
+        "closed": "Über diesen Vorschlag wurde schon entschieden.",
+        "unclear": "Kin hat kein klares Ja oder Nein gehört. Bitte erneut versuchen.",
+        "not_confirmed": "Nichts gespeichert: Kin hat kein klares Ja zur Bestätigung gehört.",
+        "unavailable": "Etwas ist schiefgegangen. Bitte erneut versuchen."
+      }
     }
   }
 }

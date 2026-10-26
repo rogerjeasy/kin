@@ -44,6 +44,11 @@ export type InfraConfig = {
    * with nobody to record them would take money the ledger never shows.
    */
   readonly paypal: { readonly clientId: string; readonly webhookId: string } | null;
+  /**
+   * Whether the web app may listen and speak through Amazon Transcribe and
+   * Amazon Polly in this region. Off unless `kin:speech` is `true`.
+   */
+  readonly speech: boolean;
 };
 
 export class InfraConfigError extends Error {
@@ -78,7 +83,14 @@ export function readConfig({ context, env }: Source): InfraConfig {
     neighbourPrincipalPatterns: texts(context("kin:neighbourPrincipalPatterns"), "kin:neighbourPrincipalPatterns"),
     neighbourProjects: texts(context("kin:neighbourProjects"), "kin:neighbourProjects"),
     paypal: paypalApp(context("kin:paypal")),
+    speech: flag(context("kin:speech"), "kin:speech"),
   };
+}
+
+function flag(value: unknown, key: string): boolean {
+  if (value === undefined || value === null) return false;
+  if (typeof value !== "boolean") throw new InfraConfigError(`${key} must be true or false`);
+  return value;
 }
 
 function paypalApp(value: unknown): InfraConfig["paypal"] {

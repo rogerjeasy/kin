@@ -103,6 +103,8 @@ export default defineConfig({
         // Claude through the stand-in: the real SDK client, no AWS.
         KIN_BEDROCK_REGION: "us-east-1",
         KIN_BEDROCK_ENDPOINT: `http://127.0.0.1:${MODEL_STAND_IN.port}`,
+        // Speech on, so its controls show; the speech tests answer its routes in the browser.
+        KIN_SPEECH_REGION: "us-east-1",
       },
     },
   ],
