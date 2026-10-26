@@ -4,7 +4,7 @@ import { asPerson, CaregiverBillingError, configureCaregiver, declineCaregiverBi
 import { calculateCaregiverBill, CaregiverBillError, calendarDay, centsFromDecimal, InvalidDecimalError, type CaregiverBill } from "@kin/domain";
 import { randomUUID } from "node:crypto";
 
-import { WHOLE_SERVER, type RateLimiter } from "./model";
+import type { RateLimiter } from "./model";
 
 export type BillingContext = {
   readonly db: Database;
@@ -81,9 +81,15 @@ async function describe(context: BillingContext, row: Record<string, unknown>): 
   const model = context.model ?? null;
   if (model === null) return refusal("model_unavailable");
   if (row.description.trim() === "" || row.description.length > MAX_DESCRIPTION_LENGTH) return refusal("description");
+  // Every limit is asked before any is used, so a refused request costs nothing.
   const at = (context.now ?? Date.now)();
-  if (context.limiter && !context.limiter.take(context.userId, at)) return refusal("busy");
-  if (context.budget && !context.budget.take(WHOLE_SERVER, at)) return refusal("busy");
+  const pool = context.accountTypes === "demo" ? "demo" : "people";
+  const limits = [
+    ...(context.limiter ? [{ limiter: context.limiter, key: context.userId }] : []),
+    ...(context.budget ? [{ limiter: context.budget, key: pool }] : []),
+  ];
+  if (!limits.every(({ limiter, key }) => limiter.allows(key, at))) return refusal("busy");
+  for (const { limiter, key } of limits) limiter.record(key, at);
   const { now, timezone } = context.circle.circle;
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: timezone }).format(now);
   try {
