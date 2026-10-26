@@ -4,6 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 import { E2E_DATABASE, e2eDatabaseEnv } from "./e2e/support/database-settings";
 import { IDENTITY_PROVIDER } from "./e2e/support/identity-provider";
+import { MODEL_STAND_IN } from "./e2e/support/model-stand-in";
 import { SIGNED_IN_STATE } from "./e2e/support/signed-in-state";
 
 const port = 3100;
@@ -68,6 +69,13 @@ export default defineConfig({
       timeout: 15_000,
     },
     {
+      // A stand-in for Claude on Bedrock's Messages endpoint (e2e/support).
+      command: "node e2e/support/model-stand-in.ts",
+      url: `http://localhost:${MODEL_STAND_IN.port}/health`,
+      reuseExistingServer: false,
+      timeout: 15_000,
+    },
+    {
       // The standalone server through the container's own start file.
       command: "node .next/standalone/apps/web/start.mjs",
       url: baseURL,
@@ -92,6 +100,9 @@ export default defineConfig({
         KIN_PAYPAL_API_URL: "http://127.0.0.1:9",
         KIN_QUEUE_ENDPOINT: "http://127.0.0.1:9",
         KIN_PAYPAL_INBOX_URL: "http://127.0.0.1:9/000000000000/kin-paypal-events.fifo",
+        // Claude through the stand-in: the real SDK client, no AWS.
+        KIN_BEDROCK_REGION: "us-east-1",
+        KIN_BEDROCK_ENDPOINT: `http://127.0.0.1:${MODEL_STAND_IN.port}`,
       },
     },
   ],

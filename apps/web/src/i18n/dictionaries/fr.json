@@ -1493,7 +1493,11 @@
         "paused": "Le cercle est en pause. Envoyez-la quand la pause sera levée.",
         "no_agreement": "Le cercle a besoin d’un accord avant que des factures puissent être approuvées.",
         "receiver": "Saisissez l’adresse e-mail PayPal de l’aidant.",
-        "payment_in_progress": "Un paiement vous concernant attend un accord ou est en cours. Changez l’adresse quand il sera terminé."
+        "payment_in_progress": "Un paiement vous concernant attend un accord ou est en cours. Changez l’adresse quand il sera terminé.",
+        "model_unavailable": "Kin ne peut pas lire de description pour le moment. Saisissez les jours ci-dessous.",
+        "model_refused": "Kin n’a pas pu lire cette description. Saisissez les jours ci-dessous.",
+        "description": "Écrivez entre un et mille caractères sur vos visites.",
+        "busy": "Vous avez demandé plusieurs lectures récemment. Patientez un peu, ou saisissez les jours ci-dessous."
       },
       "states": {
         "received": "En attente de la famille",
@@ -1533,7 +1537,14 @@
       "receiverText": "Vous seul pouvez la définir. Elle ne peut pas changer tant qu’un paiement vous concernant est en attente ou en cours.",
       "receiverSave": "Enregistrer l’adresse",
       "receiverSaved": "Adresse enregistrée",
-      "receiverMissing": "{name} n’a pas encore ajouté d’adresse PayPal. Ses paiements attendent qu’elle soit ajoutée."
+      "receiverMissing": "{name} n’a pas encore ajouté d’adresse PayPal. Ses paiements attendent qu’elle soit ajoutée.",
+      "describeLabel": "Ou décrivez vos visites avec vos mots",
+      "describeHint": "Par exemple : « Lundi et mardi, 4 heures chacun, et hier de 9 h à 11 h. » Kin remplit les jours ci-dessous ; vous les vérifiez avant tout envoi. Votre tarif n’est jamais montré à l’IA.",
+      "describe": "Remplir les jours",
+      "describing": "Lecture…",
+      "described": "Kin a rempli les jours ci-dessous d’après vos mots. Vérifiez chacun, puis vérifiez la facture.",
+      "unclearNote": "Kin n’a pas pu situer : {items}. Ajoutez-les vous-même s’ils font partie de cette facture.",
+      "droppedNote": "Kin a laissé de côté {count} éléments introuvables dans vos mots."
     },
     "agreement": {
       "title": "Accord familial",

@@ -236,3 +236,25 @@ test("a duplicate from another tab refreshes the earlier bill without losing ent
   await expect(form.getByLabel("Service date")).toHaveValue("2025-10-01");
   await second.close();
 });
+
+test("fills in the days from the caregiver's own words, which the caregiver then reviews", async ({ page }) => {
+  await startDemo(page);
+  await configure(page);
+  await seatAs(page, "Amara");
+  await page.goto("/dashboard/bills");
+  const form = page.getByRole("region", { name: "Bill for your visits" });
+  await form.getByLabel("Or describe your visits in your own words").fill("Yesterday 4 hours with Rose.");
+  await form.getByRole("button", { name: "Fill in the days" }).click();
+  await expect(form.getByRole("status")).toContainText("Kin filled in the days below from your words.");
+  await expect(form.getByLabel("Hours", { exact: true })).toHaveValue("4");
+  await expectNoHorizontalOverflow(page);
+  // Nothing is sent until the caregiver reviews: the server values the days.
+  await form.getByRole("button", { name: "Review bill" }).click();
+  await expect(form).toContainText("$88.00");
+
+  await form.getByRole("button", { name: "Change visits" }).click();
+  await form.getByLabel("Or describe your visits in your own words").fill("Please decline this.");
+  await form.getByRole("button", { name: "Fill in the days" }).click();
+  await expect(form.getByRole("alert")).toHaveText("Kin could not read that description. Enter the days below instead.");
+});
+

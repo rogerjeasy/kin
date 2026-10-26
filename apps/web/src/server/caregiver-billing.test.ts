@@ -3,7 +3,10 @@ import { seatPerson, visitorWithCircle } from "@kin/db/testing";
 import { testDatabases } from "../../../../packages/db/src/testing/databases.ts";
 import { describe, expect, it } from "vitest";
 
+import { fakeModel, visitsReply } from "@kin/agent/testing";
+
 import { runCaregiverBilling } from "./caregiver-billing";
+import { createRateLimiter } from "./model";
 
 const db = testDatabases();
 async function setup() {
@@ -117,4 +120,53 @@ describe("caregiver billing at the untrusted request boundary", () => {
       expect(await runCaregiverBilling(family, { operation: "send", billId: crypto.randomUUID() })).toEqual({ ok: false, reason: "refused" });
     });
   });
+
+  describe("reading a description of visits", () => {
+    const text = "Monday 4 hours and Tuesday from 9 to 11.";
+    const reply = visitsReply([
+      { date: "2026-10-26", hours: 4, minutes: 0, quote: "Monday 4 hours" },
+      { date: "2026-10-27", hours: 2, minutes: 0, quote: "Tuesday from 9 to 11" },
+    ]);
+
+    it("fills days from the caregiver's words, telling the model nothing about the rate or money", async () => {
+      const { caregiver, snapshot } = await setup();
+      const model = fakeModel(reply);
+      const context = { db: db.app, userId: caregiver, circle: await snapshot(caregiver), accountTypes: "demo" as const, model };
+      expect(await runCaregiverBilling(context, { operation: "describe", description: text })).toEqual({
+        ok: true,
+        described: true,
+        visits: [{ date: "2026-10-26", minutes: 240 }, { date: "2026-10-27", minutes: 120 }],
+        unclear: [],
+        dropped: 0,
+      });
+      const [request] = model.requests;
+      expect(request?.system).toMatch(/Today is \w+day, 2026-10-30/);
+      const asked = `${request?.system ?? ""}${request?.user ?? ""}`;
+      for (const leak of ["2200", "22.00", "$", "Amara"]) expect(asked).not.toContain(leak);
+    });
+
+    it("says so when the model is absent, declines, or cannot be reached, and when the text cannot be read", async () => {
+      const { caregiver, snapshot } = await setup();
+      const base = { db: db.app, userId: caregiver, circle: await snapshot(caregiver), accountTypes: "demo" as const };
+      const describe = (context: object, description = text) => runCaregiverBilling({ ...base, ...context }, { operation: "describe", description });
+      expect(await describe({ model: null })).toEqual({ ok: false, reason: "model_unavailable" });
+      expect(await describe({ model: fakeModel({ kind: "refused" }) })).toEqual({ ok: false, reason: "model_refused" });
+      expect(await describe({ model: fakeModel({ kind: "json", text: "nonsense" }) })).toEqual({ ok: false, reason: "model_unavailable" });
+      expect(await describe({ model: fakeModel() }, "  ")).toEqual({ ok: false, reason: "description" });
+      expect(await describe({ model: fakeModel() }, "x".repeat(1001))).toEqual({ ok: false, reason: "description" });
+      expect(await runCaregiverBilling({ ...base, model: fakeModel() }, { operation: "describe", description: text, rate: 1 })).toEqual({ ok: false, reason: "invalid" });
+    });
+
+    it("limits how often one person asks, and lets only a caregiver ask", async () => {
+      const { circle, caregiver, snapshot } = await setup();
+      const limiter = createRateLimiter(1, 60_000);
+      const context = { db: db.app, userId: caregiver, circle: await snapshot(caregiver), accountTypes: "demo" as const, model: fakeModel(reply, reply), limiter, now: () => 1_000 };
+      expect(await runCaregiverBilling(context, { operation: "describe", description: text })).toMatchObject({ ok: true });
+      expect(await runCaregiverBilling(context, { operation: "describe", description: text })).toEqual({ ok: false, reason: "busy" });
+      expect(await runCaregiverBilling({ ...context, now: () => 61_001 }, { operation: "describe", description: text })).toMatchObject({ ok: true });
+      const organizer = { db: db.app, userId: circle.userId, circle: await snapshot(circle.userId), accountTypes: "demo" as const, model: fakeModel(reply) };
+      expect(await runCaregiverBilling(organizer, { operation: "describe", description: text })).toEqual({ ok: false, reason: "refused" });
+    });
+  });
 });
+

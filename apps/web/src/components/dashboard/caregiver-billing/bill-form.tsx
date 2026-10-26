@@ -10,13 +10,22 @@ import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 
 import { BillBreakdown } from "./bill-breakdown";
+import { DescribeVisits } from "./describe-visits";
 import { useBillingRequest } from "./use-billing-request";
 import { VisitFields, type VisitInput } from "./visit-fields";
 
-type Props = { locale: Locale; name: string; today: string; simulated: boolean; copy: Dictionary["dashboard"]["caregiverBilling"] };
+type Props = {
+  locale: Locale;
+  name: string;
+  today: string;
+  simulated: boolean;
+  /** Whether Claude can read a description of the visits on this deployment. */
+  canDescribe: boolean;
+  copy: Dictionary["dashboard"]["caregiverBilling"];
+};
 
 /** A bill is reviewed on the server and requires a separate, explicit submission. */
-export function BillForm({ locale, name, today, simulated, copy }: Props) {
+export function BillForm({ locale, name, today, simulated, canDescribe, copy }: Props) {
   const prefix = useId();
   const nextId = useRef(1);
   const [visits, setVisits] = useState<VisitInput[]>([{ id: 0, date: today, hours: "0", minutes: "0" }]);
@@ -47,6 +56,13 @@ export function BillForm({ locale, name, today, simulated, copy }: Props) {
               <section aria-label={copy.reviewTitle}><h3 className="mb-3 font-semibold">{copy.reviewTitle}</h3><BillBreakdown bill={review.bill} locale={locale} copy={copy} /></section>
             ) : (
               <>
+                {canDescribe ? (
+                  <DescribeVisits
+                    copy={copy}
+                    disabled={pending}
+                    onDescribed={(described) => setVisits(described.map((visit) => ({ id: nextId.current++, date: visit.date, hours: String(Math.floor(visit.minutes / 60)), minutes: String(visit.minutes % 60) })))}
+                  />
+                ) : null}
                 {visits.map((visit) => <VisitFields key={visit.id} visit={visit} prefix={`${prefix}-${visit.id}`} today={today} removable={visits.length > 1} copy={copy} onChange={(value) => setVisits(visits.map((row) => row.id === value.id ? value : row))} onRemove={() => setVisits(visits.filter((row) => row.id !== visit.id))} />)}
                 <Button type="button" variant="outline" className="min-h-11" onClick={() => setVisits([...visits, { id: nextId.current++, date: today, hours: "0", minutes: "0" }])}>{copy.addVisit}</Button>
               </>

@@ -1,12 +1,26 @@
+import { MAX_DESCRIPTION_LENGTH, ModelUnavailableError, readVisits, type StructuredModel } from "@kin/agent";
 import { caregiverAccess, type BillingAccount, type CaregiverAction } from "@kin/auth";
 import { asPerson, CaregiverBillingError, configureCaregiver, declineCaregiverBill, sendCaregiverBill, setOwnReceiver, submitCaregiverBill, type CircleSnapshot, type Database, type CaregiverBillingReason } from "@kin/db";
 import { calculateCaregiverBill, CaregiverBillError, calendarDay, centsFromDecimal, InvalidDecimalError, type CaregiverBill } from "@kin/domain";
 import { randomUUID } from "node:crypto";
 
-export type BillingContext = { readonly db: Database; readonly userId: string; readonly circle: CircleSnapshot; readonly accountTypes: BillingAccount };
-export type BillingFailure = CaregiverBillingReason | CaregiverBillError["reason"] | "unavailable";
+import type { RateLimiter } from "./model";
+
+export type BillingContext = {
+  readonly db: Database;
+  readonly userId: string;
+  readonly circle: CircleSnapshot;
+  readonly accountTypes: BillingAccount;
+  /** Claude, to read a description of visits; `null` when this deployment has none. */
+  readonly model?: StructuredModel | null;
+  readonly limiter?: RateLimiter;
+  readonly now?: () => number;
+};
+export type BillingFailure = CaregiverBillingReason | CaregiverBillError["reason"] | "unavailable" | "model_unavailable" | "model_refused" | "description" | "busy";
+export type DescribedVisits = { readonly visits: readonly { readonly date: string; readonly minutes: number }[]; readonly unclear: readonly string[]; readonly dropped: number };
 export type BillingResult =
   | { readonly ok: true; readonly bill: CaregiverBill; readonly submissionKey: string }
+  | ({ readonly ok: true; readonly described: true } & DescribedVisits)
   | { readonly ok: true; readonly id: string }
   | { readonly ok: false; readonly reason: BillingFailure; readonly billId?: string };
 
@@ -17,6 +31,7 @@ const ACTIONS = {
   send: "caregiver_bill.review",
   decline: "caregiver_bill.review",
   receiver: "caregiver_receiver.set",
+  describe: "caregiver_bill.submit",
 } as const satisfies Record<string, CaregiverAction>;
 
 /**
@@ -34,6 +49,7 @@ export async function runCaregiverBilling(context: BillingContext, input: unknow
     if (operation === "review") return review(context.circle, row);
     if (operation === "send" || operation === "decline") return await decide(context, row, operation);
     if (operation === "receiver") return await receiver(context, row);
+    if (operation === "describe") return await describe(context, row);
     return await submit(context, row);
   } catch (error) {
     if (error instanceof CaregiverBillingError && error.billId !== null) return { ok: false, reason: error.reason, billId: error.billId };
@@ -49,6 +65,31 @@ async function configure(context: BillingContext, row: Record<string, unknown>):
   const { memberId, name, payeeId } = row;
   const id = await asPerson(context.db, context.userId, (tx) => configureCaregiver(tx, { circleId: context.circle.circle.id, memberId, payeeId, name, rateCentsPerHour }));
   return { ok: true, id };
+}
+
+/**
+ * Claude reads the caregiver's own description into service days and
+ * durations, to fill in the form. Nothing is stored and nothing is valued:
+ * the caregiver reviews the days like any they typed, and the server values
+ * them at review.
+ */
+async function describe(context: BillingContext, row: Record<string, unknown>): Promise<BillingResult> {
+  if (!keys(row, ["operation", "description"]) || typeof row.description !== "string") return refusal("invalid");
+  const model = context.model ?? null;
+  if (model === null) return refusal("model_unavailable");
+  if (row.description.trim() === "" || row.description.length > MAX_DESCRIPTION_LENGTH) return refusal("description");
+  if (context.limiter && !context.limiter.take(context.userId, (context.now ?? Date.now)())) return refusal("busy");
+  const { now, timezone } = context.circle.circle;
+  const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: timezone }).format(now);
+  try {
+    const result = await readVisits(model, { description: row.description, today: calendarDay(now, timezone).occurredOn, weekday, timezone });
+    if (result.kind === "refused") return refusal("model_refused");
+    if (result.kind === "unreadable") return refusal("description");
+    return { ok: true, described: true, visits: result.visits, unclear: result.unclear, dropped: result.dropped };
+  } catch (error) {
+    if (error instanceof ModelUnavailableError) return refusal("model_unavailable");
+    throw error;
+  }
 }
 
 /** The caregiver says where their own pay goes. */

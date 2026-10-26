@@ -1493,7 +1493,11 @@
         "paused": "Der Kreis ist pausiert. Senden Sie sie, sobald die Pause endet.",
         "no_agreement": "Der Kreis braucht eine Vereinbarung, bevor Rechnungen zugestimmt werden können.",
         "receiver": "Geben Sie die PayPal-E-Mail-Adresse der Pflegekraft ein.",
-        "payment_in_progress": "Eine Zahlung an Sie wartet auf Zustimmung oder läuft. Ändern Sie die Adresse, wenn sie abgeschlossen ist."
+        "payment_in_progress": "Eine Zahlung an Sie wartet auf Zustimmung oder läuft. Ändern Sie die Adresse, wenn sie abgeschlossen ist.",
+        "model_unavailable": "Kin kann gerade keine Beschreibungen lesen. Tragen Sie die Tage unten ein.",
+        "model_refused": "Kin konnte diese Beschreibung nicht lesen. Tragen Sie die Tage unten ein.",
+        "description": "Schreiben Sie zwischen einem und tausend Zeichen über Ihre Besuche.",
+        "busy": "Sie haben kürzlich mehrere Beschreibungen lesen lassen. Bitte warten Sie etwas oder tragen Sie die Tage unten ein."
       },
       "states": {
         "received": "Wartet auf die Familie",
@@ -1533,7 +1537,14 @@
       "receiverText": "Nur Sie können das festlegen. Solange eine Zahlung an Sie wartet oder läuft, lässt es sich nicht ändern.",
       "receiverSave": "Adresse speichern",
       "receiverSaved": "Adresse gespeichert",
-      "receiverMissing": "{name} hat noch keine PayPal-Adresse angegeben. Die Auszahlungen warten darauf."
+      "receiverMissing": "{name} hat noch keine PayPal-Adresse angegeben. Die Auszahlungen warten darauf.",
+      "describeLabel": "Oder beschreiben Sie Ihre Besuche mit eigenen Worten",
+      "describeHint": "Zum Beispiel: „Montag und Dienstag je 4 Stunden, gestern von 9 bis 11.“ Kin trägt die Tage unten ein; Sie prüfen sie, bevor etwas gesendet wird. Ihr Stundensatz wird der KI nie gezeigt.",
+      "describe": "Tage eintragen",
+      "describing": "Wird gelesen…",
+      "described": "Kin hat die Tage unten aus Ihren Worten eingetragen. Prüfen Sie jeden und dann die Rechnung.",
+      "unclearNote": "Kin konnte nicht zuordnen: {items}. Tragen Sie es selbst ein, wenn es zu dieser Rechnung gehört.",
+      "droppedNote": "Kin hat {count} Einträge weggelassen, die nicht in Ihren Worten stehen."
     },
     "agreement": {
       "title": "Familienvereinbarung",

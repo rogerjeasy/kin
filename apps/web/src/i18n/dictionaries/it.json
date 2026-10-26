@@ -1493,7 +1493,11 @@
         "paused": "Il cerchio è in pausa. Inviala quando la pausa finisce.",
         "no_agreement": "Il cerchio ha bisogno di un accordo prima di approvare fatture.",
         "receiver": "Inserisci l’indirizzo email PayPal della badante.",
-        "payment_in_progress": "Un pagamento per te attende l’approvazione o è in corso. Cambia l’indirizzo quando è concluso."
+        "payment_in_progress": "Un pagamento per te attende l’approvazione o è in corso. Cambia l’indirizzo quando è concluso.",
+        "model_unavailable": "Kin non può leggere descrizioni ora. Inserisci i giorni qui sotto.",
+        "model_refused": "Kin non ha potuto leggere quella descrizione. Inserisci i giorni qui sotto.",
+        "description": "Scrivi tra uno e mille caratteri sulle tue visite.",
+        "busy": "Hai chiesto diverse letture di recente. Attendi un po’ o inserisci i giorni qui sotto."
       },
       "states": {
         "received": "In attesa della famiglia",
@@ -1533,7 +1537,14 @@
       "receiverText": "Solo tu puoi indicarla. Non può cambiare mentre un pagamento per te è in attesa o in corso.",
       "receiverSave": "Salva indirizzo",
       "receiverSaved": "Indirizzo salvato",
-      "receiverMissing": "{name} non ha ancora aggiunto un indirizzo PayPal. I suoi pagamenti attendono."
+      "receiverMissing": "{name} non ha ancora aggiunto un indirizzo PayPal. I suoi pagamenti attendono.",
+      "describeLabel": "Oppure descrivi le visite con parole tue",
+      "describeHint": "Per esempio: «Lunedì e martedì, 4 ore ciascuno, e ieri dalle 9 alle 11». Kin compila i giorni qui sotto; li controlli prima di inviare. La tua tariffa non viene mai mostrata all’IA.",
+      "describe": "Compila i giorni",
+      "describing": "Lettura…",
+      "described": "Kin ha compilato i giorni qui sotto dalle tue parole. Controllali uno per uno, poi la fattura.",
+      "unclearNote": "Kin non ha potuto collocare: {items}. Aggiungili tu se fanno parte di questa fattura.",
+      "droppedNote": "Kin ha tralasciato {count} voci che non ha trovato nelle tue parole."
     },
     "agreement": {
       "title": "Accordo di famiglia",

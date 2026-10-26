@@ -14,6 +14,7 @@
     "brand:export": "node scripts/export-sign-in-brand.ts"
   },
   "dependencies": {
+    "@kin/agent": "workspace:*",
     "@kin/auth": "workspace:*",
     "@kin/config": "workspace:*",
     "@kin/db": "workspace:*",

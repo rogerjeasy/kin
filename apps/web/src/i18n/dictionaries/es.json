@@ -1493,7 +1493,11 @@
         "paused": "El círculo está en pausa. Envíala cuando termine la pausa.",
         "no_agreement": "El círculo necesita un acuerdo antes de aprobar facturas.",
         "receiver": "Escribe el email de PayPal de la cuidadora.",
-        "payment_in_progress": "Un pago para ti espera aprobación o está en curso. Cambia la dirección cuando termine."
+        "payment_in_progress": "Un pago para ti espera aprobación o está en curso. Cambia la dirección cuando termine.",
+        "model_unavailable": "Kin no puede leer descripciones ahora. Escribe los días abajo.",
+        "model_refused": "Kin no pudo leer esa descripción. Escribe los días abajo.",
+        "description": "Escribe entre uno y mil caracteres sobre tus visitas.",
+        "busy": "Has pedido varias lecturas hace poco. Espera un rato o escribe los días abajo."
       },
       "states": {
         "received": "Pendiente de revisión familiar",
@@ -1533,7 +1537,14 @@
       "receiverText": "Solo tú puedes indicarlo. No puede cambiar mientras un pago para ti esté pendiente o en curso.",
       "receiverSave": "Guardar dirección",
       "receiverSaved": "Dirección guardada",
-      "receiverMissing": "{name} aún no ha añadido una dirección de PayPal. Sus pagos esperan hasta que lo haga."
+      "receiverMissing": "{name} aún no ha añadido una dirección de PayPal. Sus pagos esperan hasta que lo haga.",
+      "describeLabel": "O describe tus visitas con tus palabras",
+      "describeHint": "Por ejemplo: «Lunes y martes, 4 horas cada uno, y ayer de 9 a 11». Kin rellena los días abajo; tú los revisas antes de enviar nada. Tu tarifa nunca se muestra a la IA.",
+      "describe": "Rellenar los días",
+      "describing": "Leyendo…",
+      "described": "Kin rellenó los días de abajo con tus palabras. Revisa cada uno y luego la factura.",
+      "unclearNote": "Kin no pudo ubicar: {items}. Añádelo tú si corresponde a esta factura.",
+      "droppedNote": "Kin dejó fuera {count} entradas que no encontró en tus palabras."
     },
     "agreement": {
       "title": "Acuerdo familiar",

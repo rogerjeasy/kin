@@ -1493,7 +1493,11 @@
         "paused": "The circle is paused. Send it once the pause lifts.",
         "no_agreement": "The circle needs an agreement before bills can be approved.",
         "receiver": "Enter the caregiver’s PayPal email address.",
-        "payment_in_progress": "A payment to you is waiting for approval or under way. Change the address once it is finished."
+        "payment_in_progress": "A payment to you is waiting for approval or under way. Change the address once it is finished.",
+        "model_unavailable": "Kin cannot read descriptions right now. Enter the days below instead.",
+        "model_refused": "Kin could not read that description. Enter the days below instead.",
+        "description": "Write between one and a thousand characters about your visits.",
+        "busy": "You have asked Kin to read several descriptions recently. Please wait a while, or enter the days below."
       },
       "states": {
         "received": "Awaiting family review",
@@ -1533,7 +1537,14 @@
       "receiverText": "Only you can set this. While a payment to you is waiting or under way, it cannot change.",
       "receiverSave": "Save address",
       "receiverSaved": "Address saved",
-      "receiverMissing": "{name} has not added a PayPal address yet. Their payouts wait until they do."
+      "receiverMissing": "{name} has not added a PayPal address yet. Their payouts wait until they do.",
+      "describeLabel": "Or describe your visits in your own words",
+      "describeHint": "For example: “Monday and Tuesday, 4 hours each, and yesterday from 9 to 11.” Kin fills in the days below; you check them before anything is sent. Your rate is never shown to the AI.",
+      "describe": "Fill in the days",
+      "describing": "Reading…",
+      "described": "Kin filled in the days below from your words. Check each one, then review the bill.",
+      "unclearNote": "Kin could not place: {items}. Add them yourself if they belong on this bill.",
+      "droppedNote": "Kin left out {count} entries it could not find in your words."
     },
     "agreement": {
       "title": "Family agreement",

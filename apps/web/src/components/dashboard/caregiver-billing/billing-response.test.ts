@@ -14,4 +14,12 @@ describe("the billing response boundary", () => {
     const input = { ok: true, submissionKey: "e57341b3-198d-44cf-a930-3ac37b997c2a", bill: { details: { version: 1, currency: "USD", rateCentsPerHour: 2200, visits: [{ date: "2026-10-01", minutes: 240 }] }, lines: [{ date: "2026-10-01", minutes: 240, cents: 8800 }], cents: 8800 } };
     expect(parseBillingResponse(input, errors)).toEqual(input);
   });
+  it("reads days Claude filled in only when every one is a real day in whole minutes", () => {
+    const good = { ok: true, described: true, visits: [{ date: "2026-10-26", minutes: 240 }], unclear: ["Tuesday"], dropped: 1 };
+    expect(parseBillingResponse(good, errors)).toEqual(good);
+    for (const visits of [[{ date: "Monday", minutes: 240 }], [{ date: "2026-10-26", minutes: 0 }], [{ date: "2026-10-26", minutes: 1441 }], [{ date: "2026-10-26", minutes: 2.5 }], "many"]) {
+      expect(parseBillingResponse({ ...good, visits }, errors)).toEqual({ ok: false, reason: "unavailable" });
+    }
+  });
 });
+

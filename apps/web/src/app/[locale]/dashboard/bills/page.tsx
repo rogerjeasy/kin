@@ -19,6 +19,7 @@ import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
 import { dashboardContext, may } from "@/server/dashboard-context";
+import { structuredModel } from "@/server/model";
 
 export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/bills">): Promise<Metadata> {
   return dashboardMetadata(params, "bills");
@@ -95,7 +96,7 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
   return (
     <>
       <PageHeader title={bills.title} lede={bills.lede} />
-      <CaregiverBills circle={circle} viewer={viewer} locale={locale} copy={dictionary.dashboard.caregiverBilling} />
+      <CaregiverBills circle={circle} viewer={viewer} locale={locale} canDescribe={structuredModel() !== null} copy={dictionary.dashboard.caregiverBilling} />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         {upcoming.length > 0 ? (
           <Panel title={upcomingTitle} description={bills.upcoming.text} flush>

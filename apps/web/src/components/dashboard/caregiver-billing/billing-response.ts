@@ -11,6 +11,7 @@ export function parseBillingResponse(value: unknown, errors: Record<BillingFailu
     return { ok: false, reason: row.reason as BillingFailure, ...(billId === null ? {} : { billId }) };
   }
   if (row?.ok !== true) return unavailable;
+  if (row.described === true) return described(row);
   if (typeof row.id === "string" && row.id !== "") return { ok: true, id: row.id };
   const bill = object(row.bill);
   if (!bill || !cents(bill.cents) || typeof row.submissionKey !== "string" || !Array.isArray(bill.lines)) return unavailable;
@@ -28,6 +29,20 @@ export function parseBillingResponse(value: unknown, errors: Record<BillingFailu
     if (error instanceof CaregiverBillError) return unavailable;
     throw error;
   }
+}
+
+// Days Claude read from the caregiver's words: only well-formed days and whole minutes fill the form.
+function described(row: Record<string, unknown>): BillingResult {
+  if (!Array.isArray(row.visits) || !Array.isArray(row.unclear) || !cents(row.dropped)) return unavailable;
+  const visits = row.visits.map(object).filter((visit) => visit !== null && typeof visit.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(visit.date) && cents(visit.minutes) && visit.minutes > 0 && visit.minutes <= 1440);
+  if (visits.length !== row.visits.length) return unavailable;
+  return {
+    ok: true,
+    described: true,
+    visits: visits.map((visit) => ({ date: String(visit?.date), minutes: Number(visit?.minutes) })),
+    unclear: row.unclear.filter((each): each is string => typeof each === "string"),
+    dropped: row.dropped,
+  };
 }
 
 function object(value: unknown): Record<string, unknown> | null {
