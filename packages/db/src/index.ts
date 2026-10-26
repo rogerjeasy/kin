@@ -2,6 +2,8 @@ export { connect } from "./connection.ts";
 export { CaregiverBillingError, configureCaregiver, setOwnReceiver, submitCaregiverBill } from "./caregiver-billing.ts";
 export type { CaregiverBillingReason } from "./caregiver-billing.ts";
 export { declineCaregiverBill, sendCaregiverBill } from "./caregiver-review.ts";
+export { AgreementError, acceptAgreement, proposeAgreement, readAgreementVersions } from "./agreements.ts";
+export type { AgreementReason } from "./agreements.ts";
 export {
   PAYOUT_TOPIC,
   beginPayout,

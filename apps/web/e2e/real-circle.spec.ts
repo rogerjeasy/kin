@@ -77,6 +77,34 @@ test.describe("a person's own circle", () => {
   }
 });
 
+// After every test that expects the circle to have no agreement.
+test.describe("a person's first agreement", () => {
+  test.use({ viewport: { width: laptop.width, height: laptop.height } });
+  const copy = dashboard.agreement;
+
+  test("is written by the organizer and governs at once, as the only member who shares the cost", async ({ page }) => {
+    await page.goto("/dashboard/circle");
+    await page.getByRole("link", { name: copy.open }).click();
+    await expect(page.getByRole("main")).toContainText(copy.noneOrganizer);
+    const form = page.getByRole("region", { name: copy.form.writeTitle });
+    await expect(form.getByLabel(`${IDENTITY_PROVIDER.person.name}’s share (%)`)).toHaveValue("100");
+    await form.getByLabel("Meera decides above").fill("50");
+    await form.getByLabel(copy.form.secondAbove).fill("500");
+    await form.getByLabel(copy.form.ceiling).fill("2000");
+    await form.getByRole("button", { name: copy.form.review }).click();
+    await expect(form).toContainText(`${IDENTITY_PROVIDER.person.name} now shares the cost: 100%`);
+    await expect(form).toContainText("Largest single payment: $2,000.00");
+    await form.getByRole("button", { name: "Propose version 1" }).click();
+    await expect(page.getByRole("region", { name: /^Version 1 · in force since/ })).toContainText("$1,000.00 from Sam Rivera");
+    // Meera is kept informed rather than deciding, so her threshold is shown as not used.
+    const examples = page.getByRole("region", { name: copy.examplesTitle });
+    await expect(examples).toContainText("A bill of $51.00The organizer approves");
+    await expect(examples).toContainText("A bill of $501.00Two yeses");
+    await expect(page.getByRole("region", { name: /^Version 1 · in force since/ })).toContainText("$50.00, not used while Meera does not decide payments");
+    await expectNoHorizontalOverflow(page);
+  });
+});
+
 // After every test that expects the circle to be empty: these put real
 // payments into it.
 test.describe("a yes to real money", () => {

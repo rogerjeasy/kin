@@ -26,6 +26,10 @@ export const CIRCLE_ACTIONS = {
   /** Stop all approvals for 24 hours (section 15.3). An observer changes nothing. */
   "circle.pause": ["organizer", "contributor", "parent", "caregiver"],
   "member.invite": ["organizer"],
+  /** Write a new version of the family agreement. Every member who shares the cost must then accept it. */
+  "agreement.propose": ["organizer"],
+  /** Accept the newest version: the members who share the cost, and the parent. */
+  "agreement.accept": ["organizer", "contributor", "parent"],
   "audit.view": ["organizer"],
   "caregiver_rate.manage": ["organizer"],
   "caregiver_bill.submit": ["caregiver"],

@@ -1,9 +1,11 @@
-import { CaregiverPayoutError, planCaregiverPayout, type CircleRole, type ParentLevel } from "@kin/domain";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { CaregiverPayoutError, calendarDay, planCaregiverPayout, type CircleRole, type ParentLevel } from "@kin/domain";
+import { and, eq, sql } from "drizzle-orm";
+
+import { readAgreementVersions } from "./agreements.ts";
 
 import { CaregiverBillingError, operation, requiredId } from "./caregiver-billing.ts";
 import type { Transaction } from "./connection.ts";
-import { agreements, bills, circles, members, payees } from "./schema/index.ts";
+import { bills, circles, members, payees } from "./schema/index.ts";
 
 type Review = { readonly circleId: string; readonly billId: string; readonly now: Date };
 
@@ -36,9 +38,11 @@ async function planFor(tx: Transaction, { circleId, billId, now }: Review) {
     .from(payees)
     .leftJoin(members, and(eq(members.circleId, payees.circleId), eq(members.id, payees.memberId)))
     .where(and(eq(payees.circleId, circleId), eq(payees.id, bill.payeeId)));
-  const [agreement] = await tx.select().from(agreements).where(eq(agreements.circleId, circleId)).orderBy(desc(agreements.version)).limit(1);
-  const [circle] = await tx.select({ pausedUntil: circles.pausedUntil }).from(circles).where(eq(circles.id, circleId));
+  const [circle] = await tx.select({ pausedUntil: circles.pausedUntil, timezone: circles.timezone }).from(circles).where(eq(circles.id, circleId));
   if (!payee || !circle) throw new CaregiverBillingError("refused");
+  // Planned against the version in force, never one still waiting for acceptance.
+  const { versions } = await readAgreementVersions(tx, circleId, calendarDay(now, circle.timezone).occurredOn);
+  const agreement = versions.find((version) => version.status === "in_force");
   // No agreement can mean none exists or that this person may not read it:
   // the database operation tells the two apart, so it is asked.
   if (!agreement) return refusal(tx, circleId, billId);
@@ -51,11 +55,7 @@ async function planFor(tx: Transaction, { circleId, billId, now }: Review) {
       payee: { status: payee.status, member, autoPay: null },
       agreement: {
         version: agreement.version,
-        approvals: {
-          ceilingCents: agreement.ceilingCents,
-          secondApprovalAboveCents: agreement.secondApprovalAboveCents,
-          parentDecidesAboveCents: agreement.parentDecidesAboveCents,
-        },
+        approvals: agreement.approvals,
       },
       parentLevel: await parentLevel(tx, circleId),
       pausedUntil: circle.pausedUntil,

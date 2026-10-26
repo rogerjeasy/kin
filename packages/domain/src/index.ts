@@ -32,6 +32,8 @@ export type {
 export { CareValueError, careValueCents } from "./care.ts";
 export { CaregiverBillError, calculateCaregiverBill, parseCaregiverBillDetails } from "./caregiver-bill.ts";
 export type { CaregiverBill, CaregiverBillDetails, CaregiverVisit } from "./caregiver-bill.ts";
+export { AgreementTermsError, agreementChanges, agreementStanding, bpsFromPercent, checkAgreementTerms, percentFromBps } from "./agreement-terms.ts";
+export type { AgreementChange, AgreementStanding, AgreementTerms, VersionFacts, VersionStatus } from "./agreement-terms.ts";
 export { CAREGIVER_BILL_PURPOSE, CaregiverPayoutError, planCaregiverPayout } from "./caregiver-payout.ts";
 export type { CaregiverPayoutPlan, CaregiverPayoutRequest } from "./caregiver-payout.ts";
 export { entryHeadline } from "./entry-headline.ts";

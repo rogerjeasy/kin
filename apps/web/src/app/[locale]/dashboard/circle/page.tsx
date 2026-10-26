@@ -18,6 +18,8 @@ import { circleNames } from "@/content/circle/names";
 import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
+import { agreementRoute } from "@/content/dashboard-routes";
+import { localizedPath } from "@/i18n/routing";
 import { dashboardContext, may } from "@/server/dashboard-context";
 
 export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/circle">): Promise<Metadata> {
@@ -35,6 +37,8 @@ export default async function CirclePage({ params }: PageProps<"/[locale]/dashbo
   const careRate = agreement?.care?.rateCentsPerHour;
   const slots = circleSlots(circle, format);
   const parentWords = { parent: slots.parent };
+  // The agreement's own screen, for every role that may read it.
+  const agreementLink = may(circle, "money.view") ? { href: localizedPath(locale, agreementRoute), label: dictionary.dashboard.agreement.open } : null;
 
   return (
     <>
@@ -98,7 +102,7 @@ export default async function CirclePage({ params }: PageProps<"/[locale]/dashbo
       ) : null}
       <div className="grid gap-6 lg:grid-cols-2">
         {agreement ? (
-          <Panel title={copy.agreement.title} description={fill(copy.agreement.version, { version: format.count(agreement.version) })}>
+          <Panel title={copy.agreement.title} description={fill(copy.agreement.version, { version: format.count(agreement.version) })} link={agreementLink ?? undefined}>
             <TermList
               terms={[
                 ...(careRate === undefined ? [] : [{ label: terms.care.label, value: fill(terms.care.value, { rate: format.money(careRate) }) }]),
@@ -111,7 +115,7 @@ export default async function CirclePage({ params }: PageProps<"/[locale]/dashbo
             />
           </Panel>
         ) : (
-          <EmptyPanel title={copy.agreement.title} text={empty.agreement} />
+          <EmptyPanel title={copy.agreement.title} text={empty.agreement} link={agreementLink ?? undefined} />
         )}
         {circle.payees.length > 0 ? (
           <Panel title={copy.payees.title} description={copy.payees.text} flush>

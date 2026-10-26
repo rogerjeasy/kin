@@ -10,6 +10,9 @@ export const dashboardRoutes = {
 
 export type DashboardSection = keyof typeof dashboardRoutes;
 
+/** The family agreement: a screen within the circle's section, not a section of its own. */
+export const agreementRoute = "/dashboard/circle/agreement";
+
 /** The sidebar, in order. */
 export const dashboardNav = ["overview", "approvals", "bills", "fairness", "record", "circle"] as const satisfies readonly DashboardSection[];
 
