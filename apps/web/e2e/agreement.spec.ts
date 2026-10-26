@@ -22,7 +22,7 @@ for (const viewport of [...viewports, { name: "narrow", width: 320, height: 740 
     await expect(page.getByRole("region", { name: "What it means in practice" })).toContainText("A bill of $25.00");
     await expect(page.getByRole("region", { name: "Propose a change" })).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    if (viewport.name === "phone" || viewport.name === "laptop") await page.screenshot({ path: `/private/tmp/kin-agreement-${viewport.name}.png`, fullPage: true });
+    if (viewport.name === "phone" || viewport.name === "laptop") await page.screenshot({ path: test.info().outputPath(`agreement-${viewport.name}.png`), fullPage: true });
   });
 }
 
