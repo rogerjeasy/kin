@@ -35,7 +35,8 @@ export async function readAgreementVersions(tx: Transaction, circleId: string, t
     rows.map((row) => ({
       version: row.version,
       effectiveOn: row.effectiveOn,
-      shareMemberIds: (sharesOf.get(row.id) ?? []).map((share) => share.memberId),
+      // Versions written before signers were recorded ask their share holders.
+      requiredMemberIds: row.requires ?? (sharesOf.get(row.id) ?? []).map((share) => share.memberId),
       acceptedMemberIds: (acceptancesOf.get(row.id) ?? []).map((each) => each.memberId),
     })),
     today,

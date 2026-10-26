@@ -57,6 +57,32 @@ describe("a new version of the family agreement", () => {
     expect(audit.map((row) => row.action)).toEqual(["agreement.proposed", "agreement.accepted", "agreement.accepted"]);
   });
 
+  it("cannot be made the organizer's alone by writing themselves the only share", async () => {
+    const circle = await visitorWithCircle(db);
+    // The organizer takes the whole cost, lifts the limits, and asks nobody: refused in effect.
+    const id = await propose(circle, {
+      shares: [{ memberId: circle.members.elena, bps: 10_000 }],
+      approvals: { ceilingCents: 10_000_000, secondApprovalAboveCents: 10_000_000, parentDecidesAboveCents: 10_000_000 },
+    });
+    const version = (await read(circle)).agreementVersions.find((each) => each.id === id);
+    expect(version?.status).toBe("awaiting");
+    expect(version?.waitingFor).toEqual(expect.arrayContaining([circle.members.marcus, circle.members.ana]));
+    expect((await read(circle)).agreement?.version).toBe(1);
+    expect(await inForceInSql(circle)).toBe(1);
+    // Marcus alone is not enough either: every organizer and contributor is asked.
+    await as(circle, "marcus");
+    await accept(circle, id);
+    expect(await inForceInSql(circle)).toBe(1);
+  });
+
+  it("asks a parent who decides, when someone holds the parent's seat", async () => {
+    const circle = await visitorWithCircle(db);
+    await seatPerson(db, circle.circleId, circle.members.rose);
+    const id = await propose(circle);
+    const version = (await read(circle)).agreementVersions.find((each) => each.id === id);
+    expect(version?.waitingFor).toEqual(expect.arrayContaining([circle.members.marcus, circle.members.ana, circle.members.rose]));
+  });
+
   it("lets the parent accept as well, without the version waiting for them", async () => {
     const circle = await visitorWithCircle(db);
     const id = await propose(circle);

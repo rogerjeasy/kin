@@ -74,7 +74,7 @@ describe("shares typed as percentages", () => {
 });
 
 describe("which version governs", () => {
-  const version = (version: number, accepted: readonly string[], effectiveOn = "2026-10-01"): VersionFacts => ({ version, effectiveOn, shareMemberIds: sharing, acceptedMemberIds: accepted });
+  const version = (version: number, accepted: readonly string[], effectiveOn = "2026-10-01"): VersionFacts => ({ version, effectiveOn, requiredMemberIds: sharing, acceptedMemberIds: accepted });
 
   it("is the newest version every member with a share has accepted", () => {
     const standing = agreementStanding([version(1, sharing), version(2, ["elena"])], today);

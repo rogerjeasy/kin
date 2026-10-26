@@ -88,7 +88,11 @@ export function percentFromBps(bps: number): string {
 export type VersionFacts = {
   readonly version: number;
   readonly effectiveOn: string;
-  readonly shareMemberIds: readonly string[];
+  /**
+   * Whose acceptance the version needs: every organizer and contributor, and
+   * a parent who decides, as fixed when it was proposed.
+   */
+  readonly requiredMemberIds: readonly string[];
   readonly acceptedMemberIds: readonly string[];
 };
 
@@ -108,20 +112,20 @@ export type AgreementStanding = {
   /** The version that governs today, or `null` before any has been accepted. */
   readonly inForce: number | null;
   readonly statuses: ReadonlyMap<number, VersionStatus>;
-  /** For each version not yet accepted, the members whose acceptance it waits for. */
+  /** For each version waiting for acceptance, the members it still waits for. */
   readonly waitingFor: ReadonlyMap<number, readonly string[]>;
 };
 
 /**
- * Which version governs: the newest one that every member holding a share in
- * it has accepted, from its start date. A version binds the members who
- * share its cost, so their acceptance is what makes it the family's. Only
- * the newest version can still be accepted; an older one that never was is
- * superseded.
+ * Which version governs: the newest one that every member it asks has
+ * accepted, from its start date. It asks every organizer and contributor, not
+ * only those it gives a share, so no one can write themselves the only share
+ * and be the only one asked. Only the newest version can still be accepted;
+ * an older one that never was is superseded.
  */
 export function agreementStanding(versions: readonly VersionFacts[], today: string): AgreementStanding {
   const ordered = versions.toSorted((a, b) => a.version - b.version);
-  const waitingFor = new Map(ordered.map((each) => [each.version, each.shareMemberIds.filter((member) => !each.acceptedMemberIds.includes(member))] as const));
+  const waitingFor = new Map(ordered.map((each) => [each.version, each.requiredMemberIds.filter((member) => !each.acceptedMemberIds.includes(member))] as const));
   const accepted = (each: VersionFacts) => (waitingFor.get(each.version) ?? []).length === 0;
   const inForce = ordered.findLast((each) => accepted(each) && each.effectiveOn <= today)?.version ?? null;
   const newest = ordered.at(-1)?.version ?? null;

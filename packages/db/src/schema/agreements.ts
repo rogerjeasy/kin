@@ -22,6 +22,13 @@ export const agreements = pgTable(
     secondApprovalAboveCents: cents("second_approval_above_cents").notNull(),
     parentDecidesAboveCents: cents("parent_decides_above_cents").notNull(),
     effectiveOn: date("effective_on", { mode: "string" }).notNull(),
+    /**
+     * Who must accept this version before it governs, fixed when it is
+     * proposed: every organizer and contributor, and a parent who decides.
+     * `null` on versions written before this was recorded, which ask only
+     * their share holders.
+     */
+    requires: uuid("requires").array(),
     createdAt: createdAt(),
   },
   (t) => [
