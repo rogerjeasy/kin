@@ -71,6 +71,13 @@
       "when": 1793050602616,
       "tag": "0009_own-receiver",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793051053414,
+      "tag": "0010_pin-payout-receiver",
+      "breakpoints": true
     }
   ]
 }

@@ -272,6 +272,18 @@ describe("where a caregiver's pay goes", () => {
     expect(await stored(circle)).toBe("amara@example.com");
   });
 
+  it("stays fixed after a payment to them failed, since a failed payment can be tried again", async () => {
+    const circle = await familyWithBill();
+    await setReceiver(circle, "amara@example.com");
+    const proposalId = await send(circle, circle.billId);
+    await asService(db.service, circle.circleId, async (tx) => {
+      await tx.update(proposals).set({ state: "approved" }).where(eq(proposals.id, proposalId));
+      await tx.update(proposals).set({ state: "executing" }).where(eq(proposals.id, proposalId));
+      await tx.update(proposals).set({ state: "failed" }).where(eq(proposals.id, proposalId));
+    });
+    await expect(setReceiver(circle, "someone.else@example.com")).rejects.toMatchObject({ reason: "payment_in_progress" });
+  });
+
   it("can be given for the first time while a payment waits, since that redirects nothing", async () => {
     const circle = await familyWithBill();
     await send(circle, circle.billId);

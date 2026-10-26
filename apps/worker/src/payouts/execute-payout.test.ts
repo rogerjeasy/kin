@@ -170,6 +170,19 @@ describe("an approved caregiver payout", () => {
     expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
   });
 
+  it("pays the address fixed when the family approved, whatever the payee's address says later", async () => {
+    const payout = await approvedPayout({ real: true });
+    // Written as the service, past every screen's lock, to show the execution does not follow it.
+    await serviceRows(db, payout.circle.circleId, "update payees set paypal_receiver = $1 where id = $2", ["thief@example.com", payout.circle.payees.amara]);
+    expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
+    expect([...payout.pool.payouts.values()].map((made) => made.request.receiver)).toEqual([RECEIVER]);
+  });
+
+  it("cannot be pointed at another address once it has one, even by the service", async () => {
+    const payout = await approvedPayout({ real: true });
+    await expect(serviceRows(db, payout.circle.circleId, "update executions set receiver = $1 where id = $2", ["thief@example.com", payout.executionId])).rejects.toThrow();
+  });
+
   it("never pays out money that has not arrived: it waits while the pool cannot cover the bill and the fee", async () => {
     const probe = await visitorWithCircle(db);
     const available = cashAvailableForPayouts(await ledgerOf(probe.circleId));

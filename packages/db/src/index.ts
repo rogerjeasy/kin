@@ -9,6 +9,7 @@ export {
   confirmPayout,
   failPayout,
   finishMessage,
+  payoutReceiver,
   readPayoutJob,
   recordHeld,
   recordPending,

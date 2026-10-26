@@ -1,5 +1,5 @@
 import { billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, type ExecutionState } from "@kin/domain";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
 import type { Database, Transaction } from "./connection.ts";
@@ -17,8 +17,10 @@ export type PayoutJob = {
   readonly billId: string | null;
   readonly payeeId: string;
   readonly category: string;
-  /** The PayPal email the money goes to, or `null` while none is recorded. */
+  /** The PayPal email the money goes to, fixed on the execution, or `null` while none is known. */
   readonly receiver: string | null;
+  /** The payee's address now, used only to fix a receiver the execution does not have yet. */
+  readonly payeeReceiver: string | null;
   readonly cents: number;
   readonly currency: string;
   /** PayPal sees this as the batch ID, so the payout is made at most once. */
@@ -69,7 +71,8 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
       payeeId: proposals.payeeId,
       kind: proposals.kind,
       category: payees.category,
-      receiver: payees.paypalReceiver,
+      receiver: executions.receiver,
+      payeeReceiver: payees.paypalReceiver,
       currency: circles.currency,
       demo: circles.demo,
       clockAt: circles.clockAt,
@@ -91,6 +94,7 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
     payeeId: row.payeeId,
     category: row.category,
     receiver: row.receiver,
+    payeeReceiver: row.payeeReceiver,
     cents: row.cents,
     currency: row.currency,
     idempotencyKey: row.idempotencyKey,
@@ -105,6 +109,11 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
 
 export type BeginOutcome = "ready" | "paused" | "no_receiver" | "waiting_for_funds";
 
+/** The address a ready payout is sent to: the one fixed on its execution. */
+export function payoutReceiver(job: PayoutJob): string | null {
+  return job.receiver ?? job.payeeReceiver;
+}
+
 /**
  * Readies an approved payout to be sent: the family's approval of the bill is
  * written to the ledger once (the payee is now owed), and the proposal moves
@@ -114,7 +123,12 @@ export type BeginOutcome = "ready" | "paused" | "no_receiver" | "waiting_for_fun
  */
 export async function beginPayout(tx: Transaction, job: PayoutJob, feeReserveCents: number): Promise<BeginOutcome> {
   if (isPaused(job.pausedUntil, job.now)) return "paused";
-  if (job.receiver === null && !job.simulated) return "no_receiver";
+  if (job.receiver === null && !job.simulated) {
+    // The caregiver gave no address before the family approved. Their first
+    // one is fixed now, once; the database refuses to change it after.
+    if (job.payeeReceiver === null) return "no_receiver";
+    await tx.update(executions).set({ receiver: job.payeeReceiver }).where(and(eq(executions.id, job.executionId), isNull(executions.receiver)));
+  }
   const owed = await entryExists(tx, job.circleId, "approval", job.proposalId);
   const ledger = await readLedger(tx, { id: job.circleId, currency: job.currency });
   if (!canPayOut(ledger, { cents: job.cents, feeCents: feeReserveCents, alreadyOwed: owed })) return "waiting_for_funds";

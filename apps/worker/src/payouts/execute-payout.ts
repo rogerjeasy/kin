@@ -3,6 +3,7 @@ import {
   beginPayout,
   confirmPayout,
   failPayout,
+  payoutReceiver,
   readPayoutJob,
   recordHeld,
   recordPending,
@@ -50,7 +51,8 @@ export async function executePayout(deps: PayoutDeps, circleId: string, executio
       return { step: later("held", Math.max(1, Math.min(HELD_SECONDS, untilLifted))) };
     }
     if (job.simulated) return { step: await paySimulated(tx, job, deps) };
-    return { job };
+    // beginPayout fixed the address on the execution if it had none.
+    return { job: { ...job, receiver: payoutReceiver(job) } };
   });
   if ("step" in prepared) return prepared.step;
   const { job } = prepared;

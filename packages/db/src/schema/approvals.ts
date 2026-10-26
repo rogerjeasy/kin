@@ -91,6 +91,8 @@ export const executions = pgTable(
     paypalBatchId: text("paypal_batch_id"),
     paypalItemId: text("paypal_item_id"),
     paypalOrderId: text("paypal_order_id"),
+    /** Where the money goes, fixed once known: a later change of the payee's address never moves it. */
+    receiver: text("receiver"),
     attempts: integer("attempts").notNull().default(0),
     lastError: text("last_error"),
     submittedAt: at("submitted_at"),
