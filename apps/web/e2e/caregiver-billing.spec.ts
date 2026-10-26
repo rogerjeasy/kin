@@ -143,6 +143,8 @@ test("keeps entered visits on duplicate feedback and lets the caregiver correct 
   await expect(form.getByLabel("Hours", { exact: true })).toHaveValue("4");
   await form.getByRole("button", { name: "Review bill" }).click();
   await form.getByRole("button", { name: "Submit bill" }).click();
+  // Reloading before the bill is saved would cancel the submission it depends on.
+  await expect(page.getByRole("status").filter({ hasText: "Bill submitted" })).toBeVisible();
   await page.reload();
   await form.getByLabel("Service date").fill("2026-10-01");
   await form.getByLabel("Hours", { exact: true }).fill("4");
