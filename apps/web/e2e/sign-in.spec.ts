@@ -21,6 +21,19 @@ async function cookieNames(page: Page): Promise<string[]> {
   return (await page.context().cookies()).map((cookie) => cookie.name);
 }
 
+test("the sign-in page never starts a sign-in until it is asked to", async ({ page }) => {
+  // A prefetch of /auth/sign-in follows the provider back to the callback and
+  // clears the cookie the person's own sign-in needs, so it must never happen.
+  const started: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname.startsWith("/auth/")) started.push(request.url());
+  });
+  await page.goto("/sign-in?next=%2Fdashboard%2Fbills");
+  await page.getByRole("link", { name: signInPage.form.submit }).hover();
+  await page.waitForLoadState("networkidle");
+  expect(started).toEqual([]);
+});
+
 for (const section of dashboardNav) {
   const path = dashboardRoutes[section];
   test(`${path} sends a signed-out visitor to sign in, and back to it afterwards`, async ({ page }) => {

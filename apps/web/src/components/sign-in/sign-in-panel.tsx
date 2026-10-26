@@ -1,7 +1,7 @@
 import { TriangleAlertIcon } from "lucide-react";
 
 import { SecureNote } from "@/components/account/secure-note";
-import { ButtonLink } from "@/components/shared/button-link";
+import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 
 type SignInPanelProps = {
@@ -25,9 +25,12 @@ export function SignInPanel({ copy, href, problem }: SignInPanelProps) {
           <span className="min-w-0">{copy.problems[problem]}</span>
         </p>
       ) : null}
-      <ButtonLink href={href} className="w-full whitespace-normal">
-        {copy.submit}
-      </ButtonLink>
+      {/* A plain link, never prefetched: fetching it starts a sign-in, and a
+          prefetch could finish one in the background and clear the cookie the
+          person's own sign-in relies on. */}
+      <Button asChild className="w-full whitespace-normal">
+        <a href={href}>{copy.submit}</a>
+      </Button>
       <SecureNote>{copy.note}</SecureNote>
     </div>
   );
