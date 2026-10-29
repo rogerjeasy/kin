@@ -1138,7 +1138,16 @@
           "cancelled": "Annulée · rien n’est payé"
         }
       },
-      "freshCheckNote": "Approuver de l’argent réel vous demande de vous reconnecter avec votre application d’authentification."
+      "freshCheckNote": "Approuver de l’argent réel vous demande de vous reconnecter avec votre application d’authentification.",
+      "voice": {
+        "start": "Écouter et répondre à voix haute",
+        "readBack": "{title} : {amount} à {payee}. Approuvez-vous ? Dites oui ou non.",
+        "confirmApprove": "Vous avez dit oui au paiement de {amount} à {payee}. Redites oui pour confirmer.",
+        "confirmReject": "Vous avez dit non au paiement de {amount} à {payee}. Dites oui pour confirmer votre refus.",
+        "heardApprove": "Kin a entendu oui. Écoutez, puis confirmez à voix haute.",
+        "heardReject": "Kin a entendu non. Écoutez, puis confirmez à voix haute.",
+        "confirm": "Confirmer à voix haute"
+      }
     },
     "bills": {
       "title": "Factures",
@@ -1544,7 +1553,18 @@
       "describing": "Lecture…",
       "described": "Kin a rempli les jours ci-dessous d’après vos mots. Vérifiez chacun, puis vérifiez la facture.",
       "unclearNote": "Kin n’a pas pu situer : {items}. Ajoutez-les vous-même s’ils font partie de cette facture.",
-      "droppedNote": "Kin a laissé de côté {count} éléments introuvables dans vos mots."
+      "droppedNote": "Kin a laissé de côté {count} éléments introuvables dans vos mots.",
+      "speech": {
+        "speakVisits": "Dicter vos visites",
+        "hearBill": "Écouter la facture",
+        "answer": "Répondre à voix haute",
+        "readBack": "{name}, voici votre facture : {days}. À {rate} de l’heure, le total est de {total}. Dites oui pour l’envoyer, ou non pour la modifier.",
+        "readBackDay": "{day}, {duration}",
+        "hoursOne": "{hours} heure",
+        "hoursOther": "{hours} heures",
+        "saidYes": "Vous avez dit oui. Envoi de votre facture.",
+        "saidNo": "Vous avez dit non. Modifiez vos visites, puis vérifiez à nouveau."
+      }
     },
     "agreement": {
       "title": "Accord familial",
@@ -1650,6 +1670,27 @@
       "open": "Ouvrir l’accord",
       "attention": "La version {version} de l’accord familial attend votre acceptation",
       "parentNotDeciding": "{amount}, sans effet tant que {parent} ne décide pas des paiements"
+    },
+    "speech": {
+      "record": "Parler",
+      "stop": "Arrêter",
+      "listening": "Kin écoute. Appuyez sur Arrêter quand vous avez fini.",
+      "working": "Kin note ce que vous avez dit…",
+      "heard": "Kin a entendu : « {transcript} »",
+      "micDenied": "Kin ne peut pas utiliser votre micro. Autorisez-le dans le navigateur, ou écrivez.",
+      "noVoice": "Kin ne peut pas encore parler cette langue à voix haute. Les mots sont à l’écran.",
+      "errors": {
+        "refused": "Votre rôle ne permet pas cela dans ce cercle.",
+        "invalid": "Kin n’a pas pu l’utiliser. Veuillez réessayer.",
+        "speech_unavailable": "Kin ne peut ni écouter ni parler pour le moment. Utilisez les boutons et les champs.",
+        "recording": "L’enregistrement était vide ou dépassait une minute. Veuillez réessayer.",
+        "busy": "Vous avez beaucoup utilisé la voix de Kin récemment. Patientez un peu.",
+        "no_voice": "Kin ne peut pas encore parler cette langue à voix haute. Les mots sont à l’écran.",
+        "closed": "Cette proposition a déjà été décidée.",
+        "unclear": "Kin n’a pas entendu un oui ou un non clair. Veuillez réessayer.",
+        "not_confirmed": "Rien n’a été enregistré : Kin n’a pas entendu un oui clair pour confirmer.",
+        "unavailable": "Un problème est survenu. Veuillez réessayer."
+      }
     }
   }
 }

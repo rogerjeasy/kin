@@ -1,4 +1,5 @@
 import { CheckIcon, ShieldCheckIcon, XIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/i18n/locales";
@@ -11,6 +12,8 @@ type AnswerButtonsProps = {
   decline: string;
   /** Real money: a yes goes through a fresh sign-in with a second factor first. */
   freshCheck?: { note: string } | null;
+  /** The demo's spoken answer, when this deployment has speech. */
+  voice?: ReactNode;
 };
 
 /**
@@ -19,7 +22,7 @@ type AnswerButtonsProps = {
  * engine decide. A yes to real money is posted to the step-up route instead,
  * which records it only after the fresh check.
  */
-export function AnswerButtons({ locale, proposalId, approve, decline, freshCheck = null }: AnswerButtonsProps) {
+export function AnswerButtons({ locale, proposalId, approve, decline, freshCheck = null, voice = null }: AnswerButtonsProps) {
   const field = (decision: "approve" | "reject") => (
     <>
       <input type="hidden" name="locale" value={locale} />
@@ -49,6 +52,7 @@ export function AnswerButtons({ locale, proposalId, approve, decline, freshCheck
           <span className="min-w-0">{freshCheck.note}</span>
         </p>
       ) : null}
+      {voice}
     </div>
   );
 }

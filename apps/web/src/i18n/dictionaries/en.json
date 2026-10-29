@@ -1138,7 +1138,16 @@
           "cancelled": "Cancelled · nothing is paid"
         }
       },
-      "freshCheckNote": "Approving real money asks you to sign in again with your authenticator app."
+      "freshCheckNote": "Approving real money asks you to sign in again with your authenticator app.",
+      "voice": {
+        "start": "Hear it and answer by voice",
+        "readBack": "{title}: {amount} to {payee}. Do you approve? Say yes or no.",
+        "confirmApprove": "You said yes to paying {amount} to {payee}. Say yes again to confirm.",
+        "confirmReject": "You said no to paying {amount} to {payee}. Say yes to confirm that you decline.",
+        "heardApprove": "Kin heard yes. Listen, then confirm by voice.",
+        "heardReject": "Kin heard no. Listen, then confirm by voice.",
+        "confirm": "Confirm by voice"
+      }
     },
     "bills": {
       "title": "Bills",
@@ -1544,7 +1553,18 @@
       "describing": "Reading…",
       "described": "Kin filled in the days below from your words. Check each one, then review the bill.",
       "unclearNote": "Kin could not place: {items}. Add them yourself if they belong on this bill.",
-      "droppedNote": "Kin left out {count} entries it could not find in your words."
+      "droppedNote": "Kin left out {count} entries it could not find in your words.",
+      "speech": {
+        "speakVisits": "Speak your visits",
+        "hearBill": "Hear the bill",
+        "answer": "Answer by voice",
+        "readBack": "{name}, here is your bill: {days}. At {rate} an hour, the total is {total}. Say yes to submit it, or no to change it.",
+        "readBackDay": "{day}, {duration}",
+        "hoursOne": "{hours} hour",
+        "hoursOther": "{hours} hours",
+        "saidYes": "You said yes. Submitting your bill.",
+        "saidNo": "You said no. Change your visits, then review again."
+      }
     },
     "agreement": {
       "title": "Family agreement",
@@ -1650,6 +1670,27 @@
       "open": "Open the agreement",
       "attention": "Version {version} of the family agreement waits for your acceptance",
       "parentNotDeciding": "{amount}, not used while {parent} does not decide payments"
+    },
+    "speech": {
+      "record": "Speak",
+      "stop": "Stop",
+      "listening": "Listening. Press Stop when you have finished.",
+      "working": "Kin is writing down what you said…",
+      "heard": "Kin heard: “{transcript}”",
+      "micDenied": "Kin cannot use your microphone. Allow it in your browser, or type instead.",
+      "noVoice": "Kin cannot speak this language aloud yet. The words are on the screen.",
+      "errors": {
+        "refused": "Your role cannot do that in this circle.",
+        "invalid": "Kin could not use that. Please try again.",
+        "speech_unavailable": "Kin cannot listen or speak right now. Use the buttons and fields instead.",
+        "recording": "The recording was empty or longer than a minute. Please try again.",
+        "busy": "You have used Kin’s voice a lot recently. Please wait a while.",
+        "no_voice": "Kin cannot speak this language aloud yet. The words are on the screen.",
+        "closed": "That proposal was already decided.",
+        "unclear": "Kin did not hear a clear yes or no. Please try again.",
+        "not_confirmed": "Nothing was recorded: Kin did not hear a clear yes to confirm.",
+        "unavailable": "Something went wrong. Please try again."
+      }
     }
   }
 }

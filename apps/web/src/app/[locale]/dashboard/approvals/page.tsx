@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { AnsweredList } from "@/components/dashboard/approvals/answered-list";
 import { AnswerButtons } from "@/components/dashboard/approvals/answer-buttons";
+import { VoiceAnswer } from "@/components/dashboard/approvals/voice-answer";
 import { DecidedList } from "@/components/dashboard/approvals/decided-list";
 import { ProposalCard } from "@/components/dashboard/approvals/proposal-card";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
@@ -22,6 +23,7 @@ import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
 import { dashboardContext, may } from "@/server/dashboard-context";
+import { speechServices } from "@/server/speech";
 
 export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/approvals">): Promise<Metadata> {
   return dashboardMetadata(params, "approvals");
@@ -33,7 +35,9 @@ const SAID_YES = new Set<string>(["approved", "executing", "settled"]);
 
 export default async function ApprovalsPage({ params }: PageProps<"/[locale]/dashboard/approvals">) {
   const { locale, dictionary, circle } = await dashboardContext(params, "approvals");
-  const { approvals, common, empty } = dictionary.dashboard;
+  const { approvals, common, empty, notices } = dictionary.dashboard;
+  // The spoken answer is for the demo's simulated money: real money needs the fresh check.
+  const speechOn = speechServices() !== null;
   const format = circleFormatters(locale, circle);
   const names = circleNames(circle, dictionary);
   const period = openPeriod(circle);
@@ -76,6 +80,11 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
                     approve={common.approve}
                     decline={common.decline}
                     freshCheck={circle.circle.demo ? null : { note: approvals.freshCheckNote }}
+                    voice={
+                      circle.circle.demo && speechOn ? (
+                        <VoiceAnswer locale={locale} proposalId={view.proposal.id} copy={approvals.voice} speech={dictionary.dashboard.speech} outcomes={{ approved: notices.approved, rejected: notices.rejected, answered: notices.answered }} />
+                      ) : undefined
+                    }
                   />
                 ) : (
                   <StatusPill tone={status.tone} icon={ClockIcon} className="text-sm">
