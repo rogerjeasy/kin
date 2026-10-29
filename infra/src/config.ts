@@ -49,6 +49,12 @@ export type InfraConfig = {
    * Amazon Polly in this region. Off unless `kin:speech` is `true`.
    */
   readonly speech: boolean;
+  /**
+   * Whether the web app may ask Claude on Amazon Bedrock in this region. Off
+   * unless `kin:claude` is `true`: Bedrock decides per account which models
+   * it serves, so switch it on only once the model in `@kin/config` answers.
+   */
+  readonly claude: boolean;
 };
 
 export class InfraConfigError extends Error {
@@ -84,6 +90,7 @@ export function readConfig({ context, env }: Source): InfraConfig {
     neighbourProjects: texts(context("kin:neighbourProjects"), "kin:neighbourProjects"),
     paypal: paypalApp(context("kin:paypal")),
     speech: flag(context("kin:speech"), "kin:speech"),
+    claude: flag(context("kin:claude"), "kin:claude"),
   };
 }
 

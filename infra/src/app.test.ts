@@ -24,6 +24,7 @@ const config: InfraConfig = {
   neighbourProjects: ["wick", "carecircle"],
   paypal: { clientId: "sandbox-client-id", webhookId: "WH-SANDBOX" },
   speech: false,
+  claude: false,
 };
 
 // The same feature flags as a real synth, so the tests see what is deployed.
@@ -757,6 +758,18 @@ describe("top-ups", () => {
     const on = Template.fromStack(buildKin(new App({ context: testContext }), { ...config, speech: true }).web);
     expect(actionsOf(on)).toEqual(expect.arrayContaining(["transcribe:StartStreamTranscription", "polly:SynthesizeSpeech"]));
     expect(JSON.stringify(on.toJSON())).toContain("KIN_SPEECH_REGION");
+  });
+
+  it("let the web app ask Claude only when Claude is switched on, and only through Bedrock in its own account", () => {
+    expect(actionsOf(webBefore).some((action) => action.startsWith("bedrock") || action.startsWith("aws-marketplace:"))).toBe(false);
+    expect(JSON.stringify(webBefore.toJSON())).not.toContain("KIN_BEDROCK_REGION");
+    const on = Template.fromStack(buildKin(new App({ context: testContext }), { ...config, claude: true }).web);
+    expect(actionsOf(on)).toEqual(expect.arrayContaining(["bedrock-mantle:CreateInference", "aws-marketplace:Subscribe"]));
+    expect(actionsOf(on).some((action) => action.startsWith("bedrock:") || action === "bedrock-mantle:CallWithBearerToken")).toBe(false);
+    const policies = JSON.stringify(on.findResources("AWS::IAM::Policy"));
+    expect(policies).toContain("arn:aws:bedrock-mantle:us-east-1:123456789012:project/*");
+    expect(policies).toContain("bedrock-mantle.amazonaws.com");
+    expect(JSON.stringify(on.toJSON())).toContain("KIN_BEDROCK_REGION");
   });
 
   it("stay off, in the web app and the worker alike, until PayPal is configured", () => {
