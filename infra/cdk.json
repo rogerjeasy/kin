@@ -35,6 +35,8 @@
       "clientId": "BAATjOObFGda34lAUzZzBd43bazhUHcRf9GbRKzF1ZiTJl5x0WSIz0Q3fGJ_1rtBYd_BmJZrTQ1-9VfGkA",
       "webhookId": "3PS4036436315174J"
     },
+    "kin:speech": true,
+    "kin:claude": false,
     "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
     "@aws-cdk/aws-apigateway:authorizerChangeDeploymentLogicalId": true,
     "@aws-cdk/aws-apigateway:disableCloudWatchRole": true,

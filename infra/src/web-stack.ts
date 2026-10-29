@@ -119,6 +119,27 @@ export class WebStack extends Stack {
       environment.push({ name: "KIN_SPEECH_REGION", value: this.region });
     }
 
+    // Claude: inference through Bedrock's Messages endpoint in this region
+    // and account, and the Marketplace subscription that a model's first
+    // call makes, only when Bedrock itself makes it (as AWS's own
+    // AmazonBedrockMantleInferenceAccess policy allows).
+    if (config.claude) {
+      instance.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ["bedrock-mantle:CreateInference"],
+          resources: [`arn:aws:bedrock-mantle:${this.region}:${this.account}:project/*`],
+        }),
+      );
+      instance.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ["aws-marketplace:Subscribe", "aws-marketplace:ViewSubscriptions"],
+          resources: ["*"],
+          conditions: { StringEquals: { "aws:CalledViaLast": "bedrock-mantle.amazonaws.com" } },
+        }),
+      );
+      environment.push({ name: "KIN_BEDROCK_REGION", value: this.region });
+    }
+
     // Out through Kin's own network, where the database admits Kin's
     // services and the NAT gateway reaches Cognito.
     const connector = new apprunner.CfnVpcConnector(this, "Network", {

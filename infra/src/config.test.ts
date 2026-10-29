@@ -61,6 +61,12 @@ describe("readConfig", () => {
     expect(() => read({ "kin:speech": "yes" })).toThrow(InfraConfigError);
   });
 
+  it("leaves Claude off unless switched on, and refuses anything but true or false", () => {
+    expect(read().claude).toBe(false);
+    expect(read({ "kin:claude": true }).claude).toBe(true);
+    expect(() => read({ "kin:claude": "on" })).toThrow(InfraConfigError);
+  });
+
   it("refuses a sender that is not an email address", () => {
     expect(() => read({}, { ...env, KIN_SENDER_EMAIL: "kin" })).toThrow(InfraConfigError);
   });
