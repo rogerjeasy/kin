@@ -26,7 +26,17 @@ export const CIRCLE_ACTIONS = {
   /** Stop all approvals for 24 hours (section 15.3). An observer changes nothing. */
   "circle.pause": ["organizer", "contributor", "parent", "caregiver"],
   "member.invite": ["organizer"],
+  /** Write a new version of the family agreement. Every member who shares the cost must then accept it. */
+  "agreement.propose": ["organizer"],
+  /** Accept the newest version: the members who share the cost, and the parent. */
+  "agreement.accept": ["organizer", "contributor", "parent"],
   "audit.view": ["organizer"],
+  "caregiver_rate.manage": ["organizer"],
+  "caregiver_bill.submit": ["caregiver"],
+  /** Say where one's own pay goes. Nobody else may, so nobody can redirect it. */
+  "caregiver_receiver.set": ["caregiver"],
+  /** Send a caregiver's bill for the family's approval, or decline it: the members who share the cost. */
+  "caregiver_bill.review": ["organizer", "contributor"],
 } as const satisfies Record<string, readonly CircleRole[]>;
 
 export type CircleAction = keyof typeof CIRCLE_ACTIONS;

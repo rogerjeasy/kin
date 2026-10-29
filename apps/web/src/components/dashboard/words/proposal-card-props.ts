@@ -22,6 +22,8 @@ export type CardContext = {
   readonly poolCents: number | null;
   readonly now: Date;
   readonly month: string;
+  /** Where PayPal sends a payee's money, masked; `null` while none is recorded. */
+  readonly receiverOf: (payeeId: string) => string | null;
 };
 
 function slotTitle(dictionary: Dictionary, context: CardContext, slot: SlotView): string {
@@ -61,7 +63,18 @@ function notesFor(dictionary: Dictionary, context: CardContext, view: ProposalVi
     plan.announceToCircle ? notes.newPayee : null,
     plan.payeeMemberId ? fill(notes.payeeIsMember, { name: names.member(plan.payeeMemberId) }) : null,
     poolCents !== null && proposal.cents > poolCents ? fill(notes.abovePool, { pool: format.money(poolCents) }) : null,
+    destination(dictionary, context, view),
   ].filter((note) => note !== null);
+}
+
+// A caregiver's pay goes where they said; the family sees where before saying yes.
+function destination(dictionary: Dictionary, context: CardContext, view: ProposalView): string | null {
+  const { notes } = dictionary.dashboard.approvals;
+  const { proposal } = view;
+  if (proposal.kind !== "caregiver_payout" || !("payeeId" in proposal.to)) return null;
+  const receiver = context.receiverOf(proposal.to.payeeId);
+  const name = context.names.payee(proposal.to.payeeId);
+  return receiver === null ? fill(notes.noReceiver, { name }) : fill(notes.receiver, { address: receiver, name });
 }
 
 /** Everything a proposal card shows, except the viewer's buttons. */

@@ -13,6 +13,8 @@ export { PayPalShapeError } from "./json.ts";
 export { captureRequestId, contributionOrderBody, parseOrder } from "./order.ts";
 export type { NewContributionOrder, Order } from "./order.ts";
 export { PayPalError } from "./paypal-error.ts";
+export { PAYOUT_ITEM_STATUSES, parsePayoutBatch, payoutBody, payoutOutcome } from "./payout.ts";
+export type { NewPayout, PayoutBatch, PayoutItem, PayoutItemStatus, PayoutOutcome } from "./payout.ts";
 export { isPayPalId, paypalPool } from "./pool.ts";
 export type { PayPalPool } from "./pool.ts";
 export { poolFor } from "./pool-from-config.ts";

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { POOL_CASH } from "./ledger-accounts.ts";
 import { accountBalance, appendEntries, openLedger } from "./ledger.ts";
-import { cashAvailableForPayouts } from "./payout-cash.ts";
+import { canPayOut, cashAvailableForPayouts } from "./payout-cash.ts";
 import {
   billApproved,
   contributionReceived,
@@ -105,3 +105,35 @@ describe("cashAvailableForPayouts", () => {
     });
   });
 });
+
+describe("canPayOut", () => {
+  it("pays a bill and its fee only from money that has arrived, to the cent", () => {
+    expect(canPayOut(funded, { cents: 49_975, feeCents: 25, alreadyOwed: false })).toBe(true);
+    expect(canPayOut(funded, { cents: 49_976, feeCents: 25, alreadyOwed: false })).toBe(false);
+  });
+
+  it("counts the bill being paid once, after the family's approval has made it owed", () => {
+    const owed = appendEntries(funded, [amaraBill]);
+    expect(canPayOut(owed, { cents: 26_400, feeCents: 25, alreadyOwed: true })).toBe(true);
+    // Read as a second, different bill, the same money would be promised twice.
+    expect(canPayOut(owed, { cents: 26_400, feeCents: 25, alreadyOwed: false })).toBe(false);
+  });
+
+  it("never approves a payment larger than the pool's free cash, for any ledger", () => {
+    forAll(
+      (random) => ({ entries: randomEntries(random), cents: random.int(1, 10_000_000), feeCents: random.int(0, 500) }),
+      ({ entries, cents, feeCents }) => {
+        const ledger = appendEntries(openLedger(TEST_CIRCLE, TEST_CURRENCY), entries);
+        let available: number;
+        try {
+          available = cashAvailableForPayouts(ledger);
+        } catch (error) {
+          if (error instanceof SettlementError) return;
+          throw error;
+        }
+        expect(canPayOut(ledger, { cents, feeCents, alreadyOwed: false })).toBe(cents + feeCents <= available);
+      },
+    );
+  });
+});
+

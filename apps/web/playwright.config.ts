@@ -4,13 +4,17 @@ import { defineConfig, devices } from "@playwright/test";
 
 import { E2E_DATABASE, e2eDatabaseEnv } from "./e2e/support/database-settings";
 import { IDENTITY_PROVIDER } from "./e2e/support/identity-provider";
+import { MODEL_STAND_IN } from "./e2e/support/model-stand-in";
 import { SIGNED_IN_STATE } from "./e2e/support/signed-in-state";
 
 const port = 3100;
 const baseURL = `http://localhost:${port}`;
 const identityProvider = `http://localhost:${IDENTITY_PROVIDER.port}`;
-// Read once, in the process that starts the servers, so both get the same passwords.
-const database = e2eDatabaseEnv();
+// Read once, in the process that starts the servers, so both get the same
+// passwords. Playwright loads this file again in each test worker; the
+// workers inherit the first draw through the environment, so a test that
+// seeds the database reaches the same one.
+const database = sharedDatabaseEnv();
 const ADMIN_ONLY = new Set(["KIN_DATABASE_ADMIN_USER", "KIN_DATABASE_ADMIN_PASSWORD", "KIN_DATABASE_SERVICE_PASSWORD"]);
 // Signs demo visitors' sessions for this run only.
 const demoSessionKey = randomBytes(36).toString("base64url");
@@ -65,6 +69,13 @@ export default defineConfig({
       timeout: 15_000,
     },
     {
+      // A stand-in for Claude on Bedrock's Messages endpoint (e2e/support).
+      command: "node e2e/support/model-stand-in.ts",
+      url: `http://localhost:${MODEL_STAND_IN.port}/health`,
+      reuseExistingServer: false,
+      timeout: 15_000,
+    },
+    {
       // The standalone server through the container's own start file.
       command: "node .next/standalone/apps/web/start.mjs",
       url: baseURL,
@@ -89,7 +100,18 @@ export default defineConfig({
         KIN_PAYPAL_API_URL: "http://127.0.0.1:9",
         KIN_QUEUE_ENDPOINT: "http://127.0.0.1:9",
         KIN_PAYPAL_INBOX_URL: "http://127.0.0.1:9/000000000000/kin-paypal-events.fifo",
+        // Claude through the stand-in: the real SDK client, no AWS.
+        KIN_BEDROCK_REGION: "us-east-1",
+        KIN_BEDROCK_ENDPOINT: `http://127.0.0.1:${MODEL_STAND_IN.port}`,
       },
     },
   ],
 });
+
+function sharedDatabaseEnv(): Record<string, string> {
+  const inherited = process.env[E2E_DATABASE.envKey];
+  if (inherited) return JSON.parse(inherited) as Record<string, string>;
+  const drawn = e2eDatabaseEnv();
+  process.env[E2E_DATABASE.envKey] = JSON.stringify(drawn);
+  return drawn;
+}

@@ -263,7 +263,7 @@ describe("a real circle's proposals", () => {
     return { organizer, circleId, proposalId, memberId: seat.memberId };
   }
 
-  it("take no answer from a person until the fresh multi-factor check exists", async () => {
+  it("take no yes from a person without the fresh multi-factor check's evidence", async () => {
     const real = await realProposal();
     const answer = asPerson(db.app, real.organizer, (tx) =>
       tx.insert(approvals).values({ id: randomUUID(), circleId: real.circleId, proposalId: real.proposalId, memberId: real.memberId, role: "organizer", decision: "approve", method: "app", decidedAt: CLOCK }),
@@ -271,9 +271,11 @@ describe("a real circle's proposals", () => {
     expect(await errorCode(answer)).toBe(REFUSED.permission);
   });
 
-  it("cannot be moved by a person at all", async () => {
+  it("cannot be moved by a person without the answers its plan needs", async () => {
     const real = await realProposal();
-    const moved = asPerson(db.app, real.organizer, (tx) => tx.update(proposals).set({ state: "rejected" }).where(eq(proposals.id, real.proposalId)));
-    expect(await errorCode(moved)).toBe(REFUSED.permission);
+    const rejected = asPerson(db.app, real.organizer, (tx) => tx.update(proposals).set({ state: "rejected" }).where(eq(proposals.id, real.proposalId)));
+    expect(await errorCode(rejected)).toBe(REFUSED.check);
+    const approved = asPerson(db.app, real.organizer, (tx) => tx.update(proposals).set({ state: "approved" }).where(eq(proposals.id, real.proposalId)));
+    expect(await errorCode(approved)).toBe(REFUSED.check);
   });
 });

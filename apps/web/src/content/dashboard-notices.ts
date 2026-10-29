@@ -9,6 +9,8 @@ export const NOTICES = [
   "closed",
   "refused",
   "freshCheck",
+  "stepUpMissing",
+  "stepUpStale",
   "paused",
   "resumed",
   "invited",

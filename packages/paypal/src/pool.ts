@@ -3,6 +3,7 @@ import type { PayPalClient } from "./client.ts";
 import { contributionOrderBody, parseOrder, type NewContributionOrder, type Order } from "./order.ts";
 import { requiredText, asRecord } from "./json.ts";
 import { PayPalError } from "./paypal-error.ts";
+import { parsePayoutBatch, parsePayoutCreated, payoutBody, type NewPayout, type PayoutBatch } from "./payout.ts";
 import { parseVerification, verificationBody, type WebhookDelivery } from "./webhook.ts";
 
 /**
@@ -18,6 +19,13 @@ export type PayPalPool = {
   readonly getCapture: (captureId: string) => Promise<Capture>;
   /** Asks PayPal whether a delivery really came from it, for this pool's webhook. */
   readonly verifyWebhook: (delivery: WebhookDelivery) => Promise<boolean>;
+  /**
+   * Sends one payout from the pool. Sent again with the same request ID and
+   * batch ID, PayPal answers with the batch it made and pays nothing twice.
+   * Its answer is never proof the recipient was paid: read the batch.
+   */
+  readonly createPayout: (payout: NewPayout, requestId: string) => Promise<{ readonly batchId: string }>;
+  readonly getPayoutBatch: (batchId: string) => Promise<PayoutBatch>;
 };
 
 const ORDER_ID = /^[A-Z0-9]{5,36}$/;
@@ -38,6 +46,21 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
     async getCapture(captureId) {
       return parseCapture(await client.send({ method: "GET", path: `/v2/payments/captures/${pathId(captureId)}`, operation: "captures.get" }));
     },
+    async createPayout(payout, requestId) {
+      try {
+        return parsePayoutCreated(await client.send({ method: "POST", path: "/v1/payments/payouts", body: payoutBody(payout), requestId, operation: "payouts.create" }));
+      } catch (error) {
+        // PayPal refuses a batch ID it has paid before, and links the batch it
+        // made then (seen in the sandbox on 26 October 2026). That batch is the
+        // answer a lost reply would have carried.
+        const batchId = error instanceof PayPalError ? existingBatch(error) : null;
+        if (batchId === null) throw error;
+        return { batchId };
+      }
+    },
+    async getPayoutBatch(batchId) {
+      return parsePayoutBatch(await client.send({ method: "GET", path: `/v1/payments/payouts/${pathId(batchId)}`, operation: "payouts.get" }));
+    },
     async verifyWebhook(delivery) {
       try {
         const json = await client.send({ method: "POST", path: "/v1/notifications/verify-webhook-signature", body: verificationBody(delivery, webhookId), operation: "webhooks.verify" });
@@ -50,6 +73,13 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
       }
     },
   };
+}
+
+const EXISTING_BATCH = /\/v1\/payments\/payouts\/([A-Z0-9]{5,36})$/;
+
+function existingBatch(error: PayPalError): string | null {
+  if (error.outcome !== "rejected" || error.status !== 400 || error.resource === null) return null;
+  return EXISTING_BATCH.exec(error.resource)?.[1] ?? null;
 }
 
 /** Whether `id` has the shape of a PayPal order or capture ID. */

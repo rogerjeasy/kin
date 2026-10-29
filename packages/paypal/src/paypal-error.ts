@@ -15,8 +15,13 @@ export class PayPalError extends Error {
   readonly issue: string | null;
   /** PayPal's debug ID, which a support request to PayPal needs. */
   readonly debugId: string | null;
+  /**
+   * The resource PayPal's refusal points at, from its first detail's link,
+   * such as the payout already made with a batch ID that was sent again.
+   */
+  readonly resource: string | null;
 
-  constructor(details: { outcome: "rejected" | "unavailable"; status: number | null; issue: string | null; debugId: string | null; operation: string }) {
+  constructor(details: { outcome: "rejected" | "unavailable"; status: number | null; issue: string | null; debugId: string | null; operation: string; resource?: string | null }) {
     super(`PayPal ${details.operation} ${details.outcome}${details.status === null ? "" : ` (HTTP ${details.status})`}${details.issue === null ? "" : `: ${details.issue}`}`);
     this.name = "PayPalError";
     this.outcome = details.outcome;
@@ -24,5 +29,6 @@ export class PayPalError extends Error {
     this.status = details.status;
     this.issue = details.issue;
     this.debugId = details.debugId;
+    this.resource = details.resource ?? null;
   }
 }

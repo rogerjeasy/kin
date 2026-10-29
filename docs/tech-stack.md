@@ -142,7 +142,7 @@ Three small services share one codebase:
 
 **What AI is not used for:** the ledger arithmetic, the settlement calculation and the decision that a payment happened. Those are plain deterministic code reading PayPal's records.
 
-**AWS alternative:** Claude is also available through Amazon Bedrock. Calling Anthropic's API directly is simpler and receives new features first. Use Bedrock only if everything must sit on one AWS bill.
+**Where Kin reaches Claude: Amazon Bedrock** (decision 58 in `architecture.md`). The project owner runs Anthropic's models on Bedrock, so Kin calls Claude Opus 5.5 there through `@anthropic-ai/bedrock-sdk` (`AnthropicBedrockMantle`, model ID `anthropic.claude-opus-5-5`), with AWS credentials and no Anthropic key. The settings above apply unchanged on Bedrock.
 
 ---
 

@@ -1,4 +1,25 @@
 export { connect } from "./connection.ts";
+export { CaregiverBillingError, configureCaregiver, setOwnReceiver, submitCaregiverBill } from "./caregiver-billing.ts";
+export type { CaregiverBillingReason } from "./caregiver-billing.ts";
+export { declineCaregiverBill, sendCaregiverBill } from "./caregiver-review.ts";
+export { AgreementError, acceptAgreement, proposeAgreement, readAgreementVersions } from "./agreements.ts";
+export type { AgreementReason } from "./agreements.ts";
+export {
+  PAYOUT_TOPIC,
+  beginPayout,
+  claimOutbox,
+  confirmPayout,
+  failPayout,
+  finishMessage,
+  payoutReceiver,
+  readPayoutJob,
+  recordHeld,
+  recordPending,
+  recordSubmitted,
+  recordUnknown,
+  retryMessageLater,
+} from "./payouts.ts";
+export type { BeginOutcome, ClaimedMessage, PayoutJob } from "./payouts.ts";
 export type { Database, Transaction } from "./connection.ts";
 export { asPerson, asProvisioner, asService } from "./scope.ts";
 export { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";

@@ -59,10 +59,10 @@ export async function answerProposalAction(form: FormData): Promise<void> {
   const decision = form.get("decision");
   if (!proposalId || (decision !== "approve" && decision !== "reject")) back(locale, "approvals", "refused");
   if (!may(circle, "proposal.answer")) back(locale, "approvals", "refused");
-  // A real payment needs a fresh multi-factor check before any yes counts
-  // (AGENTS.md section 6). That check arrives with payments, so until then
-  // only the demo's simulated money can be answered.
-  if (!circle.circle.demo) back(locale, "approvals", "freshCheck");
+  // A yes to real money counts only with a fresh multi-factor check
+  // (AGENTS.md section 6), which goes through /auth/step-up. A no stops
+  // money, so it is taken here.
+  if (!circle.circle.demo && decision === "approve") back(locale, "approvals", "freshCheck");
   let outcome: Notice;
   try {
     const result = await asPerson(databases().app, viewer.userId, (tx) =>

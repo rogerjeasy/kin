@@ -14,6 +14,7 @@
     "brand:export": "node scripts/export-sign-in-brand.ts"
   },
   "dependencies": {
+    "@kin/agent": "workspace:*",
     "@kin/auth": "workspace:*",
     "@kin/config": "workspace:*",
     "@kin/db": "workspace:*",
@@ -24,7 +25,7 @@
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "lucide-react": "^1.55.0",
-    "next": "16.4.0",
+    "next": "16.4.1",
     "radix-ui": "^1.8.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"

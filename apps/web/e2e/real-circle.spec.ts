@@ -5,6 +5,7 @@ import english from "../src/i18n/dictionaries/en.json" with { type: "json" };
 import { fill } from "../src/i18n/template";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
 import { IDENTITY_PROVIDER } from "./support/identity-provider";
+import { seedRealProposal } from "./support/real-proposal";
 import { laptop, viewports } from "./support/viewports";
 
 const { dashboard } = english;
@@ -75,3 +76,77 @@ test.describe("a person's own circle", () => {
     });
   }
 });
+
+// After every test that expects the circle to have no agreement.
+test.describe("a person's first agreement", () => {
+  test.use({ viewport: { width: laptop.width, height: laptop.height } });
+  const copy = dashboard.agreement;
+
+  test("is written by the organizer and governs at once, as the only member who shares the cost", async ({ page }) => {
+    await page.goto("/dashboard/circle");
+    await page.getByRole("link", { name: copy.open }).click();
+    await expect(page.getByRole("main")).toContainText(copy.noneOrganizer);
+    const form = page.getByRole("region", { name: copy.form.writeTitle });
+    await expect(form.getByLabel(`${IDENTITY_PROVIDER.person.name}’s share (%)`)).toHaveValue("100");
+    await form.getByLabel("Meera decides above").fill("50");
+    await form.getByLabel(copy.form.secondAbove).fill("500");
+    await form.getByLabel(copy.form.ceiling).fill("2000");
+    await form.getByRole("button", { name: copy.form.review }).click();
+    await expect(form).toContainText(`${IDENTITY_PROVIDER.person.name} now shares the cost: 100%`);
+    await expect(form).toContainText("Largest single payment: $2,000.00");
+    await form.getByRole("button", { name: "Propose version 1" }).click();
+    await expect(page.getByRole("region", { name: /^Version 1 · in force since/ })).toContainText("$1,000.00 from Sam Rivera");
+    // Meera is kept informed rather than deciding, so her threshold is shown as not used.
+    const examples = page.getByRole("region", { name: copy.examplesTitle });
+    await expect(examples).toContainText("A bill of $51.00The organizer approves");
+    await expect(examples).toContainText("A bill of $501.00Two yeses");
+    await expect(page.getByRole("region", { name: /^Version 1 · in force since/ })).toContainText("$50.00, not used while Meera does not decide payments");
+    await expectNoHorizontalOverflow(page);
+  });
+});
+
+// After every test that expects the circle to be empty: these put real
+// payments into it.
+test.describe("a yes to real money", () => {
+  test.use({ viewport: { width: laptop.width, height: laptop.height } });
+  const { approvals, notices, common } = dashboard;
+  const card = (page: import("@playwright/test").Page, name: string) => page.getByRole("article", { name });
+
+  test("is recorded only after a fresh sign-in with a second factor", async ({ page }) => {
+    await seedRealProposal("City Water", 4_000);
+    await page.goto("/dashboard/approvals");
+    const water = card(page, "City Water");
+    await expect(water).toContainText(approvals.freshCheckNote);
+    await water.getByRole("button", { name: common.approve }).click();
+
+    await expect(page).toHaveURL("/dashboard/approvals?notice=approved");
+    await expect(page.getByRole("status").filter({ hasText: notices.approved })).toBeVisible();
+    await expect(card(page, "City Water")).toHaveCount(0);
+    await expect(page.getByRole("main")).toContainText(approvals.answered.states.approved);
+  });
+
+  test("is not recorded when the sign-in had no second factor", async ({ page, request }) => {
+    await seedRealProposal("Gas Board", 5_500);
+    await request.post(`http://localhost:${IDENTITY_PROVIDER.port}/test/next-step-up-without-mfa`);
+    await page.goto("/dashboard/approvals");
+    await card(page, "Gas Board").getByRole("button", { name: common.approve }).click();
+
+    await expect(page).toHaveURL("/dashboard/approvals?notice=stepUpMissing");
+    await expect(page.getByRole("status").filter({ hasText: notices.stepUpMissing })).toBeVisible();
+    await expect(card(page, "Gas Board").getByRole("button", { name: common.approve })).toBeVisible();
+  });
+
+  test("is refused when posted without the fresh check, while a no needs none", async ({ page }) => {
+    await seedRealProposal("Phone Company", 2_900);
+    await page.goto("/dashboard/approvals");
+    await card(page, "Phone Company").getByRole("button", { name: common.decline }).click();
+    await expect(page).toHaveURL("/dashboard/approvals?notice=rejected");
+    await expect(card(page, "Phone Company")).toHaveCount(0);
+  });
+
+  test("cannot be started from another site", async ({ request }) => {
+    const response = await request.post("/auth/step-up", { form: { proposal: "00000000-0000-4000-8000-000000000000", locale: "en" }, headers: { origin: "https://evil.example" }, maxRedirects: 0 });
+    expect(response.status()).toBe(403);
+  });
+});
+

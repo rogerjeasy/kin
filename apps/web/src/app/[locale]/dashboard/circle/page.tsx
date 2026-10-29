@@ -1,5 +1,7 @@
 import { APPROVAL_WINDOW_HOURS, CIRCLE_ROLES, PARENT_LEVELS, PAUSE_HOURS } from "@kin/domain";
 import type { Metadata } from "next";
+import { caregiverAccess } from "@kin/auth";
+import { CaregiverRates } from "@/components/dashboard/caregiver-billing/caregiver-rates";
 
 import { MemberList } from "@/components/dashboard/circle/member-list";
 import { ParentPanel } from "@/components/dashboard/circle/parent-panel";
@@ -16,6 +18,8 @@ import { circleNames } from "@/content/circle/names";
 import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
+import { agreementRoute } from "@/content/dashboard-routes";
+import { localizedPath } from "@/i18n/routing";
 import { dashboardContext, may } from "@/server/dashboard-context";
 
 export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/circle">): Promise<Metadata> {
@@ -23,7 +27,7 @@ export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/circ
 }
 
 export default async function CirclePage({ params }: PageProps<"/[locale]/dashboard/circle">) {
-  const { locale, dictionary, circle } = await dashboardContext(params, "circle");
+  const { locale, dictionary, circle, viewer } = await dashboardContext(params, "circle");
   const { circle: copy, common, empty } = dictionary.dashboard;
   const format = circleFormatters(locale, circle);
   const names = circleNames(circle, dictionary);
@@ -33,10 +37,13 @@ export default async function CirclePage({ params }: PageProps<"/[locale]/dashbo
   const careRate = agreement?.care?.rateCentsPerHour;
   const slots = circleSlots(circle, format);
   const parentWords = { parent: slots.parent };
+  // The agreement's own screen, for every role that may read it.
+  const agreementLink = may(circle, "money.view") ? { href: localizedPath(locale, agreementRoute), label: dictionary.dashboard.agreement.open } : null;
 
   return (
     <>
       <PageHeader title={copy.title} lede={copy.lede} />
+      {caregiverAccess({ role: circle.viewer.role, status: "active" }, "caregiver_rate.manage", viewer.kind === "visitor" ? "demo" : viewer.session.accountTypes) ? <CaregiverRates circle={circle} copy={dictionary.dashboard.caregiverBilling} /> : null}
       <div className="grid gap-6 lg:grid-cols-3">
         {parent ? (
           <ParentPanel
@@ -95,7 +102,7 @@ export default async function CirclePage({ params }: PageProps<"/[locale]/dashbo
       ) : null}
       <div className="grid gap-6 lg:grid-cols-2">
         {agreement ? (
-          <Panel title={copy.agreement.title} description={fill(copy.agreement.version, { version: format.count(agreement.version) })}>
+          <Panel title={copy.agreement.title} description={fill(copy.agreement.version, { version: format.count(agreement.version) })} link={agreementLink ?? undefined}>
             <TermList
               terms={[
                 ...(careRate === undefined ? [] : [{ label: terms.care.label, value: fill(terms.care.value, { rate: format.money(careRate) }) }]),
@@ -108,7 +115,7 @@ export default async function CirclePage({ params }: PageProps<"/[locale]/dashbo
             />
           </Panel>
         ) : (
-          <EmptyPanel title={copy.agreement.title} text={empty.agreement} />
+          <EmptyPanel title={copy.agreement.title} text={empty.agreement} link={agreementLink ?? undefined} />
         )}
         {circle.payees.length > 0 ? (
           <Panel title={copy.payees.title} description={copy.payees.text} flush>

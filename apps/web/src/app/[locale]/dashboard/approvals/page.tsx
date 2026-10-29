@@ -1,4 +1,4 @@
-import { ClockIcon, LockIcon } from "lucide-react";
+import { ClockIcon } from "lucide-react";
 import type { Metadata } from "next";
 
 import { AnsweredList } from "@/components/dashboard/approvals/answered-list";
@@ -27,7 +27,9 @@ export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/appr
   return dashboardMetadata(params, "approvals");
 }
 
-const DECIDED = ["approved", "rejected", "expired"] as const;
+// Everything past waiting: decided, and then paid or failed.
+const DECIDED = ["approved", "executing", "settled", "failed", "rejected", "expired", "cancelled"] as const;
+const SAID_YES = new Set<string>(["approved", "executing", "settled"]);
 
 export default async function ApprovalsPage({ params }: PageProps<"/[locale]/dashboard/approvals">) {
   const { locale, dictionary, circle } = await dashboardContext(params, "approvals");
@@ -45,12 +47,11 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
     poolCents: may(circle, "money.view") ? monthTotals(circle, period).poolCents : null,
     now: circle.circle.now,
     month: slots.month,
+    receiverOf: (payeeId) => circle.payees.find((payee) => payee.id === payeeId)?.receiver ?? null,
   };
   const waiting = waitingProposals(circle).toSorted((a, b) => Number(b.viewerCanAnswer) - Number(a.viewerCanAnswer));
   const answered = circle.proposals.filter((proposal) => DECIDED.some((state) => state === proposal.state)).toReversed();
   const decided = recordEntries(circle).filter((view) => view.entry.source.type === "approval");
-  // Answers to real money wait for the fresh multi-factor check that comes with payments.
-  const answering = circle.circle.demo;
 
   return (
     <>
@@ -68,12 +69,14 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
               key={view.proposal.id}
               {...proposalCardProps(dictionary, context, view)}
               action={
-                view.viewerCanAnswer && answering ? (
-                  <AnswerButtons locale={locale} proposalId={view.proposal.id} approve={common.approve} decline={common.decline} />
-                ) : view.viewerCanAnswer ? (
-                  <StatusPill tone="neutral" icon={LockIcon} className="text-sm whitespace-normal">
-                    {approvals.realLocked}
-                  </StatusPill>
+                view.viewerCanAnswer ? (
+                  <AnswerButtons
+                    locale={locale}
+                    proposalId={view.proposal.id}
+                    approve={common.approve}
+                    decline={common.decline}
+                    freshCheck={circle.circle.demo ? null : { note: approvals.freshCheckNote }}
+                  />
                 ) : (
                   <StatusPill tone={status.tone} icon={ClockIcon} className="text-sm">
                     {status.text}
@@ -94,7 +97,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
             kind: common.proposalKinds[proposal.kind],
             amount: format.money(proposal.cents),
             status: approvals.answered.states[proposal.state as (typeof DECIDED)[number]],
-            approved: proposal.state === "approved",
+            approved: SAID_YES.has(proposal.state),
             answers: proposal.votes
               .map((vote) =>
                 fill(vote.decision === "approve" ? approvals.slots.saidYes : approvals.slots.saidNo, {

@@ -37,13 +37,28 @@ describe("a session", () => {
   });
 
   it("is proved by a matching access and ID token from Kin's provider", async () => {
-    await expect(verifier.verify(tokensFor(cognitoClaims({ ...person, groups: ["family_member", "other"] })))).resolves.toEqual({
+    // Tokens are checked against the real clock, so this one is issued now, to the second.
+    const now = new Date(Math.floor(Date.now() / 1000) * 1000);
+    await expect(verifier.verify(tokensFor(cognitoClaims({ ...person, now, groups: ["family_member", "other"] })))).resolves.toEqual({
       userId: "user-1",
       email: "elena@example.com",
       emailVerified: true,
       name: "Elena Moreau",
       accountTypes: ["family_member"],
+      authentication: { at: now, methods: [], tokenId: null },
     });
+  });
+
+  it("carries how the person signed in, for a step-up to judge", async () => {
+    const authTime = new Date("2026-10-26T11:58:00Z");
+    const tokens = tokensFor(cognitoClaims({ ...person, authTime, amr: ["pwd", "otp", "mfa"], acr: "urn:cognito:loa:4", jti: "id-token-1" }));
+    await expect(verifier.verify(tokens)).resolves.toMatchObject({ authentication: { at: authTime, methods: ["pwd", "otp", "mfa"], tokenId: "id-token-1" } });
+  });
+
+  it("reads a malformed method list as no methods at all", async () => {
+    const claims = cognitoClaims(person);
+    const tokens = { accessToken: signer.sign(claims.access), idToken: signer.sign({ ...claims.id, amr: "mfa", auth_time: "soon" }) };
+    await expect(verifier.verify(tokens)).resolves.toMatchObject({ authentication: { at: null, methods: [] } });
   });
 
   it("checks the nonce when the sign-in sent one", async () => {

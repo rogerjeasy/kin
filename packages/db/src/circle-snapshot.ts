@@ -3,12 +3,14 @@ import type {
   ApprovalPlan,
   BillState,
   CircleRole,
+  CaregiverBillDetails,
   Ledger,
   MemberStatus,
   ParentLevel,
   Payee,
   ProposalKind,
   ProposalState,
+  VersionStatus,
 } from "@kin/domain";
 
 import type { ApprovalMethod, ClaimVerdict, DocumentKind, InvitationStatus, NarrationState, SettlementState } from "./values.ts";
@@ -23,8 +25,10 @@ export type CircleSnapshot = {
   /** The person looking, as a member of this circle. */
   readonly viewer: { readonly memberId: string; readonly role: CircleRole };
   readonly members: readonly MemberRecord[];
-  /** The agreement in force. `null` for a role that may not see it. */
+  /** The agreement in force. `null` before one is accepted, or for a role that may not see it. */
   readonly agreement: AgreementRecord | null;
+  /** Every version, oldest first: earlier ones, the one in force, and any waiting for acceptance. */
+  readonly agreementVersions: readonly AgreementVersionRecord[];
   readonly payees: readonly PayeeRecord[];
   readonly ledger: Ledger;
   readonly proposals: readonly ProposalRecord[];
@@ -77,10 +81,20 @@ export type AgreementRecord = Agreement & {
   readonly acceptances: readonly { readonly memberId: string; readonly method: ApprovalMethod; readonly at: Date }[];
 };
 
+export type AgreementVersionRecord = AgreementRecord & {
+  readonly proposedAt: Date;
+  readonly status: VersionStatus;
+  /** The members holding a share whose acceptance a version still waits for. */
+  readonly waitingFor: readonly string[];
+};
+
 export type PayeeRecord = {
   readonly id: string;
   readonly name: string;
   readonly category: string;
+  readonly caregiverRateCentsPerHour: number | null;
+  /** Where PayPal sends their money, masked: screens show that one is recorded, never the full address. */
+  readonly receiver: string | null;
   /** The payee as the approval engine reads it. */
   readonly payee: Payee;
 };
@@ -119,6 +133,7 @@ export type BillRecord = {
   readonly id: string;
   readonly payeeId: string;
   readonly amountCents: number;
+  readonly caregiverDetails: CaregiverBillDetails | null;
   readonly receivedOn: string;
   readonly dueOn: string | null;
   readonly state: BillState;

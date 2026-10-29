@@ -1,8 +1,7 @@
-import type { Agreement, CircleRole, Payee } from "@kin/domain";
+import { calculateCaregiverBill, calendarDay, type CircleRole, type Payee } from "@kin/domain";
 import { and, asc, desc, eq } from "drizzle-orm";
 
 import type {
-  AgreementRecord,
   CircleRecord,
   CircleSnapshot,
   MemberRecord,
@@ -10,12 +9,10 @@ import type {
   ProposalRecord,
 } from "./circle-snapshot.ts";
 import type { Transaction } from "./connection.ts";
+import { readAgreementVersions } from "./agreements.ts";
 import { readLedger } from "./ledger-store.ts";
 import { parseApprovalPlan } from "./plan-json.ts";
 import {
-  agreementAcceptances,
-  agreements,
-  agreementShares,
   approvals,
   bills,
   careEntries,
@@ -72,7 +69,7 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     circle,
     viewer: { memberId: viewerRow.id, role: viewerRow.role },
     members: roster,
-    agreement: await readAgreement(tx, circle.id),
+    ...(await readAgreements(tx, circle)),
     payees: await readPayees(tx, circle.id, roleOf),
     ledger: await readLedger(tx, circle),
     proposals: await readProposals(tx, circle.id),
@@ -102,26 +99,13 @@ async function readCircleRow(tx: Transaction, circleId: string, now: Date): Prom
   };
 }
 
-/** The latest version of the agreement, or `null` when the person may not see it. */
-async function readAgreement(tx: Transaction, circleId: string): Promise<AgreementRecord | null> {
-  const [row] = await tx.select().from(agreements).where(eq(agreements.circleId, circleId)).orderBy(desc(agreements.version)).limit(1);
-  if (!row) return null;
-  const shares = await tx.select().from(agreementShares).where(eq(agreementShares.agreementId, row.id)).orderBy(asc(agreementShares.position));
-  const accepted = await tx.select().from(agreementAcceptances).where(eq(agreementAcceptances.agreementId, row.id)).orderBy(asc(agreementAcceptances.acceptedAt));
-  const care: Agreement["care"] =
-    row.careRateCentsPerHour === null ? null : { rateCentsPerHour: row.careRateCentsPerHour, paidInCash: row.carePaidInCash };
+/** The version in force, and every version, as the agreement's own rule decides between them. */
+async function readAgreements(tx: Transaction, circle: CircleRecord): Promise<Pick<CircleSnapshot, "agreement" | "agreementVersions">> {
+  const { versions } = await readAgreementVersions(tx, circle.id, calendarDay(circle.now, circle.timezone).occurredOn);
+  const inForce = versions.find((version) => version.status === "in_force");
   return {
-    id: row.id,
-    version: row.version,
-    effectiveOn: row.effectiveOn,
-    shares: shares.map((share) => ({ memberId: share.memberId, bps: share.bps })),
-    care,
-    approvals: {
-      ceilingCents: row.ceilingCents,
-      secondApprovalAboveCents: row.secondApprovalAboveCents,
-      parentDecidesAboveCents: row.parentDecidesAboveCents,
-    },
-    acceptances: accepted.map((each) => ({ memberId: each.memberId, method: each.method, at: each.acceptedAt })),
+    agreement: inForce ? { id: inForce.id, version: inForce.version, effectiveOn: inForce.effectiveOn, shares: inForce.shares, care: inForce.care, approvals: inForce.approvals, acceptances: inForce.acceptances } : null,
+    agreementVersions: versions,
   };
 }
 
@@ -136,6 +120,8 @@ async function readPayees(tx: Transaction, circleId: string, roleOf: (memberId: 
       id: row.id,
       name: row.name,
       category: row.category,
+      caregiverRateCentsPerHour: row.caregiverRateCentsPerHour,
+      receiver: maskEmail(row.paypalReceiver),
       payee: {
         status: row.status,
         member: row.memberId === null ? null : { memberId: row.memberId, role: roleOf(row.memberId) },
@@ -143,6 +129,13 @@ async function readPayees(tx: Transaction, circleId: string, roleOf: (memberId: 
       },
     };
   });
+}
+
+/** `amara@example.com` reads as `a••••@example.com`. */
+function maskEmail(email: string | null): string | null {
+  if (email === null) return null;
+  const at = email.lastIndexOf("@");
+  return at < 1 ? "••••" : `${email.slice(0, 1)}••••${email.slice(at)}`;
 }
 
 async function readProposals(tx: Transaction, circleId: string): Promise<ProposalRecord[]> {
@@ -188,11 +181,19 @@ async function readBills(tx: Transaction, circleId: string) {
     id: row.id,
     payeeId: row.payeeId,
     amountCents: row.amountCents,
+    caregiverDetails: caregiverDetails(row),
     receivedOn: row.receivedOn,
     dueOn: row.dueOn,
     state: row.state,
     documentId: row.documentId,
   }));
+}
+
+function caregiverDetails(row: { caregiverDetails: unknown; amountCents: number }) {
+  if (row.caregiverDetails === null) return null;
+  const bill = calculateCaregiverBill(row.caregiverDetails);
+  if (bill.cents !== row.amountCents) throw new Error("Stored caregiver bill does not match its service evidence");
+  return bill.details;
 }
 
 async function readExpectedBills(tx: Transaction, circleId: string) {

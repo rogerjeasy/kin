@@ -97,7 +97,7 @@ export function createPayPalClient(options: PayPalClientOptions): PayPalClient {
       }
       if (response.status !== 429 && response.status < 500) {
         const problem = optionalRecord(text === "" ? null : safeParse(text));
-        throw new PayPalError({ outcome: "rejected", status: response.status, issue: issueOf(problem), debugId: lastDebugId, operation: request.operation });
+        throw new PayPalError({ outcome: "rejected", status: response.status, issue: issueOf(problem), debugId: lastDebugId, operation: request.operation, resource: resourceOf(problem) });
       }
     }
     throw new PayPalError({ outcome: "unavailable", status: lastStatus, issue: null, debugId: lastDebugId, operation: request.operation });
@@ -124,6 +124,14 @@ function issueOf(problem: ReturnType<typeof optionalRecord>): string | null {
   const details = problem?.["details"];
   const first = Array.isArray(details) ? optionalRecord(details[0]) : null;
   return optionalText(first, "issue") ?? optionalText(problem, "name") ?? optionalText(problem, "error");
+}
+
+/** Where PayPal's first detail points, such as the payout a repeated batch ID already made. */
+function resourceOf(problem: ReturnType<typeof optionalRecord>): string | null {
+  const details = problem?.["details"];
+  const first = Array.isArray(details) ? optionalRecord(details[0]) : null;
+  const links = first?.["link"];
+  return Array.isArray(links) ? optionalText(optionalRecord(links[0]), "href") : null;
 }
 
 function safeParse(text: string): unknown {

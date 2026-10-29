@@ -19,6 +19,16 @@ export function cashAvailableForPayouts(ledger: Ledger): number {
   return Math.max(0, poolCash - unpaidBills(ledger));
 }
 
+/**
+ * Whether the pool can pay `cents` to a payee now, with PayPal's fee on top,
+ * from money that has arrived (AGENTS.md section 5, rule 8). The bill being
+ * paid is counted among the unpaid bills, so it is added back once.
+ */
+export function canPayOut(ledger: Ledger, payment: { readonly cents: number; readonly feeCents: number; readonly alreadyOwed: boolean }): boolean {
+  const available = cashAvailableForPayouts(ledger) + (payment.alreadyOwed ? payment.cents : 0);
+  return available >= sumCents([payment.cents, payment.feeCents]);
+}
+
 function unpaidBills(ledger: Ledger): number {
   return sumCents(
     [...accountBalances(ledger)]

@@ -6,9 +6,11 @@ import { encodeContributionReference, type ContributionReference } from "../cont
 import type { Order } from "../order.ts";
 import { PayPalError } from "../paypal-error.ts";
 import type { PayPalPool } from "../pool.ts";
+import type { NewPayout, PayoutBatch, PayoutItemStatus } from "../payout.ts";
 import type { WebhookDelivery } from "../webhook.ts";
 
 type StoredOrder = { id: string; status: string; reference: ContributionReference; amount: Money; captures: Capture[]; requestIds: Set<string> };
+type StoredPayout = { batch: PayoutBatch; request: NewPayout };
 
 export type FakePool = PayPalPool & {
   /** The payer approves the order on PayPal's page. */
@@ -26,6 +28,18 @@ export type FakePool = PayPalPool & {
   readonly orders: Map<string, StoredOrder>;
   /** The next call to this method fails as PayPal being unreachable would. */
   failNext: keyof PayPalPool | null;
+  /** The next call to this method takes effect at PayPal, but its answer is lost on the way back. */
+  loseNextReply: keyof PayPalPool | null;
+  /** PayPal refuses the next payout with this issue, such as `INSUFFICIENT_FUNDS`, and makes nothing. */
+  refuseNextPayout: string | null;
+  /** The status PayPal gives the next payouts' items. */
+  payoutStatus: PayoutItemStatus;
+  /** PayPal's fee on each successful payout item, in cents. */
+  payoutFeeCents: number;
+  /** Every payout PayPal made, by batch ID. A repeated request makes none. */
+  readonly payouts: Map<string, StoredPayout>;
+  /** PayPal moves a payout's item on, as it does after a pending or unclaimed payout. */
+  readonly settlePayout: (batchId: string, status: PayoutItemStatus) => void;
 };
 
 /**
@@ -48,8 +62,30 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
     return order;
   };
 
+  const payouts = new Map<string, StoredPayout>();
+  const payoutBatch = (batchId: string, request: NewPayout, status: PayoutItemStatus, itemId: string): PayoutBatch => ({
+    batchId,
+    batchStatus: status === "SUCCESS" ? "SUCCESS" : status === "PENDING" || status === "UNCLAIMED" || status === "ONHOLD" ? "PROCESSING" : "SUCCESS",
+    senderBatchId: request.senderBatchId,
+    items: [
+      {
+        itemId,
+        status,
+        transactionId: status === "SUCCESS" ? nextId("TX") : null,
+        amount: request.amount,
+        fee: status === "SUCCESS" ? { cents: pool.payoutFeeCents, currency: request.amount.currency } : null,
+        senderItemId: request.senderBatchId,
+      },
+    ],
+  });
+
   const pool: FakePool = {
     feeCents: 52,
+    payoutStatus: "SUCCESS",
+    refuseNextPayout: null,
+    payoutFeeCents: 25,
+    payouts,
+    loseNextReply: null,
     captureStatus: "COMPLETED",
     signaturesValid: true,
     requestIds: [],
@@ -101,6 +137,34 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
       fail("verifyWebhook");
       return pool.signaturesValid;
     },
+    async createPayout(request, requestId) {
+      fail("createPayout");
+      pool.requestIds.push(requestId);
+      if (pool.refuseNextPayout !== null) {
+        const issue = pool.refuseNextPayout;
+        pool.refuseNextPayout = null;
+        throw new PayPalError({ outcome: "rejected", status: 422, issue, debugId: "fake", operation: "payouts.create" });
+      }
+      // A batch ID PayPal has paid before makes nothing new; the adapter turns
+      // PayPal's refusal into the batch it links (packages/paypal pool.ts).
+      const repeated = [...payouts.values()].find((each) => each.request.senderBatchId === request.senderBatchId);
+      if (repeated) return lost("createPayout", { batchId: repeated.batch.batchId });
+      const batchId = nextId("BATCH");
+      payouts.set(batchId, { batch: payoutBatch(batchId, request, pool.payoutStatus, nextId("ITEM")), request });
+      return lost("createPayout", { batchId });
+    },
+    async getPayoutBatch(batchId) {
+      fail("getPayoutBatch");
+      const stored = payouts.get(batchId);
+      if (!stored) throw new PayPalError({ outcome: "rejected", status: 404, issue: "RESOURCE_NOT_FOUND", debugId: "fake", operation: "payouts.get" });
+      return stored.batch;
+    },
+    settlePayout(batchId, status) {
+      const stored = payouts.get(batchId);
+      const item = stored?.batch.items[0];
+      if (!stored || !item) throw new Error(`No payout ${batchId}`);
+      stored.batch = payoutBatch(batchId, stored.request, status, item.itemId);
+    },
     approve(orderId) {
       const order = find(orderId);
       if (order.status === "CREATED") order.status = "APPROVED";
@@ -131,6 +195,12 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
       };
     },
   };
+
+  function lost<T>(method: keyof PayPalPool, answer: T): T {
+    if (pool.loseNextReply !== method) return answer;
+    pool.loseNextReply = null;
+    throw new PayPalError({ outcome: "unavailable", status: null, issue: null, debugId: "fake", operation: method });
+  }
 
   function fail(method: keyof PayPalPool): void {
     if (pool.failNext !== method) return;

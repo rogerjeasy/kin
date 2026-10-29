@@ -19,7 +19,9 @@ export const PROPOSAL_TRANSITIONS = {
 } as const satisfies Transitions<string>;
 
 export const BILL_TRANSITIONS = {
-  received: ["extracted"],
+  // A caregiver's structured bill has nothing to extract: the family sends it
+  // for approval or declines it as received.
+  received: ["extracted", "ready", "rejected"],
   extracted: ["needs_review", "ready", "duplicate"],
   needs_review: ["ready", "rejected"],
   ready: ["proposed"],
