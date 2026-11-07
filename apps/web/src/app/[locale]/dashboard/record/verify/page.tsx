@@ -89,7 +89,7 @@ export default async function VerifyPage({ params, searchParams }: PageProps<"/[
           note={report.ok ? fill(copy.passNote, { count: format.count(report.entryCount) }) : fill(copy.failNote, { failed: format.count(failed), total: format.count(rows.length) })}
           icon={report.ok ? ShieldCheckIcon : ShieldAlertIcon}
         />
-        <StatTile label={copy.pool} value={format.money(report.poolCents)} note={copy.entries} icon={ListChecksIcon} />
+        <StatTile label={copy.pool} value={format.money(report.poolCents)} note={copy.poolNote} icon={ListChecksIcon} />
         <StatTile label={copy.head} value={`${report.head.slice(0, 12)}…`} note={copy.headNote} icon={HashIcon} />
       </dl>
       <div className="grid gap-6 lg:grid-cols-2">
@@ -97,7 +97,7 @@ export default async function VerifyPage({ params, searchParams }: PageProps<"/[
           <CheckList copy={copy.checks} rows={rows} />
         </Panel>
         <Panel title={copy.offlineTitle} description={copy.offlineText} aside={<ClipboardCheckIcon aria-hidden="true" className="size-5 text-muted-foreground" />}>
-          <p dir="ltr" className="rounded-xl bg-muted p-3 font-mono text-sm break-all whitespace-pre-wrap">
+          <p dir="ltr" tabIndex={0} className="overflow-x-auto rounded-xl bg-muted p-3 font-mono text-sm whitespace-nowrap focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
             {COMMAND}
           </p>
           <p dir="ltr" className="mt-3 text-sm break-all text-muted-foreground">

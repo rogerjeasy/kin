@@ -59,7 +59,7 @@ export function MandateCard({ copy, format, view, seller, parent, recordedBy }: 
           </ul>
         )}
       </div>
-      <p className="text-xs break-all text-muted-foreground">
+      <p className="text-xs text-muted-foreground wrap-anywhere">
         {fill(copy.recordedBy, { name: recordedBy })} · {fill(copy.sealed, { digest: mandate.digest.slice(0, SEAL_CHARS) })}
         {mandate.simulated ? ` · ${copy.simulatedTag}` : ""}
       </p>

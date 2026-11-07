@@ -2297,6 +2297,7 @@
       "failNote": "{failed} of {total} checks failed.",
       "entries": "Entries",
       "pool": "In the pool",
+      "poolNote": "Confirmed money, from the record.",
       "head": "Chain head",
       "headNote": "Write this down. Any later export must still contain it.",
       "checksTitle": "What was checked",
@@ -2318,7 +2319,7 @@
         },
         "settlement": {
           "label": "Settlements",
-          "ok": "{count} settlements were worked out again from the entries and match exactly.",
+          "ok": "Settlements worked out again from the entries match exactly ({count}).",
           "bad": "A settlement worked out again from the entries does not match the one the export states."
         },
         "wording": {

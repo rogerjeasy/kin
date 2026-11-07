@@ -12,8 +12,8 @@ export function readBack(copy: Dictionary["dashboard"]["mandates"], format: Form
     cadence: copy.cadences[terms.cadence],
     perPurchase: format.money(terms.perPurchaseCents),
     perPeriod: format.money(terms.perPeriodCents),
-    from: format.day(terms.validFrom),
-    until: format.day(terms.expiresOn),
+    from: format.dayWithYear(terms.validFrom),
+    until: format.dayWithYear(terms.expiresOn),
   });
 }
 

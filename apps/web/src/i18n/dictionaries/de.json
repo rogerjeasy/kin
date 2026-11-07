@@ -2297,6 +2297,7 @@
       "failNote": "{failed} von {total} Prüfungen sind fehlgeschlagen.",
       "entries": "Einträge",
       "pool": "Im Topf",
+      "poolNote": "Bestätigtes Geld laut Aufzeichnung.",
       "head": "Kettenkopf",
       "headNote": "Notieren Sie ihn. Jeder spätere Export muss ihn noch enthalten.",
       "checksTitle": "Was geprüft wurde",

@@ -17,6 +17,7 @@ function calendarDay(isoDay: string): Date {
 export function formatters(locale: Locale, currency: string) {
   const intlLocale = numberLocaleOf(locale);
   const shortDay = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", timeZone: "UTC" });
+  const dayWithYear = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
   const longDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
   const month = new Intl.DateTimeFormat(intlLocale, { month: "long", year: "numeric", timeZone: "UTC" });
   const dayAndTime = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "UTC" });
@@ -29,6 +30,8 @@ export function formatters(locale: Locale, currency: string) {
   return {
     money: (cents: number) => formatMoney({ cents, currency }, intlLocale),
     day: (isoDay: string) => shortDay.format(calendarDay(isoDay)),
+    /** "Oct 9, 2026": for spans that can cross a year, where the short form is ambiguous. */
+    dayWithYear: (isoDay: string) => dayWithYear.format(calendarDay(isoDay)),
     longDay: (date: Date) => longDay.format(date),
     month: (period: string) => month.format(calendarDay(`${period}-01`)),
     dateTime: (date: Date) => dayAndTime.format(date),

@@ -2297,6 +2297,7 @@
       "failNote": "{failed} de {total} comprobaciones fallaron.",
       "entries": "Asientos",
       "pool": "En el fondo",
+      "poolNote": "Dinero confirmado, según el registro.",
       "head": "Cabeza de la cadena",
       "headNote": "Anótala. Toda exportación posterior debe seguir conteniéndola.",
       "checksTitle": "Qué se comprobó",

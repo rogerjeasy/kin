@@ -2297,6 +2297,7 @@
       "failNote": "{failed} controlli su {total} non superati.",
       "entries": "Registrazioni",
       "pool": "Nel fondo",
+      "poolNote": "Denaro confermato, dal registro.",
       "head": "Testa della catena",
       "headNote": "Annotala. Ogni esportazione successiva deve ancora contenerla.",
       "checksTitle": "Cosa è stato controllato",

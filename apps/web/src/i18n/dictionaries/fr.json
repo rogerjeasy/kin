@@ -2297,6 +2297,7 @@
       "failNote": "{failed} vérifications sur {total} ont échoué.",
       "entries": "Écritures",
       "pool": "Dans la cagnotte",
+      "poolNote": "Argent confirmé, d’après le registre.",
       "head": "Tête de la chaîne",
       "headNote": "Notez-la. Tout export ultérieur doit encore la contenir.",
       "checksTitle": "Ce qui a été vérifié",
