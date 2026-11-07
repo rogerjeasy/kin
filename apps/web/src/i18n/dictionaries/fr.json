@@ -1255,6 +1255,7 @@
         "care": "Temps d’aide",
         "given": "Total donné",
         "target": "Part convenue",
+        "ownCurrency": "Part convenue en {currency} (taux simulé)",
         "owed": "La cagnotte doit {amount} à {name}",
         "owes": "{name} doit {amount} à la cagnotte",
         "level": "{name} est à l’équilibre",

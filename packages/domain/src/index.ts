@@ -130,8 +130,11 @@ export {
   centsFromDecimal,
   decimalAmount,
   formatMoney,
+  minorDigitsOf,
   sumCents,
 } from "./money.ts";
+export { CurrencyConversionError, SIMULATED_RATES, convertMoney } from "./currency-conversion.ts";
+export type { ConversionStamp, ConvertedMoney, RateTable } from "./currency-conversion.ts";
 export type { Money } from "./money.ts";
 export { PAUSE_HOURS, isPaused, pauseEndsAt } from "./pause.ts";
 export { canPayOut, cashAvailableForPayouts } from "./payout-cash.ts";

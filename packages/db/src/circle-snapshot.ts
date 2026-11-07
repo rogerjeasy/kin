@@ -102,6 +102,8 @@ export type MemberRecord = {
   readonly parentLevel: ParentLevel | null;
   readonly relationship: string | null;
   readonly portrait: string | null;
+  /** The currency the member gives in, or `null` for the circle's own. */
+  readonly currency: string | null;
   readonly status: MemberStatus;
   readonly joinedAt: Date;
 };

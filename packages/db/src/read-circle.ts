@@ -62,6 +62,7 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     parentLevel: row.parentLevel,
     relationship: row.relationship,
     portrait: row.portrait,
+    currency: row.currency,
     status: row.status,
     joinedAt: row.joinedAt,
   }));

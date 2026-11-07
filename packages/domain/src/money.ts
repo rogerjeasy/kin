@@ -85,7 +85,8 @@ export class InvalidDecimalError extends Error {
   }
 }
 
-function minorDigitsOf(currency: string): number {
+/** How many digits follow the point in `currency` (2 for dollars, 0 for yen). */
+export function minorDigitsOf(currency: string): number {
   return new Intl.NumberFormat("en", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 0;
 }
 

@@ -1255,6 +1255,7 @@
         "care": "זמן טיפול",
         "given": "סך כל הנתינה",
         "target": "החלק שסוכם",
+        "ownCurrency": "החלק שסוכם ב-{currency} (שער מדומה)",
         "owed": "הקופה חייבת ל{name} {amount}",
         "owes": "על {name} להעביר לקופה {amount}",
         "level": "{name} באיזון",

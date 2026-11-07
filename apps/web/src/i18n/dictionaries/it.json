@@ -1255,6 +1255,7 @@
         "care": "Ore di assistenza",
         "given": "Totale dato",
         "target": "Quota concordata",
+        "ownCurrency": "Quota concordata in {currency} (cambio simulato)",
         "owed": "La cassa comune deve {amount} a {name}",
         "owes": "{name} deve {amount} alla cassa comune",
         "level": "{name} è in pari",
