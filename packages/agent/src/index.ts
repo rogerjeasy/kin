@@ -1,6 +1,11 @@
 export { bedrockModel } from "./bedrock-model.ts";
+export { DOCUMENT_PROMPT_VERSION } from "./document-prompt.ts";
+export { NARRATION_PROMPT_VERSION, narrate, passesNumberGuard } from "./narrate.ts";
+export type { NarrationFacts } from "./narrate.ts";
+export { MAX_DOCUMENT_TEXT, readDocument } from "./read-document.ts";
+export type { DocumentKind, RawReading, ReadDocumentRequest, ReadDocumentResult } from "./read-document.ts";
 export { MAX_DAYS_BACK, MAX_DESCRIPTION_LENGTH, readVisits } from "./read-visits.ts";
 export type { ReadVisitsRequest, ReadVisitsResult } from "./read-visits.ts";
 export { ModelUnavailableError } from "./structured-model.ts";
-export type { StructuredModel, StructuredReply, StructuredRequest } from "./structured-model.ts";
+export type { StructuredImage, StructuredModel, StructuredReply, StructuredRequest } from "./structured-model.ts";
 export { VISIT_PROMPT_VERSION } from "./visit-prompt.ts";

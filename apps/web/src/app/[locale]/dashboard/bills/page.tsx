@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { CaregiverBills } from "@/components/dashboard/caregiver-billing/caregiver-bills";
 
 import { ChecksPanel } from "@/components/dashboard/bills/checks-panel";
+import { LettersSection } from "@/components/dashboard/letters/letters-section";
 import { PayeeCell } from "@/components/dashboard/bills/payee-cell";
 import { DataTable } from "@/components/dashboard/ui/data-table";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
@@ -39,7 +40,9 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
   const paidTitle = fill(bills.paid.title, { month: format.month(period) });
   const { columns: up } = bills.upcoming;
   const { columns: paid } = bills.paid;
-  const check = may(circle, "safety.view") ? latestClaimCheck(circle) : null;
+  // The panel tells the story of a false demand, so only a demand Kin found false is told that way.
+  const latest = may(circle, "safety.view") ? latestClaimCheck(circle) : null;
+  const check = latest?.verdict === "no_match" ? latest : null;
   const payeeOf = (payeeId: string | null) => (payeeId === null ? "" : names.payee(payeeId));
 
   const upcomingTable = (
@@ -98,6 +101,9 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
     <>
       <PageHeader title={bills.title} lede={bills.lede} />
       <CaregiverBills circle={circle} viewer={viewer} locale={locale} canDescribe={structuredModel() !== null} speech={speechServices() === null ? null : dictionary.dashboard.speech} copy={dictionary.dashboard.caregiverBilling} />
+      {may(circle, "safety.view") ? (
+        <LettersSection circle={circle} locale={locale} copy={dictionary.dashboard.letters} speech={speechServices() === null ? null : dictionary.dashboard.speech} canReadPhotos={structuredModel() !== null} mayAct={may(circle, "letter.read")} />
+      ) : null}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         {upcoming.length > 0 ? (
           <Panel title={upcomingTitle} description={bills.upcoming.text} flush>

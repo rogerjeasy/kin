@@ -4,7 +4,7 @@ type PayeeCellProps = { name: string; detail?: string; tags?: readonly string[] 
 export function PayeeCell({ name, detail, tags = [] }: PayeeCellProps) {
   return (
     <div className="min-w-0">
-      <p className="font-medium">{name}</p>
+      <p className="wrap-anywhere font-medium">{name}</p>
       {detail ? <p className="text-sm text-muted-foreground">{detail}</p> : null}
       {tags.length > 0 ? (
         <p className="mt-1.5 flex flex-wrap gap-1.5">

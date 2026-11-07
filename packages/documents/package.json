@@ -7,6 +7,10 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@kin/agent": "workspace:*",
+    "@kin/domain": "workspace:*"
   }
 }

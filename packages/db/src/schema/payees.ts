@@ -66,7 +66,8 @@ export const documents = pgTable(
     foreignKey({ name: "documents_circle_fk", columns: [t.circleId], foreignColumns: [circles.id] }),
     foreignKey({ name: "documents_uploader_fk", columns: [t.circleId, t.uploadedBy], foreignColumns: [members.circleId, members.id] }),
     unique("documents_circle_row").on(t.circleId, t.id),
-    check("documents_stored_or_simulated", sql`${t.storageKey} is not null or ${t.simulated}`),
+    // A photograph Kin only read is kept as its reading, not as a file.
+    check("documents_stored_or_read", sql`${t.storageKey} is not null or ${t.simulated} or ${t.extraction} is not null`),
     check("documents_confidence_range", sql`${t.confidence} is null or (${t.confidence} >= 0 and ${t.confidence} <= 1)`),
   ],
 );

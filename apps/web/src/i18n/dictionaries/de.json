@@ -957,7 +957,8 @@
         "utilities": "Nebenkosten",
         "care": "Pflege",
         "pharmacy": "Apotheke",
-        "repairs": "Reparaturen"
+        "repairs": "Reparaturen",
+        "other": "Sonstiges"
       },
       "entryKinds": {
         "contribution": "Beitrag",
@@ -1880,6 +1881,110 @@
         "paused": "Zahlungen sind pausiert. Versuchen Sie es nach der Pause erneut.",
         "no_agreement": "Die Familie hat noch keinen gültigen Familienvertrag.",
         "unavailable": "Kin konnte das jetzt nicht tun. Versuchen Sie es gleich noch einmal."
+      }
+    },
+    "letters": {
+      "title": "Briefe und Anrufe",
+      "lede": "Halten Sie einen Brief oder eine Rechnung hoch: Kin liest ihn vor und setzt ihn auf die Liste. Wenn jemand Geld verlangt, prüft Kin die Forderung anhand dessen, was wirklich berechnet und bezahlt wurde.",
+      "read": {
+        "title": "Einen Brief zeigen",
+        "text": "Fotografieren Sie einen Brief, eine Rechnung oder einen Beleg, oder tippen Sie, was darin steht. Kin liest ihn vor und setzt eine Rechnung auf die Liste, die jemand prüft.",
+        "photo": "Foto aufnehmen oder wählen",
+        "photoReady": "Foto bereit: {name}",
+        "photoRemove": "Foto entfernen",
+        "wordsLabel": "Oder den Inhalt tippen oder einfügen",
+        "wordsHint": "Sie können den Text, ein Foto oder beides nutzen.",
+        "submit": "Lies es mir vor",
+        "reading": "Kin liest…",
+        "again": "Noch einen lesen",
+        "hear": "Nochmal anhören",
+        "hearing": "Kin spricht…"
+      },
+      "result": {
+        "added": "Zur Rechnungsliste hinzugefügt",
+        "duplicate": "Steht schon auf der Rechnungsliste",
+        "nothing": "Gelesen. Nichts zu zahlen.",
+        "pressure": "Noch nicht zahlen",
+        "from": "{kind} von {sender}",
+        "kinds": {
+          "bill": "Rechnung",
+          "receipt": "Beleg",
+          "quote": "Angebot",
+          "letter": "Brief",
+          "other": "Dokument"
+        },
+        "unknownSender": "jemand, den Kin nicht benennen konnte",
+        "amount": "Betrag: {amount}",
+        "due": "Fällig am {day}",
+        "review": "Sie wartet auf der Liste darauf, dass jemand sie prüft.",
+        "pressureNote": "Sie drängt zu schneller Zahlung. Kin hat sie nicht hinzugefügt. Prüfen Sie die Forderung unten.",
+        "photoNote": "Kin hat ein Foto gelesen. Prüfen Sie den Betrag am Brief.",
+        "rulesNote": "Mit Kins einfachen Regeln gelesen, weil Claude nicht verfügbar ist. Prüfen Sie jede Zahl am Brief."
+      },
+      "spoken": {
+        "billAdded": "Das ist eine Rechnung von {sender} über {amount}.{due} Ich habe sie auf die Liste der Familie gesetzt, bis jemand sie prüft.",
+        "billDuplicate": "Das ist eine Rechnung von {sender} über {amount}.{due} Sie sieht aus wie eine, die schon auf der Liste steht, deshalb habe ich sie nicht noch einmal hinzugefügt.",
+        "billUnnamed": "Das sieht nach einer Rechnung über {amount} aus, aber ich konnte nicht erkennen, von wem sie ist, deshalb habe ich sie nicht hinzugefügt. Bitte prüfen Sie den Brief.",
+        "due": " Sie ist am {day} fällig.",
+        "pressureAmount": "Dieser Brief von {sender} drängt Sie, schnell {amount} zu zahlen. Bitte zahlen Sie nicht. Ich habe ihn nicht auf die Liste gesetzt. Bitten Sie mich, die Forderung zu prüfen.",
+        "pressureNoAmount": "Dieser Brief von {sender} drängt Sie, schnell zu zahlen. Bitte zahlen Sie nicht. Ich habe ihn nicht auf die Liste gesetzt. Bitten Sie mich, die Forderung zu prüfen.",
+        "receipt": "Das ist ein Beleg von {sender} über {amount}. Es ist nichts zu zahlen.",
+        "receiptNoAmount": "Das ist ein Beleg von {sender}. Es ist nichts zu zahlen.",
+        "letter": "Das ist ein Brief von {sender}. Ich sehe darin keine Zahlungsaufforderung."
+      },
+      "check": {
+        "title": "Eine Geldforderung prüfen",
+        "text": "Ein Anruf, Brief oder eine Nachricht verlangt Geld? Kin gleicht es mit den erfassten Rechnungen und Zahlungen ab und informiert den ganzen Kreis.",
+        "payeeLabel": "Wer fordert?",
+        "payeeHint": "Der genannte Name, etwa eine Firma oder eine Person.",
+        "amountLabel": "Wie viel wird verlangt?",
+        "amountHint": "Leer lassen, wenn kein Betrag genannt wurde.",
+        "claimLabel": "Was wurde gesagt?",
+        "claimHint": "In deren Worten. Kin behandelt es nur als Information, nie als Anweisung.",
+        "submit": "Diese Forderung prüfen",
+        "checking": "Kin prüft…",
+        "hear": "Urteil anhören",
+        "told": "Kin hat {count} Personen im Kreis informiert.",
+        "verdicts": {
+          "match": "Entspricht einer echten Rechnung",
+          "no_match": "Entspricht nichts in den Unterlagen",
+          "unclear": "Kann nicht bestätigt werden"
+        }
+      },
+      "claim": {
+        "openBill": "{payee} verlangt {claimed}. Das entspricht einer Rechnung, die die Familie wirklich erhalten hat, und sie steht auf der Liste.",
+        "alreadyPaid": "{payee} verlangt {claimed}. Die Unterlagen zeigen, dass {paid} am {paidDay} schon an {payee} bezahlt wurden. Bitte nicht noch einmal zahlen. Ich habe die Familie informiert.",
+        "unknownPayee": "{payee} verlangt {claimed}. Niemand mit diesem Namen steht in den Unterlagen der Familie, und keine Rechnung passt. Bitte nicht zahlen. Ich habe die Familie informiert.",
+        "amountDiffers": "{payee} verlangt {claimed}, aber die Unterlagen enthalten keine Rechnung und keine Zahlung in dieser Höhe. Ich kann es nicht bestätigen. Bitte warten Sie und fragen Sie die Familie. Ich habe die Familie informiert.",
+        "noAmount": "{payee} ist der Familie bekannt, aber es wurde kein Betrag genannt, also gibt es nichts zu prüfen. Fragen Sie, welchen Betrag man will.",
+        "someMoney": "Geld"
+      },
+      "recent": {
+        "title": "Letzte Prüfungen",
+        "empty": "Noch keine Forderung wurde geprüft.",
+        "hear": "Anhören",
+        "amount": "Gefordert: {amount}"
+      },
+      "errors": {
+        "refused": "Ihre Rolle erlaubt das in diesem Kreis nicht.",
+        "invalid": "Kin konnte das nicht verwenden. Bitte prüfen Sie es und versuchen Sie es erneut.",
+        "amount": "Diesen Betrag kann Kin nicht lesen. Verwenden Sie Ziffern, zum Beispiel 84,50.",
+        "image_too_large": "Das Foto ist zu groß. Versuchen Sie ein kleineres.",
+        "unreadable": "Kin konnte das nicht lesen. Versuchen Sie ein schärferes Foto oder tippen Sie den Text.",
+        "model_unavailable": "Kin kann derzeit keine Fotos lesen. Tippen Sie stattdessen, was im Brief steht.",
+        "model_refused": "Kin konnte dieses Dokument nicht lesen.",
+        "busy": "Kin wurde zuletzt oft genutzt. Bitte warten Sie eine Weile.",
+        "unavailable": "Etwas ist schiefgegangen. Bitte versuchen Sie es erneut."
+      },
+      "bills": {
+        "title": "Aus Briefen gelesene Rechnungen",
+        "empty": "Noch keine Rechnung wurde aus einem Brief gelesen.",
+        "states": {
+          "needs_review": "Wartet auf Prüfung",
+          "extracted": "Wird gelesen",
+          "duplicate": "Steht schon auf der Liste"
+        },
+        "due": "Fällig am {day}"
       }
     }
   }

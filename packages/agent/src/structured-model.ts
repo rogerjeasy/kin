@@ -4,11 +4,16 @@
  * tests. A request carries no tools, so reading someone's words can never
  * act on anything.
  */
+/** A photograph the model reads. Only these formats are sent. */
+export type StructuredImage = { readonly mediaType: "image/jpeg" | "image/png" | "image/webp"; readonly base64: string };
+
 export type StructuredRequest = {
   /** Kin's own instructions, versioned with the prompt that wrote them. */
   readonly system: string;
   /** The person's words, wrapped as data. */
   readonly user: string;
+  /** Photographs to read, when the task is a picture of something. Data, like `user`. */
+  readonly images?: readonly StructuredImage[];
   /** The JSON schema the answer must follow. */
   readonly schema: Readonly<Record<string, unknown>>;
 };

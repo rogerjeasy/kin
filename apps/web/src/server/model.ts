@@ -1,4 +1,5 @@
 import { bedrockModel, type StructuredModel } from "@kin/agent";
+import type { BillingAccount } from "@kin/auth";
 import { readModelConfig } from "@kin/config";
 
 let model: StructuredModel | null | undefined;
@@ -62,3 +63,23 @@ export const visitReadingLimiter = createRateLimiter(10, 60 * 60 * 1000);
  * visitors must never use up what families rely on.
  */
 export const visitReadingBudget = createRateLimiter(200, 60 * 60 * 1000);
+
+/** Each person may hold up twenty letters or checks an hour; each server 200 for demo visitors and 200 for people. */
+export const letterLimiter = createRateLimiter(20, 60 * 60 * 1000);
+export const letterBudget = createRateLimiter(200, 60 * 60 * 1000);
+
+/**
+ * Spends one use of a paid service, if the person and the pool both still
+ * have one. Every limit is asked before any is used, so a refused request
+ * costs nothing.
+ */
+export function spendUse(limits: { readonly limiter?: RateLimiter; readonly budget?: RateLimiter }, who: { readonly userId: string; readonly accountTypes: BillingAccount }, at: number): boolean {
+  const pool = who.accountTypes === "demo" ? "demo" : "people";
+  const asked = [
+    ...(limits.limiter ? [{ limiter: limits.limiter, key: who.userId }] : []),
+    ...(limits.budget ? [{ limiter: limits.budget, key: pool }] : []),
+  ];
+  if (!asked.every(({ limiter, key }) => limiter.allows(key, at))) return false;
+  for (const { limiter, key } of asked) limiter.record(key, at);
+  return true;
+}

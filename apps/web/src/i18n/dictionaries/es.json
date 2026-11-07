@@ -957,7 +957,8 @@
         "utilities": "Servicios",
         "care": "Cuidados",
         "pharmacy": "Farmacia",
-        "repairs": "Reparaciones"
+        "repairs": "Reparaciones",
+        "other": "Otro"
       },
       "entryKinds": {
         "contribution": "Aporte",
@@ -1880,6 +1881,110 @@
         "paused": "Los pagos están en pausa. Inténtelo de nuevo cuando termine.",
         "no_agreement": "La familia aún no tiene un acuerdo en vigor.",
         "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
+      }
+    },
+    "letters": {
+      "title": "Cartas y llamadas",
+      "lede": "Muestre una carta o una factura: Kin la lee en voz alta y la apunta en la lista. Si alguien exige dinero, Kin comprueba la exigencia con lo que de verdad se facturó y se pagó.",
+      "read": {
+        "title": "Mostrar una carta",
+        "text": "Haga una foto de una carta, factura o recibo, o escriba lo que dice. Kin lo lee en voz alta y pone una factura en la lista para que alguien la revise.",
+        "photo": "Hacer o elegir una foto",
+        "photoReady": "Foto lista: {name}",
+        "photoRemove": "Quitar la foto",
+        "wordsLabel": "O escriba o pegue lo que dice",
+        "wordsHint": "Puede usar el texto, una foto o ambos.",
+        "submit": "Léamela",
+        "reading": "Kin está leyendo…",
+        "again": "Leer otra",
+        "hear": "Volver a oírla",
+        "hearing": "Kin está hablando…"
+      },
+      "result": {
+        "added": "Añadida a la lista de facturas",
+        "duplicate": "Ya está en la lista de facturas",
+        "nothing": "Leída. Nada que pagar.",
+        "pressure": "No pague todavía",
+        "from": "{kind} de {sender}",
+        "kinds": {
+          "bill": "Factura",
+          "receipt": "Recibo",
+          "quote": "Presupuesto",
+          "letter": "Carta",
+          "other": "Documento"
+        },
+        "unknownSender": "alguien a quien Kin no pudo nombrar",
+        "amount": "Importe: {amount}",
+        "due": "Vence el {day}",
+        "review": "Espera en la lista a que alguien la revise.",
+        "pressureNote": "Presiona para pagar rápido. Kin no la añadió. Compruebe la exigencia más abajo.",
+        "photoNote": "Kin leyó una foto. Compruebe el importe con la carta.",
+        "rulesNote": "Leída con las reglas sencillas de Kin, porque Claude no está disponible. Compruebe cada cifra con la carta."
+      },
+      "spoken": {
+        "billAdded": "Es una factura de {sender} por {amount}.{due} La he añadido a la lista de la familia, a la espera de que alguien la revise.",
+        "billDuplicate": "Es una factura de {sender} por {amount}.{due} Se parece a una que ya está en la lista, así que no la he añadido otra vez.",
+        "billUnnamed": "Parece una factura por {amount}, pero no pude saber de quién es, así que no la he añadido. Revise la carta, por favor.",
+        "due": " Vence el {day}.",
+        "pressureAmount": "Esta carta de {sender} le presiona para que pague {amount} enseguida. Por favor, no pague. No la he añadido a la lista. Pídame que compruebe la exigencia.",
+        "pressureNoAmount": "Esta carta de {sender} le presiona para que pague enseguida. Por favor, no pague. No la he añadido a la lista. Pídame que compruebe la exigencia.",
+        "receipt": "Es un recibo de {sender} por {amount}. No hay nada que pagar.",
+        "receiptNoAmount": "Es un recibo de {sender}. No hay nada que pagar.",
+        "letter": "Es una carta de {sender}. No veo que pida ningún pago."
+      },
+      "check": {
+        "title": "Comprobar una exigencia de dinero",
+        "text": "¿Una llamada, carta o mensaje exige dinero? Kin lo compara con las facturas y pagos registrados y avisa a todo el círculo.",
+        "payeeLabel": "¿Quién lo pide?",
+        "payeeHint": "El nombre que dieron, por ejemplo una empresa o una persona.",
+        "amountLabel": "¿Cuánto quieren?",
+        "amountHint": "Déjelo vacío si no dieron ningún importe.",
+        "claimLabel": "¿Qué dijeron?",
+        "claimHint": "Con sus palabras. Kin lo trata solo como información, nunca como instrucciones.",
+        "submit": "Comprobar esta exigencia",
+        "checking": "Kin está comprobando…",
+        "hear": "Oír el veredicto",
+        "told": "Kin avisó a {count} personas del círculo.",
+        "verdicts": {
+          "match": "Coincide con una factura real",
+          "no_match": "No coincide con nada del registro",
+          "unclear": "No se puede confirmar"
+        }
+      },
+      "claim": {
+        "openBill": "{payee} pide {claimed}. Coincide con una factura que la familia recibió de verdad, y está en la lista.",
+        "alreadyPaid": "{payee} pide {claimed}. El registro muestra que {paid} ya se pagaron a {payee} el {paidDay}. Por favor, no vuelva a pagar. He avisado a la familia.",
+        "unknownPayee": "{payee} pide {claimed}. Nadie con ese nombre figura en el registro de la familia y ninguna factura coincide. Por favor, no pague. He avisado a la familia.",
+        "amountDiffers": "{payee} pide {claimed}, pero el registro no tiene ninguna factura ni pago de ese importe. No puedo confirmarlo. Por favor, espere y consulte con la familia. He avisado a la familia.",
+        "noAmount": "{payee} es alguien que la familia conoce, pero no se dio ningún importe, así que no hay nada que comprobar. Pregunte qué importe quieren.",
+        "someMoney": "dinero"
+      },
+      "recent": {
+        "title": "Comprobaciones recientes",
+        "empty": "Todavía no se ha comprobado ninguna exigencia.",
+        "hear": "Oírla",
+        "amount": "Exigido: {amount}"
+      },
+      "errors": {
+        "refused": "Su rol no permite eso en este círculo.",
+        "invalid": "Kin no pudo usar eso. Compruébelo e inténtelo de nuevo.",
+        "amount": "Kin no puede leer ese importe. Use cifras, por ejemplo 84,50.",
+        "image_too_large": "La foto es demasiado grande. Pruebe con una más pequeña.",
+        "unreadable": "Kin no pudo leerlo. Pruebe con una foto más nítida o escriba el texto.",
+        "model_unavailable": "Kin no puede leer fotos ahora. Escriba en su lugar lo que dice la carta.",
+        "model_refused": "Kin no pudo leer ese documento.",
+        "busy": "Kin se ha usado mucho últimamente. Espere un poco.",
+        "unavailable": "Algo salió mal. Inténtelo de nuevo."
+      },
+      "bills": {
+        "title": "Facturas leídas de cartas",
+        "empty": "Todavía no se ha leído ninguna factura de una carta.",
+        "states": {
+          "needs_review": "A la espera de revisión",
+          "extracted": "Leyéndose",
+          "duplicate": "Ya está en la lista"
+        },
+        "due": "Vence el {day}"
       }
     }
   }
