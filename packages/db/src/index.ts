@@ -27,6 +27,8 @@ export type { AccountIds } from "./ledger-store.ts";
 export { CircleNotFoundError, readCircle } from "./read-circle.ts";
 export { ContributionMismatchError, contributionRecorded, recordContribution } from "./contributions.ts";
 export type { ConfirmedCapture, ContributionOutcome } from "./contributions.ts";
+export { MonthlyShareError, followPayPal, moveMonthlyShare, readShare, recordShareCharge, recordSimulatedMonth, startMonthlyShare } from "./monthly-shares.ts";
+export type { MonthlyShareReason, ShareKey, ShareRow } from "./monthly-shares.ts";
 export { settlePayPalEvent, storePayPalEvent } from "./paypal-events.ts";
 export type { PayPalEventState, StoredEvent } from "./paypal-events.ts";
 export { StoredPlanError, parseApprovalPlan } from "./plan-json.ts";

@@ -5,6 +5,7 @@ import type {
   CircleRecord,
   CircleSnapshot,
   MemberRecord,
+  MonthlyShareRecord,
   PayeeRecord,
   ProposalRecord,
 } from "./circle-snapshot.ts";
@@ -22,6 +23,7 @@ import {
   expectedBills,
   invitations,
   members,
+  monthlyShares,
   narrations,
   payees,
   proposals,
@@ -81,6 +83,7 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     narrations: await readNarrations(tx, circle.id),
     documents: await readDocuments(tx, circle.id),
     invitations: await readInvitations(tx, circle.id),
+    monthlyShares: await readMonthlyShares(tx, circle.id, viewerRow.id),
   };
 }
 
@@ -267,4 +270,21 @@ async function readInvitations(tx: Transaction, circleId: string) {
     .from(invitations)
     .where(eq(invitations.circleId, circleId))
     .orderBy(desc(invitations.createdAt));
+}
+
+/** Every share still open or ended, oldest first. Only a share's own member is given the PayPal page to approve it. */
+async function readMonthlyShares(tx: Transaction, circleId: string, viewerId: string): Promise<MonthlyShareRecord[]> {
+  const rows = await tx.select().from(monthlyShares).where(eq(monthlyShares.circleId, circleId)).orderBy(asc(monthlyShares.createdAt), asc(monthlyShares.id));
+  return rows.map((row) => ({
+    id: row.id,
+    memberId: row.memberId,
+    cents: row.amountCents,
+    state: row.state,
+    simulated: row.simulated,
+    paypalSubscriptionId: row.paypalSubscriptionId,
+    approvalUrl: row.memberId === viewerId && row.state === "approval_pending" ? row.approvalUrl : null,
+    failedPayments: row.failedPayments,
+    nextBillingAt: row.nextBillingAt,
+    createdAt: row.createdAt,
+  }));
 }

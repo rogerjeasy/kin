@@ -6,6 +6,7 @@ import type {
   CaregiverBillDetails,
   Ledger,
   MemberStatus,
+  MonthlyShareState,
   ParentLevel,
   Payee,
   ProposalKind,
@@ -41,6 +42,23 @@ export type CircleSnapshot = {
   readonly documents: readonly DocumentRecord[];
   /** Pending and answered invitations. Only an organizer reads them. */
   readonly invitations: readonly InvitationRecord[];
+  /** Every member's monthly share, for roles that see the circle's money. */
+  readonly monthlyShares: readonly MonthlyShareRecord[];
+};
+
+export type MonthlyShareRecord = {
+  readonly id: string;
+  readonly memberId: string;
+  readonly cents: number;
+  readonly state: MonthlyShareState;
+  /** A demo circle's share: no PayPal subscription stands behind it. */
+  readonly simulated: boolean;
+  readonly paypalSubscriptionId: string | null;
+  /** Where the member approves a share that still waits. Only the member it belongs to is given it. */
+  readonly approvalUrl: string | null;
+  readonly failedPayments: number;
+  readonly nextBillingAt: Date | null;
+  readonly createdAt: Date;
 };
 
 export type InvitationRecord = {

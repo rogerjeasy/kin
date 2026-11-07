@@ -7,10 +7,12 @@ import type { Order } from "../order.ts";
 import { PayPalError } from "../paypal-error.ts";
 import type { PayPalPool } from "../pool.ts";
 import type { NewPayout, PayoutBatch, PayoutItemStatus } from "../payout.ts";
+import type { Subscription, SubscriptionAction, SubscriptionPayment, SubscriptionStatus } from "../subscription.ts";
 import type { WebhookDelivery } from "../webhook.ts";
 
 type StoredOrder = { id: string; status: string; reference: ContributionReference; amount: Money; captures: Capture[]; requestIds: Set<string> };
 type StoredPayout = { batch: PayoutBatch; request: NewPayout };
+type StoredSubscription = { id: string; key: string; status: SubscriptionStatus; reference: ContributionReference; amount: Money; payments: SubscriptionPayment[]; failedPayments: number; requestIds: Set<string> };
 
 export type FakePool = PayPalPool & {
   /** The payer approves the order on PayPal's page. */
@@ -40,6 +42,18 @@ export type FakePool = PayPalPool & {
   readonly payouts: Map<string, StoredPayout>;
   /** PayPal moves a payout's item on, as it does after a pending or unclaimed payout. */
   readonly settlePayout: (batchId: string, status: PayoutItemStatus) => void;
+  /** Every subscription PayPal holds, by ID. */
+  readonly subscriptions: Map<string, StoredSubscription>;
+  /** The payer approves the subscription on PayPal's page: it turns `ACTIVE` and charges the first month at once. */
+  readonly approveSubscription: (subscriptionId: string) => SubscriptionPayment;
+  /** PayPal charges an active subscription's next month. */
+  readonly chargeSubscription: (subscriptionId: string) => SubscriptionPayment;
+  /** PayPal fails a charge, as it does for a card that is refused. */
+  readonly failSubscriptionCharge: (subscriptionId: string) => void;
+  /** A delivery of PAYMENT.SALE.COMPLETED for a subscription's charge, as PayPal would send it: no custom ID, only the subscription it belongs to. */
+  readonly saleEvent: (subscriptionId: string, paymentId: string, eventId?: string) => WebhookDelivery;
+  /** A delivery of a BILLING.SUBSCRIPTION.* event for a subscription. */
+  readonly subscriptionEvent: (subscriptionId: string, eventType: string, eventId?: string) => WebhookDelivery;
 };
 
 /**
@@ -63,6 +77,7 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
   };
 
   const payouts = new Map<string, StoredPayout>();
+  const subscriptions = new Map<string, StoredSubscription>();
   const payoutBatch = (batchId: string, request: NewPayout, status: PayoutItemStatus, itemId: string): PayoutBatch => ({
     batchId,
     batchStatus: status === "SUCCESS" ? "SUCCESS" : status === "PENDING" || status === "UNCLAIMED" || status === "ONHOLD" ? "PROCESSING" : "SUCCESS",
@@ -165,6 +180,59 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
       if (!stored || !item) throw new Error(`No payout ${batchId}`);
       stored.batch = payoutBatch(batchId, stored.request, status, item.itemId);
     },
+    subscriptions,
+    async createSubscription(subscription, key) {
+      fail("createSubscription");
+      pool.requestIds.push(`kin-subscription-${key}`);
+      const repeated = [...subscriptions.values()].find((each) => each.key === key);
+      if (repeated) return { subscriptionId: repeated.id, approvalUrl: `https://www.sandbox.paypal.com/webapps/billing/subscriptions?ba_token=${repeated.id}` };
+      const id = nextId("I-");
+      subscriptions.set(id, { id, key, status: "APPROVAL_PENDING", reference: subscription.reference, amount: subscription.amount, payments: [], failedPayments: 0, requestIds: new Set() });
+      return { subscriptionId: id, approvalUrl: `https://www.sandbox.paypal.com/webapps/billing/subscriptions?ba_token=${id}` };
+    },
+    async getSubscription(subscriptionId): Promise<Subscription> {
+      fail("getSubscription");
+      const stored = findSubscription(subscriptionId);
+      return { id: stored.id, status: stored.status, reference: stored.reference, nextBillingAt: stored.status === "ACTIVE" ? now() : null, failedPayments: stored.failedPayments };
+    },
+    async listSubscriptionPayments(subscriptionId, from, until) {
+      fail("listSubscriptionPayments");
+      return findSubscription(subscriptionId).payments.filter((payment) => payment.paidAt >= from && payment.paidAt <= until);
+    },
+    async changeSubscription(subscriptionId, action: SubscriptionAction, _reason, requestId) {
+      fail("changeSubscription");
+      pool.requestIds.push(requestId);
+      const stored = findSubscription(subscriptionId);
+      if (stored.requestIds.has(requestId)) return;
+      const next: SubscriptionStatus = action === "suspend" ? "SUSPENDED" : action === "activate" ? "ACTIVE" : "CANCELLED";
+      const allowed = action === "cancel" ? stored.status !== "CANCELLED" : action === "suspend" ? stored.status === "ACTIVE" : stored.status === "SUSPENDED";
+      if (!allowed) throw new PayPalError({ outcome: "rejected", status: 422, issue: "SUBSCRIPTION_STATUS_INVALID", debugId: "fake", operation: `subscriptions.${action}` });
+      stored.status = next;
+      stored.requestIds.add(requestId);
+    },
+    approveSubscription(subscriptionId) {
+      const stored = findSubscription(subscriptionId);
+      if (stored.status !== "APPROVAL_PENDING") throw new Error(`Subscription ${subscriptionId} is not waiting for approval`);
+      stored.status = "ACTIVE";
+      return pool.chargeSubscription(subscriptionId);
+    },
+    chargeSubscription(subscriptionId) {
+      const stored = findSubscription(subscriptionId);
+      if (stored.status !== "ACTIVE") throw new Error(`Subscription ${subscriptionId} is not active`);
+      const payment: SubscriptionPayment = { id: nextId("SALE"), gross: stored.amount, fee: { cents: pool.feeCents, currency: stored.amount.currency }, paidAt: now() };
+      stored.payments.push(payment);
+      return payment;
+    },
+    failSubscriptionCharge(subscriptionId) {
+      findSubscription(subscriptionId).failedPayments += 1;
+    },
+    saleEvent(subscriptionId, paymentId, eventId = `WH-${paymentId}`) {
+      return delivery(eventId, { id: eventId, event_type: "PAYMENT.SALE.COMPLETED", resource_type: "sale", resource: { id: paymentId, state: "completed", billing_agreement_id: subscriptionId } });
+    },
+    subscriptionEvent(subscriptionId, eventType, eventId = `WH-${eventType}-${subscriptionId}`) {
+      const stored = findSubscription(subscriptionId);
+      return delivery(eventId, { id: eventId, event_type: eventType, resource_type: "subscription", resource: { id: subscriptionId, status: stored.status, custom_id: encodeContributionReference(stored.reference) } });
+    },
     approve(orderId) {
       const order = find(orderId);
       if (order.status === "CREATED") order.status = "APPROVED";
@@ -195,6 +263,25 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
       };
     },
   };
+
+  function findSubscription(subscriptionId: string): StoredSubscription {
+    const stored = subscriptions.get(subscriptionId);
+    if (!stored) throw new PayPalError({ outcome: "rejected", status: 404, issue: "RESOURCE_NOT_FOUND", debugId: "fake", operation: "subscriptions" });
+    return stored;
+  }
+
+  function delivery(eventId: string, event: unknown): WebhookDelivery {
+    return {
+      body: JSON.stringify(event),
+      headers: {
+        "paypal-auth-algo": "SHA256withRSA",
+        "paypal-cert-url": "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-fake",
+        "paypal-transmission-id": `T-${eventId}`,
+        "paypal-transmission-sig": "c2lnbmF0dXJl",
+        "paypal-transmission-time": now().toISOString(),
+      },
+    };
+  }
 
   function lost<T>(method: keyof PayPalPool, answer: T): T {
     if (pool.loseNextReply !== method) return answer;

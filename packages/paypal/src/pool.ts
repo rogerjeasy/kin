@@ -4,6 +4,21 @@ import { contributionOrderBody, parseOrder, type NewContributionOrder, type Orde
 import { requiredText, asRecord } from "./json.ts";
 import { PayPalError } from "./paypal-error.ts";
 import { parsePayoutBatch, parsePayoutCreated, payoutBody, type NewPayout, type PayoutBatch } from "./payout.ts";
+import {
+  actionBody,
+  isSubscriptionId,
+  parseCreatedId,
+  parseSubscription,
+  parseSubscriptionCreated,
+  parseSubscriptionPayments,
+  planBody,
+  productBody,
+  subscriptionBody,
+  type NewSubscription,
+  type Subscription,
+  type SubscriptionAction,
+  type SubscriptionPayment,
+} from "./subscription.ts";
 import { parseVerification, verificationBody, type WebhookDelivery } from "./webhook.ts";
 
 /**
@@ -26,6 +41,19 @@ export type PayPalPool = {
    */
   readonly createPayout: (payout: NewPayout, requestId: string) => Promise<{ readonly batchId: string }>;
   readonly getPayoutBatch: (batchId: string) => Promise<PayoutBatch>;
+  /**
+   * Makes a monthly subscription for a member's share: the circle's product,
+   * a plan for the amount, and the subscription the payer then approves on
+   * PayPal's page. `key` (the subscription's own row ID) is every request's
+   * idempotency key, so a repeat makes nothing new. The subscription charges
+   * nothing until the payer approves it.
+   */
+  readonly createSubscription: (subscription: NewSubscription, key: string) => Promise<{ readonly subscriptionId: string; readonly approvalUrl: string }>;
+  readonly getSubscription: (subscriptionId: string) => Promise<Subscription>;
+  /** The charges PayPal completed for a subscription between two moments. */
+  readonly listSubscriptionPayments: (subscriptionId: string, from: Date, until: Date) => Promise<readonly SubscriptionPayment[]>;
+  /** Pauses, resumes or ends a subscription, with the same request ID never twice. */
+  readonly changeSubscription: (subscriptionId: string, action: SubscriptionAction, reason: string, requestId: string) => Promise<void>;
 };
 
 const ORDER_ID = /^[A-Z0-9]{5,36}$/;
@@ -61,6 +89,31 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
     async getPayoutBatch(batchId) {
       return parsePayoutBatch(await client.send({ method: "GET", path: `/v1/payments/payouts/${pathId(batchId)}`, operation: "payouts.get" }));
     },
+    async createSubscription(subscription, key) {
+      const productId = parseCreatedId(
+        await client.send({ method: "POST", path: "/v1/catalogs/products", body: productBody(subscription.description), requestId: `kin-product-${subscription.reference.circleId}`, operation: "products.create" }),
+        "product",
+      );
+      const planId = parseCreatedId(
+        await client.send({ method: "POST", path: "/v1/billing/plans", body: planBody(productId, subscription.description, subscription.amount), requestId: `kin-plan-${key}`, operation: "plans.create" }),
+        "plan",
+      );
+      return parseSubscriptionCreated(
+        await client.send({ method: "POST", path: "/v1/billing/subscriptions", body: subscriptionBody(planId, subscription), requestId: `kin-subscription-${key}`, operation: "subscriptions.create" }),
+      );
+    },
+    async getSubscription(subscriptionId) {
+      return parseSubscription(await client.send({ method: "GET", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}`, operation: "subscriptions.get" }));
+    },
+    async listSubscriptionPayments(subscriptionId, from, until) {
+      const window = `start_time=${encodeURIComponent(from.toISOString())}&end_time=${encodeURIComponent(until.toISOString())}`;
+      return parseSubscriptionPayments(
+        await client.send({ method: "GET", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}/transactions?${window}`, operation: "subscriptions.transactions" }),
+      );
+    },
+    async changeSubscription(subscriptionId, action, reason, requestId) {
+      await client.send({ method: "POST", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}/${action}`, body: actionBody(reason), requestId, operation: `subscriptions.${action}` });
+    },
     async verifyWebhook(delivery) {
       try {
         const json = await client.send({ method: "POST", path: "/v1/notifications/verify-webhook-signature", body: verificationBody(delivery, webhookId), operation: "webhooks.verify" });
@@ -85,6 +138,11 @@ function existingBatch(error: PayPalError): string | null {
 /** Whether `id` has the shape of a PayPal order or capture ID. */
 export function isPayPalId(id: string): boolean {
   return ORDER_ID.test(id);
+}
+
+function subscriptionPathId(id: string): string {
+  if (!isSubscriptionId(id)) throw new Error("Not a PayPal subscription ID");
+  return id;
 }
 
 // An ID goes into a URL path, so anything but PayPal's own alphabet is refused.

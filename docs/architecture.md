@@ -278,7 +278,7 @@ Every table except `users` carries a `circle_id`. Built in `packages/db/src/sche
 | `agreement_acceptances` | Who accepted a version, how (app or voice) and when. A version governs from its start date once every member it asks has accepted it: every organizer and contributor, and a parent who decides and can sign in, fixed in `agreements.requires` when it is proposed. The newest such version is in force (decision 57). |
 | `pool_accounts`   | *Not yet.* PayPal merchant ID, credential reference, webhook ID, mode               |
 | `payees`          | Name, spending category, status, the member it pays, PayPal recipient, auto-pay rule and range; a nullable caregiver hourly rate, distinct from the family care-credit rate. At most one rate-configured payee per caregiver and circle. |
-| `subscriptions`   | *Not yet.* Member, PayPal subscription ID, plan ID, amount, state                    |
+| `monthly_shares`  | Member, amount in cents and currency, state (`approval_pending`, `active`, `paused`, `cancelled`), PayPal subscription ID and the page where the member approves it (none for a simulated share), simulated, failed charges as PayPal last reported, next billing time. One live share per member. Changed only through the member's own operations and the worker. |
 | `contributions`   | *Not yet.* Member, kind, amount, period, source reference                            |
 | `care_entries`    | Member, date, minutes, note, approved, the care-credit entry that values it         |
 | `documents`       | S3 key (none for a simulated document), kind, uploader, extraction result, confidence, simulated |
@@ -450,6 +450,20 @@ stateDiagram-v2
     failed --> [*]
 ```
 
+**Monthly share** (`MONTHLY_SHARE_TRANSITIONS` in `packages/domain`, enforced by a trigger on `monthly_shares`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> approval_pending
+    approval_pending --> active
+    approval_pending --> cancelled
+    active --> paused
+    paused --> active
+    active --> cancelled
+    paused --> cancelled
+    cancelled --> [*]
+```
+
 The `unknown` state matters. If a call to PayPal times out, Kin does not assume success or failure. It asks PayPal for the resource by its idempotency key and waits for the webhook.
 
 ### 7.5 The approval engine
@@ -549,6 +563,15 @@ Checking the APIs changed three things. The PayPal tables in `project-descriptio
 4. Each billing cycle, PayPal charges the sibling and sends `PAYMENT.SALE.COMPLETED`.
 5. Kin credits the member in the ledger.
 6. A failed charge arrives as `BILLING.SUBSCRIPTION.PAYMENT.FAILED`. Kin tells the circle and the fairness ledger shows the gap.
+
+**Monthly shares in the app** (built; "Monthly shares" on the circle screen, for organizers and contributors)
+
+1. The member enters a monthly amount (the same limits as a top-up, `checkMonthlyShare`). `POST /api/monthly-shares` makes the circle's Catalog product, a plan for the amount and a subscription in the pool account, every request keyed by the share's own row ID so a repeat makes nothing new. The subscription's `custom_id` names the circle and member, like a top-up order's.
+2. Kin records the share (`start_my_share`) as `approval_pending`, with PayPal's approval page, and sends the member there. Only the member it belongs to is given that page. Nothing is charged until they approve.
+3. Back from PayPal, the screen asks the worker to read the subscription (`subscription_checked` on the inbox queue). The worker reads it and every completed charge since the share began from PayPal, moves the share to `active` and credits each charge once by its PayPal transaction ID, as a top-up is credited: the member the gross, the pool the net, PayPal's fee to `fees`. `PAYMENT.SALE.COMPLETED` and `BILLING.SUBSCRIPTION.*` webhooks say the same later; a sale names only its subscription, so after the signature checks out the worker asks PayPal whose subscription it is.
+4. Pausing, resuming and ending ask PayPal first (suspend, activate, cancel) and change Kin's record only once PayPal has agreed. A share only moves along `MONTHLY_SHARE_TRANSITIONS`, and a cancelled one stays cancelled (a trigger enforces it, whoever writes). A member who wants a different amount ends the share and starts a new one.
+5. A failed charge shows on the share as PayPal's count of failures. Telling the circle about it is not built.
+6. **Demo circles** make no PayPal subscription. Their share is `simulated`, runs at once, and the worker credits its month once for each calendar month of the circle's own clock, labelled simulated, with no fee. It never writes a simulated month into a share that is not simulated, or into a circle that is not a demo.
 
 **Top-ups in the app** (built; "Add money" on the overview, for organizers and contributors)
 
@@ -1529,6 +1552,7 @@ The hackathon needs a month of family life to be shown in minutes.
 | 58 | Claude is reached through Amazon Bedrock's Messages endpoint (`@anthropic-ai/bedrock-sdk`, `AnthropicBedrockMantle`, model `anthropic.claude-opus-5-5`), configured by `KIN_BEDROCK_REGION` and `KIN_BEDROCK_MODEL` | Anthropic's API directly (`docs/tech-stack.md` section 6 recommended it) | The project owner runs Anthropic's models on Bedrock (26 October 2026). Kin's AWS credentials and IAM reach the model, so no Anthropic key is stored. Refusal fallbacks would use the SDK's client-side middleware on Bedrock; none is configured yet, because the account's entitlements decide which model it could fall back to. |
 | 59 | In-app speech uses Amazon Transcribe streaming and Amazon Polly; the browser records a short clip, converts it to 16 kHz PCM and uploads it, and the server transcribes it | Deepgram and ElevenLabs (`tech-stack.md` section 7); the browser's own speech APIs; streaming the microphone over a WebSocket to `apps/voice` | The owner chose AWS (27 October 2026): one account and bill with Bedrock, no new vendor keys. A clip of at most a minute suits a bill and a yes, needs no long-lived connection (App Runner serves plain HTTP), and keeps every decision on the server. Live streaming belongs to the phone line, still to build. |
 | 60 | Claude in the hosted app is switched on by `kin:claude` and stays on Opus 5.5 through Bedrock's Messages endpoint; while the account is refused that model, the switch stays off | An older model through Bedrock's InvokeModel API; Anthropic's API directly | Bedrock refuses every model its Messages endpoint serves to this account; the older models answer only through InvokeModel, which refuses the SDK's current API version, so using them would pin an old SDK beside a second adapter. Anthropic's API would undo decision 58. Waiting on AWS keeps one adapter and makes switching on a one-line change. |
+| 61 | A member's monthly share is a PayPal subscription with its own plan, made by the web app and recorded in `monthly_shares`; a person changes it only through two database operations (`start_my_share`, `move_my_share`), PayPal is asked before the record moves, and the worker records charges from PayPal's transaction listing | One plan for every member with a quantity; a PayPal invoice each month; writing the share and its ledger entry from the web app | A plan per share is the only way to charge an exact amount and keep each member's commitment separate (section 8.4). Reading the listing, not the webhook body, keeps rule 3 (PayPal's record decides) the same for charges as for top-ups, and a sale event that names no circle is placed by asking PayPal. The web app holds no service role (decision 38), so it cannot write the ledger. |
 
 ---
 
@@ -1645,6 +1669,13 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 **Built and tested: the statement, the year in review and the audit export (moment 8)**
 
 - `monthlyStatement` and `yearInReview` in `packages/domain` read every figure from the ledger (contributions by member, spending by category, caregiver pay, settlement moved, PayPal fees; a reversal counts against its original). The screen at `/dashboard/record/statement` shows them with the settlement the money core proposes and the bills expected next, prints cleanly through a print stylesheet (the browser's print dialog also saves a PDF), and `/dashboard/record/audit` exports every ledger line with its entry ID, source and source reference. Both need `money.view`. Unit tests in `packages/domain` and `apps/web`, and Playwright at the four viewports and 320 pixels, in print media, and for a refused caregiver. Not verified: a real browser's print preview or PDF output, and a real circle's statement (only the demo circle).
+
+**Built and tested: monthly shares (this change; not applied to shared data, not deployed)**
+
+- `packages/domain` (`monthly-share.ts`): the share's state machine and limits. `packages/paypal` (`subscription.ts`): the plan, product and subscription requests, the subscription and transaction readers (completed charges only, in integer cents), the approval link accepted only as a PayPal page over HTTPS, subscription IDs held to PayPal's alphabet, the new webhook events and the `subscription_checked` queue message; all against the in-memory fake pool, which now keeps subscriptions.
+- `packages/db`: migrations 0013 (the table) and 0014 (policies, grants, the forward-only trigger, `start_my_share`, `move_my_share`), tested against PostgreSQL: roles (the observer, parent and caregiver refused, the caregiver reading none), limits, one live share, forward-only moves in both the operations and a service write, only the owner moving a share, the audit trail, isolation between circles, and the ledger writes (a simulated month once and never into a real share; a real charge once by its transaction ID with PayPal's fee).
+- `apps/worker`: a demo share's month simulated once; a real share read back (state, charges, fee); the webhook and the read writing one entry in either order; pause, resume, cancel and failed charges followed; a forged delivery writing nothing; a subscription of another member refused; an outage retried. `apps/web`: the operations' boundary against fakes and PostgreSQL, in a demo circle and a real one. End to end: the circle screen's panel, form and a running share at the four viewports and 320 pixels, start, pause, resume and end in the demo, another member reading it without controls, the amount's limits, and the caregiver seeing none of it.
+- Not verified: a real subscription in the PayPal sandbox through Kin (the requests follow the 14 October sandbox check and PayPal's documentation; the product and plan requests and the transaction listing's field names have not been run against the sandbox by this code); the five new webhook events, which are not subscribed on the live webhook until `webhook:register` is run again; a member's approval round trip in a browser; telling the circle about a failed charge; the demo's later months (only the first month is recorded; the demo clock does not advance on its own).
 
 **Not yet tested**
 

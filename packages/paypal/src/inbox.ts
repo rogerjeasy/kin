@@ -12,14 +12,16 @@ import { isPayPalId } from "./pool.ts";
  */
 export type InboxMessage =
   | { readonly kind: "webhook"; readonly delivery: WebhookDelivery }
-  | { readonly kind: "order_captured"; readonly circleId: string; readonly orderId: string };
+  | { readonly kind: "order_captured"; readonly circleId: string; readonly orderId: string }
+  /** A member's monthly share (a row of Kin's own, by ID) may have changed at PayPal, or is a demo's: the worker reads it back and records what it charged. `requestId` keeps repeated asks apart. */
+  | { readonly kind: "subscription_checked"; readonly circleId: string; readonly subscriptionId: string; readonly requestId: string };
 
 /** Messages for events Kin cannot place in a circle share this ordering group. */
 export const UNPLACED_GROUP = "unplaced";
 
 /** The FIFO group: one circle's messages are handled one at a time, in order. */
 export function inboxGroup(message: InboxMessage): string {
-  if (message.kind === "order_captured") return message.circleId;
+  if (message.kind !== "webhook") return message.circleId;
   try {
     return parseWebhookEnvelope(message.delivery.body).reference?.circleId ?? UNPLACED_GROUP;
   } catch {
@@ -36,6 +38,7 @@ export function inboxGroup(message: InboxMessage): string {
  */
 export function inboxDeduplicationId(message: InboxMessage): string {
   if (message.kind === "order_captured") return `order-${message.orderId}`;
+  if (message.kind === "subscription_checked") return `subscription-${message.requestId}`;
   return `webhook-${createHash("sha256").update(message.delivery.body).digest("hex")}`;
 }
 
@@ -59,6 +62,11 @@ export function parseInboxMessage(text: string): InboxMessage | null {
     const { circleId, orderId } = record;
     if (typeof circleId !== "string" || !UUID.test(circleId) || typeof orderId !== "string" || !isPayPalId(orderId)) return null;
     return { kind: "order_captured", circleId, orderId };
+  }
+  if (record["kind"] === "subscription_checked") {
+    const { circleId, subscriptionId, requestId } = record;
+    if (typeof circleId !== "string" || !UUID.test(circleId) || typeof subscriptionId !== "string" || !UUID.test(subscriptionId) || typeof requestId !== "string" || !UUID.test(requestId)) return null;
+    return { kind: "subscription_checked", circleId, subscriptionId, requestId };
   }
   if (record["kind"] === "webhook") {
     const delivery = record["delivery"];

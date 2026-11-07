@@ -121,6 +121,8 @@ export {
 export { CIRCLE_ROLES, MEMBER_STATUSES, PARENT_LEVELS } from "./roles.ts";
 export type { CircleRole, MemberStatus, ParentLevel } from "./roles.ts";
 export { settlePeriod } from "./settle-period.ts";
+export { MONTHLY_SHARE_STATES, MONTHLY_SHARE_TRANSITIONS, checkMonthlyShare, monthlyShareIsLive, monthlyShareMayMove } from "./monthly-share.ts";
+export type { MonthlyShareState } from "./monthly-share.ts";
 export { TOP_UP_LIMITS, checkTopUp } from "./top-up.ts";
 export type { TopUpCheck } from "./top-up.ts";
 export type { Settlement, SettlementQuery } from "./settle-period.ts";

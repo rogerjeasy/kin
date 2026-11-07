@@ -1,4 +1,5 @@
 import { parseContributionReference, type ContributionReference } from "./contribution-reference.ts";
+import { isSubscriptionId } from "./subscription.ts";
 import { asRecord, optionalRecord, optionalText, parseJson, requiredText } from "./json.ts";
 
 /** The transmission headers PayPal signs a webhook delivery with. */
@@ -12,8 +13,17 @@ export type WebhookDelivery = { readonly body: string; readonly headers: Webhook
 /** PayPal's event for money that has arrived: the one Kin records. */
 export const CAPTURE_COMPLETED = "PAYMENT.CAPTURE.COMPLETED";
 
+/** PayPal's events about a monthly subscription: its state changes and its charges. */
+export const SUBSCRIPTION_EVENTS = [
+  "BILLING.SUBSCRIPTION.ACTIVATED",
+  "BILLING.SUBSCRIPTION.SUSPENDED",
+  "BILLING.SUBSCRIPTION.CANCELLED",
+  "BILLING.SUBSCRIPTION.PAYMENT.FAILED",
+  "PAYMENT.SALE.COMPLETED",
+] as const;
+
 /** The event types Kin subscribes the pool's webhook to. */
-export const WEBHOOK_EVENT_TYPES = [CAPTURE_COMPLETED] as const;
+export const WEBHOOK_EVENT_TYPES = [CAPTURE_COMPLETED, ...SUBSCRIPTION_EVENTS] as const;
 
 /**
  * What Kin reads from an event's envelope before it is verified: enough to
@@ -25,6 +35,8 @@ export type WebhookEnvelope = {
   readonly eventType: string;
   /** The capture the event is about, for capture events. */
   readonly captureId: string | null;
+  /** The subscription a subscription event is about, or whose charge a sale event reports. */
+  readonly subscriptionId: string | null;
   readonly reference: ContributionReference | null;
 };
 
@@ -33,10 +45,13 @@ export function parseWebhookEnvelope(body: string): WebhookEnvelope {
   const eventType = requiredText(record, "event_type");
   const resource = optionalRecord(record["resource"]);
   const isCapture = optionalText(record, "resource_type") === "capture";
+  const subscriptionId =
+    eventType === "PAYMENT.SALE.COMPLETED" ? optionalText(resource, "billing_agreement_id") : eventType.startsWith("BILLING.SUBSCRIPTION.") ? optionalText(resource, "id") : null;
   return {
     eventId: requiredText(record, "id"),
     eventType,
     captureId: isCapture ? optionalText(resource, "id") : null,
+    subscriptionId: subscriptionId !== null && isSubscriptionId(subscriptionId) ? subscriptionId : null,
     reference: parseContributionReference(optionalText(resource, "custom_id")),
   };
 }
