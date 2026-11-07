@@ -82,7 +82,7 @@ export function DemandCheck({ locale, copy, speech }: Props) {
         {error ? <p role="alert" className="text-sm text-danger">{copy.errors[error as keyof typeof copy.errors] ?? copy.errors.unavailable}</p> : null}
         {result ? (
           <div role="status" className="min-w-0 space-y-3 rounded-xl border bg-secondary/40 p-4">
-            <VerdictPill verdict={result.verdict} labels={words.verdicts} />
+            <VerdictPill verdict={result.verdict} payeeId={result.payeeId} labels={words.verdicts} />
             <p className="wrap-anywhere text-sm">{result.words}</p>
             <p className="text-sm text-muted-foreground">{fill(words.told, { count: String(result.told) })}</p>
             {speech ? <HearButton label={words.hear} speaking={copy.read.hearing} request={{ kind: "claim", claimCheckId: result.claimCheckId }} locale={locale} speech={speech} /> : null}

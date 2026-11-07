@@ -24,6 +24,7 @@ export type OfficeCallResult =
       readonly callId: string;
       readonly claimCheckId: string;
       readonly verdict: ClaimVerdict;
+      readonly payeeId: string | null;
       readonly pressure: readonly PressureSignal[];
       readonly transcript: readonly TranscriptTurn[];
       /** What the family is told, filled from the record. */
@@ -93,7 +94,7 @@ export async function placeOfficeCall(context: OfficeLineContext, input: unknown
       }),
     );
     const told = circle.members.filter((member) => member.status === "active" && member.role !== "caregiver").length;
-    return { ok: true, ...recorded, verdict: verdict.result.verdict, pressure: verdict.pressure, transcript: outcome.transcript, alert, told };
+    return { ok: true, ...recorded, verdict: verdict.result.verdict, payeeId: verdict.result.payeeId, pressure: verdict.pressure, transcript: outcome.transcript, alert, told };
   } catch (error) {
     if (error instanceof LetterError) return fail(error.reason);
     throw error;

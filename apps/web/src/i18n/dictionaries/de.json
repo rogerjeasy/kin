@@ -1235,7 +1235,7 @@
           "title": "Ein Anrufer forderte {claimed} für {payee}",
           "text": "Am {day} sagte ein Anrufer {parent}, das Konto bei {payee} sei im Rückstand. Kin fand keine offene Rechnung. Die letzte, {paid}, wurde am {paidDay} bezahlt. {alerted} wurden innerhalb von Sekunden gewarnt."
         },
-        "verdict": "Passt zu nichts in den Aufzeichnungen",
+        "verdict": "Bereits bezahlt",
         "noDuplicates": "Diesen Monat keine doppelten Rechnungen.",
         "noJumps": "Kein Betrag ist ohne Grund gestiegen."
       }
@@ -2076,6 +2076,7 @@
         "verdicts": {
           "match": "Entspricht einer echten Rechnung",
           "no_match": "Entspricht nichts in den Unterlagen",
+          "already_paid": "Bereits bezahlt",
           "unclear": "Kann nicht bestätigt werden"
         }
       },
@@ -2121,7 +2122,7 @@
       "back": "Zurück zu den Freigaben",
       "simulated": "Simuliert: Das ist die Demo, die Erlaubnis ersetzt eine gesprochene, und es bewegt sich kein echtes Geld.",
       "empty": "Noch keine dauerhafte Erlaubnis. Jeder Nachkauf wartet auf ein Ja.",
-      "readBack": "Sie dürfen {item} bei {seller} bestellen, {cadence}, bis zu {perPurchase} pro Bestellung und {perPeriod} im Monat, von {from} bis {until}.",
+      "readBack": "Sie dürfen „{item}“ bei {seller} bestellen, {cadence}, bis zu {perPurchase} pro Bestellung und {perPeriod} im Monat, von {from} bis {until}.",
       "cadences": {
         "monthly": "einmal im Monat",
         "as_needed": "wann immer es nötig ist"
@@ -2251,6 +2252,7 @@
       "verdicts": {
         "match": "Passt zu einer echten Rechnung",
         "no_match": "Passt zu nichts in den Unterlagen",
+        "already_paid": "Bereits bezahlt",
         "unclear": "Nicht zu bestätigen"
       },
       "pressureTitle": "Druck bemerkt",
@@ -2329,7 +2331,7 @@
         },
         "settlement": {
           "label": "Abrechnungen",
-          "ok": "{count} Abrechnungen wurden aus den Einträgen neu berechnet und stimmen genau überein.",
+          "ok": "Die aus den Einträgen neu berechneten Abrechnungen stimmen genau überein ({count}).",
           "bad": "Eine neu berechnete Abrechnung stimmt nicht mit der im Export überein."
         },
         "wording": {

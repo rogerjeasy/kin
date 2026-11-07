@@ -1235,7 +1235,7 @@
           "title": "Un appel réclamait {claimed} pour {payee}",
           "text": "Le {day}, une personne a dit à {parent} au téléphone que le compte {payee} était en retard de paiement. Kin n’a trouvé aucune facture impayée. La dernière, de {paid}, a été réglée le {paidDay}. Kin a prévenu {alerted} en quelques secondes."
         },
-        "verdict": "Ne correspond à rien dans le registre",
+        "verdict": "Déjà payé",
         "noDuplicates": "Aucune facture en double ce mois-ci.",
         "noJumps": "Aucun montant n’a augmenté sans raison."
       }
@@ -2076,6 +2076,7 @@
         "verdicts": {
           "match": "Correspond à une vraie facture",
           "no_match": "Ne correspond à rien dans le dossier",
+          "already_paid": "Déjà payé",
           "unclear": "Ne peut pas être confirmée"
         }
       },
@@ -2121,7 +2122,7 @@
       "back": "Retour aux approbations",
       "simulated": "Simulé : c'est la démo, l'autorisation remplace une autorisation parlée et aucun argent réel ne circule.",
       "empty": "Aucune autorisation permanente pour l'instant. Chaque réapprovisionnement attend un oui.",
-      "readBack": "Vous pouvez commander {item} chez {seller}, {cadence}, jusqu'à {perPurchase} à chaque fois et {perPeriod} par mois, du {from} au {until}.",
+      "readBack": "Vous pouvez commander « {item} » chez {seller}, {cadence}, jusqu'à {perPurchase} à chaque fois et {perPeriod} par mois, du {from} au {until}.",
       "cadences": {
         "monthly": "une fois par mois",
         "as_needed": "dès que c'est nécessaire"
@@ -2251,6 +2252,7 @@
       "verdicts": {
         "match": "Correspond à une vraie facture",
         "no_match": "Ne correspond à rien au dossier",
+        "already_paid": "Déjà payé",
         "unclear": "Impossible à confirmer"
       },
       "pressureTitle": "Pression constatée",
@@ -2329,7 +2331,7 @@
         },
         "settlement": {
           "label": "Règlements",
-          "ok": "{count} règlements ont été recalculés à partir des écritures et correspondent exactement.",
+          "ok": "Les règlements recalculés à partir des écritures correspondent exactement ({count}).",
           "bad": "Un règlement recalculé à partir des écritures ne correspond pas à celui de l'export."
         },
         "wording": {

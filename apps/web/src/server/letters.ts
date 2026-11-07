@@ -34,7 +34,7 @@ export type LetterResult =
   | { readonly ok: false; readonly reason: LetterFailure };
 
 export type DemandResult =
-  | { readonly ok: true; readonly claimCheckId: string; readonly verdict: ClaimVerdict; readonly words: string; readonly told: number }
+  | { readonly ok: true; readonly claimCheckId: string; readonly verdict: ClaimVerdict; readonly payeeId: string | null; readonly words: string; readonly told: number }
   | { readonly ok: false; readonly reason: LetterFailure };
 
 /** Stands for the payee's name while a model words a verdict, so the name is never part of its instructions. */
@@ -193,7 +193,7 @@ export async function checkDemand(context: LettersContext, input: unknown): Prom
       }),
     );
     const told = circle.members.filter((member) => member.status === "active" && member.role !== "caregiver").length;
-    return { ok: true, claimCheckId, verdict: result.verdict, words: wording.text, told };
+    return { ok: true, claimCheckId, verdict: result.verdict, payeeId: result.payeeId, words: wording.text, told };
   } catch (error) {
     if (error instanceof LetterError) return fail(error.reason);
     throw error;

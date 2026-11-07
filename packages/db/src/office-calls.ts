@@ -1,8 +1,8 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 import type { Transaction } from "./connection.ts";
 import { LetterError } from "./letters.ts";
-import { officeCalls } from "./schema/index.ts";
+import { claimChecks, officeCalls } from "./schema/index.ts";
 import type { ClaimVerdict } from "./values.ts";
 
 const REASONS: Readonly<Record<string, "refused" | "invalid">> = { "42501": "refused", "23514": "invalid", "22P02": "invalid" };
@@ -64,6 +64,8 @@ export type OfficeCallRecord = {
   readonly organization: string | null;
   readonly claimedCents: number | null;
   readonly verdict: ClaimVerdict;
+  /** The payee the caller named, when the circle knows them: with a `no_match` verdict it means the account was already paid. */
+  readonly payeeId: string | null;
   readonly pressureSignals: readonly string[];
   readonly simulated: boolean;
   readonly transcript: readonly TranscriptTurn[];
@@ -80,9 +82,16 @@ function turns(value: unknown): TranscriptTurn[] {
 
 /** The circle's most recent calls to the office line, newest first. Row-level security limits who sees any. */
 export async function readOfficeCalls(tx: Transaction, circleId: string, limit = 20): Promise<OfficeCallRecord[]> {
-  const rows = await tx.select().from(officeCalls).where(eq(officeCalls.circleId, circleId)).orderBy(desc(officeCalls.createdAt)).limit(limit);
-  return rows.map((row) => ({
+  const rows = await tx
+    .select({ call: officeCalls, payeeId: claimChecks.payeeId })
+    .from(officeCalls)
+    .innerJoin(claimChecks, and(eq(claimChecks.circleId, officeCalls.circleId), eq(claimChecks.id, officeCalls.claimCheckId)))
+    .where(eq(officeCalls.circleId, circleId))
+    .orderBy(desc(officeCalls.createdAt))
+    .limit(limit);
+  return rows.map(({ call: row, payeeId }) => ({
     id: row.id,
+    payeeId,
     calledOn: row.calledOn,
     organization: row.organization,
     claimedCents: row.claimedCents,

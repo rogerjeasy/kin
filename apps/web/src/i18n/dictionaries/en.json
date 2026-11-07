@@ -1235,7 +1235,7 @@
           "title": "A caller demanded {claimed} for {payee}",
           "text": "On {day} a caller told {parent} the {payee} account was overdue. Kin found no bill outstanding. The last one, {paid}, was paid on {paidDay}. {alerted} were alerted within seconds."
         },
-        "verdict": "Matches nothing on record",
+        "verdict": "Already paid",
         "noDuplicates": "No duplicate bills this month.",
         "noJumps": "No amount rose without a reason."
       }
@@ -2076,6 +2076,7 @@
         "verdicts": {
           "match": "Matches a real bill",
           "no_match": "Matches nothing on record",
+          "already_paid": "Already paid",
           "unclear": "Cannot be confirmed"
         }
       },
@@ -2121,7 +2122,7 @@
       "back": "Back to the approvals",
       "simulated": "Simulated: this is the demo, so the permission is a stand-in for a spoken one and no real money moves.",
       "empty": "No standing permission yet. Every refill waits for a yes.",
-      "readBack": "You may order {item} from {seller}, {cadence}, up to {perPurchase} each time and {perPeriod} in a month, from {from} until {until}.",
+      "readBack": "You may order “{item}” from {seller}, {cadence}, up to {perPurchase} each time and {perPeriod} in a month, from {from} until {until}.",
       "cadences": {
         "monthly": "once a month",
         "as_needed": "whenever it is needed"
@@ -2251,6 +2252,7 @@
       "verdicts": {
         "match": "Matches a real bill",
         "no_match": "Matches nothing on record",
+        "already_paid": "Already paid",
         "unclear": "Cannot be confirmed"
       },
       "pressureTitle": "Pressure heard",
