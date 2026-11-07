@@ -89,7 +89,7 @@ export function CallSimulator({ locale, copy }: Props) {
             <CallTranscript turns={result.transcript} labels={{ kin: copy.kin, caller: copy.caller, title: copy.transcriptTitle }} />
             <div className="min-w-0 space-y-2">
               <h3 className="text-sm font-semibold">{copy.verdictTitle}</h3>
-              <VerdictPill verdict={result.verdict} labels={copy.verdicts} />
+              <VerdictPill verdict={result.verdict} payeeId={result.payeeId} labels={copy.verdicts} />
             </div>
             {result.pressure.length > 0 ? (
               <div className="min-w-0 space-y-1">

@@ -1235,7 +1235,7 @@
           "title": "Una chiamata chiedeva {claimed} per {payee}",
           "text": "Il {day} una persona ha detto a {parent} al telefono che il conto di {payee} era in ritardo. Kin non ha trovato nessuna bolletta in sospeso. L’ultima, di {paid}, è stata pagata il {paidDay}. Kin ha avvisato {alerted} in pochi secondi."
         },
-        "verdict": "Non corrisponde a nulla nel registro",
+        "verdict": "Già pagato",
         "noDuplicates": "Nessuna bolletta doppia questo mese.",
         "noJumps": "Nessun importo è aumentato senza motivo."
       }
@@ -2076,6 +2076,7 @@
         "verdicts": {
           "match": "Corrisponde a una fattura vera",
           "no_match": "Non corrisponde a nulla nei registri",
+          "already_paid": "Già pagato",
           "unclear": "Non si può confermare"
         }
       },
@@ -2121,7 +2122,7 @@
       "back": "Torna alle approvazioni",
       "simulated": "Simulato: questa è la demo, il permesso sostituisce uno parlato e non si muove denaro reale.",
       "empty": "Nessun permesso permanente per ora. Ogni riordino attende un sì.",
-      "readBack": "Puoi ordinare {item} da {seller}, {cadence}, fino a {perPurchase} ogni volta e {perPeriod} al mese, dal {from} al {until}.",
+      "readBack": "Puoi ordinare «{item}» da {seller}, {cadence}, fino a {perPurchase} ogni volta e {perPeriod} al mese, dal {from} al {until}.",
       "cadences": {
         "monthly": "una volta al mese",
         "as_needed": "ogni volta che serve"
@@ -2251,6 +2252,7 @@
       "verdicts": {
         "match": "Corrisponde a una fattura vera",
         "no_match": "Non corrisponde a nulla nei documenti",
+        "already_paid": "Già pagato",
         "unclear": "Non si può confermare"
       },
       "pressureTitle": "Pressione rilevata",
@@ -2329,7 +2331,7 @@
         },
         "settlement": {
           "label": "Conguagli",
-          "ok": "{count} conguagli sono stati ricalcolati dalle registrazioni e coincidono esattamente.",
+          "ok": "I conguagli ricalcolati dalle registrazioni coincidono esattamente ({count}).",
           "bad": "Un conguaglio ricalcolato dalle registrazioni non coincide con quello dell'esportazione."
         },
         "wording": {

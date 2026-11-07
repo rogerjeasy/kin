@@ -1,5 +1,6 @@
 import type { OfficeCallRecord } from "@kin/db";
 
+import { shownVerdict } from "@/components/dashboard/letters/verdict-pill";
 import { EmptyState } from "@/components/dashboard/ui/empty-state";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";
@@ -28,7 +29,7 @@ export function RecentCalls({ calls, copy, format }: Props) {
               <details className="min-w-0">
                 <summary className="flex min-h-11 min-w-0 cursor-pointer flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="min-w-0 flex-1 font-medium wrap-anywhere">
-                    {fill(copy.recentRow, { organization: call.organization ?? copy.noOrganization, verdict: copy.verdicts[call.verdict] })}
+                    {fill(copy.recentRow, { organization: call.organization ?? copy.noOrganization, verdict: copy.verdicts[shownVerdict(call.verdict, call.payeeId)] })}
                   </span>
                   <span className="text-sm text-muted-foreground">{format.day(call.calledOn)}</span>
                   {call.simulated ? <StatusPill tone="neutral">{copy.simulated}</StatusPill> : null}

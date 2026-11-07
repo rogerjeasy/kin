@@ -1235,7 +1235,7 @@
           "title": "Una llamada exigía {claimed} para {payee}",
           "text": "El {day} alguien le dijo a {parent} por teléfono que la cuenta de {payee} estaba atrasada. Kin no encontró ninguna factura pendiente. La última, de {paid}, se pagó el {paidDay}. Kin avisó a {alerted} en segundos."
         },
-        "verdict": "No coincide con nada del registro",
+        "verdict": "Ya pagado",
         "noDuplicates": "No hay facturas duplicadas este mes.",
         "noJumps": "Ningún monto subió sin motivo."
       }
@@ -2076,6 +2076,7 @@
         "verdicts": {
           "match": "Coincide con una factura real",
           "no_match": "No coincide con nada del registro",
+          "already_paid": "Ya pagado",
           "unclear": "No se puede confirmar"
         }
       },
@@ -2121,7 +2122,7 @@
       "back": "Volver a las aprobaciones",
       "simulated": "Simulado: esto es la demostración, el permiso sustituye a uno hablado y no se mueve dinero real.",
       "empty": "Aún no hay un permiso permanente. Cada reabastecimiento espera un sí.",
-      "readBack": "Puede pedir {item} a {seller}, {cadence}, hasta {perPurchase} cada vez y {perPeriod} al mes, desde el {from} hasta el {until}.",
+      "readBack": "Puede pedir «{item}» a {seller}, {cadence}, hasta {perPurchase} cada vez y {perPeriod} al mes, desde el {from} hasta el {until}.",
       "cadences": {
         "monthly": "una vez al mes",
         "as_needed": "cuando haga falta"
@@ -2251,6 +2252,7 @@
       "verdicts": {
         "match": "Coincide con una factura real",
         "no_match": "No coincide con nada del registro",
+        "already_paid": "Ya pagado",
         "unclear": "No se puede confirmar"
       },
       "pressureTitle": "Presión detectada",
@@ -2329,7 +2331,7 @@
         },
         "settlement": {
           "label": "Liquidaciones",
-          "ok": "{count} liquidaciones se recalcularon a partir de los asientos y coinciden exactamente.",
+          "ok": "Las liquidaciones recalculadas a partir de los asientos coinciden exactamente ({count}).",
           "bad": "Una liquidación recalculada a partir de los asientos no coincide con la de la exportación."
         },
         "wording": {

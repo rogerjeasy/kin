@@ -17,6 +17,14 @@ describe("the dashboard's formatters", () => {
     }
   });
 
+  it("isolate an amount in right-to-left languages only, so its marks stay beside its digits", () => {
+    for (const locale of ["ar", "he"] as const) {
+      expect(formatters(locale, "USD").money(30000)).toMatch(/^\u2068.*300[.,]00.*\u2069$/u);
+      expect(formatters(locale, "USD").share(5000)).toMatch(/^\u2068.*\u2069$/u);
+    }
+    expect(formatters("fr", "USD").money(30000)).not.toMatch(/[\u2068\u2069]/u);
+  });
+
   it("show a calendar day without shifting it into the reader's timezone", () => {
     expect(english.day("2026-10-02")).toBe("Oct 2");
     expect(english.day("2026-10-31")).toBe("Oct 31");

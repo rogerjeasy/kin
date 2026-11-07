@@ -4,7 +4,7 @@ import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
 import type { Formatters } from "@/lib/format";
 
-/** What Kin reads back to the parent: the terms in her own order, every figure from the record. */
+/** What Kin reads back to the parent: the terms in her own order, every figure from the record. The item is her own free text, so the sentence quotes it rather than guess its capitalisation. */
 export function readBack(
   copy: Dictionary["dashboard"]["mandates"],
   format: Formatters,

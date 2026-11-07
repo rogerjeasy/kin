@@ -30,7 +30,7 @@ for (const viewport of viewports) {
     await expect(page.getByRole("main")).toContainText("up to $70.00 each time and $70.00 in a month");
     await expect(page.getByRole("main")).toContainText("$64.00 of $70.00 used this month");
     await expect(page.getByRole("main")).toContainText("usual limit by up to $20.00");
-    await expect(page.getByRole("main")).toContainText("You may order Monthly prescription refill (30 days) from Elm Street Pharmacy");
+    await expect(page.getByRole("main")).toContainText("You may order “Monthly prescription refill (30 days)” from Elm Street Pharmacy");
     await expectNoHorizontalOverflow(page);
   });
 }
