@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { MemberCard } from "@/components/dashboard/fairness/member-card";
 import { SettlementPanel } from "@/components/dashboard/fairness/settlement-panel";
+import { SettlementSections } from "@/components/dashboard/settlement/settlement-sections";
 import { GivenBars } from "@/components/dashboard/ui/given-bars";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
@@ -134,6 +135,7 @@ export default async function FairnessPage({ params }: PageProps<"/[locale]/dash
           },
         ]}
       />
+      <SettlementSections circle={circle} dictionary={dictionary} names={names} format={format} settlement={settlement} period={period} />
     </>
   );
 }

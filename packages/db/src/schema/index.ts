@@ -5,5 +5,6 @@ export * from "./payees.ts";
 export * from "./ledger.ts";
 export * from "./care.ts";
 export * from "./records.ts";
+export * from "./receipts.ts";
 export * from "./approvals.ts";
 export * from "./system.ts";

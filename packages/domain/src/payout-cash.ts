@@ -24,8 +24,10 @@ export function cashAvailableForPayouts(ledger: Ledger): number {
  * from money that has arrived (AGENTS.md section 5, rule 8). The bill being
  * paid is counted among the unpaid bills, so it is added back once.
  */
-export function canPayOut(ledger: Ledger, payment: { readonly cents: number; readonly feeCents: number; readonly alreadyOwed: boolean }): boolean {
-  const available = cashAvailableForPayouts(ledger) + (payment.alreadyOwed ? payment.cents : 0);
+export function canPayOut(ledger: Ledger, payment: { readonly cents: number; readonly feeCents: number; readonly alreadyOwed: boolean; readonly reservedCents?: number }): boolean {
+  // Payouts already readied but not yet confirmed will take their cash from
+  // the pool too, though the ledger shows it only once PayPal says so.
+  const available = cashAvailableForPayouts(ledger) + (payment.alreadyOwed ? payment.cents : 0) - (payment.reservedCents ?? 0);
   return available >= sumCents([payment.cents, payment.feeCents]);
 }
 

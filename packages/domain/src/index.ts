@@ -120,6 +120,10 @@ export {
 } from "./postings.ts";
 export { CIRCLE_ROLES, MEMBER_STATUSES, PARENT_LEVELS } from "./roles.ts";
 export type { CircleRole, MemberStatus, ParentLevel } from "./roles.ts";
+export { MAX_RECEIPT_CENTS, MAX_RECEIPT_DESCRIPTION, RECEIPT_CATEGORIES, ReceiptError, checkReceipt } from "./receipt.ts";
+export type { Receipt, ReceiptCategory } from "./receipt.ts";
+export { SETTLEMENT_PURPOSE, SettlementProposalError, planSettlementPayouts } from "./settlement-proposals.ts";
+export type { SettlementPayout, SettlementPayoutRequest } from "./settlement-proposals.ts";
 export { settlePeriod } from "./settle-period.ts";
 export { TOP_UP_LIMITS, checkTopUp } from "./top-up.ts";
 export type { TopUpCheck } from "./top-up.ts";

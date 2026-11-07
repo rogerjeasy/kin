@@ -957,7 +957,12 @@
         "utilities": "Charges",
         "care": "Accompagnement",
         "pharmacy": "Pharmacie",
-        "repairs": "Réparations"
+        "repairs": "Réparations",
+        "groceries": "Courses",
+        "medical": "Soins médicaux",
+        "household": "Maison",
+        "transport": "Transport",
+        "other": "Autre"
       },
       "entryKinds": {
         "contribution": "Contribution",
@@ -1226,6 +1231,73 @@
         "status": "En attente d’approbation",
         "link": "Aller aux décisions",
         "core": "Calculé par le cœur financier de Kin, pas par l’IA. Le même registre donne toujours le même résultat."
+      },
+      "receipts": {
+        "title": "Reçus",
+        "text": "L’argent qu’un membre a dépensé de sa poche pour le parent. Un autre membre approuve chaque reçu, puis Kin le compte dans la part de ce membre.",
+        "empty": "Aucun reçu n’a encore été déposé.",
+        "fileTitle": "Déposer un reçu",
+        "amount": "Montant",
+        "amountHint": "Ce que vous avez payé, par exemple 42,00.",
+        "category": "Pour quoi",
+        "description": "Quoi et où",
+        "descriptionHint": "Par exemple : Pharmacie de la rue des Ormes, pansements.",
+        "date": "Jour du paiement",
+        "submit": "Déposer le reçu",
+        "submitting": "Dépôt…",
+        "filed": "Reçu déposé. Un autre membre doit l’approuver.",
+        "line": "{name} · {category} · {date}",
+        "states": {
+          "submitted": "En attente d’un autre membre",
+          "approved": "Approuvé · en cours de prise en compte",
+          "rejected": "Non approuvé",
+          "credited": "Compté dans la part de {name}"
+        },
+        "approve": "Approuver",
+        "decline": "Refuser",
+        "working": "En cours…",
+        "own": "Un autre membre décide pour le vôtre."
+      },
+      "settlementRun": {
+        "title": "Verser le règlement",
+        "text": "Kin a calculé ce que chaque membre doit recevoir. Envoyez-le à la famille pour approbation, et chaque paiement approuvé est versé par PayPal.",
+        "send": "Envoyer pour approbation",
+        "sending": "Envoi…",
+        "sent": "Envoyé. La famille peut maintenant approuver chaque paiement dans Approbations.",
+        "progressTitle": "Paiements de ce règlement",
+        "states": {
+          "proposed": "Proposé",
+          "pending_approval": "En attente d’approbation",
+          "approved": "Approuvé · le paiement suit",
+          "executing": "Paiement en cours par PayPal",
+          "settled": "Payé",
+          "failed": "Paiement échoué",
+          "rejected": "Refusé",
+          "expired": "Expiré sans approbation",
+          "cancelled": "Annulé"
+        },
+        "receiverTitle": "Où va votre règlement",
+        "receiverText": "Indiquez l’adresse PayPal où envoyer votre versement. Elle ne peut pas changer tant qu’un paiement vous concernant est en attente ou en cours. L’argent de la démo est simulé et n’en demande aucune.",
+        "receiver": "Votre adresse PayPal",
+        "receiverNone": "Aucune adresse enregistrée.",
+        "receiverRecorded": "Votre versement part vers {address}.",
+        "receiverPlaceholder": "name@example.com",
+        "receiverSave": "Enregistrer l’adresse",
+        "receiverSaving": "Enregistrement…",
+        "receiverSaved": "Enregistré."
+      },
+      "errors": {
+        "refused": "Votre rôle ne le permet pas, ou ce n’est pas disponible dans ce cercle.",
+        "invalid": "Vérifiez le montant, le jour et la description, puis réessayez.",
+        "not_waiting": "Ce reçu a déjà fait l’objet d’une décision.",
+        "paused": "Le cercle est en pause : rien ne peut être envoyé pour approbation.",
+        "above_ceiling": "Un versement dépasse la limite de l’accord familial.",
+        "no_agreement": "La famille n’a pas encore d’accord en vigueur.",
+        "receiver": "Ce n’est pas une adresse PayPal valide.",
+        "payment_in_progress": "Un paiement vous concernant est en attente ou en cours : l’adresse ne peut pas changer maintenant.",
+        "settlement_exists": "Le règlement de ce mois a déjà été envoyé.",
+        "nothing_to_settle": "Rien ne peut être versé pour l’instant : tout le monde est à l’équilibre, ou la cagnotte n’a rien à libérer.",
+        "unavailable": "Kin n’a pas pu le faire à l’instant. Réessayez dans un moment."
       }
     },
     "record": {

@@ -137,3 +137,23 @@ describe("canPayOut", () => {
   });
 });
 
+describe("canPayOut with payouts already under way", () => {
+  it("counts the cash promised to payouts readied but not yet confirmed, to the cent", () => {
+    expect(canPayOut(funded, { cents: 30_000, feeCents: 25, alreadyOwed: false, reservedCents: 19_975 })).toBe(true);
+    expect(canPayOut(funded, { cents: 30_000, feeCents: 25, alreadyOwed: false, reservedCents: 19_976 })).toBe(false);
+  });
+
+  it("never lets payouts together spend more than the pool's free cash, whatever they are", () => {
+    forAll(
+      (random) => ({ cents: [random.int(1, 30_000), random.int(1, 30_000), random.int(1, 30_000)] as const, feeCents: random.int(0, 500) }),
+      ({ cents, feeCents }) => {
+        let reservedCents = 0;
+        for (const each of cents) {
+          if (canPayOut(funded, { cents: each, feeCents, alreadyOwed: false, reservedCents })) reservedCents += each + feeCents;
+        }
+        expect(reservedCents).toBeLessThanOrEqual(cashAvailableForPayouts(funded));
+      },
+    );
+  });
+});
+

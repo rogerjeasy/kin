@@ -37,6 +37,14 @@ export const CIRCLE_ACTIONS = {
   "caregiver_receiver.set": ["caregiver"],
   /** Send a caregiver's bill for the family's approval, or decline it: the members who share the cost. */
   "caregiver_bill.review": ["organizer", "contributor"],
+  /** File a receipt for money spent from one's own pocket: the members who share the cost. */
+  "receipt.submit": ["organizer", "contributor"],
+  /** Approve or decline another member's receipt. The database refuses a member's decision on their own. */
+  "receipt.decide": ["organizer", "contributor"],
+  /** Put the month's settlement to the family for approval. */
+  "settlement.propose": ["organizer"],
+  /** Say where one's own settlement payout goes. Nobody else may, so nobody can redirect it. */
+  "settlement_receiver.set": ["organizer", "contributor", "parent"],
 } as const satisfies Record<string, readonly CircleRole[]>;
 
 export type CircleAction = keyof typeof CIRCLE_ACTIONS;

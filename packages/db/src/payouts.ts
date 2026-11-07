@@ -1,21 +1,30 @@
-import { billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, type ExecutionState } from "@kin/domain";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, settlementPaidOut, type ExecutionState } from "@kin/domain";
+import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
 import type { Database, Transaction } from "./connection.ts";
 import { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";
-import { auditLog, bills, circles, executions, ledgerEntries, outbox, payees, proposals } from "./schema/index.ts";
+import { auditLog, bills, circles, executions, ledgerEntries, outbox, payees, proposals, settlements } from "./schema/index.ts";
 
-/** The outbox topic that asks the worker to pay an approved caregiver payout. */
+/** The outbox topic that asks the worker to pay an approved caregiver or settlement payout. */
 export const PAYOUT_TOPIC = "payout.execute";
+
+/** The proposal kinds the worker pays out: a caregiver's bill, or a member's share of a settlement. */
+export type PayoutKind = "caregiver_payout" | "member_payout";
 
 /** One approved payout, as the worker needs it. Read inside the circle's service scope. */
 export type PayoutJob = {
   readonly executionId: string;
   readonly circleId: string;
   readonly proposalId: string;
+  readonly kind: PayoutKind;
   readonly billId: string | null;
-  readonly payeeId: string;
+  /** The settlement a member payout belongs to. */
+  readonly settlementId: string | null;
+  /** Who is paid, for a caregiver's bill. */
+  readonly payeeId: string | null;
+  /** Who is paid, for a settlement. */
+  readonly memberId: string | null;
   readonly category: string;
   /** The PayPal email the money goes to, fixed on the execution, or `null` while none is known. */
   readonly receiver: string | null;
@@ -68,7 +77,9 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
       batchId: executions.paypalBatchId,
       cents: proposals.cents,
       billId: proposals.billId,
+      settlementId: proposals.settlementId,
       payeeId: proposals.payeeId,
+      memberId: proposals.memberId,
       kind: proposals.kind,
       category: payees.category,
       receiver: executions.receiver,
@@ -81,20 +92,28 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
     })
     .from(executions)
     .innerJoin(proposals, and(eq(proposals.circleId, executions.circleId), eq(proposals.id, executions.proposalId)))
-    .innerJoin(payees, and(eq(payees.circleId, proposals.circleId), eq(payees.id, proposals.payeeId)))
+    .leftJoin(payees, and(eq(payees.circleId, proposals.circleId), eq(payees.id, proposals.payeeId)))
     .innerJoin(circles, eq(circles.id, executions.circleId))
     .where(eq(executions.id, executionId))
     .for("update", { of: executions });
-  if (!row || row.payeeId === null || row.kind !== "caregiver_payout") return null;
+  if (!row) return null;
+  const { kind } = row;
+  if (kind !== "caregiver_payout" && kind !== "member_payout") return null;
+  if (kind === "caregiver_payout" ? row.payeeId === null || row.category === null : row.memberId === null) return null;
+  // A member's address is the one they gave for settlements, a payee row of its own category.
+  const memberReceiver = kind === "member_payout" && row.memberId !== null ? await settlementReceiver(tx, row.circleId, row.memberId) : null;
   return {
     executionId: row.executionId,
     circleId: row.circleId,
     proposalId: row.proposalId,
+    kind,
     billId: row.billId,
+    settlementId: row.settlementId,
     payeeId: row.payeeId,
-    category: row.category,
+    memberId: row.memberId,
+    category: row.category ?? "settlement",
     receiver: row.receiver,
-    payeeReceiver: row.payeeReceiver,
+    payeeReceiver: kind === "member_payout" ? memberReceiver : row.payeeReceiver,
     cents: row.cents,
     currency: row.currency,
     idempotencyKey: row.idempotencyKey,
@@ -105,6 +124,11 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
     timezone: row.timezone,
     pausedUntil: row.pausedUntil,
   };
+}
+
+async function settlementReceiver(tx: Transaction, circleId: string, memberId: string): Promise<string | null> {
+  const [payee] = await tx.select({ receiver: payees.paypalReceiver }).from(payees).where(and(eq(payees.circleId, circleId), eq(payees.memberId, memberId), eq(payees.category, "settlement")));
+  return payee?.receiver ?? null;
 }
 
 export type BeginOutcome = "ready" | "paused" | "no_receiver" | "waiting_for_funds";
@@ -129,10 +153,13 @@ export async function beginPayout(tx: Transaction, job: PayoutJob, feeReserveCen
     if (job.payeeReceiver === null) return "no_receiver";
     await tx.update(executions).set({ receiver: job.payeeReceiver }).where(and(eq(executions.id, job.executionId), isNull(executions.receiver)));
   }
-  const owed = await entryExists(tx, job.circleId, "approval", job.proposalId);
+  // A settlement payout is owed from the member's own balance: there is no bill to approve into the ledger first.
+  const settlement = job.kind === "member_payout";
+  const owed = !settlement && (await entryExists(tx, job.circleId, "approval", job.proposalId));
   const ledger = await readLedger(tx, { id: job.circleId, currency: job.currency });
-  if (!canPayOut(ledger, { cents: job.cents, feeCents: feeReserveCents, alreadyOwed: owed })) return "waiting_for_funds";
-  if (!owed) {
+  const reservedCents = settlement ? await inFlightSettlementCents(tx, job) : 0;
+  if (!canPayOut(ledger, { cents: job.cents, feeCents: feeReserveCents, alreadyOwed: owed, reservedCents })) return "waiting_for_funds";
+  if (!settlement && job.payeeId !== null && !owed) {
     const entry = billApproved(
       { ...header(job, `approval`, job.proposalId), description: "Caregiver bill approved by the family" },
       { payeeId: job.payeeId, category: job.category, cents: job.cents },
@@ -141,6 +168,16 @@ export async function beginPayout(tx: Transaction, job: PayoutJob, feeReserveCen
   }
   await tx.update(proposals).set({ state: "executing" }).where(and(eq(proposals.id, job.proposalId), eq(proposals.state, "approved")));
   return "ready";
+}
+
+// Settlement payouts already readied but not yet confirmed draw on the same cash, and the ledger
+// shows nothing of them until PayPal says so. They are counted, so two cannot spend it twice.
+async function inFlightSettlementCents(tx: Transaction, job: PayoutJob): Promise<number> {
+  const [row] = await tx
+    .select({ cents: sql<string>`coalesce(sum(${proposals.cents}), 0)` })
+    .from(proposals)
+    .where(and(eq(proposals.circleId, job.circleId), eq(proposals.kind, "member_payout"), eq(proposals.state, "executing"), ne(proposals.id, job.proposalId)));
+  return Number(row?.cents ?? 0);
 }
 
 /** PayPal was asked to pay. The batch ID is `null` when its answer never came back. */
@@ -167,19 +204,41 @@ export async function recordPending(tx: Transaction, job: PayoutJob, batchId: st
  */
 export async function confirmPayout(tx: Transaction, job: PayoutJob, paid: { readonly itemId: string; readonly batchId: string | null; readonly feeCents: number; readonly at: Date }): Promise<void> {
   if (!(await entryExists(tx, job.circleId, "paypal_event", paid.itemId))) {
-    const entry = payoutConfirmed(
-      {
-        ...header(job, "paypal_event", paid.itemId, paid.at),
-        description: job.simulated ? "Caregiver paid (simulated)" : "Caregiver paid through PayPal",
-      },
-      { payeeId: job.payeeId, cents: job.cents, feeCents: paid.feeCents },
-    );
-    await writeEntries(tx, [entry], await readAccountIds(tx, job.circleId));
+    await writeEntries(tx, [paidEntry(job, paid)], await readAccountIds(tx, job.circleId));
   }
   await moveExecution(tx, job, job.state, "confirmed", { paypalBatchId: paid.batchId ?? job.batchId, paypalItemId: paid.itemId, confirmedAt: paid.at });
   await tx.update(proposals).set({ state: "settled" }).where(and(eq(proposals.id, job.proposalId), eq(proposals.state, "executing")));
   if (job.billId !== null) await tx.update(bills).set({ state: "paid" }).where(and(eq(bills.id, job.billId), eq(bills.state, "proposed")));
+  if (job.settlementId !== null) await closeSettlementIfDone(tx, job.circleId, job.settlementId);
   await audit(tx, job, "payout.confirmed", { itemId: paid.itemId, simulated: job.simulated });
+}
+
+// The money core words the entry: a caregiver's bill is paid from what the pool owes the payee, a
+// settlement from what the pool owes the member. Both say whether the money was real.
+function paidEntry(job: PayoutJob, paid: { readonly itemId: string; readonly feeCents: number; readonly at: Date }) {
+  const entryHeader = header(job, "paypal_event", paid.itemId, paid.at);
+  if (job.kind === "member_payout" && job.memberId !== null) {
+    return settlementPaidOut(
+      { ...entryHeader, description: job.simulated ? "Settlement paid (simulated)" : "Settlement paid through PayPal" },
+      { memberId: job.memberId, cents: job.cents, feeCents: paid.feeCents },
+    );
+  }
+  if (job.payeeId === null) throw new Error(`Payout ${job.executionId} has no one to pay`);
+  return payoutConfirmed(
+    { ...entryHeader, description: job.simulated ? "Caregiver paid (simulated)" : "Caregiver paid through PayPal" },
+    { payeeId: job.payeeId, cents: job.cents, feeCents: paid.feeCents },
+  );
+}
+
+// A settlement is done once none of its payouts is still waiting or under way.
+async function closeSettlementIfDone(tx: Transaction, circleId: string, settlementId: string): Promise<void> {
+  const [open] = await tx
+    .select({ count: sql<string>`count(*)` })
+    .from(proposals)
+    .where(and(eq(proposals.circleId, circleId), eq(proposals.settlementId, settlementId), inArray(proposals.state, ["proposed", "pending_approval", "approved", "executing", "failed"])));
+  if (Number(open?.count ?? 0) === 0) {
+    await tx.update(settlements).set({ state: "settled" }).where(and(eq(settlements.circleId, circleId), eq(settlements.id, settlementId), eq(settlements.state, "approved")));
+  }
 }
 
 /**

@@ -1,5 +1,5 @@
-import { calculateCaregiverBill, calendarDay, type CircleRole, type Payee } from "@kin/domain";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { calculateCaregiverBill, calendarDay, type CircleRole, type Payee, type ReceiptCategory } from "@kin/domain";
+import { and, asc, desc, eq, ne } from "drizzle-orm";
 
 import type {
   CircleRecord,
@@ -7,6 +7,7 @@ import type {
   MemberRecord,
   PayeeRecord,
   ProposalRecord,
+  ReceiptRecord,
 } from "./circle-snapshot.ts";
 import type { Transaction } from "./connection.ts";
 import { readAgreementVersions } from "./agreements.ts";
@@ -25,6 +26,7 @@ import {
   narrations,
   payees,
   proposals,
+  receipts,
   settlements,
 } from "./schema/index.ts";
 
@@ -71,7 +73,11 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     members: roster,
     ...(await readAgreements(tx, circle)),
     payees: await readPayees(tx, circle.id, roleOf),
+    settlementReceivers: await readSettlementReceivers(tx, circle.id),
     ledger: await readLedger(tx, circle),
+    // After the ledger, whose entries it references: tables are locked in one order, so a
+    // truncate that cascades from the ledger cannot deadlock with a read of the circle.
+    receipts: await readReceipts(tx, circle.id),
     proposals: await readProposals(tx, circle.id),
     bills: await readBills(tx, circle.id),
     expectedBills: await readExpectedBills(tx, circle.id),
@@ -110,7 +116,8 @@ async function readAgreements(tx: Transaction, circle: CircleRecord): Promise<Pi
 }
 
 async function readPayees(tx: Transaction, circleId: string, roleOf: (memberId: string) => CircleRole): Promise<PayeeRecord[]> {
-  const rows = await tx.select().from(payees).where(eq(payees.circleId, circleId)).orderBy(asc(payees.createdAt), asc(payees.name));
+  // A member's settlement address is a payee row of its own category, shown on its own (see readSettlementReceivers).
+  const rows = await tx.select().from(payees).where(and(eq(payees.circleId, circleId), ne(payees.category, "settlement"))).orderBy(asc(payees.createdAt), asc(payees.name));
   return rows.map((row) => {
     const autoPay: Payee["autoPay"] =
       row.autoPayRuleId !== null && row.autoPayMinCents !== null && row.autoPayMaxCents !== null
@@ -129,6 +136,27 @@ async function readPayees(tx: Transaction, circleId: string, roleOf: (memberId: 
       },
     };
   });
+}
+
+async function readReceipts(tx: Transaction, circleId: string): Promise<ReceiptRecord[]> {
+  const rows = await tx.select().from(receipts).where(eq(receipts.circleId, circleId)).orderBy(asc(receipts.createdAt), asc(receipts.id));
+  return rows.map((row) => ({
+    id: row.id,
+    memberId: row.memberId,
+    // Safe: a check constraint holds the category to the domain's own list.
+    category: row.category as ReceiptCategory,
+    cents: row.cents,
+    description: row.description,
+    spentOn: row.spentOn,
+    state: row.state,
+    decidedBy: row.decidedBy,
+    entryId: row.entryId,
+  }));
+}
+
+async function readSettlementReceivers(tx: Transaction, circleId: string): Promise<{ memberId: string; receiver: string }[]> {
+  const rows = await tx.select({ memberId: payees.memberId, receiver: payees.paypalReceiver }).from(payees).where(and(eq(payees.circleId, circleId), eq(payees.category, "settlement")));
+  return rows.flatMap((row) => (row.memberId === null || row.receiver === null ? [] : [{ memberId: row.memberId, receiver: maskEmail(row.receiver) ?? "••••" }]));
 }
 
 /** `amara@example.com` reads as `a••••@example.com`. */

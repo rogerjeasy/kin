@@ -957,7 +957,12 @@
         "utilities": "Utenze",
         "care": "Assistenza",
         "pharmacy": "Farmacia",
-        "repairs": "Riparazioni"
+        "repairs": "Riparazioni",
+        "groceries": "Spesa",
+        "medical": "Cure mediche",
+        "household": "Casa",
+        "transport": "Trasporti",
+        "other": "Altro"
       },
       "entryKinds": {
         "contribution": "Versamento",
@@ -1226,6 +1231,73 @@
         "status": "In attesa di approvazione",
         "link": "Vai alle decisioni",
         "core": "Calcolato dal nucleo finanziario di Kin, non dall’IA. Lo stesso registro dà sempre lo stesso risultato."
+      },
+      "receipts": {
+        "title": "Ricevute",
+        "text": "Il denaro che un membro ha speso di tasca propria per il genitore. Un altro membro approva ogni ricevuta e Kin la conta poi nella quota di quel membro.",
+        "empty": "Non è stata ancora presentata nessuna ricevuta.",
+        "fileTitle": "Presenta una ricevuta",
+        "amount": "Importo",
+        "amountHint": "Quanto ha pagato, ad esempio 42,00.",
+        "category": "Per cosa",
+        "description": "Cosa e dove",
+        "descriptionHint": "Ad esempio: Farmacia di via degli Olmi, bende.",
+        "date": "Giorno del pagamento",
+        "submit": "Presenta ricevuta",
+        "submitting": "Invio…",
+        "filed": "Ricevuta presentata. Un altro membro deve approvarla.",
+        "line": "{name} · {category} · {date}",
+        "states": {
+          "submitted": "In attesa di un altro membro",
+          "approved": "Approvata · in fase di conteggio",
+          "rejected": "Non approvata",
+          "credited": "Contata nella quota di {name}"
+        },
+        "approve": "Approva",
+        "decline": "Rifiuta",
+        "working": "In corso…",
+        "own": "Su quella a suo nome decide un altro membro."
+      },
+      "settlementRun": {
+        "title": "Paga il conguaglio",
+        "text": "Kin ha calcolato quanto spetta a ogni membro. Lo invii alla famiglia per l’approvazione e ogni pagamento approvato viene pagato tramite PayPal.",
+        "send": "Invia per approvazione",
+        "sending": "Invio…",
+        "sent": "Inviato. La famiglia può ora approvare ogni pagamento in Approvazioni.",
+        "progressTitle": "Pagamenti di questo conguaglio",
+        "states": {
+          "proposed": "Proposto",
+          "pending_approval": "In attesa di approvazione",
+          "approved": "Approvato · il pagamento segue",
+          "executing": "Pagamento in corso tramite PayPal",
+          "settled": "Pagato",
+          "failed": "Pagamento non riuscito",
+          "rejected": "Rifiutato",
+          "expired": "Scaduto senza approvazione",
+          "cancelled": "Annullato"
+        },
+        "receiverTitle": "Dove va il suo conguaglio",
+        "receiverText": "Indichi a quale e-mail PayPal deve andare il suo pagamento. Non può cambiare finché un pagamento a lei è in attesa o in corso. Il denaro della demo è simulato e non ne richiede nessuna.",
+        "receiver": "La sua e-mail PayPal",
+        "receiverNone": "Nessuna registrata finora.",
+        "receiverRecorded": "Il suo pagamento va a {address}.",
+        "receiverPlaceholder": "name@example.com",
+        "receiverSave": "Salva indirizzo",
+        "receiverSaving": "Salvataggio…",
+        "receiverSaved": "Salvato."
+      },
+      "errors": {
+        "refused": "Il suo ruolo non lo consente, oppure non è disponibile in questo cerchio.",
+        "invalid": "Controlli importo, giorno e descrizione e riprovi.",
+        "not_waiting": "Su quella ricevuta è già stata presa una decisione.",
+        "paused": "Il cerchio è in pausa, quindi nulla può essere inviato per approvazione.",
+        "above_ceiling": "Un pagamento supera il limite dell’accordo di famiglia.",
+        "no_agreement": "La famiglia non ha ancora un accordo in vigore.",
+        "receiver": "Questa non è un’e-mail PayPal valida.",
+        "payment_in_progress": "Un pagamento a lei è in attesa o in corso, quindi l’indirizzo ora non può cambiare.",
+        "settlement_exists": "Il conguaglio di questo mese è già stato inviato.",
+        "nothing_to_settle": "Per ora non si può pagare nulla: tutti sono in pari, oppure il fondo non ha nulla da liberare.",
+        "unavailable": "Kin non è riuscito a farlo ora. Riprovi tra un momento."
       }
     },
     "record": {

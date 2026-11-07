@@ -957,7 +957,12 @@
         "utilities": "Servicios",
         "care": "Cuidados",
         "pharmacy": "Farmacia",
-        "repairs": "Reparaciones"
+        "repairs": "Reparaciones",
+        "groceries": "Compra",
+        "medical": "Atención médica",
+        "household": "Hogar",
+        "transport": "Transporte",
+        "other": "Otro"
       },
       "entryKinds": {
         "contribution": "Aporte",
@@ -1226,6 +1231,73 @@
         "status": "Esperando aprobación",
         "link": "Ver lo que hay por aprobar",
         "core": "Lo calcula el núcleo de dinero de Kin, no la IA. El mismo registro siempre da el mismo resultado."
+      },
+      "receipts": {
+        "title": "Recibos",
+        "text": "El dinero que un miembro gastó de su bolsillo por el padre o la madre. Otro miembro aprueba cada recibo y Kin lo cuenta entonces en la parte de ese miembro.",
+        "empty": "Todavía no se ha presentado ningún recibo.",
+        "fileTitle": "Presentar un recibo",
+        "amount": "Importe",
+        "amountHint": "Lo que pagó, por ejemplo 42,00.",
+        "category": "Para qué fue",
+        "description": "Qué y dónde",
+        "descriptionHint": "Por ejemplo: Farmacia de la calle Olmo, vendas.",
+        "date": "Día del pago",
+        "submit": "Presentar recibo",
+        "submitting": "Presentando…",
+        "filed": "Recibo presentado. Otro miembro debe aprobarlo.",
+        "line": "{name} · {category} · {date}",
+        "states": {
+          "submitted": "Esperando a otro miembro",
+          "approved": "Aprobado · se está contando",
+          "rejected": "No aprobado",
+          "credited": "Contado en la parte de {name}"
+        },
+        "approve": "Aprobar",
+        "decline": "Rechazar",
+        "working": "Trabajando…",
+        "own": "Otro miembro decide sobre el suyo."
+      },
+      "settlementRun": {
+        "title": "Pagar la liquidación",
+        "text": "Kin ha calculado lo que se debe a cada miembro. Envíela a la familia para su aprobación y cada pago aprobado se paga por PayPal.",
+        "send": "Enviar para aprobación",
+        "sending": "Enviando…",
+        "sent": "Enviado. La familia ya puede aprobar cada pago en Aprobaciones.",
+        "progressTitle": "Pagos de esta liquidación",
+        "states": {
+          "proposed": "Propuesto",
+          "pending_approval": "Esperando aprobación",
+          "approved": "Aprobado · el pago viene a continuación",
+          "executing": "Pagándose por PayPal",
+          "settled": "Pagado",
+          "failed": "Pago fallido",
+          "rejected": "Rechazado",
+          "expired": "Caducado sin aprobación",
+          "cancelled": "Cancelado"
+        },
+        "receiverTitle": "Adónde va su liquidación",
+        "receiverText": "Indique a qué correo de PayPal debe ir su pago. No puede cambiar mientras un pago a usted esté esperando o en curso. El dinero de la demostración es simulado y no necesita ninguno.",
+        "receiver": "Su correo de PayPal",
+        "receiverNone": "Todavía no hay ninguno registrado.",
+        "receiverRecorded": "Su pago va a {address}.",
+        "receiverPlaceholder": "name@example.com",
+        "receiverSave": "Guardar correo",
+        "receiverSaving": "Guardando…",
+        "receiverSaved": "Guardado."
+      },
+      "errors": {
+        "refused": "Su rol no lo permite, o no está disponible en este círculo.",
+        "invalid": "Revise el importe, el día y la descripción e inténtelo de nuevo.",
+        "not_waiting": "Ese recibo ya fue decidido.",
+        "paused": "El círculo está en pausa, así que no se puede enviar nada para aprobación.",
+        "above_ceiling": "Un pago supera el límite del acuerdo familiar.",
+        "no_agreement": "La familia todavía no tiene un acuerdo en vigor.",
+        "receiver": "Ese no es un correo de PayPal válido.",
+        "payment_in_progress": "Un pago a usted está esperando o en curso, así que el correo no puede cambiar ahora.",
+        "settlement_exists": "La liquidación de este mes ya fue enviada.",
+        "nothing_to_settle": "Todavía no se puede pagar nada: todos están a la par, o el fondo no tiene nada que liberar.",
+        "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
       }
     },
     "record": {

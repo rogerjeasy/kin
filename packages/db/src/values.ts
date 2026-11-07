@@ -32,7 +32,14 @@ export type ApprovalMethod = (typeof APPROVAL_METHODS)[number];
 export const DOCUMENT_KINDS = ["bill", "receipt", "quote", "letter", "other"] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 
-export const SETTLEMENT_STATES = ["proposed", "approved", "settled", "superseded"] as const;
+/**
+ * A member's receipt for money spent from their own pocket: filed, answered
+ * by another member, and once approved credited to the ledger by Kin's worker.
+ */
+export const RECEIPT_STATES = ["submitted", "approved", "rejected", "credited"] as const;
+export type ReceiptState = (typeof RECEIPT_STATES)[number];
+
+export const SETTLEMENT_STATES =["proposed", "approved", "settled", "superseded"] as const;
 export type SettlementState = (typeof SETTLEMENT_STATES)[number];
 
 /** Plain code's verdict on a demand for money, docs/architecture.md section 9.5. */

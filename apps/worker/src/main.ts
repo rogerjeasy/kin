@@ -4,6 +4,7 @@ import { payoutFeeReserve, poolFor, sqsInbox } from "@kin/paypal";
 
 import { runInboxBatch, type InboxLog } from "./paypal-inbox/run-inbox.ts";
 import { runPayoutBatch } from "./payouts/run-payouts.ts";
+import { runReceiptBatch } from "./receipts/run-receipts.ts";
 
 /**
  * Kin's worker: it applies PayPal's events to the ledger as Kin's service
@@ -16,6 +17,8 @@ const CONNECT_TIMEOUT_MS = 90_000;
 const PAUSE_AFTER_ERROR_MS = 5_000;
 /** How often the outbox is asked for approved payouts when it had none. */
 const PAYOUT_POLL_MS = 5_000;
+/** The same, for approved receipts. */
+const RECEIPT_POLL_MS = 5_000;
 
 const log: InboxLog = (line) => console.log(JSON.stringify({ at: new Date().toISOString(), ...line }));
 
@@ -66,7 +69,20 @@ async function payoutLoop(): Promise<void> {
   }
 }
 
+// Approved receipts, credited to the member who spent the money.
+async function receiptLoop(): Promise<void> {
+  const receipts = { db: deps.db, now: () => new Date() };
+  while (running) {
+    try {
+      if ((await runReceiptBatch(receipts, log)) === 0) await pause(RECEIPT_POLL_MS);
+    } catch (error) {
+      log({ level: "error", message: "receipt.claim_failed", error: error instanceof Error ? error.name : "unknown" });
+      await pause(PAUSE_AFTER_ERROR_MS);
+    }
+  }
+}
+
 log({ level: "info", message: "worker.started" });
-await Promise.all([inboxLoop(), payoutLoop()]);
+await Promise.all([inboxLoop(), payoutLoop(), receiptLoop()]);
 await deps.db.$client.end();
 log({ level: "info", message: "worker.stopped" });

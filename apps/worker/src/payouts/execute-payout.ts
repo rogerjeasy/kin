@@ -79,7 +79,7 @@ async function askPayPal(deps: PayoutDeps, job: PayoutJob): Promise<string | "fa
   if (receiver === null) throw new Error("A payout reached PayPal without a receiver");
   try {
     const { batchId } = await deps.pool.createPayout(
-      { senderBatchId: job.idempotencyKey, receiver, amount: { cents: job.cents, currency: job.currency }, note: "Payment for your care visits, approved by the family in Kin" },
+      { senderBatchId: job.idempotencyKey, receiver, amount: { cents: job.cents, currency: job.currency }, note: job.kind === "member_payout" ? "Your share of the family's care costs, settled and approved in Kin" : "Payment for your care visits, approved by the family in Kin" },
       job.idempotencyKey,
     );
     if (job.state === "created") await asService(deps.db, job.circleId, (tx) => recordSubmitted(tx, job, batchId, deps.now()));
