@@ -1,5 +1,6 @@
 import type {
   Agreement,
+  DeliveryState,
   ApprovalPlan,
   BillState,
   CircleRole,
@@ -38,6 +39,9 @@ export type CircleSnapshot = {
   readonly settlements: readonly SettlementRecord[];
   readonly claimChecks: readonly ClaimCheckRecord[];
   readonly narrations: readonly NarrationRecord[];
+  /** What the family allowed Kin to buy for the parent. Not shown to a caregiver. */
+  readonly purchaseRules: readonly PurchaseRuleRecord[];
+  readonly purchases: readonly PurchaseRecord[];
   readonly documents: readonly DocumentRecord[];
   /** Pending and answered invitations. Only an organizer reads them. */
   readonly invitations: readonly InvitationRecord[];
@@ -187,6 +191,30 @@ export type NarrationRecord = {
   readonly spokenText: string | null;
   readonly state: NarrationState;
   readonly saidOn: string;
+};
+
+export type PurchaseRuleRecord = {
+  readonly id: string;
+  readonly payeeId: string;
+  readonly item: string;
+  readonly category: string;
+  readonly priceCents: number;
+  readonly limitCents: number;
+  readonly monthlyBudgetCents: number;
+  /** What this rule's purchases already cost this month, counting those waiting for a yes. */
+  readonly committedCents: number;
+};
+
+export type PurchaseRecord = {
+  readonly id: string;
+  readonly ruleId: string;
+  readonly proposalId: string;
+  readonly item: string;
+  readonly cents: number;
+  readonly state: DeliveryState;
+  readonly merchantOrder: string | null;
+  readonly orderedAt: Date | null;
+  readonly deliveredAt: Date | null;
 };
 
 export type DocumentRecord = {

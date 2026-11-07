@@ -1,5 +1,6 @@
 import {
   CIRCLE_ROLES,
+  DELIVERY_TRANSITIONS,
   DIRECTIONS,
   ENTRY_KINDS,
   ENTRY_SOURCE_TYPES,
@@ -42,7 +43,8 @@ export const proposalKind = pgEnum("proposal_kind", PROPOSAL_KINDS);
 export const proposalState = pgEnum("proposal_state", statesOf(PROPOSAL_TRANSITIONS));
 export const billState = pgEnum("bill_state", statesOf(BILL_TRANSITIONS));
 export const executionState = pgEnum("execution_state", statesOf(EXECUTION_TRANSITIONS));
-export const entryKind = pgEnum("entry_kind", ENTRY_KINDS);
+export const deliveryState = pgEnum("delivery_state", statesOf(DELIVERY_TRANSITIONS));
+export const entryKind =pgEnum("entry_kind", ENTRY_KINDS);
 export const entrySourceType = pgEnum("entry_source_type", ENTRY_SOURCE_TYPES);
 export const direction = pgEnum("direction", DIRECTIONS);
 

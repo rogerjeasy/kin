@@ -452,6 +452,20 @@ stateDiagram-v2
 
 The `unknown` state matters. If a call to PayPal times out, Kin does not assume success or failure. It asks PayPal for the resource by its idempotency key and waits for the webhook.
 
+**Delivery** (the goods of a purchase, beside its execution; `packages/domain` `DELIVERY_TRANSITIONS`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> awaiting
+    awaiting --> ordered
+    ordered --> shipped
+    shipped --> out_for_delivery
+    out_for_delivery --> delivered
+    delivered --> [*]
+```
+
+A purchase is `awaiting` from the moment it is proposed until the seller has the order. Only Kin's worker moves it on, from the seller's own report, one step at a time.
+
 ### 7.5 The approval engine
 
 Before any proposal can execute, the approval engine decides who must say yes.
@@ -1529,6 +1543,7 @@ The hackathon needs a month of family life to be shown in minutes.
 | 58 | Claude is reached through Amazon Bedrock's Messages endpoint (`@anthropic-ai/bedrock-sdk`, `AnthropicBedrockMantle`, model `anthropic.claude-opus-5-5`), configured by `KIN_BEDROCK_REGION` and `KIN_BEDROCK_MODEL` | Anthropic's API directly (`docs/tech-stack.md` section 6 recommended it) | The project owner runs Anthropic's models on Bedrock (26 October 2026). Kin's AWS credentials and IAM reach the model, so no Anthropic key is stored. Refusal fallbacks would use the SDK's client-side middleware on Bedrock; none is configured yet, because the account's entitlements decide which model it could fall back to. |
 | 59 | In-app speech uses Amazon Transcribe streaming and Amazon Polly; the browser records a short clip, converts it to 16 kHz PCM and uploads it, and the server transcribes it | Deepgram and ElevenLabs (`tech-stack.md` section 7); the browser's own speech APIs; streaming the microphone over a WebSocket to `apps/voice` | The owner chose AWS (27 October 2026): one account and bill with Bedrock, no new vendor keys. A clip of at most a minute suits a bill and a yes, needs no long-lived connection (App Runner serves plain HTTP), and keeps every decision on the server. Live streaming belongs to the phone line, still to build. |
 | 60 | Claude in the hosted app is switched on by `kin:claude` and stays on Opus 5.5 through Bedrock's Messages endpoint; while the account is refused that model, the switch stays off | An older model through Bedrock's InvokeModel API; Anthropic's API directly | Bedrock refuses every model its Messages endpoint serves to this account; the older models answer only through InvokeModel, which refuses the SDK's current API version, so using them would pin an old SDK beside a second adapter. Anthropic's API would undo decision 58. Waiting on AWS keeps one adapter and makes switching on a one-line change. |
+| 61 | Refills are proposed from a family-set rule (`purchase_rules`: one approved seller, one item, a limit for each purchase, a budget for the month), checked by plain code (`checkPurchase`) and again by the database, and are bought in demo circles only, as simulated purchases through the outbox and worker | A model that composes carts; a real circle's purchase charged to a saved wallet before any screen can save one | Section 8.6's finding and cart are the design, but a real circle needs a saved PayPal wallet and a fresh multi-factor yes, and neither is built (decision 60). The rule bounds what Kin may propose, the approval engine still decides who says yes, and no model touches an amount. The demo shows the whole path; a real circle's refill is refused when proposed and, if one ever reached the worker, marked failed with nothing taken. |
 
 ---
 
@@ -1642,6 +1657,13 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - An organizer writes the first version or proposes a change, which governs once every organizer and contributor (and a deciding parent with an account) has accepted it: shares as percentages, care time, the three approval amounts and a start date. Kin checks every term (`checkAgreementTerms`) and shows exactly what changes, in words, before anything is proposed. The screen shows the version in force with its shares drawn and a month shared out to the cent, the approval rules worked out for bills of telling sizes by the approval engine itself, who accepted and how, any proposal waiting with its changes and its Accept button, and every version. The overview tells a member when a version waits for them.
 - Unit and property tests for the terms, the percentages (exact round trip) and which version governs; PostgreSQL tests for proposing, accepting, superseding, start dates, refusals by role and by rule, the SQL rule agreeing with the domain, caregiver payouts planned against the version in force, and a real circle's first agreement; the web boundary against forged input; and the browser: the screen at the four viewports and at 320 pixels, a change proposed, reviewed and accepted by each member until it governs, a refused total, the observer and the caregiver, and a real circle's first agreement. Not built: the parent hearing a change by voice, and drafting an agreement from a conversation with Kin.
 
+**Built and tested: refills the parent approves by voice (demo moment 4)**
+
+- A family's refill rule (`purchase_rules`) and the purchases raised from it (`purchases`, with the delivery state machine of section 7.4). An organizer, a contributor or the parent asks Kin to reorder on the Approvals screen; `planPurchase` (domain) checks the refill against the rule (approved seller, limit for each purchase, the month's budget counting refills still waiting) and plans who must say yes with the approval engine, and `kin_private.propose_refill` refuses a plan that does not match the agreement. Kin raises the proposal (`raised_by` null); the amount is the rule's price, never typed. Rose's refill is above what she decides alone, so it waits for her yes, which the existing spoken flow records (method `voice`, read-back, a clear yes).
+- Approving queues the purchase in the same transaction (`queue_purchase`), and the worker buys it: held while paused or while the pool lacks the money, otherwise placed with the seller by the execution's key and written to the ledger as one `purchase_captured` entry labelled simulated. The worker then follows the order to the door from the seller's own reports and the screen shows each step. The seller is `apps/demo-merchant` (catalog, order book keyed by the execution, delivery on a fixed schedule, and a charge of a saved PayPal wallet that creates and captures one order carrying only the vault ID and counts it made only if PayPal's record reads `COMPLETED` for exactly the amount), or, when `KIN_DEMO_MERCHANT_URL` is unset, the same behaviour in process.
+- Tests: `purchase.test.ts` (domain, with property tests of the rule check and the schedule); the worker's `execute-purchase.test.ts` against PostgreSQL (proposing, refusals by role, budget, limit, seller and a real circle, queueing in the approval's transaction, buying once and labelled simulated, held while paused and without funds, a refusing and an unreachable seller, delivery in recorded steps, the outbox runners, RLS for a caregiver and for writes); the web `refills.test.ts` (the request boundary, and Rose's spoken yes through the real speech actions with fakes); `merchant.test.ts`; and `e2e/refills.spec.ts` at the four viewports and 320 pixels.
+- Not verified: a real saved-wallet charge (the adapter is written against the 14 October sandbox finding and tested with recorded-shape replies only); the merchant service run beside the worker; a real microphone. A real circle cannot raise a refill (decision 61).
+
 **Not yet tested**
 
-- Everything else in this document. Executions other than caregiver payouts are not built. The latency figure is a target. The diagrams describe the intended design.
+- Everything else in this document. Executions other than caregiver payouts and the demo's simulated refills are not built. The latency figure is a target. The diagrams describe the intended design.

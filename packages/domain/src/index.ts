@@ -34,6 +34,17 @@ export { CaregiverBillError, calculateCaregiverBill, parseCaregiverBillDetails }
 export type { CaregiverBill, CaregiverBillDetails, CaregiverVisit } from "./caregiver-bill.ts";
 export { AgreementTermsError, agreementChanges, agreementStanding, bpsFromPercent, checkAgreementTerms, percentFromBps } from "./agreement-terms.ts";
 export type { AgreementChange, AgreementStanding, AgreementTerms, VersionFacts, VersionStatus } from "./agreement-terms.ts";
+export {
+  DELIVERY_SCHEDULE_SECONDS,
+  DELIVERY_TRANSITIONS,
+  PurchaseError,
+  REFILL_PURPOSE,
+  checkPurchase,
+  deliveryStateAfter,
+  nextDeliveryState,
+  planPurchase,
+} from "./purchase.ts";
+export type { DeliveryState, PurchasePlan, PurchaseRefusal, PurchaseRequest, PurchaseRule } from "./purchase.ts";
 export { spokenAnswer } from "./spoken-answer.ts";
 export type { SpokenAnswer } from "./spoken-answer.ts";
 export { CAREGIVER_BILL_PURPOSE, CaregiverPayoutError, planCaregiverPayout } from "./caregiver-payout.ts";

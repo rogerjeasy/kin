@@ -205,7 +205,10 @@ export async function recordHeld(tx: Transaction, job: PayoutJob, reason: Exclud
   await audit(tx, job, "payout.held", { reason });
 }
 
-function header(job: PayoutJob, type: "approval" | "paypal_event", id: string, at: Date = job.now) {
+/** What an entry's header needs of the job it is written for. */
+export type EntryContext = Pick<PayoutJob, "circleId" | "currency" | "timezone" | "simulated" | "now">;
+
+export function header(job: EntryContext, type: "approval" | "paypal_event", id: string, at: Date = job.now) {
   return {
     id: randomUUID(),
     circleId: job.circleId,
@@ -216,7 +219,7 @@ function header(job: PayoutJob, type: "approval" | "paypal_event", id: string, a
   };
 }
 
-async function entryExists(tx: Transaction, circleId: string, type: "approval" | "paypal_event", id: string): Promise<boolean> {
+export async function entryExists(tx: Transaction, circleId: string, type: "approval" | "paypal_event", id: string): Promise<boolean> {
   const [row] = await tx
     .select({ id: ledgerEntries.id })
     .from(ledgerEntries)
@@ -227,11 +230,11 @@ async function entryExists(tx: Transaction, circleId: string, type: "approval" |
 type ExecutionChanges = Partial<typeof executions.$inferInsert> | Record<string, unknown>;
 
 // The database's transition table refuses any move the diagram does not draw.
-async function moveExecution(tx: Transaction, job: PayoutJob, from: ExecutionState, to: ExecutionState, changes: ExecutionChanges): Promise<void> {
+export async function moveExecution(tx: Transaction, job: Pick<PayoutJob, "executionId">, from: ExecutionState, to: ExecutionState, changes: ExecutionChanges): Promise<void> {
   if (from === to) return;
   await tx.update(executions).set({ ...changes, state: to }).where(and(eq(executions.id, job.executionId), eq(executions.state, from)));
 }
 
-async function audit(tx: Transaction, job: PayoutJob, action: string, details: Record<string, unknown>): Promise<void> {
+export async function audit(tx: Transaction, job: Pick<PayoutJob, "circleId" | "executionId">, action: string, details: Record<string, unknown>): Promise<void> {
   await tx.insert(auditLog).values({ id: randomUUID(), circleId: job.circleId, actor: "service", action, subjectType: "execution", subjectId: job.executionId, details, origin: "worker" });
 }

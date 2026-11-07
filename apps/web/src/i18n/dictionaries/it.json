@@ -1095,6 +1095,10 @@
         "caregiver_bill": {
           "title": "Fattura di {name} per le visite svolte",
           "text": "I giorni di servizio e la tariffa concordata sono nella pagina Fatture. Il pagamento attende ogni sì richiesto dall’accordo."
+        },
+        "refill": {
+          "title": "Rinnovo presso {name}",
+          "text": "Kin ha proposto questo rinnovo in base alla regola della famiglia. Si acquista solo dopo il sì richiesto dall’accordo."
         }
       },
       "raisedBy": "Proposto da {name}, {date}",
@@ -1690,6 +1694,49 @@
         "unclear": "Kin non ha sentito un sì o un no chiari. Riprova.",
         "not_confirmed": "Nulla è stato registrato: Kin non ha sentito un sì chiaro per confermare.",
         "unavailable": "Qualcosa è andato storto. Riprova."
+      }
+    },
+    "refills": {
+      "title": "Rinnovi",
+      "lede": "Ciò che la famiglia ha permesso a Kin di acquistare. Kin si limita a proporre: non si compra nulla finché le persone indicate dall’accordo non dicono di sì.",
+      "rule": "{seller} · {price} ciascuno · fino a {limit} per rinnovo",
+      "budget": "Restano {left} su {budget} questo mese",
+      "ask": "Chiedi a Kin di riordinare",
+      "asking": "Lo chiedo a Kin…",
+      "asked": "Kin ha proposto il rinnovo. Attende un sì in questa pagina.",
+      "alreadyAsked": "Un rinnovo attende già un sì o è in viaggio.",
+      "cannotAsk": "Solo l’organizzatore, un contributore o il genitore possono chiedere a Kin di riordinare.",
+      "ordersTitle": "Ordini",
+      "ordersEmpty": "Nessun rinnovo è stato ancora proposto.",
+      "simulated": "Simulato: la farmacia è una controfigura e non si muove denaro reale.",
+      "trackLabel": "Dov’è l’ordine",
+      "states": {
+        "awaiting": "In attesa di un sì",
+        "ordered": "Ordinato",
+        "shipped": "Spedito",
+        "out_for_delivery": "In consegna",
+        "delivered": "Consegnato"
+      },
+      "proposalStates": {
+        "pending_approval": "In attesa di un sì",
+        "approved": "Sì ricevuto, acquisto in corso",
+        "executing": "Acquisto in corso",
+        "failed": "Impossibile acquistare",
+        "rejected": "Non approvato",
+        "expired": "Scaduto",
+        "cancelled": "Annullato"
+      },
+      "reasons": {
+        "refused": "Non puoi chiedere questo rinnovo.",
+        "invalid": "Non è stato possibile leggere quel rinnovo.",
+        "demo_only": "I rinnovi si acquistano solo nella demo, con denaro simulato.",
+        "above_limit": "Questo rinnovo costa più di quanto consenta la regola.",
+        "over_budget": "Il budget di questo mese per il rinnovo è esaurito.",
+        "seller_not_approved": "La farmacia non è un venditore approvato.",
+        "above_ceiling": "Questo rinnovo supera il tetto dell’accordo.",
+        "paused": "I pagamenti sono in pausa. Riprova quando finisce.",
+        "no_agreement": "La famiglia non ha ancora un accordo in vigore.",
+        "unavailable": "Kin non ha potuto farlo ora. Riprova tra un attimo."
       }
     }
   }

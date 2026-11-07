@@ -20,6 +20,21 @@ export {
   retryMessageLater,
 } from "./payouts.ts";
 export type { BeginOutcome, ClaimedMessage, PayoutJob } from "./payouts.ts";
+export {
+  DELIVERY_TOPIC,
+  PURCHASE_TOPIC,
+  RefillError,
+  beginPurchase,
+  confirmPurchase,
+  failPurchase,
+  proposeRefill,
+  readDeliveryJob,
+  readPurchaseJob,
+  recordDelivery,
+  recordOrderPlaced,
+  recordPurchaseHeld,
+} from "./purchases.ts";
+export type { DeliveryJob, PurchaseBegin, PurchaseJob, RefillReason } from "./purchases.ts";
 export type { Database, Transaction } from "./connection.ts";
 export { asPerson, asProvisioner, asService } from "./scope.ts";
 export { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";
