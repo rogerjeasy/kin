@@ -10,7 +10,7 @@ import {
   takeDemoSeat,
   writeEntries,
 } from "@kin/db";
-import { personQuery, seatPerson, serviceRows, snapshotFor, testDatabases, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
+import { endMandates, personQuery, seatPerson, serviceRows, snapshotFor, testDatabases, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
 import { DELIVERY_SCHEDULE_SECONDS, accountBalance, calendarDay, purchaseCaptured } from "@kin/domain";
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
@@ -36,10 +36,12 @@ async function ruleOf(circle: VisitorCircle): Promise<string> {
   const snapshot = await snapshotFor(db, circle.userId, circle.circleId);
   const [rule] = snapshot.purchaseRules;
   if (!rule) throw new Error("The demo circle has no refill rule");
+  // These tests are about the family's own yes, so Rose's standing permission is set aside.
+  await endMandates(db, circle.circleId);
   return rule.id;
 }
 
-const raise = (circle: VisitorCircle, ruleId: string) => asPerson(db.app, circle.userId, (tx) => proposeRefill(tx, { circleId: circle.circleId, ruleId, now: CLOCK }));
+const raise = async (circle: VisitorCircle, ruleId: string) => (await asPerson(db.app, circle.userId, (tx) => proposeRefill(tx, { circleId: circle.circleId, ruleId, now: CLOCK }))).id;
 
 /** Elena asks Kin for the refill, then Rose says yes by voice from her own seat. */
 async function approvedRefill(): Promise<Refill & { executionId: string }> {

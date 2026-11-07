@@ -981,7 +981,8 @@
         "organizer": "Die Kreisleitung gibt frei",
         "organizerAndSecond": "Zwei Freigaben",
         "refused": "Über der Grenze der Vereinbarung",
-        "paused": "Durch die Pause angehalten"
+        "paused": "Durch die Pause angehalten",
+        "mandate": "Durch eine dauerhafte Erlaubnis freigegeben"
       },
       "sandbox": "PayPal-Sandbox"
     },
@@ -1166,7 +1167,8 @@
         "saidNo": "{name} hat {method} Nein gesagt, {time}",
         "methods": {
           "voice": "am Telefon",
-          "app": "in der App"
+          "app": "in der App",
+          "mandate": "durch dauerhafte Erlaubnis"
         },
         "open": "Wartet auf {names}",
         "parentCall": "Kin fragt {parent} beim nächsten Anruf."
@@ -1952,6 +1954,21 @@
         "paused": "Zahlungen sind pausiert. Versuchen Sie es nach der Pause erneut.",
         "no_agreement": "Die Familie hat noch keinen gültigen Familienvertrag.",
         "unavailable": "Kin konnte das jetzt nicht tun. Versuchen Sie es gleich noch einmal."
+      },
+      "mandatesLink": "Dauerhafte Erlaubnisse",
+      "underMandate": "Unter der dauerhaften Erlaubnis gekauft. Niemand musste gefragt werden.",
+      "outsideMandate": "Außerhalb der dauerhaften Erlaubnis ({why}). Der Nachkauf wartet auf ein Ja.",
+      "viaMandate": "Unter einer dauerhaften Erlaubnis",
+      "mandateWhy": {
+        "not_active": "sie ist beendet",
+        "paused": "sie ist pausiert",
+        "not_started": "sie hat noch nicht begonnen",
+        "expired": "sie ist abgelaufen",
+        "circle_paused": "Zahlungen sind pausiert",
+        "out_of_scope": "sie deckt diesen Nachkauf nicht ab",
+        "above_per_purchase": "der Preis liegt über dem für einen Kauf Erlaubten",
+        "over_period": "es würde das für den Monat Erlaubte überschreiten",
+        "already_used_this_period": "einer pro Monat war erlaubt und der dieses Monats ist gekauft"
       }
     },
     "letters": {
@@ -2056,6 +2073,76 @@
           "duplicate": "Steht schon auf der Liste"
         },
         "due": "Fällig am {day}"
+      }
+    },
+    "mandates": {
+      "title": "Dauerhafte Erlaubnisse",
+      "lede": "Was {parent} Kin erlaubt hat, ohne jedes Mal zu fragen. Ein Nachkauf innerhalb einer Erlaubnis wird sofort gekauft, und das Protokoll nennt die Erlaubnis als Genehmigende. Alles außerhalb wartet weiter auf ein echtes Ja.",
+      "back": "Zurück zu den Freigaben",
+      "simulated": "Simuliert: Das ist die Demo, die Erlaubnis ersetzt eine gesprochene, und es bewegt sich kein echtes Geld.",
+      "empty": "Noch keine dauerhafte Erlaubnis. Jeder Nachkauf wartet auf ein Ja.",
+      "readBack": "Sie dürfen {item} bei {seller} bestellen, {cadence}, bis zu {perPurchase} pro Bestellung und {perPeriod} im Monat, von {from} bis {until}.",
+      "cadences": {
+        "monthly": "einmal im Monat",
+        "as_needed": "wann immer es nötig ist"
+      },
+      "statuses": {
+        "active": "Gültig",
+        "paused": "Pausiert",
+        "revoked": "Beendet"
+      },
+      "used": "{used} von {cap} diesen Monat genutzt",
+      "spoke": "{parent} sagte: „{text}“",
+      "recordedBy": "Erfasst von {name}",
+      "sealed": "Versiegelt: {digest}",
+      "simulatedTag": "Simuliert",
+      "usesTitle": "Dadurch gekauft",
+      "noUses": "Damit wurde noch nichts gekauft.",
+      "useLine": "{amount} am {day}",
+      "actions": {
+        "pause": "Pausieren",
+        "resume": "Fortsetzen",
+        "revoke": "Beenden",
+        "working": "Wird bearbeitet …",
+        "paused": "Pausiert. Nachkäufe fragen wieder nach einem Ja.",
+        "resumed": "Wieder gültig.",
+        "revoked": "Beendet. Sie kann nicht mehr genutzt werden."
+      },
+      "form": {
+        "title": "Eine dauerhafte Erlaubnis erfassen",
+        "text": "Lesen Sie sie {parent} vor und bestätigen Sie dann. Kin kauft nur, was dazu passt, und fragt bei allem anderen zuerst.",
+        "demoNote": "In dieser Demo spielen Sie das gesprochene Ja von {parent}. Das Protokoll vermerkt simuliert.",
+        "rule": "Was sie umfasst",
+        "perPurchase": "Höchstbetrag pro Kauf",
+        "perPeriod": "Höchstbetrag pro Monat",
+        "amountHint": "Beträge in {currency}, zum Beispiel 50.00.",
+        "cadence": "Wie oft",
+        "validFrom": "Beginn",
+        "expiresOn": "Ende",
+        "spoken": "Was gesagt wurde (optional)",
+        "review": "Vorlesen lassen",
+        "reviewing": "Wird geprüft …",
+        "readBackTitle": "Kin liest Folgendes vor",
+        "edit": "Ändern",
+        "grant": "Bestätigen: {parent} hat Ja gesagt",
+        "granting": "Wird erfasst …",
+        "granted": "Erfasst. Der nächste Nachkauf innerhalb davon wird ohne Nachfrage gekauft."
+      },
+      "errors": {
+        "refused": "Das dürfen Sie nicht.",
+        "invalid": "Das konnte nicht gelesen werden.",
+        "parent_only": "Nur das Elternteil kann eine dauerhafte Erlaubnis erteilen.",
+        "no_parent": "Der Kreis hat kein Elternteil, das sie erteilen könnte.",
+        "no_agreement": "Die Familie hat noch keine gültige Vereinbarung.",
+        "key_reused": "Diese Erlaubnis wurde schon anders erfasst.",
+        "above_ceiling": "Das liegt über der Obergrenze der Vereinbarung.",
+        "not_money": "Beträge müssen über null liegen.",
+        "caps_inverted": "Ein Kauf darf nicht mehr erlaubt sein als der Monat.",
+        "bad_dates": "Das Ende muss nach dem Beginn liegen.",
+        "too_long": "Eine Erlaubnis gilt höchstens ein Jahr.",
+        "bad_cadence": "Wählen Sie, wie oft.",
+        "amount": "Beträge bestehen nur aus Ziffern, zum Beispiel 50.00.",
+        "unavailable": "Kin konnte das gerade nicht tun. Versuchen Sie es gleich noch einmal."
       }
     }
   }

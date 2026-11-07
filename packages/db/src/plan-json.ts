@@ -60,6 +60,11 @@ export function parseApprovalPlan(value: unknown): ApprovalPlan {
       if (typeof version !== "number" || !Number.isInteger(version)) throw new StoredPlanError("agreementVersion is not a whole number");
       return { outcome: "standing_rule", ruleId: text(value, "ruleId"), agreementVersion: version };
     }
+    case "mandate": {
+      const version = value.agreementVersion;
+      if (typeof version !== "number" || !Number.isInteger(version)) throw new StoredPlanError("agreementVersion is not a whole number");
+      return { outcome: "mandate", mandateId: text(value, "mandateId"), agreementVersion: version };
+    }
     case "needs_approval": {
       if (!Array.isArray(value.slots) || value.slots.length === 0) throw new StoredPlanError("no slots");
       const payee = value.payeeMemberId;

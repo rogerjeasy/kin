@@ -25,8 +25,8 @@ export const PAYEE_STATUSES = ["approved", "new"] as const;
 
 export const VOTE_DECISIONS = ["approve", "reject"] as const;
 
-/** How a member gave an answer: in the app, or by voice on a verified call. */
-export const APPROVAL_METHODS = ["app", "voice"] as const;
+/** How a yes was given: in the app, by voice on a verified call, or by the parent's standing mandate. */
+export const APPROVAL_METHODS = ["app", "voice", "mandate"] as const;
 export type ApprovalMethod = (typeof APPROVAL_METHODS)[number];
 
 export const DOCUMENT_KINDS = ["bill", "receipt", "quote", "letter", "other"] as const;

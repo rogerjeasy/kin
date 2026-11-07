@@ -981,7 +981,8 @@
         "organizer": "Approva la persona referente",
         "organizerAndSecond": "Due sì",
         "refused": "Oltre il limite dell’accordo",
-        "paused": "Bloccato dalla pausa"
+        "paused": "Bloccato dalla pausa",
+        "mandate": "Approvato da un permesso permanente"
       },
       "sandbox": "Sandbox di PayPal"
     },
@@ -1166,7 +1167,8 @@
         "saidNo": "{name} ha detto no {method}, {time}",
         "methods": {
           "voice": "al telefono",
-          "app": "nell’app"
+          "app": "nell’app",
+          "mandate": "con permesso permanente"
         },
         "open": "In attesa di {names}",
         "parentCall": "Kin lo chiederà a {parent} alla prossima chiamata."
@@ -1952,6 +1954,21 @@
         "paused": "I pagamenti sono in pausa. Riprova quando finisce.",
         "no_agreement": "La famiglia non ha ancora un accordo in vigore.",
         "unavailable": "Kin non ha potuto farlo ora. Riprova tra un attimo."
+      },
+      "mandatesLink": "Permessi permanenti",
+      "underMandate": "Acquistato con il permesso permanente. Nessuno ha dovuto essere interpellato.",
+      "outsideMandate": "Fuori dal permesso permanente ({why}). Il riordino attende un sì.",
+      "viaMandate": "Con un permesso permanente",
+      "mandateWhy": {
+        "not_active": "è terminato",
+        "paused": "è in pausa",
+        "not_started": "non è ancora iniziato",
+        "expired": "è scaduto",
+        "circle_paused": "i pagamenti sono in pausa",
+        "out_of_scope": "non copre questo riordino",
+        "above_per_purchase": "il prezzo supera quanto permesso per un acquisto",
+        "over_period": "supererebbe quanto permesso per il mese",
+        "already_used_this_period": "ne era permesso uno al mese e quello di questo mese è acquistato"
       }
     },
     "letters": {
@@ -2056,6 +2073,76 @@
           "duplicate": "Già nell’elenco"
         },
         "due": "Scadenza: {day}"
+      }
+    },
+    "mandates": {
+      "title": "Permessi permanenti",
+      "lede": "Ciò che {parent} ha permesso a Kin di fare senza chiedere ogni volta. Un riordino dentro un permesso viene acquistato subito e il registro indica il permesso come approvatore. Tutto ciò che ne esce attende ancora un sì vero.",
+      "back": "Torna alle approvazioni",
+      "simulated": "Simulato: questa è la demo, il permesso sostituisce uno parlato e non si muove denaro reale.",
+      "empty": "Nessun permesso permanente per ora. Ogni riordino attende un sì.",
+      "readBack": "Puoi ordinare {item} da {seller}, {cadence}, fino a {perPurchase} ogni volta e {perPeriod} al mese, dal {from} al {until}.",
+      "cadences": {
+        "monthly": "una volta al mese",
+        "as_needed": "ogni volta che serve"
+      },
+      "statuses": {
+        "active": "In vigore",
+        "paused": "In pausa",
+        "revoked": "Terminato"
+      },
+      "used": "{used} su {cap} usati questo mese",
+      "spoke": "{parent} ha detto: «{text}»",
+      "recordedBy": "Registrato da {name}",
+      "sealed": "Sigillato: {digest}",
+      "simulatedTag": "Simulato",
+      "usesTitle": "Acquistato con questo permesso",
+      "noUses": "Con questo permesso non è stato ancora acquistato nulla.",
+      "useLine": "{amount} il {day}",
+      "actions": {
+        "pause": "Metti in pausa",
+        "resume": "Riprendi",
+        "revoke": "Termina",
+        "working": "In corso…",
+        "paused": "In pausa. I riordini chiedono di nuovo un sì.",
+        "resumed": "Di nuovo in vigore.",
+        "revoked": "Terminato. Non può più essere usato."
+      },
+      "form": {
+        "title": "Registra un permesso permanente",
+        "text": "Rileggilo a {parent}, poi conferma. Kin acquista solo ciò che rientra nel permesso e per il resto chiede prima.",
+        "demoNote": "In questa demo reciti il sì parlato di {parent}. Il registro indica simulato.",
+        "rule": "Che cosa copre",
+        "perPurchase": "Massimo per un acquisto",
+        "perPeriod": "Massimo al mese",
+        "amountHint": "Importi in {currency}, per esempio 50.00.",
+        "cadence": "Con che frequenza",
+        "validFrom": "Inizio",
+        "expiresOn": "Fine",
+        "spoken": "Che cosa è stato detto (facoltativo)",
+        "review": "Rileggi",
+        "reviewing": "Verifica…",
+        "readBackTitle": "Kin rilegge questo",
+        "edit": "Modifica",
+        "grant": "Conferma: {parent} ha detto sì",
+        "granting": "Registrazione…",
+        "granted": "Registrato. Il prossimo riordino coperto sarà acquistato senza chiedere."
+      },
+      "errors": {
+        "refused": "Non puoi farlo.",
+        "invalid": "Non è stato possibile leggerlo.",
+        "parent_only": "Solo il genitore può concedere un permesso permanente.",
+        "no_parent": "Il cerchio non ha un genitore che lo conceda.",
+        "no_agreement": "La famiglia non ha ancora un accordo in vigore.",
+        "key_reused": "Questo permesso è già stato registrato in modo diverso.",
+        "above_ceiling": "È sopra il tetto dell'accordo.",
+        "not_money": "Gli importi devono essere maggiori di zero.",
+        "caps_inverted": "Un acquisto non può essere permesso per più del mese.",
+        "bad_dates": "La fine deve venire dopo l'inizio.",
+        "too_long": "Un permesso dura al massimo un anno.",
+        "bad_cadence": "Scegli la frequenza.",
+        "amount": "Gli importi contengono solo cifre, per esempio 50.00.",
+        "unavailable": "Kin non ha potuto farlo ora. Riprova tra un momento."
       }
     }
   }

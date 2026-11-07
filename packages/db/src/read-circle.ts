@@ -14,6 +14,7 @@ import type { Transaction } from "./connection.ts";
 import { readAgreementVersions } from "./agreements.ts";
 import { readLedger } from "./ledger-store.ts";
 import { parseApprovalPlan } from "./plan-json.ts";
+import { readMandateRecords } from "./mandates.ts";
 import { readPurchaseRecords } from "./purchases.ts";
 import {
   approvals,
@@ -89,6 +90,7 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     claimChecks: await readClaimChecks(tx, circle.id),
     narrations: await readNarrations(tx, circle.id),
     ...(await readPurchaseRecords(tx, circle.id, circle.now, circle.timezone)),
+    mandates: await readMandateRecords(tx, circle.id, circle.now, circle.timezone),
     documents: await readDocuments(tx, circle.id),
     invitations: await readInvitations(tx, circle.id),
     monthlyShares: await readMonthlyShares(tx, circle.id, viewerRow.id),

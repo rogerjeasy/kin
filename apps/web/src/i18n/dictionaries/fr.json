@@ -981,7 +981,8 @@
         "organizer": "La personne responsable approuve",
         "organizerAndSecond": "Deux oui",
         "refused": "Au-delà du plafond de l’accord",
-        "paused": "Retenu par la pause"
+        "paused": "Retenu par la pause",
+        "mandate": "Approuvé par une autorisation permanente"
       },
       "sandbox": "Sandbox PayPal"
     },
@@ -1166,7 +1167,8 @@
         "saidNo": "{name} a dit non {method} le {time}",
         "methods": {
           "voice": "par téléphone",
-          "app": "dans l’application"
+          "app": "dans l’application",
+          "mandate": "par autorisation permanente"
         },
         "open": "En attente : {names}",
         "parentCall": "Kin posera la question à {parent} lors du prochain appel."
@@ -1952,6 +1954,21 @@
         "paused": "Les paiements sont en pause. Réessayez à la fin de la pause.",
         "no_agreement": "La famille n’a pas encore d’accord en vigueur.",
         "unavailable": "Kin n’a pas pu le faire maintenant. Réessayez dans un instant."
+      },
+      "mandatesLink": "Autorisations permanentes",
+      "underMandate": "Acheté sous l'autorisation permanente. Personne n'a eu à être sollicité.",
+      "outsideMandate": "Hors de l'autorisation permanente ({why}). Le réapprovisionnement attend un oui.",
+      "viaMandate": "Sous une autorisation permanente",
+      "mandateWhy": {
+        "not_active": "elle est terminée",
+        "paused": "elle est en pause",
+        "not_started": "elle n'a pas commencé",
+        "expired": "elle a expiré",
+        "circle_paused": "les paiements sont en pause",
+        "out_of_scope": "elle ne couvre pas ce réapprovisionnement",
+        "above_per_purchase": "le prix dépasse ce qui était permis pour un achat",
+        "over_period": "cela dépasserait ce qui était permis pour le mois",
+        "already_used_this_period": "un par mois était permis et celui de ce mois est acheté"
       }
     },
     "letters": {
@@ -2056,6 +2073,76 @@
           "duplicate": "Déjà dans la liste"
         },
         "due": "Échéance : {day}"
+      }
+    },
+    "mandates": {
+      "title": "Autorisations permanentes",
+      "lede": "Ce que {parent} a autorisé Kin à faire sans demander à chaque fois. Un réapprovisionnement couvert par une autorisation est acheté tout de suite, et le registre nomme l'autorisation comme approbatrice. Tout ce qui sort de son cadre attend encore un vrai oui.",
+      "back": "Retour aux approbations",
+      "simulated": "Simulé : c'est la démo, l'autorisation remplace une autorisation parlée et aucun argent réel ne circule.",
+      "empty": "Aucune autorisation permanente pour l'instant. Chaque réapprovisionnement attend un oui.",
+      "readBack": "Vous pouvez commander {item} chez {seller}, {cadence}, jusqu'à {perPurchase} à chaque fois et {perPeriod} par mois, du {from} au {until}.",
+      "cadences": {
+        "monthly": "une fois par mois",
+        "as_needed": "dès que c'est nécessaire"
+      },
+      "statuses": {
+        "active": "En vigueur",
+        "paused": "En pause",
+        "revoked": "Terminée"
+      },
+      "used": "{used} sur {cap} utilisés ce mois-ci",
+      "spoke": "{parent} a dit : « {text} »",
+      "recordedBy": "Enregistrée par {name}",
+      "sealed": "Scellée : {digest}",
+      "simulatedTag": "Simulé",
+      "usesTitle": "Achats faits sous cette autorisation",
+      "noUses": "Rien n'a encore été acheté sous cette autorisation.",
+      "useLine": "{amount} le {day}",
+      "actions": {
+        "pause": "Mettre en pause",
+        "resume": "Reprendre",
+        "revoke": "Y mettre fin",
+        "working": "En cours…",
+        "paused": "En pause. Les réapprovisionnements demandent de nouveau un oui.",
+        "resumed": "De nouveau en vigueur.",
+        "revoked": "Terminée. Elle ne peut plus servir."
+      },
+      "form": {
+        "title": "Enregistrer une autorisation permanente",
+        "text": "Relisez-la à {parent}, puis confirmez. Kin n'achète que ce qui y correspond, et demande d'abord pour le reste.",
+        "demoNote": "Dans cette démo, vous jouez le oui parlé de {parent}. Le registre indique simulé.",
+        "rule": "Ce qu'elle couvre",
+        "perPurchase": "Maximum par achat",
+        "perPeriod": "Maximum par mois",
+        "amountHint": "Montants en {currency}, par exemple 50.00.",
+        "cadence": "À quelle fréquence",
+        "validFrom": "Début",
+        "expiresOn": "Fin",
+        "spoken": "Ce qui a été dit (facultatif)",
+        "review": "La relire",
+        "reviewing": "Vérification…",
+        "readBackTitle": "Kin relit ceci",
+        "edit": "La modifier",
+        "grant": "Confirmer : {parent} a dit oui",
+        "granting": "Enregistrement…",
+        "granted": "Enregistrée. Le prochain réapprovisionnement couvert sera acheté sans demander."
+      },
+      "errors": {
+        "refused": "Vous ne pouvez pas faire cela.",
+        "invalid": "Cela n'a pas pu être lu.",
+        "parent_only": "Seul le parent peut accorder une autorisation permanente.",
+        "no_parent": "Le cercle n'a pas de parent pour l'accorder.",
+        "no_agreement": "La famille n'a pas encore d'accord en vigueur.",
+        "key_reused": "Cette autorisation a déjà été enregistrée autrement.",
+        "above_ceiling": "C'est au-dessus du plafond de l'accord.",
+        "not_money": "Les montants doivent être supérieurs à zéro.",
+        "caps_inverted": "Un achat ne peut pas être autorisé pour plus que le mois.",
+        "bad_dates": "La date de fin doit suivre la date de début.",
+        "too_long": "Une autorisation dure un an au plus.",
+        "bad_cadence": "Choisissez la fréquence.",
+        "amount": "Les montants ne prennent que des chiffres, par exemple 50.00.",
+        "unavailable": "Kin n'a pas pu le faire maintenant. Réessayez dans un instant."
       }
     }
   }

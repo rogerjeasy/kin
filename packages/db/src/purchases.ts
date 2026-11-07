@@ -2,11 +2,13 @@ import {
   PurchaseError,
   calendarDay,
   canPayOut,
+  decideMandate,
   isPaused,
   planPurchase,
   purchaseCaptured,
   type DeliveryState,
   type ExecutionState,
+  type MandateRefusal,
   type ParentLevel,
   type PurchaseRule,
 } from "@kin/domain";
@@ -17,9 +19,10 @@ import { readAgreementVersions } from "./agreements.ts";
 import { postgresError, requiredId } from "./caregiver-billing.ts";
 import type { PurchaseRecord, PurchaseRuleRecord } from "./circle-snapshot.ts";
 import type { Transaction } from "./connection.ts";
+import { readMandateCandidates } from "./mandates.ts";
 import { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";
 import { audit, entryExists, header, moveExecution } from "./payouts.ts";
-import { auditLog, circles, executions, members, outbox, payees, proposals, purchaseRules, purchases } from "./schema/index.ts";
+import { auditLog, circles, executions, mandateUses, mandates, members, outbox, payees, proposals, purchaseRules, purchases } from "./schema/index.ts";
 
 /** The outbox topics: buy an approved refill, and follow an order to the door. */
 export const PURCHASE_TOPIC = "purchase.execute";
@@ -52,14 +55,25 @@ async function committedThisMonth(tx: Transaction, circleId: string, ruleId: str
   return rows.filter((row) => calendarDay(row.raisedAt, timezone).period === month).reduce((sum, row) => sum + row.cents, 0);
 }
 
+/** How a refill stood against the parent's standing permission: none, inside it, or outside it so she is asked. */
+export type RefillMandate =
+  | { readonly outcome: "none" }
+  | { readonly outcome: "covered"; readonly mandateId: string }
+  | { readonly outcome: "ask_parent"; readonly reason: MandateRefusal };
+
+export type RefillProposed = { readonly id: string; readonly mandate: RefillMandate };
+
 /**
- * Raises a refill for the family to confirm. Kin proposes it from a rule the
- * family set; plain code checks that it fits the rule and plans who must say
- * yes, and the database operation refuses a plan that does not match the
- * agreement. Nothing is bought here: only the approval queues the purchase.
+ * Raises a refill. Kin proposes it from a rule the family set; plain code
+ * checks that it fits the rule and plans who must say yes, and the database
+ * operation refuses a plan that does not match the agreement. A refill that
+ * fits a live mandate (the parent's standing permission, also checked by
+ * plain code) is approved at once with the mandate recorded as the approver;
+ * one that does not fit it falls back to asking, and says why. Nothing is
+ * bought here: only the approval queues the purchase.
  * Run as the person, inside `asPerson`.
  */
-export async function proposeRefill(tx: Transaction, input: { readonly circleId: string; readonly ruleId: string; readonly now: Date }): Promise<string> {
+export async function proposeRefill(tx: Transaction, input: { readonly circleId: string; readonly ruleId: string; readonly now: Date }): Promise<RefillProposed> {
   const { circleId, ruleId, now } = input;
   const [row] = await tx
     .select({ rule: purchaseRules, status: payees.status, pausedUntil: circles.pausedUntil, timezone: circles.timezone })
@@ -71,7 +85,10 @@ export async function proposeRefill(tx: Transaction, input: { readonly circleId:
   const { versions } = await readAgreementVersions(tx, circleId, calendarDay(now, row.timezone).occurredOn);
   const agreement = versions.find((version) => version.status === "in_force");
   // No agreement can mean none exists or that this person may not read it: the database tells the two apart.
-  if (!agreement) return refillOperation(() => callPropose(tx, circleId, ruleId, null));
+  if (!agreement) {
+    await refillOperation(() => callPropose(tx, circleId, ruleId, null));
+    throw new RefillError("no_agreement");
+  }
   const rule: PurchaseRule = {
     ruleId: row.rule.id,
     seller: { payeeId: row.rule.payeeId, approved: row.status === "approved" },
@@ -92,11 +109,25 @@ export async function proposeRefill(tx: Transaction, input: { readonly circleId:
     });
     if (plan.outcome === "paused") throw new RefillError("paused");
     if (plan.outcome === "refused") throw new RefillError("above_ceiling");
-    return await refillOperation(() => callPropose(tx, circleId, ruleId, plan));
+    const decision = decideMandate(
+      await readMandateCandidates(tx, { circleId, ruleId, now, timezone: row.timezone, pausedUntil: row.pausedUntil }),
+      { ruleId, totalCents: rule.priceCents },
+    );
+    const underMandate = decision?.outcome === "covered" ? ({ outcome: "mandate", mandateId: decision.mandateId, agreementVersion: agreement.version } as const) : null;
+    const id = await refillOperation(() => callPropose(tx, circleId, ruleId, underMandate ?? plan));
+    return { id, mandate: await mandateOutcome(tx, circleId, id, decision) };
   } catch (error) {
     if (error instanceof PurchaseError) throw new RefillError(error.reason);
     throw error;
   }
+}
+
+// What the proposal now says, not what was asked: a retry returns the refill already waiting.
+async function mandateOutcome(tx: Transaction, circleId: string, proposalId: string, decision: ReturnType<typeof decideMandate>): Promise<RefillMandate> {
+  const [row] = await tx.select({ plan: proposals.plan }).from(proposals).where(and(eq(proposals.circleId, circleId), eq(proposals.id, proposalId)));
+  const plan = row?.plan as { outcome?: string; mandateId?: string } | undefined;
+  if (plan?.outcome === "mandate" && typeof plan.mandateId === "string") return { outcome: "covered", mandateId: plan.mandateId };
+  return decision?.outcome === "ask_parent" ? { outcome: "ask_parent", reason: decision.reason } : { outcome: "none" };
 }
 
 async function callPropose(tx: Transaction, circleId: string, ruleId: string, plan: unknown): Promise<string> {
@@ -175,6 +206,8 @@ export type PurchaseJob = {
   readonly currency: string;
   readonly idempotencyKey: string;
   readonly state: ExecutionState;
+  /** The mandate that approved this refill, and the most it allowed for a purchase, or `null` when the family said yes. */
+  readonly mandate: { readonly id: string; readonly allowanceCents: number } | null;
   /** A demo circle's purchase is simulated: no PayPal charge, and labelled so. */
   readonly simulated: boolean;
   readonly now: Date;
@@ -196,6 +229,8 @@ export async function readPurchaseJob(tx: Transaction, executionId: string, real
       item: purchases.item,
       cents: purchases.cents,
       category: purchaseRules.category,
+      mandateId: mandates.id,
+      allowanceCents: mandates.perPurchaseCents,
       currency: circles.currency,
       demo: circles.demo,
       clockAt: circles.clockAt,
@@ -207,6 +242,8 @@ export async function readPurchaseJob(tx: Transaction, executionId: string, real
     .innerJoin(purchases, and(eq(purchases.circleId, proposals.circleId), eq(purchases.proposalId, proposals.id)))
     .innerJoin(purchaseRules, and(eq(purchaseRules.circleId, purchases.circleId), eq(purchaseRules.id, purchases.ruleId)))
     .innerJoin(circles, eq(circles.id, executions.circleId))
+    .leftJoin(mandateUses, and(eq(mandateUses.circleId, proposals.circleId), eq(mandateUses.proposalId, proposals.id)))
+    .leftJoin(mandates, and(eq(mandates.circleId, mandateUses.circleId), eq(mandates.id, mandateUses.mandateId)))
     .where(eq(executions.id, executionId))
     .for("update", { of: executions });
   if (!row || row.kind !== "purchase") return null;
@@ -221,6 +258,7 @@ export async function readPurchaseJob(tx: Transaction, executionId: string, real
     currency: row.currency,
     idempotencyKey: row.idempotencyKey,
     state: row.state,
+    mandate: row.mandateId === null || row.allowanceCents === null ? null : { id: row.mandateId, allowanceCents: row.allowanceCents },
     simulated: row.demo,
     now: row.clockAt ?? realNow,
     timezone: row.timezone,
@@ -287,7 +325,7 @@ export async function confirmPurchase(tx: Transaction, job: PurchaseJob, paid: {
   }
   await moveExecution(tx, job, "submitted", "confirmed", { paypalItemId: paid.itemId, confirmedAt: paid.at });
   await tx.update(proposals).set({ state: "settled" }).where(and(eq(proposals.id, job.proposalId), eq(proposals.state, "executing")));
-  await audit(tx, job, "purchase.confirmed", { itemId: paid.itemId, simulated: job.simulated });
+  await audit(tx, job, "purchase.confirmed", { itemId: paid.itemId, simulated: job.simulated, mandateId: job.mandate?.id ?? null });
 }
 
 /** The refill will not be bought. Nothing left the pool, so the ledger is untouched. */

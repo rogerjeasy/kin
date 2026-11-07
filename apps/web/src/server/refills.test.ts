@@ -1,5 +1,5 @@
 import { asPerson, readCircle, takeDemoSeat, type CircleSnapshot } from "@kin/db";
-import { seatPerson, serviceRows, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
+import { endMandates, seatPerson, serviceRows, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
 import { fakeTranscriber, fakeVoice } from "@kin/speech/testing";
 import { describe, expect, it } from "vitest";
 
@@ -28,6 +28,7 @@ const speech = (circle: CircleSnapshot, userId: string, said: string): SpeechCon
 describe("asking Kin to reorder", () => {
   it("raises a refill for the family from the rule alone, and the screen then shows it waiting", async () => {
     const circle = await visitorWithCircle(db);
+    await endMandates(db, circle.circleId);
     const seen = await snapshot(circle, circle.userId);
     const before = refillViews(seen);
     expect(before.rules).toMatchObject([{ askable: true, remainingCents: 15000 }]);
@@ -87,6 +88,7 @@ describe("asking Kin to reorder", () => {
 describe("Rose approving a refill by voice", () => {
   it("hears it read with the pharmacy and the amount from the record, then records her spoken yes as the approval that queues the purchase", async () => {
     const circle = await visitorWithCircle(db);
+    await endMandates(db, circle.circleId);
     const elena = await snapshot(circle, circle.userId);
     await runRefill(refillContext(elena, circle.userId), { ruleId: ruleOf(elena) });
     await asPerson(db.app, circle.userId, (tx) => takeDemoSeat(tx, circle.circleId, circle.members.rose));
@@ -111,6 +113,7 @@ describe("Rose approving a refill by voice", () => {
 
   it("does not approve when the read-back is not confirmed with a clear yes", async () => {
     const circle = await visitorWithCircle(db);
+    await endMandates(db, circle.circleId);
     const elena = await snapshot(circle, circle.userId);
     await runRefill(refillContext(elena, circle.userId), { ruleId: ruleOf(elena) });
     await asPerson(db.app, circle.userId, (tx) => takeDemoSeat(tx, circle.circleId, circle.members.rose));

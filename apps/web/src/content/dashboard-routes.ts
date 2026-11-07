@@ -13,6 +13,9 @@ export type DashboardSection = keyof typeof dashboardRoutes;
 /** The family agreement: a screen within the circle's section, not a section of its own. */
 export const agreementRoute = "/dashboard/circle/agreement";
 
+/** The parent's standing permissions: a screen within the circle's section, like the agreement. */
+export const mandatesRoute = "/dashboard/circle/mandates";
+
 /** What Kin says aloud about confirmed money: a screen of the overview, not a section of its own. */
 export const listenRoute = "/dashboard/listen";
 

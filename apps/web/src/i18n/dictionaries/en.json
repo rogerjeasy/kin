@@ -981,7 +981,8 @@
         "organizer": "The organizer approves",
         "organizerAndSecond": "Two yeses",
         "refused": "Above the agreement’s limit",
-        "paused": "Held by the pause"
+        "paused": "Held by the pause",
+        "mandate": "Approved by a standing permission"
       },
       "sandbox": "PayPal sandbox"
     },
@@ -1166,7 +1167,8 @@
         "saidNo": "{name} said no {method}, {time}",
         "methods": {
           "voice": "by phone",
-          "app": "in the app"
+          "app": "in the app",
+          "mandate": "by standing permission"
         },
         "open": "Waiting for {names}",
         "parentCall": "Kin will ask {parent} on the next call."
@@ -1952,6 +1954,21 @@
         "paused": "Payments are paused. Try again when the pause ends.",
         "no_agreement": "The family has no agreement in force yet.",
         "unavailable": "Kin could not do that now. Try again in a moment."
+      },
+      "mandatesLink": "Standing permissions",
+      "underMandate": "Bought under the standing permission. Nobody had to be asked.",
+      "outsideMandate": "Outside the standing permission ({why}). The refill waits for a yes.",
+      "viaMandate": "Under a standing permission",
+      "mandateWhy": {
+        "not_active": "it has ended",
+        "paused": "it is paused",
+        "not_started": "it has not started",
+        "expired": "it has expired",
+        "circle_paused": "payments are paused",
+        "out_of_scope": "it does not cover this refill",
+        "above_per_purchase": "the price is more than was allowed for one purchase",
+        "over_period": "it would pass what was allowed for the month",
+        "already_used_this_period": "one a month was allowed and this month's is bought"
       }
     },
     "letters": {
@@ -2056,6 +2073,76 @@
           "duplicate": "Already on the list"
         },
         "due": "Due {day}"
+      }
+    },
+    "mandates": {
+      "title": "Standing permissions",
+      "lede": "What {parent} allowed Kin to do without asking each time. A refill inside a permission is bought at once, and the record names the permission as the approver. Anything outside it still waits for a live yes.",
+      "back": "Back to the approvals",
+      "simulated": "Simulated: this is the demo, so the permission is a stand-in for a spoken one and no real money moves.",
+      "empty": "No standing permission yet. Every refill waits for a yes.",
+      "readBack": "You may order {item} from {seller}, {cadence}, up to {perPurchase} each time and {perPeriod} in a month, from {from} until {until}.",
+      "cadences": {
+        "monthly": "once a month",
+        "as_needed": "whenever it is needed"
+      },
+      "statuses": {
+        "active": "In force",
+        "paused": "Paused",
+        "revoked": "Ended"
+      },
+      "used": "{used} of {cap} used this month",
+      "spoke": "{parent} said: “{text}”",
+      "recordedBy": "Recorded by {name}",
+      "sealed": "Sealed: {digest}",
+      "simulatedTag": "Simulated",
+      "usesTitle": "Bought under it",
+      "noUses": "Nothing has been bought under it yet.",
+      "useLine": "{amount} on {day}",
+      "actions": {
+        "pause": "Pause",
+        "resume": "Resume",
+        "revoke": "End it",
+        "working": "Working…",
+        "paused": "Paused. Refills ask for a yes again.",
+        "resumed": "In force again.",
+        "revoked": "Ended. It cannot be used again."
+      },
+      "form": {
+        "title": "Record a standing permission",
+        "text": "Read it back to {parent}, then confirm. Kin only ever buys what fits it, and anything else asks first.",
+        "demoNote": "In this demo you play {parent}'s spoken yes. The record says simulated.",
+        "rule": "What it covers",
+        "perPurchase": "Most for one purchase",
+        "perPeriod": "Most in a month",
+        "amountHint": "Amounts in {currency}, such as 50.00.",
+        "cadence": "How often",
+        "validFrom": "Starts",
+        "expiresOn": "Ends",
+        "spoken": "What was said (optional)",
+        "review": "Read it back",
+        "reviewing": "Checking…",
+        "readBackTitle": "Kin reads this back",
+        "edit": "Change it",
+        "grant": "Confirm: {parent} said yes",
+        "granting": "Recording…",
+        "granted": "Recorded. The next refill inside it is bought without asking."
+      },
+      "errors": {
+        "refused": "You may not do that.",
+        "invalid": "That could not be read.",
+        "parent_only": "Only the parent can grant a standing permission.",
+        "no_parent": "The circle has no parent to grant it.",
+        "no_agreement": "The family has no agreement in force yet.",
+        "key_reused": "That permission was already recorded differently.",
+        "above_ceiling": "That is above the agreement's ceiling.",
+        "not_money": "Amounts must be above zero.",
+        "caps_inverted": "One purchase cannot be allowed more than the month.",
+        "bad_dates": "The end date must come after the start date.",
+        "too_long": "A permission lasts a year at most.",
+        "bad_cadence": "Choose how often.",
+        "amount": "Amounts need digits only, such as 50.00.",
+        "unavailable": "Kin could not do that now. Try again in a moment."
       }
     }
   }
