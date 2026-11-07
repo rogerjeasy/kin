@@ -72,7 +72,7 @@ export async function operation<T>(work: () => Promise<T>): Promise<T> {
   }
 }
 
-function postgresError(error: unknown): { code: string; detail: unknown } | null {
+export function postgresError(error: unknown): { code: string; detail: unknown } | null {
   if (error === null || typeof error !== "object") return null;
   if ("code" in error && typeof error.code === "string") return { code: error.code, detail: "detail" in error ? error.detail : null };
   return "cause" in error ? postgresError(error.cause) : null;

@@ -23,6 +23,8 @@ export const CIRCLE_ACTIONS = {
   "money.contribute": ["organizer", "contributor"],
   /** Say yes or no to a proposal (section 7.5: caregivers and observers never answer). */
   "proposal.answer": ["organizer", "contributor", "parent"],
+  /** Ask Kin to propose a refill the family's rules allow. Proposing buys nothing: the agreement's yeses still do. */
+  "refill.propose": ["organizer", "contributor", "parent"],
   /** Stop all approvals for 24 hours (section 15.3). An observer changes nothing. */
   "circle.pause": ["organizer", "contributor", "parent", "caregiver"],
   "member.invite": ["organizer"],

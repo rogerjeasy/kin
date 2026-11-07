@@ -34,6 +34,7 @@ import {
   narrations,
   payees,
   proposals,
+  purchaseRules,
   settlements,
 } from "../schema/index.ts";
 import {
@@ -48,6 +49,7 @@ import {
   PAYEES,
   PERSONAS,
   PROPOSALS,
+  PURCHASE_RULES,
   ROSES_CIRCLE,
   SETTLED_AT,
   type PayeeKey,
@@ -100,6 +102,7 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     await writeEntries(tx, ledger, new Map());
     await writeBills(tx, ids, ledger);
     await writeProposals(tx, ids, agreement, ledger);
+    await writePurchaseRules(tx, ids);
     await writeNews(tx, ids, ledger);
     await tx.insert(auditLog).values({
       id: randomUUID(),
@@ -316,6 +319,22 @@ async function writeProposals(tx: Transaction, ids: Ids, agreement: Agreement, l
   await tx.insert(proposals).values([...raised.map((each) => each.row), ...payouts]);
   const votes = raised.flatMap((each) => each.votes);
   if (votes.length > 0) await tx.insert(approvals).values(votes);
+}
+
+/** The refills the family let Kin propose, from the pharmacy they already pay. */
+async function writePurchaseRules(tx: Transaction, ids: Ids): Promise<void> {
+  await tx.insert(purchaseRules).values(
+    PURCHASE_RULES.map((rule) => ({
+      id: randomUUID(),
+      circleId: ids.circleId,
+      payeeId: ids.payees[rule.seller],
+      item: rule.item,
+      category: rule.category,
+      priceCents: rule.priceCents,
+      limitCents: rule.limitCents,
+      monthlyBudgetCents: rule.monthlyBudgetCents,
+    })),
+  );
 }
 
 function personaRole(key: PersonaKey): CircleRole {

@@ -6,6 +6,7 @@ import { AnswerButtons } from "@/components/dashboard/approvals/answer-buttons";
 import { VoiceAnswer } from "@/components/dashboard/approvals/voice-answer";
 import { DecidedList } from "@/components/dashboard/approvals/decided-list";
 import { ProposalCard } from "@/components/dashboard/approvals/proposal-card";
+import { RefillsPanel } from "@/components/dashboard/refills/refills-panel";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { EmptyState } from "@/components/dashboard/ui/empty-state";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
@@ -18,6 +19,7 @@ import { parentOf } from "@/content/circle/members";
 import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
 import { waitingProposals } from "@/content/circle/proposal-view";
+import { refillViews } from "@/content/circle/refills";
 import { monthTotals, recordEntries } from "@/content/circle/record";
 import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
@@ -56,6 +58,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
   const waiting = waitingProposals(circle).toSorted((a, b) => Number(b.viewerCanAnswer) - Number(a.viewerCanAnswer));
   const answered = circle.proposals.filter((proposal) => DECIDED.some((state) => state === proposal.state)).toReversed();
   const decided = recordEntries(circle).filter((view) => view.entry.source.type === "approval");
+  const refills = refillViews(circle);
 
   return (
     <>
@@ -96,6 +99,15 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
           );
         })}
       </section>
+      <RefillsPanel
+        copy={dictionary.dashboard.refills}
+        format={format}
+        rules={refills.rules}
+        orders={refills.orders}
+        sellerName={names.payee}
+        simulated={circle.circle.demo}
+        mayAsk={may(circle, "refill.propose")}
+      />
       {answered.length > 0 ? (
         <AnsweredList
           title={approvals.answered.title}

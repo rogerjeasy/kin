@@ -1139,6 +1139,10 @@
         "caregiver_bill": {
           "title": "Factura de {name} por visitas realizadas",
           "text": "Los días de servicio y la tarifa acordada están en la página Facturas. El pago espera cada sí que pide el acuerdo."
+        },
+        "refill": {
+          "title": "Reposición en {name}",
+          "text": "Kin propuso esta reposición según la regla de la familia. Solo se compra tras el sí que pide el acuerdo."
         }
       },
       "raisedBy": "Lo propuso {name}, {date}",
@@ -1833,6 +1837,49 @@
           "yes": "sí",
           "no": "no"
         }
+      }
+    },
+    "refills": {
+      "title": "Reposiciones",
+      "lede": "Lo que la familia permitió que Kin compre. Kin solo propone: no se compra nada hasta que las personas que nombra el acuerdo digan que sí.",
+      "rule": "{seller} · {price} cada una · hasta {limit} por reposición",
+      "budget": "Quedan {left} de {budget} este mes",
+      "ask": "Pedir a Kin que reponga",
+      "asking": "Pidiéndoselo a Kin…",
+      "asked": "Kin propuso la reposición. Espera un sí en esta página.",
+      "alreadyAsked": "Ya hay una reposición esperando un sí o en camino.",
+      "cannotAsk": "Solo el organizador, un colaborador o el padre o madre pueden pedir a Kin que reponga.",
+      "ordersTitle": "Pedidos",
+      "ordersEmpty": "Todavía no se ha propuesto ninguna reposición.",
+      "simulated": "Simulado: la farmacia es un sustituto y no se mueve dinero real.",
+      "trackLabel": "Dónde está el pedido",
+      "states": {
+        "awaiting": "Esperando un sí",
+        "ordered": "Pedido",
+        "shipped": "Enviado",
+        "out_for_delivery": "En reparto",
+        "delivered": "Entregado"
+      },
+      "proposalStates": {
+        "pending_approval": "Esperando un sí",
+        "approved": "Dijeron sí, comprándose",
+        "executing": "Comprándose",
+        "failed": "No se pudo comprar",
+        "rejected": "No aprobado",
+        "expired": "Caducado",
+        "cancelled": "Cancelado"
+      },
+      "reasons": {
+        "refused": "No puede pedir esta reposición.",
+        "invalid": "No se pudo leer esa reposición.",
+        "demo_only": "Las reposiciones solo se compran en la demostración, con dinero simulado.",
+        "above_limit": "Esta reposición cuesta más de lo que permite la regla.",
+        "over_budget": "Se agotó el presupuesto de este mes para esta reposición.",
+        "seller_not_approved": "La farmacia no es un vendedor aprobado.",
+        "above_ceiling": "Esta reposición supera el tope del acuerdo.",
+        "paused": "Los pagos están en pausa. Inténtelo de nuevo cuando termine.",
+        "no_agreement": "La familia aún no tiene un acuerdo en vigor.",
+        "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
       }
     }
   }

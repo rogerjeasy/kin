@@ -1139,6 +1139,10 @@
         "caregiver_bill": {
           "title": "Facture de {name} pour les visites effectuées",
           "text": "Les jours de service et le tarif convenu figurent sur la page Factures. Le paiement attend chaque accord exigé."
+        },
+        "refill": {
+          "title": "Renouvellement chez {name}",
+          "text": "Kin a proposé ce renouvellement à partir de la règle fixée par la famille. Il n’est acheté qu’après le oui que demande l’accord."
         }
       },
       "raisedBy": "Proposé par {name} le {date}",
@@ -1833,6 +1837,49 @@
           "yes": "oui",
           "no": "non"
         }
+      }
+    },
+    "refills": {
+      "title": "Renouvellements",
+      "lede": "Ce que la famille a autorisé Kin à acheter. Kin ne fait que proposer : rien n’est acheté tant que les personnes désignées par l’accord n’ont pas dit oui.",
+      "rule": "{seller} · {price} l’unité · jusqu’à {limit} par renouvellement",
+      "budget": "Il reste {left} sur {budget} ce mois-ci",
+      "ask": "Demander à Kin de recommander",
+      "asking": "Demande à Kin…",
+      "asked": "Kin a proposé le renouvellement. Il attend un oui sur cette page.",
+      "alreadyAsked": "Un renouvellement attend déjà un oui ou est en route.",
+      "cannotAsk": "Seuls l’organisateur, un contributeur ou le parent peuvent demander à Kin de recommander.",
+      "ordersTitle": "Commandes",
+      "ordersEmpty": "Aucun renouvellement n’a encore été proposé.",
+      "simulated": "Simulé : la pharmacie est une doublure et aucun argent réel ne bouge.",
+      "trackLabel": "Où en est la commande",
+      "states": {
+        "awaiting": "En attente d’un oui",
+        "ordered": "Commandée",
+        "shipped": "Expédiée",
+        "out_for_delivery": "En cours de livraison",
+        "delivered": "Livrée"
+      },
+      "proposalStates": {
+        "pending_approval": "En attente d’un oui",
+        "approved": "Oui reçu, achat en cours",
+        "executing": "Achat en cours",
+        "failed": "Achat impossible",
+        "rejected": "Refusé",
+        "expired": "Expiré",
+        "cancelled": "Annulé"
+      },
+      "reasons": {
+        "refused": "Vous ne pouvez pas demander ce renouvellement.",
+        "invalid": "Ce renouvellement n’a pas pu être lu.",
+        "demo_only": "Les renouvellements ne s’achètent que dans la démo, avec de l’argent simulé.",
+        "above_limit": "Ce renouvellement coûte plus que ne le permet la règle.",
+        "over_budget": "Le budget de ce mois pour ce renouvellement est épuisé.",
+        "seller_not_approved": "La pharmacie n’est pas un vendeur approuvé.",
+        "above_ceiling": "Ce renouvellement dépasse le plafond de l’accord.",
+        "paused": "Les paiements sont en pause. Réessayez à la fin de la pause.",
+        "no_agreement": "La famille n’a pas encore d’accord en vigueur.",
+        "unavailable": "Kin n’a pas pu le faire maintenant. Réessayez dans un instant."
       }
     }
   }

@@ -155,6 +155,24 @@ export const PROPOSALS: readonly DemoProposal[] = [
   },
 ];
 
+export type DemoPurchaseRule = {
+  readonly seller: PayeeKey;
+  readonly item: string;
+  readonly category: string;
+  readonly priceCents: number;
+  readonly limitCents: number;
+  readonly monthlyBudgetCents: number;
+};
+
+/**
+ * What the family let Kin buy for Rose: her monthly prescription from the
+ * pharmacy they already pay. The price is above what Rose decides alone
+ * ($50), so the refill waits for her spoken yes.
+ */
+export const PURCHASE_RULES: readonly DemoPurchaseRule[] = [
+  { seller: "pharmacy", item: "Monthly prescription refill (30 days)", category: "pharmacy", priceCents: 6400, limitCents: 7500, monthlyBudgetCents: 15000 },
+];
+
 /** When Kin closed the month and raised the settlement. */
 export const SETTLED_AT = new Date("2026-10-30T17:00:00Z");
 

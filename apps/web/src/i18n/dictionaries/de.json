@@ -1139,6 +1139,10 @@
         "caregiver_bill": {
           "title": "Rechnung von {name} für erledigte Besuche",
           "text": "Die Einsatztage und der vereinbarte Stundensatz stehen auf der Seite Rechnungen. Die Zahlung wartet auf jedes Ja, das die Vereinbarung verlangt."
+        },
+        "refill": {
+          "title": "Nachbestellung bei {name}",
+          "text": "Kin hat diese Nachbestellung nach der Regel der Familie vorgeschlagen. Gekauft wird erst nach dem Ja, das der Familienvertrag verlangt."
         }
       },
       "raisedBy": "Eingereicht von {name}, {date}",
@@ -1833,6 +1837,49 @@
           "yes": "ja",
           "no": "nein"
         }
+      }
+    },
+    "refills": {
+      "title": "Nachbestellungen",
+      "lede": "Was die Familie Kin einkaufen lässt. Kin schlägt nur vor: Gekauft wird erst, wenn die im Familienvertrag genannten Personen Ja sagen.",
+      "rule": "{seller} · {price} pro Stück · bis zu {limit} je Nachbestellung",
+      "budget": "Noch {left} von {budget} in diesem Monat",
+      "ask": "Kin um Nachbestellung bitten",
+      "asking": "Kin wird gefragt …",
+      "asked": "Kin hat die Nachbestellung vorgeschlagen. Sie wartet auf dieser Seite auf ein Ja.",
+      "alreadyAsked": "Eine Nachbestellung wartet schon auf ein Ja oder ist unterwegs.",
+      "cannotAsk": "Nur die Organisation, Mitwirkende oder das Elternteil können Kin um eine Nachbestellung bitten.",
+      "ordersTitle": "Bestellungen",
+      "ordersEmpty": "Noch keine Nachbestellung vorgeschlagen.",
+      "simulated": "Simuliert: Die Apotheke ist ein Platzhalter, und es fließt kein echtes Geld.",
+      "trackLabel": "Wo die Bestellung ist",
+      "states": {
+        "awaiting": "Wartet auf ein Ja",
+        "ordered": "Bestellt",
+        "shipped": "Versandt",
+        "out_for_delivery": "In Zustellung",
+        "delivered": "Zugestellt"
+      },
+      "proposalStates": {
+        "pending_approval": "Wartet auf ein Ja",
+        "approved": "Ja gesagt, wird gekauft",
+        "executing": "Wird gekauft",
+        "failed": "Konnte nicht gekauft werden",
+        "rejected": "Nicht genehmigt",
+        "expired": "Abgelaufen",
+        "cancelled": "Abgebrochen"
+      },
+      "reasons": {
+        "refused": "Sie dürfen diese Nachbestellung nicht anfordern.",
+        "invalid": "Diese Nachbestellung konnte nicht gelesen werden.",
+        "demo_only": "Nachbestellungen werden nur in der Demo mit simuliertem Geld gekauft.",
+        "above_limit": "Diese Nachbestellung kostet mehr, als die Regel erlaubt.",
+        "over_budget": "Das Monatsbudget für diese Nachbestellung ist aufgebraucht.",
+        "seller_not_approved": "Die Apotheke ist kein genehmigter Verkäufer.",
+        "above_ceiling": "Diese Nachbestellung liegt über der Obergrenze des Familienvertrags.",
+        "paused": "Zahlungen sind pausiert. Versuchen Sie es nach der Pause erneut.",
+        "no_agreement": "Die Familie hat noch keinen gültigen Familienvertrag.",
+        "unavailable": "Kin konnte das jetzt nicht tun. Versuchen Sie es gleich noch einmal."
       }
     }
   }

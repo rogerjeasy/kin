@@ -1,0 +1,51 @@
+import { CATALOG, SELLER_NAME } from "./catalog.ts";
+import { ChargeError, UnknownItemError, type OrderBook } from "./orders.ts";
+
+export type MerchantRequest = { readonly method: string; readonly path: string; readonly body: unknown };
+export type MerchantReply = { readonly status: number; readonly body: Record<string, unknown> };
+
+const MAX_BODY_BYTES = 4_096;
+
+/** The most the pharmacy reads of a request body; a longer one is refused before it is parsed. */
+export const BODY_LIMIT = MAX_BODY_BYTES;
+
+const ORDER_PATH = /^\/orders\/([A-Za-z0-9_-]{1,120})$/;
+
+/**
+ * The pharmacy's three routes, as plain data in and out so they are tested
+ * without a socket: its catalog, taking an order, and where an order is.
+ * Every reply says the pharmacy is a stand-in.
+ */
+export async function handle(book: OrderBook, request: MerchantRequest): Promise<MerchantReply> {
+  const standIn = { seller: SELLER_NAME, standIn: true };
+  if (request.method === "GET" && request.path === "/catalog") return { status: 200, body: { ...standIn, items: CATALOG } };
+  if (request.method === "POST" && request.path === "/orders") return placeOrder(book, request.body, standIn);
+  const match = request.method === "GET" ? ORDER_PATH.exec(request.path) : null;
+  if (match?.[1] !== undefined) {
+    const state = book.progress(match[1]);
+    return state === null ? { status: 404, body: { error: "unknown_order" } } : { status: 200, body: { ...standIn, ref: match[1], state } };
+  }
+  return { status: 404, body: { error: "not_found" } };
+}
+
+async function placeOrder(book: OrderBook, body: unknown, standIn: Record<string, unknown>): Promise<MerchantReply> {
+  const order = parseOrder(body);
+  if (order === null) return { status: 400, body: { error: "invalid_order" } };
+  try {
+    const { ref } = await book.place(order);
+    return { status: 201, body: { ...standIn, ref } };
+  } catch (error) {
+    if (error instanceof UnknownItemError) return { status: 422, body: { error: "unknown_item" } };
+    if (error instanceof ChargeError) return { status: error.retryable ? 502 : 402, body: { error: error.retryable ? "wallet_unavailable" : "charge_refused" } };
+    throw error;
+  }
+}
+
+function parseOrder(body: unknown): { key: string; item: string; cents: number; currency: string } | null {
+  if (typeof body !== "object" || body === null) return null;
+  const { key, item, cents, currency, ...extra } = body as Record<string, unknown>;
+  if (Object.keys(extra).length > 0) return null;
+  if (typeof key !== "string" || typeof item !== "string" || typeof currency !== "string") return null;
+  if (typeof cents !== "number" || !Number.isSafeInteger(cents) || cents <= 0) return null;
+  return { key, item, cents, currency };
+}

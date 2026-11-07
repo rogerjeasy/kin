@@ -1139,6 +1139,10 @@
         "caregiver_bill": {
           "title": "{name}’s bill for completed visits",
           "text": "The service days and the agreed rate are on the Bills page. Payment waits for every yes the agreement asks for."
+        },
+        "refill": {
+          "title": "{name} refill",
+          "text": "Kin proposed this refill from the rule the family set. It is bought only after the yes the agreement asks for."
         }
       },
       "raisedBy": "Raised by {name}, {date}",
@@ -1833,6 +1837,49 @@
           "yes": "yes",
           "no": "no"
         }
+      }
+    },
+    "refills": {
+      "title": "Refills",
+      "lede": "What the family allowed Kin to buy. Kin only proposes a refill: nothing is bought until the people the agreement names say yes.",
+      "rule": "{seller} · {price} each · up to {limit} a refill",
+      "budget": "{left} of {budget} left this month",
+      "ask": "Ask Kin to reorder",
+      "asking": "Asking Kin…",
+      "asked": "Kin proposed the refill. It waits on this page for a yes.",
+      "alreadyAsked": "A refill is already waiting for a yes or on its way.",
+      "cannotAsk": "Only the organizer, a contributor or the parent can ask Kin to reorder.",
+      "ordersTitle": "Orders",
+      "ordersEmpty": "No refill has been proposed yet.",
+      "simulated": "Simulated: the pharmacy is a stand-in and no real money moves.",
+      "trackLabel": "Where the order is",
+      "states": {
+        "awaiting": "Waiting for a yes",
+        "ordered": "Ordered",
+        "shipped": "Shipped",
+        "out_for_delivery": "Out for delivery",
+        "delivered": "Delivered"
+      },
+      "proposalStates": {
+        "pending_approval": "Waiting for a yes",
+        "approved": "Said yes, being bought",
+        "executing": "Being bought",
+        "failed": "Could not be bought",
+        "rejected": "Not approved",
+        "expired": "Expired",
+        "cancelled": "Cancelled"
+      },
+      "reasons": {
+        "refused": "You may not ask for this refill.",
+        "invalid": "That refill could not be read.",
+        "demo_only": "Refills are bought in the demo only, with simulated money.",
+        "above_limit": "This refill costs more than the rule allows.",
+        "over_budget": "This month's budget for this refill is used up.",
+        "seller_not_approved": "The pharmacy is not an approved seller.",
+        "above_ceiling": "This refill is above the agreement's ceiling.",
+        "paused": "Payments are paused. Try again when the pause ends.",
+        "no_agreement": "The family has no agreement in force yet.",
+        "unavailable": "Kin could not do that now. Try again in a moment."
       }
     }
   }

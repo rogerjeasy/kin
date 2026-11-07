@@ -466,6 +466,20 @@ stateDiagram-v2
 
 The `unknown` state matters. If a call to PayPal times out, Kin does not assume success or failure. It asks PayPal for the resource by its idempotency key and waits for the webhook.
 
+**Delivery** (the goods of a purchase, beside its execution; `packages/domain` `DELIVERY_TRANSITIONS`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> awaiting
+    awaiting --> ordered
+    ordered --> shipped
+    shipped --> out_for_delivery
+    out_for_delivery --> delivered
+    delivered --> [*]
+```
+
+A purchase is `awaiting` from the moment it is proposed until the seller has the order. Only Kin's worker moves it on, from the seller's own report, one step at a time.
+
 ### 7.5 The approval engine
 
 Before any proposal can execute, the approval engine decides who must say yes.
@@ -1554,6 +1568,8 @@ The hackathon needs a month of family life to be shown in minutes.
 | 60 | Claude in the hosted app is switched on by `kin:claude` and stays on Opus 5.5 through Bedrock's Messages endpoint; while the account is refused that model, the switch stays off | An older model through Bedrock's InvokeModel API; Anthropic's API directly | Bedrock refuses every model its Messages endpoint serves to this account; the older models answer only through InvokeModel, which refuses the SDK's current API version, so using them would pin an old SDK beside a second adapter. Anthropic's API would undo decision 58. Waiting on AWS keeps one adapter and makes switching on a one-line change. |
 | 61 | A member's monthly share is a PayPal subscription with its own plan, made by the web app and recorded in `monthly_shares`; a person changes it only through two database operations (`start_my_share`, `move_my_share`), PayPal is asked before the record moves, and the worker records charges from PayPal's transaction listing | One plan for every member with a quantity; a PayPal invoice each month; writing the share and its ledger entry from the web app | A plan per share is the only way to charge an exact amount and keep each member's commitment separate (section 8.4). Reading the listing, not the webhook body, keeps rule 3 (PayPal's record decides) the same for charges as for top-ups, and a sale event that names no circle is placed by asking PayPal. The web app holds no service role (decision 38), so it cannot write the ledger. |
 
+| 61 | Refills are proposed from a family-set rule (`purchase_rules`: one approved seller, one item, a limit for each purchase, a budget for the month), checked by plain code (`checkPurchase`) and again by the database, and are bought in demo circles only, as simulated purchases through the outbox and worker | A model that composes carts; a real circle's purchase charged to a saved wallet before any screen can save one | Section 8.6's finding and cart are the design, but a real circle needs a saved PayPal wallet and a fresh multi-factor yes, and neither is built (decision 60). The rule bounds what Kin may propose, the approval engine still decides who says yes, and no model touches an amount. The demo shows the whole path; a real circle's refill is refused when proposed and, if one ever reached the worker, marked failed with nothing taken. |
+
 ---
 
 ## 22. Risks, assumptions and open questions
@@ -1677,6 +1693,13 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - `apps/worker`: a demo share's month simulated once; a real share read back (state, charges, fee); the webhook and the read writing one entry in either order; pause, resume, cancel and failed charges followed; a forged delivery writing nothing; a subscription of another member refused; an outage retried. `apps/web`: the operations' boundary against fakes and PostgreSQL, in a demo circle and a real one. End to end: the circle screen's panel, form and a running share at the four viewports and 320 pixels, start, pause, resume and end in the demo, another member reading it without controls, the amount's limits, and the caregiver seeing none of it.
 - Not verified: a real subscription in the PayPal sandbox through Kin (the requests follow the 14 October sandbox check and PayPal's documentation; the product and plan requests and the transaction listing's field names have not been run against the sandbox by this code); the five new webhook events, which are not subscribed on the live webhook until `webhook:register` is run again; a member's approval round trip in a browser; telling the circle about a failed charge; the demo's later months (only the first month is recorded; the demo clock does not advance on its own).
 
+**Built and tested: refills the parent approves by voice (demo moment 4)**
+
+- A family's refill rule (`purchase_rules`) and the purchases raised from it (`purchases`, with the delivery state machine of section 7.4). An organizer, a contributor or the parent asks Kin to reorder on the Approvals screen; `planPurchase` (domain) checks the refill against the rule (approved seller, limit for each purchase, the month's budget counting refills still waiting) and plans who must say yes with the approval engine, and `kin_private.propose_refill` refuses a plan that does not match the agreement. Kin raises the proposal (`raised_by` null); the amount is the rule's price, never typed. Rose's refill is above what she decides alone, so it waits for her yes, which the existing spoken flow records (method `voice`, read-back, a clear yes).
+- Approving queues the purchase in the same transaction (`queue_purchase`), and the worker buys it: held while paused or while the pool lacks the money, otherwise placed with the seller by the execution's key and written to the ledger as one `purchase_captured` entry labelled simulated. The worker then follows the order to the door from the seller's own reports and the screen shows each step. The seller is `apps/demo-merchant` (catalog, order book keyed by the execution, delivery on a fixed schedule, and a charge of a saved PayPal wallet that creates and captures one order carrying only the vault ID and counts it made only if PayPal's record reads `COMPLETED` for exactly the amount), or, when `KIN_DEMO_MERCHANT_URL` is unset, the same behaviour in process.
+- Tests: `purchase.test.ts` (domain, with property tests of the rule check and the schedule); the worker's `execute-purchase.test.ts` against PostgreSQL (proposing, refusals by role, budget, limit, seller and a real circle, queueing in the approval's transaction, buying once and labelled simulated, held while paused and without funds, a refusing and an unreachable seller, delivery in recorded steps, the outbox runners, RLS for a caregiver and for writes); the web `refills.test.ts` (the request boundary, and Rose's spoken yes through the real speech actions with fakes); `merchant.test.ts`; and `e2e/refills.spec.ts` at the four viewports and 320 pixels.
+- Not verified: a real saved-wallet charge (the adapter is written against the 14 October sandbox finding and tested with recorded-shape replies only); the merchant service run beside the worker; a real microphone. A real circle cannot raise a refill (decision 61).
+
 **Not yet tested**
 
-- Everything else in this document. Executions other than caregiver payouts are not built. The latency figure is a target. The diagrams describe the intended design.
+- Everything else in this document. Executions other than caregiver payouts and the demo's simulated refills are not built. The latency figure is a target. The diagrams describe the intended design.

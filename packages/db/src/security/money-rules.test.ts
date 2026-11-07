@@ -1,4 +1,4 @@
-import { BILL_TRANSITIONS, EXECUTION_TRANSITIONS, PROPOSAL_TRANSITIONS, contributionReceived, reverseEntry } from "@kin/domain";
+import { BILL_TRANSITIONS, DELIVERY_TRANSITIONS, EXECUTION_TRANSITIONS, PROPOSAL_TRANSITIONS, contributionReceived, reverseEntry } from "@kin/domain";
 import { testHeader } from "@kin/domain/testing";
 import { and, eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
@@ -109,7 +109,7 @@ describe("state machines only move forward (AGENTS.md section 5, rule 6)", () =>
       sql`select machine, from_state, to_state from kin_private.state_transitions`,
     );
     const stored = rows.rows.map((row) => `${row.machine} ${row.from_state}>${row.to_state}`).toSorted();
-    const listed = Object.entries({ proposal: PROPOSAL_TRANSITIONS, bill: BILL_TRANSITIONS, execution: EXECUTION_TRANSITIONS })
+    const listed = Object.entries({ proposal: PROPOSAL_TRANSITIONS, bill: BILL_TRANSITIONS, execution: EXECUTION_TRANSITIONS, delivery: DELIVERY_TRANSITIONS })
       .flatMap(([machine, table]) => Object.entries(table).flatMap(([from, tos]) => (tos as readonly string[]).map((to) => `${machine} ${from}>${to}`)))
       .toSorted();
     expect(stored).toEqual(listed);
