@@ -25,5 +25,6 @@ describe("the ledger store", () => {
       const expected = appendEntries(openLedger(circle.circleId, "USD"), [...before.entries, ...generated]);
       expect({ seed, entries: after.entries }).toEqual({ seed, entries: expected.entries });
     }
-  });
+    // Twenty-five circles are provisioned one after another, which takes longer beside the other packages' tests.
+  }, 90_000);
 });
