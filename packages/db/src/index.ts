@@ -2,6 +2,8 @@ export { connect } from "./connection.ts";
 export { CaregiverBillingError, configureCaregiver, setOwnReceiver, submitCaregiverBill } from "./caregiver-billing.ts";
 export type { CaregiverBillingReason } from "./caregiver-billing.ts";
 export { declineCaregiverBill, sendCaregiverBill } from "./caregiver-review.ts";
+export { recordOfficeCall, readOfficeCalls } from "./office-calls.ts";
+export type { OfficeCallInput, OfficeCallRecord, TranscriptTurn } from "./office-calls.ts";
 export { LetterError, addLetter, recordClaimCheck } from "./letters.ts";
 export type { ClaimCheckInput, LetterInput, LetterReason, LetterRecorded } from "./letters.ts";
 export { RECEIPT_TOPIC, creditReceipt, decideReceipt, submitReceipt } from "./receipts.ts";

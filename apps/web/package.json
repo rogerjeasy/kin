@@ -22,6 +22,7 @@
     "@kin/domain": "workspace:*",
     "@kin/paypal": "workspace:*",
     "@kin/speech": "workspace:*",
+    "@kin/telephony": "workspace:*",
     "ag-grid-community": "^36.2.0",
     "ag-grid-react": "^36.2.0",
     "class-variance-authority": "^0.7.1",

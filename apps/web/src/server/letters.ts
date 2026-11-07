@@ -2,13 +2,14 @@ import { ModelUnavailableError, MAX_DOCUMENT_TEXT, narrate, readDocument, type S
 import { authorize, type BillingAccount } from "@kin/auth";
 import { LetterError, addLetter, asPerson, recordClaimCheck, type CircleSnapshot, type Database } from "@kin/db";
 import { needsAction, readLetterText, settleReading, MAX_DOCUMENT_CENTS, type Reading } from "@kin/documents";
-import { InvalidDecimalError, calendarDay, centsFromDecimal, checkClaim, entryHeadline, sameName, type ClaimVerdict } from "@kin/domain";
+import { InvalidDecimalError, calendarDay, centsFromDecimal, checkClaim, sameName, type ClaimVerdict } from "@kin/domain";
 
 import { CLAIM_TOPIC, LANGUAGE_NAMES, claimWords, letterWords, type LetterOutcome } from "@/components/dashboard/words/letter-words";
 import { circleFormatters } from "@/content/circle/format";
 import { getDictionary } from "@/i18n/dictionary";
 import { isLocale } from "@/i18n/locales";
 
+import { claimRecord } from "./claim-record";
 import { spendUse, type RateLimiter } from "./model";
 
 export type LettersContext = {
@@ -161,17 +162,7 @@ export async function checkDemand(context: LettersContext, input: unknown): Prom
   if (claimedCents === "invalid") return fail("amount");
 
   const { circle } = context;
-  const result = checkClaim({
-    claimedPayee: payee,
-    claimedCents,
-    payees: circle.payees.map((each) => ({ id: each.id, name: each.name })),
-    bills: circle.bills.map((bill) => ({ payeeId: bill.payeeId, cents: bill.amountCents, state: bill.state })),
-    payments: circle.ledger.entries.flatMap((entry) => {
-      if (entry.kind !== "payout_confirmed") return [];
-      const headline = entryHeadline(entry);
-      return [{ entryId: entry.id, payeeId: headline.subject, cents: headline.cents, day: entry.occurredOn }];
-    }),
-  });
+  const result = checkClaim({ claimedPayee: payee, claimedCents, ...claimRecord(circle) });
 
   const dictionary = await getDictionary(locale);
   const formatters = circleFormatters(locale, circle);

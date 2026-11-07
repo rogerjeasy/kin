@@ -47,6 +47,8 @@ export const CIRCLE_ACTIONS = {
   /** Hold up a letter, bill or receipt for Kin to read, and ask Kin to check a demand for money against the record. */
   "letter.read": ["organizer", "contributor", "parent"],
   "claim.check": ["organizer", "contributor", "parent"],
+  /** Place a call to the family office line, or try it from the simulator, and have its verdict recorded and the family told. */
+  "office_line.try": ["organizer", "contributor", "parent"],
   /** Send a caregiver's bill for the family's approval, or decline it: the members who share the cost. */
   "caregiver_bill.review": ["organizer", "contributor"],
   /** File a receipt for money spent from one's own pocket: the members who share the cost. */

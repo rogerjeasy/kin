@@ -4,6 +4,9 @@ import { CaregiverBills } from "@/components/dashboard/caregiver-billing/caregiv
 
 import { ChecksPanel } from "@/components/dashboard/bills/checks-panel";
 import { LettersSection } from "@/components/dashboard/letters/letters-section";
+import { OfficeLineLink } from "@/components/dashboard/office-line/office-line-link";
+import { officeLineRoute } from "@/content/dashboard-routes";
+import { localizedPath } from "@/i18n/routing";
 import { PayeeCell } from "@/components/dashboard/bills/payee-cell";
 import { DataTable } from "@/components/dashboard/ui/data-table";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
@@ -104,6 +107,7 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
       {may(circle, "safety.view") ? (
         <LettersSection circle={circle} locale={locale} copy={dictionary.dashboard.letters} speech={speechServices() === null ? null : dictionary.dashboard.speech} canReadPhotos={structuredModel() !== null} mayAct={may(circle, "letter.read")} />
       ) : null}
+      {may(circle, "safety.view") ? <OfficeLineLink href={localizedPath(locale, officeLineRoute)} title={dictionary.dashboard.officeLine.title} text={dictionary.dashboard.officeLine.linkText} label={dictionary.dashboard.officeLine.link} /> : null}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         {upcoming.length > 0 ? (
           <Panel title={upcomingTitle} description={bills.upcoming.text} flush>
