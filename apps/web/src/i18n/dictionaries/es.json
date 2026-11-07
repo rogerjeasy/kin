@@ -1718,6 +1718,78 @@
       "unavailable": "Kin no puede hablar ahora. Las palabras están en la pantalla.",
       "link": "Escuchar lo que Kin te cuenta",
       "kinNever": "Kin informa. Kin nunca pide secretos."
+    },
+    "statement": {
+      "title": "Extracto",
+      "lede": "Una página para todo el círculo, igual para cada miembro. Cada cifra se lee del registro; nada es una estimación.",
+      "print": "Imprimir o guardar como PDF",
+      "link": "Extracto mensual y resumen del año",
+      "month": "Mes",
+      "forMonth": "Extracto de {month}",
+      "glance": {
+        "title": "El mes de un vistazo",
+        "paidIn": "Ingresado",
+        "spent": "Gastado",
+        "caregiver": "Pago del cuidador",
+        "fees": "Comisiones de PayPal"
+      },
+      "contributions": {
+        "title": "Aportaciones",
+        "empty": "Nadie ha aportado este mes."
+      },
+      "spending": {
+        "title": "Gasto por categoría",
+        "empty": "Este mes no se ha gastado nada."
+      },
+      "caregiver": {
+        "title": "Pago del cuidador",
+        "empty": "Este mes no se ha pagado a ningún cuidador."
+      },
+      "settlement": {
+        "title": "Liquidación",
+        "text": "Calculada con el registro del mes. Nada se mueve hasta que se apruebe.",
+        "none": "Todos están en su parte acordada.",
+        "payout": "A {name} se le devuelven {amount}",
+        "collection": "{name} aporta {amount}",
+        "settled": "Liquidado este mes: {collected} cobrados, {paid} devueltos."
+      },
+      "next": {
+        "title": "Previsto para el mes que viene",
+        "text": "Importes previstos. El importe real llega con cada factura.",
+        "item": "{payee}: unos {amount}, vence el {day}",
+        "empty": "Todavía no se espera ninguna factura."
+      },
+      "year": {
+        "title": "Resumen de {year}",
+        "text": "Totales del año natural, por mes, por categoría y por persona.",
+        "month": "Mes",
+        "paidIn": "Ingresado",
+        "spent": "Gastado",
+        "caregiver": "Pago del cuidador",
+        "categories": "Por categoría",
+        "ownPocket": "Pagado de su bolsillo",
+        "empty": "Este año no se ha registrado nada."
+      },
+      "audit": {
+        "download": "Descargar la exportación de auditoría (CSV)",
+        "note": "Cada movimiento con su fecha, su origen y su referencia.",
+        "csv": {
+          "date": "Fecha",
+          "id": "ID del asiento",
+          "entry": "Asiento",
+          "kind": "Tipo",
+          "source": "Origen",
+          "reference": "Referencia del origen",
+          "reverses": "Anula",
+          "account": "Cuenta",
+          "debit": "Debe",
+          "credit": "Haber",
+          "currency": "Moneda",
+          "simulated": "Simulado",
+          "yes": "sí",
+          "no": "no"
+        }
+      }
     }
   }
 }

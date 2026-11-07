@@ -1718,6 +1718,78 @@
       "unavailable": "Kin non può parlare ora. Le parole sono sullo schermo.",
       "link": "Ascolta cosa ti dice Kin",
       "kinNever": "Kin informa. Kin non chiede mai segreti."
+    },
+    "statement": {
+      "title": "Rendiconto",
+      "lede": "Una pagina per tutto il cerchio, uguale per ogni membro. Ogni cifra è letta dal registro; nulla è stimato.",
+      "print": "Stampa o salva come PDF",
+      "link": "Rendiconto mensile e riepilogo dell’anno",
+      "month": "Mese",
+      "forMonth": "Rendiconto di {month}",
+      "glance": {
+        "title": "Il mese in breve",
+        "paidIn": "Versato",
+        "spent": "Speso",
+        "caregiver": "Compenso dell’assistente",
+        "fees": "Commissioni PayPal"
+      },
+      "contributions": {
+        "title": "Contributi",
+        "empty": "Questo mese nessuno ha versato."
+      },
+      "spending": {
+        "title": "Spese per categoria",
+        "empty": "Questo mese non è stato speso nulla."
+      },
+      "caregiver": {
+        "title": "Compenso dell’assistente",
+        "empty": "Questo mese nessun assistente è stato pagato."
+      },
+      "settlement": {
+        "title": "Saldo",
+        "text": "Calcolato dal registro del mese. Nulla si muove prima dell’approvazione.",
+        "none": "Tutti sono alla quota concordata.",
+        "payout": "{name} riceve {amount}",
+        "collection": "{name} aggiunge {amount}",
+        "settled": "Saldato questo mese: {collected} incassati, {paid} restituiti."
+      },
+      "next": {
+        "title": "Previsto il mese prossimo",
+        "text": "Importi previsti. L’importo reale arriva con ogni fattura.",
+        "item": "{payee}: circa {amount}, scade il {day}",
+        "empty": "Nessuna fattura prevista per ora."
+      },
+      "year": {
+        "title": "Riepilogo {year}",
+        "text": "Totali dell’anno solare, per mese, categoria e persona.",
+        "month": "Mese",
+        "paidIn": "Versato",
+        "spent": "Speso",
+        "caregiver": "Compenso dell’assistente",
+        "categories": "Per categoria",
+        "ownPocket": "Pagato di tasca propria",
+        "empty": "Quest’anno non è stato registrato nulla."
+      },
+      "audit": {
+        "download": "Scarica l’esportazione di controllo (CSV)",
+        "note": "Ogni movimento con data, fonte e riferimento.",
+        "csv": {
+          "date": "Data",
+          "id": "ID voce",
+          "entry": "Voce",
+          "kind": "Tipo",
+          "source": "Fonte",
+          "reference": "Riferimento della fonte",
+          "reverses": "Storna",
+          "account": "Conto",
+          "debit": "Dare",
+          "credit": "Avere",
+          "currency": "Valuta",
+          "simulated": "Simulato",
+          "yes": "sì",
+          "no": "no"
+        }
+      }
     }
   }
 }

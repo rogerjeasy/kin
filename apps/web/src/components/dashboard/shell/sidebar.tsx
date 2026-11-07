@@ -20,7 +20,7 @@ export function Sidebar({ locale, dictionary, month, clock, badges, pause, pause
   return (
     <aside
       {...themeAttribute}
-      className="sticky top-0 hidden h-dvh flex-col gap-6 overflow-y-auto bg-band px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-5 text-foreground lg:flex"
+      className="sticky top-0 hidden h-dvh flex-col gap-6 overflow-y-auto bg-band px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-5 text-foreground lg:flex print:hidden"
     >
       <div className="px-2">
         <Logo href={localizedPath(locale, dashboardRoutes.overview)} label={fill(shell.homeLabel, { circle: circle.name })} />

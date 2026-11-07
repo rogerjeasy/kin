@@ -1718,6 +1718,78 @@
       "unavailable": "Kin ne peut pas parler pour le moment. Les mots sont à l’écran.",
       "link": "Écouter ce que Kin vous dit",
       "kinNever": "Kin informe. Kin ne demande jamais de secrets."
+    },
+    "statement": {
+      "title": "Relevé",
+      "lede": "Une page pour tout le cercle, identique pour chaque membre. Chaque chiffre est lu dans le registre ; rien n’est estimé.",
+      "print": "Imprimer ou enregistrer en PDF",
+      "link": "Relevé mensuel et bilan de l’année",
+      "month": "Mois",
+      "forMonth": "Relevé de {month}",
+      "glance": {
+        "title": "Le mois en un coup d’œil",
+        "paidIn": "Versé",
+        "spent": "Dépensé",
+        "caregiver": "Rémunération de l’aidant",
+        "fees": "Frais PayPal"
+      },
+      "contributions": {
+        "title": "Contributions",
+        "empty": "Personne n’a versé ce mois-ci."
+      },
+      "spending": {
+        "title": "Dépenses par catégorie",
+        "empty": "Rien n’a été dépensé ce mois-ci."
+      },
+      "caregiver": {
+        "title": "Rémunération de l’aidant",
+        "empty": "Aucun aidant n’a été payé ce mois-ci."
+      },
+      "settlement": {
+        "title": "Règlement",
+        "text": "Calculé d’après le registre du mois. Rien ne bouge avant approbation.",
+        "none": "Chacun est à sa part convenue.",
+        "payout": "{name} est remboursé(e) de {amount}",
+        "collection": "{name} ajoute {amount}",
+        "settled": "Réglé ce mois-ci : {collected} encaissés, {paid} remboursés."
+      },
+      "next": {
+        "title": "Attendu le mois prochain",
+        "text": "Montants attendus. Le montant réel arrive avec chaque facture.",
+        "item": "{payee} : environ {amount}, dû le {day}",
+        "empty": "Aucune facture n’est encore attendue."
+      },
+      "year": {
+        "title": "Bilan {year}",
+        "text": "Totaux de l’année civile, par mois, par catégorie et par personne.",
+        "month": "Mois",
+        "paidIn": "Versé",
+        "spent": "Dépensé",
+        "caregiver": "Rémunération de l’aidant",
+        "categories": "Par catégorie",
+        "ownPocket": "Payé de sa poche",
+        "empty": "Rien n’a été enregistré cette année."
+      },
+      "audit": {
+        "download": "Télécharger l’export d’audit (CSV)",
+        "note": "Chaque mouvement avec sa date, sa source et sa référence.",
+        "csv": {
+          "date": "Date",
+          "id": "ID de l’écriture",
+          "entry": "Écriture",
+          "kind": "Type",
+          "source": "Source",
+          "reference": "Référence de la source",
+          "reverses": "Annule",
+          "account": "Compte",
+          "debit": "Débit",
+          "credit": "Crédit",
+          "currency": "Devise",
+          "simulated": "Simulé",
+          "yes": "oui",
+          "no": "non"
+        }
+      }
     }
   }
 }

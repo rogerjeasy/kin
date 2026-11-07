@@ -150,3 +150,5 @@ export type {
   ProposalState,
   StateMachine,
 } from "./state-machines.ts";
+export { CAREGIVER_CATEGORY, monthlyStatement, yearInReview } from "./statement.ts";
+export type { PeriodFigures, StatementAmount, StatementQuery, YearInReview, YearMonth } from "./statement.ts";

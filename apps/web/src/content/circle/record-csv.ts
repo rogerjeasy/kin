@@ -16,6 +16,11 @@ function cell(value: string): string {
   return /[",\n\r]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
 }
 
+/** One CSV row, each cell quoted and defused as above. */
+export function csvRow(row: readonly string[]): string {
+  return row.map(cell).join(",");
+}
+
 /**
  * The circle's record as CSV, one row per ledger line, oldest first, in the
  * reader's language. Amounts are exact decimals; every simulated line says so.
@@ -43,5 +48,5 @@ export function recordCsv(circle: CircleSnapshot, dictionary: Dictionary, names:
         ];
       });
     });
-  return [header, ...rows].map((row) => row.map(cell).join(",")).join("\r\n") + "\r\n";
+  return [header, ...rows].map(csvRow).join("\r\n") + "\r\n";
 }

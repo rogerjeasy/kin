@@ -1718,6 +1718,78 @@
       "unavailable": "Kin cannot speak right now. The words are on the screen.",
       "link": "Hear what Kin tells you",
       "kinNever": "Kin tells. Kin never asks for secrets."
+    },
+    "statement": {
+      "title": "Statement",
+      "lede": "One page for the whole circle, the same for every member. Every figure is read from the record; nothing here is estimated.",
+      "print": "Print or save as PDF",
+      "link": "Monthly statement and year in review",
+      "month": "Month",
+      "forMonth": "Statement for {month}",
+      "glance": {
+        "title": "This month at a glance",
+        "paidIn": "Paid in",
+        "spent": "Spent",
+        "caregiver": "Caregiver pay",
+        "fees": "PayPal fees"
+      },
+      "contributions": {
+        "title": "Contributions",
+        "empty": "Nobody paid in this month."
+      },
+      "spending": {
+        "title": "Spending by category",
+        "empty": "Nothing was spent this month."
+      },
+      "caregiver": {
+        "title": "Caregiver pay",
+        "empty": "No caregiver was paid this month."
+      },
+      "settlement": {
+        "title": "Settlement",
+        "text": "Worked out from this month’s record. Nothing moves until it is approved.",
+        "none": "Everyone is at their agreed share.",
+        "payout": "{name} is paid back {amount}",
+        "collection": "{name} adds {amount}",
+        "settled": "Settled this month: {collected} collected, {paid} paid back."
+      },
+      "next": {
+        "title": "Expected next month",
+        "text": "Expected amounts. The real amount comes with each bill.",
+        "item": "{payee}: about {amount}, due {day}",
+        "empty": "No bills are expected yet."
+      },
+      "year": {
+        "title": "{year} in review",
+        "text": "Totals for the calendar year, by month, by category and by person.",
+        "month": "Month",
+        "paidIn": "Paid in",
+        "spent": "Spent",
+        "caregiver": "Caregiver pay",
+        "categories": "By category",
+        "ownPocket": "Paid from own pocket",
+        "empty": "Nothing was recorded this year."
+      },
+      "audit": {
+        "download": "Download the audit export (CSV)",
+        "note": "Every movement with its date, its source and its reference.",
+        "csv": {
+          "date": "Date",
+          "id": "Entry ID",
+          "entry": "Entry",
+          "kind": "Kind",
+          "source": "Source",
+          "reference": "Source reference",
+          "reverses": "Reverses",
+          "account": "Account",
+          "debit": "Debit",
+          "credit": "Credit",
+          "currency": "Currency",
+          "simulated": "Simulated",
+          "yes": "yes",
+          "no": "no"
+        }
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
 import { describeAccount } from "@kin/domain";
-import { DownloadIcon } from "lucide-react";
+import { DownloadIcon, FileTextIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { FILTER_OF } from "@/components/dashboard/record/record-filters";
 import { RecordList } from "@/components/dashboard/record/record-list";
@@ -67,12 +68,20 @@ export default async function RecordPage({ params }: PageProps<"/[locale]/dashbo
         aside={
           items.length > 0 ? (
             // A plain link: the browser downloads the file, and the route checks the viewer again.
-            <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">
-              <a href={`${localizedPath(locale, dashboardRoutes.record)}/export`} download>
-                <DownloadIcon aria-hidden="true" />
-                {record.download}
-              </a>
-            </Button>
+            <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+              <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">
+                <Link href={`${localizedPath(locale, dashboardRoutes.record)}/statement`}>
+                  <FileTextIcon aria-hidden="true" />
+                  {dictionary.dashboard.statement.link}
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">
+                <a href={`${localizedPath(locale, dashboardRoutes.record)}/export`} download>
+                  <DownloadIcon aria-hidden="true" />
+                  {record.download}
+                </a>
+              </Button>
+            </div>
           ) : null
         }
         flush
