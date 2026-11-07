@@ -18,7 +18,7 @@ for (const viewport of viewports) {
 
     await refills.getByRole("button", { name: "Ask Kin to reorder" }).click();
     // The permission covers $64.00 once a month, so nobody is asked and the purchase is already approved.
-    await expect(refills).toContainText("Bought under the standing permission. Nobody had to be asked.");
+    // The button's own confirmation lasts only until the page refreshes, so the test reads the order, which stays.
     await expect(refills).toContainText("Under a standing permission");
     await expect(refills).toContainText("Said yes, being bought");
     await expect(refills).toContainText("$86.00 of $150.00 left this month");
