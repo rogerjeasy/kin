@@ -18,6 +18,7 @@
     "@kin/auth": "workspace:*",
     "@kin/config": "workspace:*",
     "@kin/db": "workspace:*",
+    "@kin/documents": "workspace:*",
     "@kin/domain": "workspace:*",
     "@kin/paypal": "workspace:*",
     "@kin/speech": "workspace:*",

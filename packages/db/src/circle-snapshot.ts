@@ -195,4 +195,6 @@ export type DocumentRecord = {
   readonly uploadedBy: string | null;
   readonly simulated: boolean;
   readonly createdAt: Date;
+  /** What Kin read from it, still to be parsed by the reader: stored JSON, never trusted as typed. */
+  readonly extraction: unknown;
 };

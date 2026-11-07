@@ -1,13 +1,22 @@
 import { AnthropicBedrockMantle } from "@anthropic-ai/bedrock-sdk";
 import type { ModelConfig } from "@kin/config";
 
-import { ModelUnavailableError, type StructuredModel } from "./structured-model.ts";
+import { ModelUnavailableError, type StructuredModel, type StructuredRequest } from "./structured-model.ts";
 
 /** Extraction is a short, well-specified read: low effort (docs/tech-stack.md section 6). */
 const EFFORT = "low";
 /** Room for adaptive thinking and a short JSON answer. */
 const MAX_TOKENS = 8_000;
 const TIMEOUT_MS = 60_000;
+
+/** Plain text for a request about words; the photographs first, then the words, for one about a picture. */
+function userContent(request: StructuredRequest) {
+  if (request.images === undefined || request.images.length === 0) return request.user;
+  return [
+    ...request.images.map((image) => ({ type: "image" as const, source: { type: "base64" as const, media_type: image.mediaType, data: image.base64 } })),
+    { type: "text" as const, text: request.user },
+  ];
+}
 
 /**
  * Claude on Amazon Bedrock, through its Messages endpoint. Credentials come
@@ -28,7 +37,7 @@ export function bedrockModel(config: Extract<ModelConfig, { enabled: true }>): S
         model: config.model,
         max_tokens: MAX_TOKENS,
         system: request.system,
-        messages: [{ role: "user", content: request.user }],
+        messages: [{ role: "user", content: userContent(request) }],
         output_config: { effort: EFFORT, format: { type: "json_schema", schema: request.schema } },
       });
     } catch (error) {

@@ -10,7 +10,7 @@ import { circleNames } from "@/content/circle/names";
 import { circleSlots } from "@/content/circle/words";
 import { getDictionary } from "@/i18n/dictionary";
 
-import type { RateLimiter } from "./model";
+import { spendUse, type RateLimiter } from "./model";
 import type { SpeechServices } from "./speech";
 
 export type SpeechContext = {
@@ -125,14 +125,7 @@ function answerable(context: SpeechContext, proposalId: string) {
 
 // Every use of a paid service is limited per person and per pool, asked before any is used.
 function allowed(context: SpeechContext): boolean {
-  const at = (context.now ?? Date.now)();
-  const limits = [
-    ...(context.limiter ? [{ limiter: context.limiter, key: context.userId }] : []),
-    ...(context.budget ? [{ limiter: context.budget, key: context.accountTypes === "demo" ? "demo" : "people" }] : []),
-  ];
-  if (!limits.every(({ limiter, key }) => limiter.allows(key, at))) return false;
-  for (const { limiter, key } of limits) limiter.record(key, at);
-  return true;
+  return spendUse(context, context, (context.now ?? Date.now)());
 }
 
 async function hear(context: SpeechContext, recording: { pcm: Uint8Array; locale: string }): Promise<{ transcript: string } | Failure> {
@@ -149,7 +142,7 @@ async function hear(context: SpeechContext, recording: { pcm: Uint8Array; locale
   }
 }
 
-async function say(context: SpeechContext, text: string, locale: SpeechLocale): Promise<Spoken | Failure> {
+export async function say(context: SpeechContext, text: string, locale: SpeechLocale): Promise<Spoken | Failure> {
   if (context.services === null) return fail("speech_unavailable");
   if (!allowed(context)) return fail("busy");
   try {

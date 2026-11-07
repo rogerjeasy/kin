@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "eval": "node scripts/eval-visits.ts"
+    "eval": "node scripts/eval-visits.ts",
+    "eval:documents": "node scripts/eval-documents.ts"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "1.1.0",

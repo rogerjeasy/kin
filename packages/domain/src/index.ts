@@ -29,6 +29,8 @@ export type {
   Payee,
   ProposalKind,
 } from "./approval-plan.ts";
+export { checkClaim, sameName } from "./claim-check.ts";
+export type { ClaimFacts, ClaimReason, ClaimResult, ClaimVerdict, KnownBill, KnownPayee, KnownPayment } from "./claim-check.ts";
 export { CareValueError, careValueCents } from "./care.ts";
 export { CaregiverBillError, calculateCaregiverBill, parseCaregiverBillDetails } from "./caregiver-bill.ts";
 export type { CaregiverBill, CaregiverBillDetails, CaregiverVisit } from "./caregiver-bill.ts";

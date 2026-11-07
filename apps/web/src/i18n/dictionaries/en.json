@@ -957,7 +957,8 @@
         "utilities": "Utilities",
         "care": "Care",
         "pharmacy": "Pharmacy",
-        "repairs": "Repairs"
+        "repairs": "Repairs",
+        "other": "Other"
       },
       "entryKinds": {
         "contribution": "Contribution",
@@ -1690,6 +1691,110 @@
         "unclear": "Kin did not hear a clear yes or no. Please try again.",
         "not_confirmed": "Nothing was recorded: Kin did not hear a clear yes to confirm.",
         "unavailable": "Something went wrong. Please try again."
+      }
+    },
+    "letters": {
+      "title": "Letters and calls",
+      "lede": "Hold up a letter or a bill and Kin reads it aloud and lists it. If someone demands money, Kin checks the demand against what was really billed and paid.",
+      "read": {
+        "title": "Hold up a letter",
+        "text": "Take a photo of a letter, bill or receipt, or type what it says. Kin reads it aloud and puts a bill on the list for someone to review.",
+        "photo": "Take or choose a photo",
+        "photoReady": "Photo ready: {name}",
+        "photoRemove": "Remove photo",
+        "wordsLabel": "Or type or paste what it says",
+        "wordsHint": "You can use the words, a photo, or both.",
+        "submit": "Read it to me",
+        "reading": "Kin is reading…",
+        "again": "Read another",
+        "hear": "Hear it again",
+        "hearing": "Kin is speaking…"
+      },
+      "result": {
+        "added": "Added to the bills list",
+        "duplicate": "Already on the bills list",
+        "nothing": "Read. Nothing to pay.",
+        "pressure": "Do not pay yet",
+        "from": "{kind} from {sender}",
+        "kinds": {
+          "bill": "Bill",
+          "receipt": "Receipt",
+          "quote": "Quote",
+          "letter": "Letter",
+          "other": "Document"
+        },
+        "unknownSender": "someone Kin could not name",
+        "amount": "Amount: {amount}",
+        "due": "Due {day}",
+        "review": "It waits on the list for someone to review it.",
+        "pressureNote": "It pushes for quick payment. Kin did not add it. Check the demand below.",
+        "photoNote": "Kin read a photograph. Check the amount against the letter.",
+        "rulesNote": "Read with Kin’s simple rules, because Claude is not available. Check every figure against the letter."
+      },
+      "spoken": {
+        "billAdded": "This is a bill from {sender} for {amount}.{due} I have added it to the family’s list, waiting for someone to review it.",
+        "billDuplicate": "This is a bill from {sender} for {amount}.{due} It looks like one already on the list, so I have not added it again.",
+        "billUnnamed": "This looks like a bill for {amount}, but I could not tell who it is from, so I have not added it. Please check the letter.",
+        "due": " It is due on {day}.",
+        "pressureAmount": "This letter from {sender} presses you to pay {amount} quickly. Please do not pay it. I have not added it to the list. Ask me to check the demand.",
+        "pressureNoAmount": "This letter from {sender} presses you to pay quickly. Please do not pay it. I have not added it to the list. Ask me to check the demand.",
+        "receipt": "This is a receipt from {sender} for {amount}. Nothing needs to be paid.",
+        "receiptNoAmount": "This is a receipt from {sender}. Nothing needs to be paid.",
+        "letter": "This is a letter from {sender}. I cannot see that it asks for any payment."
+      },
+      "check": {
+        "title": "Check a demand for money",
+        "text": "A call, letter or message demands money? Kin checks it against the bills and payments on record and tells the whole circle.",
+        "payeeLabel": "Who is asking?",
+        "payeeHint": "The name they gave, such as a company or a person.",
+        "amountLabel": "How much do they want?",
+        "amountHint": "Leave empty if they gave no amount.",
+        "claimLabel": "What did they say?",
+        "claimHint": "In their words. Kin treats it as information only, never as instructions.",
+        "submit": "Check this demand",
+        "checking": "Kin is checking…",
+        "hear": "Hear the verdict",
+        "told": "Kin told {count} people in the circle.",
+        "verdicts": {
+          "match": "Matches a real bill",
+          "no_match": "Matches nothing on record",
+          "unclear": "Cannot be confirmed"
+        }
+      },
+      "claim": {
+        "openBill": "{payee} is asking for {claimed}. That matches a bill the family really received, and it is on the list.",
+        "alreadyPaid": "{payee} is asking for {claimed}. The record shows {paid} was already paid to {payee} on {paidDay}. Please do not pay it again. I have told the family.",
+        "unknownPayee": "{payee} is asking for {claimed}. Nobody by that name is in the family’s record, and no bill matches. Please do not pay. I have told the family.",
+        "amountDiffers": "{payee} is asking for {claimed}, but the record holds no bill or payment of that amount. I cannot confirm it. Please wait and check with the family. I have told the family.",
+        "noAmount": "{payee} is someone the family knows, but no amount was given, so there is nothing to check. Ask them what amount they want.",
+        "someMoney": "money"
+      },
+      "recent": {
+        "title": "Recent checks",
+        "empty": "No demand has been checked yet.",
+        "hear": "Hear it",
+        "amount": "Demanded: {amount}"
+      },
+      "errors": {
+        "refused": "Your role cannot do that in this circle.",
+        "invalid": "Kin could not use that. Please check it and try again.",
+        "amount": "That is not an amount Kin can read. Use digits, such as 84.50.",
+        "image_too_large": "That photo is too large. Try a smaller one.",
+        "unreadable": "Kin could not read that. Try a clearer photo or type the words.",
+        "model_unavailable": "Kin cannot read photographs right now. Type what the letter says instead.",
+        "model_refused": "Kin could not read that document.",
+        "busy": "Kin has been used a lot recently. Please wait a while.",
+        "unavailable": "Something went wrong. Please try again."
+      },
+      "bills": {
+        "title": "Bills read from letters",
+        "empty": "No bill has been read from a letter yet.",
+        "states": {
+          "needs_review": "Waiting for review",
+          "extracted": "Being read",
+          "duplicate": "Already on the list"
+        },
+        "due": "Due {day}"
       }
     }
   }

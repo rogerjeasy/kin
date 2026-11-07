@@ -224,7 +224,7 @@ async function readSettlements(tx: Transaction, circleId: string) {
 }
 
 async function readClaimChecks(tx: Transaction, circleId: string) {
-  const rows = await tx.select().from(claimChecks).where(eq(claimChecks.circleId, circleId)).orderBy(desc(claimChecks.checkedOn), asc(claimChecks.id));
+  const rows = await tx.select().from(claimChecks).where(eq(claimChecks.circleId, circleId)).orderBy(desc(claimChecks.checkedOn), desc(claimChecks.createdAt), asc(claimChecks.id));
   return rows.map((row) => ({
     id: row.id,
     checkedOn: row.checkedOn,
@@ -238,7 +238,7 @@ async function readClaimChecks(tx: Transaction, circleId: string) {
 }
 
 async function readNarrations(tx: Transaction, circleId: string) {
-  const rows = await tx.select().from(narrations).where(eq(narrations.circleId, circleId)).orderBy(desc(narrations.saidOn), asc(narrations.id));
+  const rows = await tx.select().from(narrations).where(eq(narrations.circleId, circleId)).orderBy(desc(narrations.saidOn), desc(narrations.createdAt), asc(narrations.id));
   return rows.map((row) => ({
     id: row.id,
     memberId: row.memberId,
@@ -254,7 +254,7 @@ async function readNarrations(tx: Transaction, circleId: string) {
 
 async function readDocuments(tx: Transaction, circleId: string) {
   const rows = await tx
-    .select({ id: documents.id, kind: documents.kind, uploadedBy: documents.uploadedBy, simulated: documents.simulated, createdAt: documents.createdAt })
+    .select({ id: documents.id, kind: documents.kind, uploadedBy: documents.uploadedBy, simulated: documents.simulated, createdAt: documents.createdAt, extraction: documents.extraction })
     .from(documents)
     .where(eq(documents.circleId, circleId))
     .orderBy(asc(documents.createdAt));

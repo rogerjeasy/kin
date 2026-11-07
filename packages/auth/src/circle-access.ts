@@ -35,6 +35,9 @@ export const CIRCLE_ACTIONS = {
   "caregiver_bill.submit": ["caregiver"],
   /** Say where one's own pay goes. Nobody else may, so nobody can redirect it. */
   "caregiver_receiver.set": ["caregiver"],
+  /** Hold up a letter, bill or receipt for Kin to read, and ask Kin to check a demand for money against the record. */
+  "letter.read": ["organizer", "contributor", "parent"],
+  "claim.check": ["organizer", "contributor", "parent"],
   /** Send a caregiver's bill for the family's approval, or decline it: the members who share the cost. */
   "caregiver_bill.review": ["organizer", "contributor"],
 } as const satisfies Record<string, readonly CircleRole[]>;

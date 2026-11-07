@@ -200,6 +200,9 @@ importers:
       '@kin/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@kin/documents':
+        specifier: workspace:*
+        version: link:../../packages/documents
       '@kin/domain':
         specifier: workspace:*
         version: link:../../packages/domain
@@ -371,7 +374,14 @@ importers:
         specifier: 0.31.11
         version: 0.31.11
 
-  packages/documents: {}
+  packages/documents:
+    dependencies:
+      '@kin/agent':
+        specifier: workspace:*
+        version: link:../agent
+      '@kin/domain':
+        specifier: workspace:*
+        version: link:../domain
 
   packages/domain: {}
 
