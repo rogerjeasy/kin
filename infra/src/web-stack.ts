@@ -10,6 +10,10 @@ import type { InfraConfig } from "./config.ts";
 import { DATABASE_SETTINGS, PAYPAL_SETTINGS } from "./database-settings.ts";
 import { WEB_SETTINGS } from "./web-settings.ts";
 
+/** Claude Opus 4.6 as a US cross-region inference profile, and the foundation model it routes to. Matches `BEDROCK_INVOKE_DEFAULT_MODEL` in `@kin/config`. */
+const CLAUDE_INFERENCE_PROFILE = "us.anthropic.claude-opus-4-6-v1";
+const CLAUDE_FOUNDATION_MODEL = "anthropic.claude-opus-4-6-v1";
+
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 /** The origin people reach the app at: the first https origin Cognito may return to. */
@@ -119,25 +123,39 @@ export class WebStack extends Stack {
       environment.push({ name: "KIN_SPEECH_REGION", value: this.region });
     }
 
-    // Claude: inference through Bedrock's Messages endpoint in this region
-    // and account, and the Marketplace subscription that a model's first
-    // call makes, only when Bedrock itself makes it (as AWS's own
-    // AmazonBedrockMantleInferenceAccess policy allows).
+    // Claude: Opus 4.6 through Bedrock Runtime's InvokeModel, because this
+    // account is not entitled to Opus 5.5 on the Mantle endpoint (decision 67).
+    // The cross-region inference profile in this account is named, and so are
+    // the foundation models it routes to, but only when called through that
+    // profile. The Marketplace subscription a model's first call makes is
+    // allowed only when Bedrock itself makes it.
     if (config.claude) {
+      const profileArn = `arn:aws:bedrock:${this.region}:${this.account}:inference-profile/${CLAUDE_INFERENCE_PROFILE}`;
       instance.addToPolicy(
         new iam.PolicyStatement({
-          actions: ["bedrock-mantle:CreateInference"],
-          resources: [`arn:aws:bedrock-mantle:${this.region}:${this.account}:project/*`],
+          actions: ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+          resources: [profileArn],
+        }),
+      );
+      instance.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+          resources: [`arn:aws:bedrock:*::foundation-model/${CLAUDE_FOUNDATION_MODEL}`],
+          conditions: { StringEquals: { "bedrock:InferenceProfileArn": profileArn } },
         }),
       );
       instance.addToPolicy(
         new iam.PolicyStatement({
           actions: ["aws-marketplace:Subscribe", "aws-marketplace:ViewSubscriptions"],
           resources: ["*"],
-          conditions: { StringEquals: { "aws:CalledViaLast": "bedrock-mantle.amazonaws.com" } },
+          conditions: { StringEquals: { "aws:CalledViaLast": "bedrock.amazonaws.com" } },
         }),
       );
-      environment.push({ name: "KIN_BEDROCK_REGION", value: this.region });
+      environment.push(
+        { name: "KIN_BEDROCK_REGION", value: this.region },
+        { name: "KIN_BEDROCK_API", value: "invoke" },
+        { name: "KIN_BEDROCK_MODEL", value: CLAUDE_INFERENCE_PROFILE },
+      );
     }
 
     // Out through Kin's own network, where the database admits Kin's

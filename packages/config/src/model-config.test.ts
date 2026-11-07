@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ConfigError } from "./config-error.ts";
-import { BEDROCK_DEFAULT_MODEL, readModelConfig } from "./model-config.ts";
+import { BEDROCK_DEFAULT_MODEL, BEDROCK_INVOKE_DEFAULT_MODEL, readModelConfig } from "./model-config.ts";
 
 describe("the model settings", () => {
   it("are off without a region, so nothing calls the model", () => {
@@ -10,8 +10,14 @@ describe("the model settings", () => {
   });
 
   it("name Claude Opus 5.5 on Bedrock unless another model is set", () => {
-    expect(readModelConfig({ KIN_BEDROCK_REGION: "us-east-1" })).toEqual({ enabled: true, region: "us-east-1", model: BEDROCK_DEFAULT_MODEL, endpoint: null });
+    expect(readModelConfig({ KIN_BEDROCK_REGION: "us-east-1" })).toEqual({ enabled: true, region: "us-east-1", api: "mantle", model: BEDROCK_DEFAULT_MODEL, endpoint: null });
     expect(readModelConfig({ KIN_BEDROCK_REGION: "eu-central-1", KIN_BEDROCK_MODEL: "us.anthropic.claude-opus-5-5" })).toMatchObject({ model: "us.anthropic.claude-opus-5-5" });
+  });
+
+  it("choose InvokeModel with Claude Opus 4.6 when asked, and refuse any other API", () => {
+    expect(readModelConfig({ KIN_BEDROCK_REGION: "us-east-1", KIN_BEDROCK_API: "invoke" })).toEqual({ enabled: true, region: "us-east-1", api: "invoke", model: BEDROCK_INVOKE_DEFAULT_MODEL, endpoint: null });
+    expect(readModelConfig({ KIN_BEDROCK_REGION: "us-east-1", KIN_BEDROCK_API: "invoke", KIN_BEDROCK_MODEL: "us.anthropic.claude-sonnet-4-6" })).toMatchObject({ api: "invoke", model: "us.anthropic.claude-sonnet-4-6" });
+    expect(() => readModelConfig({ KIN_BEDROCK_REGION: "us-east-1", KIN_BEDROCK_API: "rest" })).toThrow(ConfigError);
   });
 
   it("refuse a malformed region or model, and a stand-in that is not on this machine", () => {

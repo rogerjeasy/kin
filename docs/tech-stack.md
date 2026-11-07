@@ -17,7 +17,7 @@ This document says what to build with and why. It is not a design or an implemen
 | Data grid | AG Grid Community for the family ledger and audit screens |
 | Checkout | PayPal JavaScript SDK v6 |
 | PayPal server side | PayPal Agent Toolkit and sandbox MCP server, plus direct REST calls |
-| AI model | Claude Opus 5.5 (`claude-opus-5-5`) through the Anthropic TypeScript SDK |
+| AI model | Claude through the Anthropic TypeScript SDK on Amazon Bedrock: Opus 4.6 by InvokeModel today, Opus 5.5 when the account is granted it |
 | Speech | A speech-to-text and a text-to-speech service |
 | Phone calls | Twilio voice |
 | Containers | Docker, one image for all three services, Docker Compose locally |
@@ -128,7 +128,7 @@ Three small services share one codebase:
 
 ## 6. AI
 
-- **Model: Claude Opus 5.5, model ID `claude-opus-5-5`.** Used for the agent's reasoning, for reading bills, letters and receipts from photographs, and for writing statements and spoken sentences.
+- **Model: Claude Opus 5.5 (`claude-opus-5-5`) as the target; the hosted app runs Opus 4.6 until the account is granted 5.5 (see the Bedrock paragraph below).** Used for the agent's reasoning, for reading bills, letters and receipts from photographs, and for writing statements and spoken sentences.
 - **SDK: `@anthropic-ai/sdk`**, using its tool runner with typed tools, so the SDK drives the tool-calling loop and Kin supplies the tools and the approval checks.
 - **Structured outputs** for anything Kin stores, such as the amount, payee and due date read from a bill.
 - **Streaming** for spoken replies, so the parent hears the first words quickly.
@@ -142,7 +142,7 @@ Three small services share one codebase:
 
 **What AI is not used for:** the ledger arithmetic, the settlement calculation and the decision that a payment happened. Those are plain deterministic code reading PayPal's records.
 
-**Where Kin reaches Claude: Amazon Bedrock** (decision 58 in `architecture.md`). The project owner runs Anthropic's models on Bedrock, so Kin calls Claude Opus 5.5 there through `@anthropic-ai/bedrock-sdk` (`AnthropicBedrockMantle`, model ID `anthropic.claude-opus-5-5`), with AWS credentials and no Anthropic key. The settings above apply unchanged on Bedrock.
+**Where Kin reaches Claude: Amazon Bedrock** (decisions 58 and 67 in `architecture.md`). The project owner runs Anthropic's models on Bedrock, with AWS credentials and no Anthropic key, through `@anthropic-ai/bedrock-sdk`. `KIN_BEDROCK_API` picks the endpoint: `mantle` (the default; `AnthropicBedrockMantle`, model ID `anthropic.claude-opus-5-5`) or `invoke` (Bedrock Runtime InvokeModel, `AnthropicBedrock`, model ID `us.anthropic.claude-opus-4-6-v1`). The hosted app uses `invoke` because its AWS account is not entitled to Opus 5.5 on the Mantle endpoint; moving to Opus 5.5 is setting `KIN_BEDROCK_API=mantle` and `KIN_BEDROCK_MODEL=anthropic.claude-opus-5-5` once AWS grants it, then re-running both evaluation sets. Both adapters send the same Messages body (low effort, `output_config.format` json_schema, no tools, no prefill, which Opus 4.6 refuses), and the reply is validated by the caller. The settings above apply unchanged on Bedrock, except that Opus 4.6 is not the model those lines were written for: re-check the effort and tool-choice lines against it.
 
 ---
 

@@ -764,12 +764,17 @@ describe("top-ups", () => {
     expect(actionsOf(webBefore).some((action) => action.startsWith("bedrock") || action.startsWith("aws-marketplace:"))).toBe(false);
     expect(JSON.stringify(webBefore.toJSON())).not.toContain("KIN_BEDROCK_REGION");
     const on = Template.fromStack(buildKin(new App({ context: testContext }), { ...config, claude: true }).web);
-    expect(actionsOf(on)).toEqual(expect.arrayContaining(["bedrock-mantle:CreateInference", "aws-marketplace:Subscribe"]));
-    expect(actionsOf(on).some((action) => action.startsWith("bedrock:") || action === "bedrock-mantle:CallWithBearerToken")).toBe(false);
+    expect(actionsOf(on)).toEqual(expect.arrayContaining(["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream", "aws-marketplace:Subscribe"]));
+    expect(actionsOf(on).some((action) => action.startsWith("bedrock-mantle:") || action === "bedrock:*")).toBe(false);
     const policies = JSON.stringify(on.findResources("AWS::IAM::Policy"));
-    expect(policies).toContain("arn:aws:bedrock-mantle:us-east-1:123456789012:project/*");
-    expect(policies).toContain("bedrock-mantle.amazonaws.com");
-    expect(JSON.stringify(on.toJSON())).toContain("KIN_BEDROCK_REGION");
+    expect(policies).toContain("arn:aws:bedrock:us-east-1:123456789012:inference-profile/us.anthropic.claude-opus-4-6-v1");
+    expect(policies).toContain("arn:aws:bedrock:*::foundation-model/anthropic.claude-opus-4-6-v1");
+    expect(policies).toContain("bedrock:InferenceProfileArn");
+    expect(policies).toContain("bedrock.amazonaws.com");
+    const template = JSON.stringify(on.toJSON());
+    expect(template).toContain("KIN_BEDROCK_REGION");
+    expect(template).toContain('"Name":"KIN_BEDROCK_API","Value":"invoke"');
+    expect(template).toContain('"Name":"KIN_BEDROCK_MODEL","Value":"us.anthropic.claude-opus-4-6-v1"');
   });
 
   it("stay off, in the web app and the worker alike, until PayPal is configured", () => {

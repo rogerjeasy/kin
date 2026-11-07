@@ -9,7 +9,7 @@ export { INBOX_ENV, readInboxConfig } from "./inbox-config.ts";
 export type { InboxConfig } from "./inbox-config.ts";
 export { PAYPAL_ENV, PAYPAL_SANDBOX_API, readPayPalConfig } from "./paypal-config.ts";
 export type { PayPalConfig } from "./paypal-config.ts";
-export { BEDROCK_DEFAULT_MODEL, MODEL_ENV, readModelConfig } from "./model-config.ts";
+export { BEDROCK_DEFAULT_MODEL, BEDROCK_INVOKE_DEFAULT_MODEL, MODEL_ENV, readModelConfig } from "./model-config.ts";
 export type { ModelConfig } from "./model-config.ts";
 export { SPEECH_ENV, readSpeechConfig } from "./speech-config.ts";
 export type { SpeechConfig } from "./speech-config.ts";
