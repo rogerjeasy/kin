@@ -1,5 +1,5 @@
 // Subscribes the pool's PayPal sandbox app to the events Kin applies, at the
-// web app's webhook address, and prints the webhook's ID for infra/cdk.json
+// web app's webhook address (creating it, or adding any event it lacks), and prints the webhook's ID for infra/cdk.json
 // (kin:paypal.webhookId). Running it again finds the webhook it made.
 //
 //   pnpm --filter @kin/paypal run webhook:register -- https://<web app>/api/paypal/webhook
@@ -38,4 +38,17 @@ const webhook =
     }),
     "webhook",
   );
-console.log(`\n${found ? "Found" : "Created"} the webhook for ${url}.\nPut this in infra/cdk.json under kin:paypal.webhookId: ${optionalText(webhook, "id") ?? "(no ID returned)"}`);
+const subscribed = found === undefined ? [] : recordList(found["event_types"]).flatMap((type) => optionalText(type, "name") ?? []);
+const missing = WEBHOOK_EVENT_TYPES.filter((name) => !subscribed.includes(name));
+// An existing webhook keeps the events it was made with, so one made before a new event was added is brought up to date.
+if (found !== undefined && missing.length > 0) {
+  await client.send({
+    method: "PATCH",
+    path: `/v1/notifications/webhooks/${optionalText(found, "id") ?? ""}`,
+    body: JSON.stringify([{ op: "replace", path: "/event_types", value: [...new Set([...subscribed, ...WEBHOOK_EVENT_TYPES])].map((name) => ({ name })) }]),
+    requestId: `kin-webhook-events-${url}-${missing.join(",")}`,
+    operation: "webhooks.update",
+  });
+  console.log(`Subscribed the webhook to: ${missing.join(", ")}`);
+}
+console.log(`\n${found ? (missing.length > 0 ? "Updated" : "Found") : "Created"} the webhook for ${url}.\nPut this in infra/cdk.json under kin:paypal.webhookId: ${optionalText(webhook, "id") ?? "(no ID returned)"}`);

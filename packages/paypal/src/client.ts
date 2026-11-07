@@ -18,7 +18,7 @@ export type PayPalClientOptions = {
 };
 
 export type PayPalRequest = {
-  readonly method: "GET" | "POST";
+  readonly method: "GET" | "PATCH" | "POST";
   readonly path: string;
   /** The request body exactly as sent, so a webhook's bytes are never re-encoded. */
   readonly body?: string;
