@@ -2305,18 +2305,22 @@
       "pool": "In the pool",
       "poolNote": "Confirmed money, from the record.",
       "head": "Chain head",
-      "headNote": "Write this down. Any later export must still contain it.",
+      "headNote": "Write this down, or save it somewhere Kin cannot reach. Any later export must still contain it.",
+      "kept": "Checked against {count} heads Kin recorded earlier, the oldest on {day}.",
+      "keptNone": "Kin has no earlier head to check against yet, so this check only shows the record agrees with itself. Kin now records the head each time this page is opened or an export is downloaded.",
+      "keptLimit": "Kin keeps these heads in its own database. They catch any entry changed or removed since, but someone with administrator access to that database could rewrite both the record and the heads. To be certain, save the head below somewhere Kin cannot reach, such as in an email to yourself, from time to time.",
       "checksTitle": "What was checked",
       "checks": {
         "chain": {
           "label": "Fingerprints",
-          "ok": "Every one of {count} entries matches its fingerprint and the one before it. This shows the record agrees with itself; to prove nothing was changed since an earlier export, check it against a head you saved then.",
+          "ok": "Every one of {count} entries matches its fingerprint and the one before it. On its own this shows the record agrees with itself; the head check compares it with what Kin recorded earlier.",
           "bad": "An entry no longer matches its fingerprint: the record was changed after it was written."
         },
         "head": {
           "label": "Head of the chain",
-          "ok": "The head is the head of these entries.",
-          "bad": "The head does not match these entries."
+          "ok": "The head is the head of these entries, and each of the {count} heads Kin recorded earlier is still what the entries give at that point: nothing recorded was changed or removed.",
+          "okAlone": "The head is the head of these entries. There is no earlier head to compare with yet.",
+          "bad": "The head does not match these entries, or an entry was changed or removed since Kin recorded an earlier head."
         },
         "ledger": {
           "label": "Ledger rules",
@@ -2352,7 +2356,7 @@
       },
       "findings": {
         "chain": "An entry no longer matches its fingerprint, so the record was changed after it was written.",
-        "head": "The stated head of the chain is not the head of its entries, or an earlier head is missing.",
+        "head": "The stated head of the chain is not the head of its entries, or a head Kin recorded earlier no longer matches them.",
         "ledger": "Some entries break a rule of the ledger.",
         "settlement": "A settlement worked out again does not match the one in the export.",
         "wording": "A sentence shown to people states a figure that the record does not hold."

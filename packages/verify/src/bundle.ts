@@ -16,6 +16,9 @@ export type SettlementClaim = {
   readonly plan: SettlementPlan;
 };
 
+/** A chain head Kin kept earlier: the hash after `count` entries, and when Kin noted it. */
+export type StoredHead = { readonly count: number; readonly head: string; readonly recordedAt: string };
+
 /** The audit export: the circle's ledger with its hash chain, what Kin said about it and the settlements it claims. */
 export type AuditBundle = {
   readonly format: typeof BUNDLE_FORMAT;
@@ -27,6 +30,8 @@ export type AuditBundle = {
   readonly hashes: readonly string[];
   /** The last hash. Write it down: any later export must still contain it. */
   readonly head: string;
+  /** The heads Kin's database kept at earlier exports and visits, oldest first. Each must still be the chain's value at its count. */
+  readonly heads: readonly StoredHead[];
   readonly wording: readonly Wording[];
   readonly settlements: readonly SettlementClaim[];
 };
@@ -36,13 +41,14 @@ export type BundleInput = {
   readonly currency: string;
   readonly generatedOn: string;
   readonly entries: readonly LedgerEntry[];
+  readonly heads?: readonly StoredHead[];
   readonly wording: readonly Wording[];
   readonly settlements: readonly SettlementClaim[];
 };
 
 export function buildBundle(input: BundleInput): AuditBundle {
   const hashes = chainHashes(input.circleId, input.entries);
-  return { format: BUNDLE_FORMAT, ...input, hashes, head: hashes.at(-1) ?? genesisHash(input.circleId) };
+  return { format: BUNDLE_FORMAT, ...input, heads: input.heads ?? [], hashes, head: hashes.at(-1) ?? genesisHash(input.circleId) };
 }
 
 /** The claim for one period, worked out now from the entries, so the export can be checked against a later recomputation. */
@@ -70,13 +76,19 @@ export function parseBundle(json: string): AuditBundle {
     throw new BundleFormatError("The file is not JSON");
   }
   if (!isRecord(value) || value["format"] !== BUNDLE_FORMAT) throw new BundleFormatError(`The file is not a ${BUNDLE_FORMAT} export`);
-  const { circleId, currency, generatedOn, entries, hashes, head, wording, settlements } = value;
+  const { circleId, currency, generatedOn, entries, hashes, head, heads, wording, settlements } = value;
   if (!isText(circleId) || !isText(currency) || !isText(generatedOn) || !isText(head)) throw new BundleFormatError("The export lacks its circle, currency, date or head");
   if (!Array.isArray(entries) || !entries.every(isEntryShape)) throw new BundleFormatError("The export's entries are malformed");
   if (!Array.isArray(hashes) || !hashes.every(isText)) throw new BundleFormatError("The export's hashes are malformed");
+  // An export made before heads were kept has none; that is a shorter check, not a malformed file.
+  if (heads !== undefined && (!Array.isArray(heads) || !heads.every(isStoredHeadShape))) throw new BundleFormatError("The export's stored heads are malformed");
   if (!Array.isArray(wording) || !wording.every((each) => isRecord(each) && isText(each["entryId"]) && isText(each["text"]))) throw new BundleFormatError("The export's wording is malformed");
   if (!Array.isArray(settlements) || !settlements.every(isRecord)) throw new BundleFormatError("The export's settlements are malformed");
-  return value as AuditBundle;
+  return { ...(value as Omit<AuditBundle, "heads">), heads: (heads ?? []) as readonly StoredHead[] };
+}
+
+function isStoredHeadShape(value: unknown): value is StoredHead {
+  return isRecord(value) && Number.isSafeInteger(value["count"]) && (value["count"] as number) >= 0 && isText(value["head"]) && isText(value["recordedAt"]) && !Number.isNaN(Date.parse(value["recordedAt"]));
 }
 
 function isEntryShape(value: unknown): value is LedgerEntry {

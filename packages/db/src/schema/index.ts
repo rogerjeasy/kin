@@ -10,4 +10,5 @@ export * from "./approvals.ts";
 export * from "./shares.ts";
 export * from "./purchases.ts";
 export * from "./mandates.ts";
+export * from "./audit-heads.ts";
 export * from "./system.ts";

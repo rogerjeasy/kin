@@ -2305,18 +2305,22 @@
       "pool": "Nel fondo",
       "poolNote": "Denaro confermato, dal registro.",
       "head": "Testa della catena",
-      "headNote": "Annotala. Ogni esportazione successiva deve ancora contenerla.",
+      "headNote": "Annotala o salvala dove Kin non può arrivare. Ogni esportazione successiva deve ancora contenerla.",
+      "kept": "Verificato rispetto a {count} teste che Kin ha registrato in precedenza, la più antica del {day}.",
+      "keptNone": "Kin non ha ancora una testa precedente con cui confrontare, quindi questa verifica mostra solo che il registro è coerente in sé. Da ora Kin registra la testa ogni volta che questa pagina viene aperta o un'esportazione viene scaricata.",
+      "keptLimit": "Kin conserva queste teste nel proprio database. Rivelano qualsiasi voce modificata o rimossa da allora, ma chi ha i diritti di amministratore su quel database potrebbe riscrivere sia il registro sia le teste. Per esserne certo, salva ogni tanto la testa qui sotto in un posto che Kin non può raggiungere, per esempio in un'e-mail a te stesso.",
       "checksTitle": "Cosa è stato controllato",
       "checks": {
         "chain": {
           "label": "Impronte",
-          "ok": "Ognuna delle {count} voci corrisponde alla propria impronta e a quella precedente. Questo mostra che il registro è coerente in sé; per provare che nulla è cambiato da un'esportazione precedente, confrontalo con una testa che avevi annotato allora.",
+          "ok": "Ognuna delle {count} voci corrisponde alla propria impronta e a quella precedente. Da sola, questa verifica mostra che il registro è coerente in sé; la verifica della testa lo confronta con ciò che Kin ha registrato in precedenza.",
           "bad": "Una registrazione non corrisponde più alla propria impronta: il registro è stato modificato dopo la scrittura."
         },
         "head": {
           "label": "Testa della catena",
-          "ok": "La testa è quella di queste registrazioni.",
-          "bad": "La testa non corrisponde a queste registrazioni."
+          "ok": "La testa è quella di queste registrazioni, e ciascuna delle {count} teste registrate in precedenza da Kin è ancora ciò che le registrazioni danno in quel punto: nulla di ciò che era registrato è stato modificato o rimosso.",
+          "okAlone": "La testa è quella di queste registrazioni. Non c'è ancora una testa precedente con cui confrontare.",
+          "bad": "La testa non corrisponde a queste registrazioni, oppure una registrazione è stata modificata o rimossa da quando Kin ha registrato una testa precedente."
         },
         "ledger": {
           "label": "Regole del registro",
@@ -2352,7 +2356,7 @@
       },
       "findings": {
         "chain": "Una registrazione non corrisponde più alla propria impronta: il registro è stato modificato dopo la scrittura.",
-        "head": "La testa della catena indicata non è quella delle sue registrazioni, oppure ne manca una precedente.",
+        "head": "La testa della catena indicata non è quella delle sue registrazioni, oppure una testa registrata in precedenza da Kin non corrisponde più.",
         "ledger": "Alcune registrazioni violano una regola del registro.",
         "settlement": "Un conguaglio ricalcolato non coincide con quello dell'esportazione.",
         "wording": "Una frase mostrata alle persone riporta una cifra assente dal registro."
