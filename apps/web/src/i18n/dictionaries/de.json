@@ -2303,7 +2303,7 @@
       "checks": {
         "chain": {
           "label": "Fingerabdrücke",
-          "ok": "Alle {count} Einträge passen zu ihrem Fingerabdruck und zum vorherigen: Nach dem Schreiben wurde nichts geändert.",
+          "ok": "Alle {count} Einträge passen zu ihrem Fingerabdruck und zum vorherigen. Das zeigt, dass die Aufzeichnung in sich stimmig ist; um zu belegen, dass seit einem früheren Export nichts geändert wurde, vergleichen Sie sie mit einem damals notierten Kopfwert.",
           "bad": "Ein Eintrag passt nicht mehr zu seinem Fingerabdruck: Die Aufzeichnung wurde nach dem Schreiben geändert."
         },
         "head": {

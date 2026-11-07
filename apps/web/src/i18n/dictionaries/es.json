@@ -2303,7 +2303,7 @@
       "checks": {
         "chain": {
           "label": "Huellas",
-          "ok": "Cada uno de los {count} asientos coincide con su huella y con la anterior: nada se cambió después de escribirse.",
+          "ok": "Cada una de las {count} entradas coincide con su huella y con la anterior. Esto muestra que el registro es coherente consigo mismo; para probar que nada cambió desde una exportación anterior, compárelo con una cabecera que anotó entonces.",
           "bad": "Un asiento ya no coincide con su huella: el registro se cambió después de escribirse."
         },
         "head": {

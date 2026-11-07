@@ -2,7 +2,7 @@ import { rosesMonth, type LedgerEntry } from "@kin/domain";
 import { describe, expect, it } from "vitest";
 
 import { buildBundle, claimSettlement, parseBundle, type AuditBundle } from "./bundle.ts";
-import { entryFigures, verifyBundle } from "./verify.ts";
+import { entryFigures, verifyBundle, wordingMatchesEntry } from "./verify.ts";
 
 const { ledger, agreement, period } = rosesMonth;
 
@@ -69,5 +69,26 @@ describe("verifying an export of Rose's month", () => {
   it("refuses a file that is not an export", () => {
     expect(() => parseBundle("{}")).toThrow();
     expect(() => parseBundle("not json")).toThrow();
+  });
+});
+
+describe("wordingMatchesEntry", () => {
+  const entry = exportOf().entries[0];
+  const hold = entry === undefined ? "" : entryFigures(entry)[0] ?? "";
+
+  it("accepts the entry's own amount however it is grouped", () => {
+    expect(entry !== undefined && wordingMatchesEntry(`Paid ${hold}.`, entry)).toBe(true);
+  });
+
+  it("does not let a date part stand in for an amount with cents", () => {
+    expect(entry !== undefined && wordingMatchesEntry(`Paid ${entry.occurredOn.slice(-2)}.99.`, entry)).toBe(false);
+  });
+
+  it("does not read 10.00 as 1,000", () => {
+    expect(entry !== undefined && wordingMatchesEntry("Paid 1,000.", entry)).toBe(false);
+  });
+
+  it("refuses a date that is not the entry's own", () => {
+    expect(entry !== undefined && wordingMatchesEntry("Paid on 1999-01-01.", entry)).toBe(false);
   });
 });

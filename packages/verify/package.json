@@ -15,7 +15,9 @@
     "sample": "node src/sample.ts"
   },
   "dependencies": {
-    "@kin/agent": "workspace:*",
     "@kin/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2"
   }
 }

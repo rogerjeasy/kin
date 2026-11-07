@@ -2303,7 +2303,7 @@
       "checks": {
         "chain": {
           "label": "Empreintes",
-          "ok": "Chacune des {count} écritures correspond à son empreinte et à la précédente : rien n'a été modifié après son enregistrement.",
+          "ok": "Chacune des {count} écritures correspond à son empreinte et à la précédente. Le registre est donc cohérent avec lui-même; pour prouver que rien n'a changé depuis un export antérieur, comparez-le à une tête que vous avez notée alors.",
           "bad": "Une écriture ne correspond plus à son empreinte : le registre a été modifié après son enregistrement."
         },
         "head": {

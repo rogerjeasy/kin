@@ -2303,7 +2303,7 @@
       "checks": {
         "chain": {
           "label": "Fingerprints",
-          "ok": "Every one of {count} entries matches its fingerprint and the one before it, so nothing was changed after it was written.",
+          "ok": "Every one of {count} entries matches its fingerprint and the one before it. This shows the record agrees with itself; to prove nothing was changed since an earlier export, check it against a head you saved then.",
           "bad": "An entry no longer matches its fingerprint: the record was changed after it was written."
         },
         "head": {

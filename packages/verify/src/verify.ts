@@ -1,4 +1,3 @@
-import { passesNumberGuard } from "@kin/agent";
 import { auditLedger, decimalAmount, entryHeadline, type LedgerEntry, type LedgerProblemCode } from "@kin/domain";
 
 import type { AuditBundle, SettlementClaim } from "./bundle.ts";
@@ -91,11 +90,8 @@ function sameSettlement(bundle: AuditBundle, claim: SettlementClaim): boolean {
 
 /** The figures a sentence about this entry may use: its amounts, its fee and its dates. */
 export function entryFigures(entry: LedgerEntry): string[] {
-  const amounts = entry.lines.map((line) => line.cents);
-  const headline = safeHeadline(entry);
-  const cents = headline === null ? amounts : [...amounts, headline.cents, headline.feeCents];
   return [
-    ...cents.flatMap((each) => {
+    ...entryCents(entry).flatMap((each) => {
       const text = decimalAmount({ cents: each, currency: entry.currency });
       return each % 100 === 0 ? [text, text.split(".")[0] ?? text] : [text];
     }),
@@ -103,6 +99,13 @@ export function entryFigures(entry: LedgerEntry): string[] {
     entry.period,
     ...entry.occurredOn.split("-").flatMap((part) => [part, String(Number(part))]),
   ];
+}
+
+/** Every amount an entry holds: its lines, and the headline's amount and fee. */
+function entryCents(entry: LedgerEntry): number[] {
+  const amounts = entry.lines.map((line) => line.cents);
+  const headline = safeHeadline(entry);
+  return headline === null ? amounts : [...amounts, headline.cents, headline.feeCents];
 }
 
 function safeHeadline(entry: LedgerEntry) {
@@ -113,11 +116,42 @@ function safeHeadline(entry: LedgerEntry) {
   }
 }
 
+const NUMBER = /\d[\d.,\p{Zs}]*\d|\d/gu;
+const ISO_DATE = /\d{4}-\d{2}(?:-\d{2})?/gu;
+const MAX_WORDS_LENGTH = 400;
+
+/** A number as its value, so "1,000.50", "1 000,5" and "1000.50" compare equal and "10.00" never equals "1,000". */
+function valueOf(token: string): string {
+  const squeezed = token.replace(/\p{Zs}/gu, "");
+  const decimal = /^(.*\d)[.,](\d{1,2})$/u.exec(squeezed);
+  const whole = (decimal?.[1] ?? squeezed).replace(/[.,]/gu, "").replace(/^0+(?=\d)/u, "");
+  const fraction = (decimal?.[2] ?? "").replace(/0+$/u, "");
+  return fraction === "" ? whole : `${whole}.${fraction}`;
+}
+
+/**
+ * Whether every number a sentence says is one the entry holds. An amount is
+ * compared by its value to the entry's own cents; a date only as the entry's
+ * whole date or period, or as one of their parts when it stands alone as a
+ * whole number. A date part can never stand in for an amount with cents.
+ */
+export function wordingMatchesEntry(text: string, entry: LedgerEntry): boolean {
+  if (text.trim() === "" || text.length > MAX_WORDS_LENGTH || /https?:|www\.|@/iu.test(text)) return false;
+  const dates = [entry.occurredOn, entry.period];
+  if ([...text.matchAll(ISO_DATE)].some((match) => !dates.includes(match[0]))) return false;
+  const amounts = new Set(entryCents(entry).map((cents) => valueOf(decimalAmount({ cents, currency: entry.currency }))));
+  const dateParts = new Set(dates.flatMap((date) => date.split("-").map((part) => String(Number(part)))));
+  return [...text.replace(ISO_DATE, " ").matchAll(NUMBER)].every((match) => {
+    const value = valueOf(match[0]);
+    return amounts.has(value) || (!value.includes(".") && dateParts.has(value));
+  });
+}
+
 function checkWording(bundle: AuditBundle): Check {
   const byId = new Map(bundle.entries.map((entry) => [entry.id, entry]));
   const wrong = bundle.wording.filter((each) => {
     const entry = byId.get(each.entryId);
-    return entry === undefined || !passesNumberGuard(each.text, { figures: entryFigures(entry) });
+    return entry === undefined || !wordingMatchesEntry(each.text, entry);
   });
   if (wrong.length > 0) return fail("wording", `${wrong.length} sentence(s) say a figure the entry does not hold`, wrong.map((each) => each.entryId));
   return pass("wording", `Every figure in ${bundle.wording.length} sentence(s) is one the entries hold`);

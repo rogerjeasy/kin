@@ -2303,7 +2303,7 @@
       "checks": {
         "chain": {
           "label": "Impronte",
-          "ok": "Ognuna delle {count} registrazioni corrisponde alla propria impronta e a quella precedente: nulla è stato modificato dopo la scrittura.",
+          "ok": "Ognuna delle {count} voci corrisponde alla propria impronta e a quella precedente. Questo mostra che il registro è coerente in sé; per provare che nulla è cambiato da un'esportazione precedente, confrontalo con una testa che avevi annotato allora.",
           "bad": "Una registrazione non corrisponde più alla propria impronta: il registro è stato modificato dopo la scrittura."
         },
         "head": {
