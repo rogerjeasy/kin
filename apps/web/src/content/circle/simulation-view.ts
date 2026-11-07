@@ -39,7 +39,7 @@ export function comparisonRows({ dictionary, names, format }: Words, circle: Cir
   });
 }
 
-const TONES = { standing_rule: "positive", refused: "danger", paused: "waiting", needs_approval: "waiting" } as const satisfies Record<string, PillTone>;
+const TONES = { standing_rule: "positive", mandate: "positive", refused: "danger", paused: "waiting", needs_approval: "waiting" } as const satisfies Record<string, PillTone>;
 
 /** The hypothetical bill: who must say yes, what the pool holds and what a top-up would be. */
 export function billWords({ dictionary, names, format, parent }: Words, bill: NonNullable<ScenarioResult["bill"]>) {
