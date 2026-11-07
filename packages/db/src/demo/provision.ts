@@ -15,6 +15,7 @@ import { randomUUID } from "node:crypto";
 
 import type { Database, Transaction } from "../connection.ts";
 import { writeEntries } from "../ledger-store.ts";
+import { mandateDigest } from "../mandates.ts";
 import { demoTime, type DemoTime } from "./demo-time.ts";
 import { rekeyEntry, rowOf } from "./rekey.ts";
 import { asProvisioner } from "../scope.ts";
@@ -30,6 +31,7 @@ import {
   claimChecks,
   documents,
   expectedBills,
+  mandates,
   members,
   narrations,
   payees,
@@ -45,6 +47,7 @@ import {
   CLAIM_CHECK,
   DOCUMENTS,
   EXPECTED_BILLS,
+  MANDATES,
   NARRATIONS,
   PAYEES,
   PERSONAS,
@@ -102,7 +105,8 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     await writeEntries(tx, ledger, new Map());
     await writeBills(tx, ids, ledger);
     await writeProposals(tx, ids, agreement, ledger);
-    await writePurchaseRules(tx, ids);
+    const ruleIds = await writePurchaseRules(tx, ids);
+    await writeMandates(tx, ids, ruleIds);
     await writeNews(tx, ids, ledger);
     await tx.insert(auditLog).values({
       id: randomUUID(),
@@ -137,6 +141,7 @@ async function writePeople(tx: Transaction, ids: Ids, userId: string | null): Pr
       role: persona.role,
       parentLevel: persona.parentLevel,
       relationship: persona.relationship,
+      currency: persona.currency ?? null,
       // Daniel has no photograph, so he is drawn by his initials.
       portrait: persona.key === "daniel" ? null : persona.key,
       joinedAt: ids.time.at(persona.joinedAt),
@@ -322,10 +327,11 @@ async function writeProposals(tx: Transaction, ids: Ids, agreement: Agreement, l
 }
 
 /** The refills the family let Kin propose, from the pharmacy they already pay. */
-async function writePurchaseRules(tx: Transaction, ids: Ids): Promise<void> {
+async function writePurchaseRules(tx: Transaction, ids: Ids): Promise<ReadonlyMap<PayeeKey, string>> {
+  const ruleIds = new Map(PURCHASE_RULES.map((rule) => [rule.seller, randomUUID()] as const));
   await tx.insert(purchaseRules).values(
     PURCHASE_RULES.map((rule) => ({
-      id: randomUUID(),
+      id: ruleIds.get(rule.seller) ?? randomUUID(),
       circleId: ids.circleId,
       payeeId: ids.payees[rule.seller],
       item: rule.item,
@@ -334,6 +340,38 @@ async function writePurchaseRules(tx: Transaction, ids: Ids): Promise<void> {
       limitCents: rule.limitCents,
       monthlyBudgetCents: rule.monthlyBudgetCents,
     })),
+  );
+  return ruleIds;
+}
+
+/** Rose's spoken permission, recorded as her own call would have: simulated, and sealed like any mandate. */
+async function writeMandates(tx: Transaction, ids: Ids, ruleIds: ReadonlyMap<PayeeKey, string>): Promise<void> {
+  await tx.insert(mandates).values(
+    MANDATES.map((mandate) => {
+      const ruleId = ruleIds.get(mandate.seller);
+      if (ruleId === undefined) throw new Error("Rose's circle has no refill rule for " + mandate.seller);
+      const terms = {
+        ruleId,
+        perPurchaseCents: mandate.perPurchaseCents,
+        perPeriodCents: mandate.perPeriodCents,
+        cadence: "monthly" as const,
+        validFrom: ids.time.day(mandate.validFrom),
+        expiresOn: ids.time.day(mandate.expiresOn),
+      };
+      return {
+        id: randomUUID(),
+        circleId: ids.circleId,
+        ...terms,
+        grantedBy: ids.members.rose,
+        recordedBy: ids.members.rose,
+        status: "active" as const,
+        spokenText: mandate.spokenText,
+        evidenceRef: "demo-call",
+        simulated: true,
+        digest: mandateDigest(terms),
+        grantedAt: ids.time.at(mandate.grantedAt),
+      };
+    }),
   );
 }
 

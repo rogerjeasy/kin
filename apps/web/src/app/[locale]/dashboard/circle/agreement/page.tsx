@@ -1,5 +1,6 @@
 import { agreementChanges, calendarDay } from "@kin/domain";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AcceptButton } from "@/components/dashboard/agreement/accept-button";
@@ -9,6 +10,7 @@ import { AgreementTermsPanel } from "@/components/dashboard/agreement/agreement-
 import { ApprovalExamples } from "@/components/dashboard/agreement/approval-examples";
 import { PendingVersionPanel } from "@/components/dashboard/agreement/pending-version-panel";
 import { VersionHistory } from "@/components/dashboard/agreement/version-history";
+import { Button } from "@/components/ui/button";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { changeWords } from "@/components/dashboard/words/agreement-words";
@@ -17,7 +19,7 @@ import { circleFormatters } from "@/content/circle/format";
 import { parentLevelOf } from "@/content/circle/members";
 import { circleNames } from "@/content/circle/names";
 import { circleSlots } from "@/content/circle/words";
-import { dashboardRoutes } from "@/content/dashboard-routes";
+import { agreementRoute, dashboardRoutes } from "@/content/dashboard-routes";
 import { pageContext } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
@@ -50,7 +52,17 @@ export default async function AgreementPage({ params }: PageProps<"/[locale]/das
 
   return (
     <>
-      <PageHeader title={copy.title} lede={copy.lede} />
+      <PageHeader
+        title={copy.title}
+        lede={copy.lede}
+        actions={
+          inForce ? (
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href={localizedPath(locale, `${agreementRoute}/simulate`)}>{dictionary.dashboard.simulator.link}</Link>
+            </Button>
+          ) : null
+        }
+      />
       {pending ? (
         <PendingVersionPanel
           title={fill(copy.pendingTitle, { version: format.count(pending.version) })}

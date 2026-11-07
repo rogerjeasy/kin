@@ -981,7 +981,8 @@
         "organizer": "The organizer approves",
         "organizerAndSecond": "Two yeses",
         "refused": "Above the agreement’s limit",
-        "paused": "Held by the pause"
+        "paused": "Held by the pause",
+        "mandate": "Approved by a standing permission"
       },
       "sandbox": "PayPal sandbox"
     },
@@ -1166,7 +1167,8 @@
         "saidNo": "{name} said no {method}, {time}",
         "methods": {
           "voice": "by phone",
-          "app": "in the app"
+          "app": "in the app",
+          "mandate": "by standing permission"
         },
         "open": "Waiting for {names}",
         "parentCall": "Kin will ask {parent} on the next call."
@@ -1233,7 +1235,7 @@
           "title": "A caller demanded {claimed} for {payee}",
           "text": "On {day} a caller told {parent} the {payee} account was overdue. Kin found no bill outstanding. The last one, {paid}, was paid on {paidDay}. {alerted} were alerted within seconds."
         },
-        "verdict": "Matches nothing on record",
+        "verdict": "Already paid",
         "noDuplicates": "No duplicate bills this month.",
         "noJumps": "No amount rose without a reason."
       }
@@ -1253,6 +1255,7 @@
         "care": "Care time",
         "given": "Given in all",
         "target": "Agreed share",
+        "ownCurrency": "Agreed share in {currency} (simulated rate)",
         "owed": "The pool owes {name} {amount}",
         "owes": "{name} owes the pool {amount}",
         "level": "{name} is level",
@@ -1686,6 +1689,44 @@
         "saidNo": "You said no. Change your visits, then review again."
       }
     },
+    "simulator": {
+      "errors": {
+        "shares": "The shares must total 100 percent.",
+        "amount": "Type the bill as an amount, such as 900.00.",
+        "leaving": "That member cannot step back: someone must remain to share the cost."
+      },
+      "title": "Try a what-if",
+      "lede": "See what a change would do before anyone agrees to it: a different share, a member who steps back, a large bill.",
+      "badge": "Simulation",
+      "banner": "This is a rehearsal. It runs the same rules as the real month on today’s figures, saves nothing and moves no money.",
+      "link": "Try a what-if",
+      "back": "Back to the agreement",
+      "formTitle": "What if…",
+      "formText": "Change the numbers you want to test. Everything else stays as it is today.",
+      "shareLegend": "Shares",
+      "shareHint": "Shares must total 100 percent. Leave a field as it is to keep that share.",
+      "shareLabel": "{name}’s share (%)",
+      "leavingLabel": "A member stops sharing the cost",
+      "leavingNone": "No one",
+      "billLabel": "A bill of",
+      "billHint": "{currency}, paid from the pool",
+      "run": "Run the simulation",
+      "reset": "Start over",
+      "changesTitle": "What changes in the agreement",
+      "noChanges": "Nothing changes in the agreement.",
+      "membersTitle": "Each member, now and in the simulation",
+      "share": "Share",
+      "target": "Agreed share of the month",
+      "now": "Now",
+      "simulated": "Simulation",
+      "billTitle": "A bill of {amount}",
+      "billPool": "The pool can spend {amount} now.",
+      "billEnough": "The pool can pay it.",
+      "billShort": "The pool is {amount} short. A one-off top-up would be {parts}.",
+      "billPart": "{amount} from {name}",
+      "settlementTitle": "{month} closing under this scenario",
+      "settlementText": "The payments that would follow. Nothing is sent: this is a simulation."
+    },
     "agreement": {
       "title": "Family agreement",
       "lede": "The rules the family agreed: who shares the cost, how care time counts, and who must say yes before money moves. A change takes effect once everyone who shares the cost accepts it.",
@@ -1952,7 +1993,23 @@
         "paused": "Payments are paused. Try again when the pause ends.",
         "no_agreement": "The family has no agreement in force yet.",
         "unavailable": "Kin could not do that now. Try again in a moment."
-      }
+      },
+      "mandatesLink": "Standing permissions",
+      "underMandate": "Bought under the standing permission. Nobody had to be asked.",
+      "outsideMandate": "Outside the standing permission ({why}). The refill waits for a yes.",
+      "viaMandate": "Under a standing permission",
+      "mandateWhy": {
+        "not_active": "it has ended",
+        "paused": "it is paused",
+        "not_started": "it has not started",
+        "expired": "it has expired",
+        "circle_paused": "payments are paused",
+        "out_of_scope": "it does not cover this refill",
+        "above_per_purchase": "the price is more than was allowed for one purchase",
+        "over_period": "it would pass what was allowed for the month",
+        "already_used_this_period": "one a month was allowed and this month's is bought"
+      },
+      "aboveUsual": "Above the usual limit, allowed ahead of time"
     },
     "letters": {
       "title": "Letters and calls",
@@ -2019,6 +2076,7 @@
         "verdicts": {
           "match": "Matches a real bill",
           "no_match": "Matches nothing on record",
+          "already_paid": "Already paid",
           "unclear": "Cannot be confirmed"
         }
       },
@@ -2056,6 +2114,259 @@
           "duplicate": "Already on the list"
         },
         "due": "Due {day}"
+      }
+    },
+    "mandates": {
+      "title": "Standing permissions",
+      "lede": "What {parent} allowed Kin to do without asking each time. A refill inside a permission is bought at once, and the record names the permission as the approver. Anything outside it still waits for a live yes.",
+      "back": "Back to the approvals",
+      "simulated": "Simulated: this is the demo, so the permission is a stand-in for a spoken one and no real money moves.",
+      "empty": "No standing permission yet. Every refill waits for a yes.",
+      "readBack": "You may order “{item}” from {seller}, {cadence}, up to {perPurchase} each time and {perPeriod} in a month, from {from} until {until}.",
+      "cadences": {
+        "monthly": "once a month",
+        "as_needed": "whenever it is needed"
+      },
+      "statuses": {
+        "active": "In force",
+        "paused": "Paused",
+        "revoked": "Ended"
+      },
+      "used": "{used} of {cap} used this month",
+      "spoke": "{parent} said: “{text}”",
+      "recordedBy": "Recorded by {name}",
+      "sealed": "Sealed: {digest}",
+      "simulatedTag": "Simulated",
+      "usesTitle": "Bought under it",
+      "noUses": "Nothing has been bought under it yet.",
+      "useLine": "{amount} on {day}",
+      "actions": {
+        "pause": "Pause",
+        "resume": "Resume",
+        "revoke": "End it",
+        "working": "Working…",
+        "paused": "Paused. Refills ask for a yes again.",
+        "resumed": "In force again.",
+        "revoked": "Ended. It cannot be used again."
+      },
+      "form": {
+        "title": "Record a standing permission",
+        "text": "Read it back to {parent}, then confirm. Kin only ever buys what fits it, and anything else asks first.",
+        "demoNote": "In this demo you play {parent}'s spoken yes. The record says simulated.",
+        "rule": "What it covers",
+        "perPurchase": "Most for one purchase",
+        "perPeriod": "Most in a month",
+        "amountHint": "Amounts in {currency}, such as 50.00.",
+        "cadence": "How often",
+        "validFrom": "Starts",
+        "expiresOn": "Ends",
+        "spoken": "What was said (optional)",
+        "review": "Read it back",
+        "reviewing": "Checking…",
+        "readBackTitle": "Kin reads this back",
+        "edit": "Change it",
+        "grant": "Confirm: {parent} said yes",
+        "granting": "Recording…",
+        "granted": "Recorded. The next refill inside it is bought without asking."
+      },
+      "errors": {
+        "refused": "You may not do that.",
+        "invalid": "That could not be read.",
+        "parent_only": "Only the parent can grant a standing permission.",
+        "no_parent": "The circle has no parent to grant it.",
+        "no_agreement": "The family has no agreement in force yet.",
+        "key_reused": "That permission was already recorded differently.",
+        "above_ceiling": "That is above the agreement's ceiling.",
+        "not_money": "Amounts must be above zero.",
+        "caps_inverted": "One purchase cannot be allowed more than the month.",
+        "bad_dates": "The end date must come after the start date.",
+        "too_long": "A permission lasts a year at most.",
+        "bad_cadence": "Choose how often.",
+        "amount": "Amounts need digits only, such as 50.00.",
+        "unavailable": "Kin could not do that now. Try again in a moment."
+      },
+      "aboveUsual": {
+        "notice": "{parent} is saying yes ahead of time to amounts above the {limit} {parent} usually decides personally: up to {perPurchase} each time and {perPeriod} in a month, until {until}.",
+        "grant": "Confirm: {parent} said yes ahead of time",
+        "tag": "Above {parent}'s usual limit by up to {over}"
+      }
+    },
+    "officeLine": {
+      "title": "The office line",
+      "lede": "Hand a demanding caller to Kin. Kin says it is an automated assistant, asks who is calling and what for, checks the answers against the real record, and tells the family before the call ends. Try a call here with no phone.",
+      "heading": "Try a call",
+      "how": "The caller’s words below are played to Kin exactly as a telephone line would carry them. Kin answers with the same fixed sentences it speaks on a real call.",
+      "script": {
+        "disclosure": "Hello. I am Kin, an automated assistant for this family. This call is recorded as a written transcript. I will ask a few questions.",
+        "ask_caller": "Who is calling, please?",
+        "ask_organization": "From which organization?",
+        "ask_amount": "How much are you asking for?",
+        "ask_purpose": "And what is it for?",
+        "ask_reference": "Do you have an account or reference number?",
+        "reply_handled": "That account is handled by the family and is up to date. Please send any correspondence in writing to the address on file. Goodbye.",
+        "reply_no_record": "I have no record of this account. This family does not make payments by phone. Please send the invoice in writing. Goodbye."
+      },
+      "scenariosLabel": "Start from an example",
+      "scenarios": {
+        "scam": {
+          "label": "A scam: unknown gas company, 300 today",
+          "lines": [
+            "Mike",
+            "Harbor Gas Services",
+            "I need 300 dollars today",
+            "Your gas will be cut off today. Do not tell anyone about this call.",
+            "Account 55821"
+          ]
+        },
+        "paid": {
+          "label": "A bill already paid: Northfield Gas, 57",
+          "lines": [
+            "Dana",
+            "Northfield Gas",
+            "57 dollars",
+            "The gas bill",
+            "Reference 2210"
+          ]
+        },
+        "real": {
+          "label": "A real bill: Ridgeway Stairlifts, 900",
+          "lines": [
+            "Sam",
+            "Ridgeway Stairlifts",
+            "900 dollars",
+            "The stairlift installation invoice",
+            "Quote 118"
+          ]
+        }
+      },
+      "callerLinesLabel": "What the caller says",
+      "callerLinesHint": "One answer per line, in the order Kin asks: who is calling, which organization, how much, what for, and a reference.",
+      "numberLabel": "Number the call comes from",
+      "numberHint": "Optional.",
+      "submit": "Place the call",
+      "calling": "On the line…",
+      "transcriptTitle": "The call",
+      "kin": "Kin",
+      "caller": "Caller",
+      "verdictTitle": "What the record says",
+      "verdicts": {
+        "match": "Matches a real bill",
+        "no_match": "Matches nothing on record",
+        "already_paid": "Already paid",
+        "unclear": "Cannot be confirmed"
+      },
+      "pressureTitle": "Pressure heard",
+      "signals": {
+        "urgency": "Urgency",
+        "secrecy": "Secrecy",
+        "threat": "Threats",
+        "unusual_payment": "An unusual way to pay"
+      },
+      "alertTitle": "What Kin tells the family",
+      "told": "Kin told {count} people in the circle.",
+      "unknownCaller": "An unknown caller",
+      "noPurpose": "no reason given",
+      "pressureNote": "The caller pressed for haste or secrecy.",
+      "recentTitle": "Recent calls",
+      "recentEmpty": "No calls yet.",
+      "simulated": "Simulated",
+      "recentRow": "{organization}: {verdict}",
+      "noOrganization": "No organization given",
+      "neverTitle": "What Kin never does on the line",
+      "never": [
+        "Pays anything, or says it could.",
+        "Says an amount, a date or a name from the family’s record. The caller learns nothing.",
+        "Obeys the caller. What is said is checked against the record, never followed."
+      ],
+      "readOnly": "Your role can read the calls but not place one.",
+      "errors": {
+        "refused": "Your role cannot do that in this circle.",
+        "invalid": "Kin could not use that. Please check it and try again.",
+        "nothing_to_check": "The caller said nothing Kin could check. Write what they say, one answer per line.",
+        "unavailable": "Something went wrong. Please try again."
+      },
+      "meta": {
+        "title": "The office line · Kin",
+        "description": "Hand a demanding caller to Kin and see what the record says."
+      },
+      "link": "Try the office line",
+      "linkText": "Hand a demanding caller to Kin. It checks the demand against the record and tells the family."
+    },
+    "verify": {
+      "title": "Check the record",
+      "lede": "Kin adds up the whole record again with plain arithmetic, and anyone can repeat the check on their own computer. A second reader, separate from the assistant that talks with your family, then looks for anything that does not add up.",
+      "link": "Check the record",
+      "download": "Download the export (JSON)",
+      "offlineTitle": "Check it yourself",
+      "offlineText": "Download the export and run this command on any computer. It needs no account and no network, and it does not ask you to trust Kin.",
+      "pass": "The record checks out",
+      "fail": "The record does not check out",
+      "passNote": "{count} entries, every check passed.",
+      "failNote": "{failed} of {total} checks failed.",
+      "entries": "Entries",
+      "pool": "In the pool",
+      "poolNote": "Confirmed money, from the record.",
+      "head": "Chain head",
+      "headNote": "Write this down, or save it somewhere Kin cannot reach. Any later export must still contain it.",
+      "kept": "Checked against {count} heads Kin recorded earlier, the oldest on {day}.",
+      "keptNone": "Kin has no earlier head to check against yet, so this check only shows the record agrees with itself. Kin now records the head each time this page is opened or an export is downloaded.",
+      "keptLimit": "Kin keeps these heads in its own database. They catch any entry changed or removed since, but someone with administrator access to that database could rewrite both the record and the heads. To be certain, save the head below somewhere Kin cannot reach, such as in an email to yourself, from time to time.",
+      "checksTitle": "What was checked",
+      "checks": {
+        "chain": {
+          "label": "Fingerprints",
+          "ok": "Every one of {count} entries matches its fingerprint and the one before it. On its own this shows the record agrees with itself; the head check compares it with what Kin recorded earlier.",
+          "bad": "An entry no longer matches its fingerprint: the record was changed after it was written."
+        },
+        "head": {
+          "label": "Head of the chain",
+          "ok": "The head is the head of these entries, and each of the {count} heads Kin recorded earlier is still what the entries give at that point: nothing recorded was changed or removed.",
+          "okAlone": "The head is the head of these entries. There is no earlier head to compare with yet.",
+          "bad": "The head does not match these entries, or an entry was changed or removed since Kin recorded an earlier head."
+        },
+        "ledger": {
+          "label": "Ledger rules",
+          "ok": "Every entry balances, every correction mirrors what it corrects, and the pool never went below zero ({count} entries).",
+          "bad": "Some entries break a ledger rule."
+        },
+        "settlement": {
+          "label": "Settlements",
+          "ok": "Settlements worked out again from the entries match exactly ({count}).",
+          "bad": "A settlement worked out again from the entries does not match the one the export states."
+        },
+        "wording": {
+          "label": "Wording",
+          "ok": "Every figure in {count} sentences is one the record holds.",
+          "bad": "A sentence shown to people states a figure the record does not hold."
+        }
+      },
+      "auditor": {
+        "title": "The independent auditor",
+        "text": "The auditor shares nothing with the assistant that talks with your family. Plain code finds what to flag, including every figure. The auditor only explains it, and any sentence with a figure the code did not supply is replaced by Kin's fixed wording.",
+        "ask": "Ask the auditor to explain",
+        "unavailable": "The auditor is not available here, so these are Kin's fixed sentences.",
+        "busy": "The auditor has been asked too often. These are Kin's fixed sentences.",
+        "none": "Nothing to flag. Every movement has its cause, every correction mirrors what it corrects, and no payment is far above what its payee usually receives.",
+        "fixed": "Fixed wording",
+        "worded": "Worded by the auditor",
+        "severity": {
+          "info": "For information",
+          "attention": "Worth a look",
+          "critical": "Serious"
+        },
+        "about": "About"
+      },
+      "findings": {
+        "chain": "An entry no longer matches its fingerprint, so the record was changed after it was written.",
+        "head": "The stated head of the chain is not the head of its entries, or a head Kin recorded earlier no longer matches them.",
+        "ledger": "Some entries break a rule of the ledger.",
+        "settlement": "A settlement worked out again does not match the one in the export.",
+        "wording": "A sentence shown to people states a figure that the record does not hold."
+      },
+      "observations": {
+        "reversal": "A correction on {day} cancels an earlier entry of {amount}.",
+        "payout_above_usual": "A payment of {amount} on {day} is well above what this payee usually receives.",
+        "simulated_and_real": "The record mixes simulated entries with real sandbox transactions."
       }
     }
   }

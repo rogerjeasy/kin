@@ -64,6 +64,12 @@ export type ApprovalPlan =
       readonly agreementVersion: number;
     }
   | {
+      /** The parent's standing permission approved it (see `mandate.ts`); `planApprovals` never makes this plan. */
+      readonly outcome: "mandate";
+      readonly mandateId: string;
+      readonly agreementVersion: number;
+    }
+  | {
       readonly outcome: "needs_approval";
       readonly slots: readonly ApprovalSlot[];
       /** The member being paid, who may not be the only one to say yes. */
@@ -117,14 +123,21 @@ function standingRule({ kind, cents, payee }: ApprovalRequest): AutoPayRule | nu
   return cents >= rule.minCents && cents <= rule.maxCents ? rule : null;
 }
 
+/**
+ * Whether the parent herself must say yes to an amount: she takes part as one
+ * who decides and it is above the threshold the family agreed with her. The
+ * one place this rule lives; a standing permission asks it too (`mandate.ts`).
+ */
+export function parentMustDecide(cents: number, parentLevel: ParentLevel, terms: ApprovalTerms): boolean {
+  return parentLevel === "decides" && cents > terms.parentDecidesAboveCents;
+}
+
 function slotsFor(
   cents: number,
   parentLevel: ParentLevel,
   terms: ApprovalTerms,
 ): ApprovalSlot[] {
-  const parentDecides =
-    parentLevel === "decides" && cents > terms.parentDecidesAboveCents;
-  const first: ApprovalSlot = parentDecides
+  const first: ApprovalSlot = parentMustDecide(cents, parentLevel, terms)
     ? { reason: "parent_decides", roles: ["parent"] }
     : { reason: "organizer", roles: ["organizer"] };
   if (cents <= terms.secondApprovalAboveCents) return [first];

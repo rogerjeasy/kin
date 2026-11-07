@@ -1,6 +1,6 @@
 import { formatMoney } from "@kin/domain";
 
-import { numberLocaleOf, type Locale } from "@/i18n/locales";
+import { directionOf, numberLocaleOf, type Locale } from "@/i18n/locales";
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -10,6 +10,19 @@ function calendarDay(isoDay: string): Date {
   return new Date(`${isoDay}T00:00:00Z`);
 }
 
+const FIRST_STRONG_ISOLATE = "\u2068";
+const POP_DIRECTIONAL_ISOLATE = "\u2069";
+
+/**
+ * An amount or a percentage is made of digits and neutral marks ("US$", ".",
+ * "%"). Set inside a right-to-left sentence the marks drift to the wrong side
+ * of the digits (".$US 300.00"), so in those languages each is isolated and
+ * reads as one unit. Left-to-right text is left exactly as written.
+ */
+export function isolatedFor(locale: Locale): (text: string) => string {
+  return directionOf(locale) === "rtl" ? (text) => `${FIRST_STRONG_ISOLATE}${text}${POP_DIRECTIONAL_ISOLATE}` : (text) => text;
+}
+
 /**
  * Every way the dashboard writes a number, a date or a list, in the reader's
  * language. Money goes through the one shared formatter in the money core.
@@ -17,6 +30,7 @@ function calendarDay(isoDay: string): Date {
 export function formatters(locale: Locale, currency: string) {
   const intlLocale = numberLocaleOf(locale);
   const shortDay = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", timeZone: "UTC" });
+  const dayWithYear = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
   const longDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
   const month = new Intl.DateTimeFormat(intlLocale, { month: "long", year: "numeric", timeZone: "UTC" });
   const dayAndTime = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "UTC" });
@@ -25,10 +39,13 @@ export function formatters(locale: Locale, currency: string) {
   const allOf = new Intl.ListFormat(intlLocale, { style: "long", type: "conjunction" });
   const percent = new Intl.NumberFormat(intlLocale, { style: "percent", maximumFractionDigits: 1 });
   const count = new Intl.NumberFormat(intlLocale);
+  const isolated = isolatedFor(locale);
 
   return {
-    money: (cents: number) => formatMoney({ cents, currency }, intlLocale),
+    money: (cents: number) => isolated(formatMoney({ cents, currency }, intlLocale)),
     day: (isoDay: string) => shortDay.format(calendarDay(isoDay)),
+    /** "Oct 9, 2026": for spans that can cross a year, where the short form is ambiguous. */
+    dayWithYear: (isoDay: string) => dayWithYear.format(calendarDay(isoDay)),
     longDay: (date: Date) => longDay.format(date),
     month: (period: string) => month.format(calendarDay(`${period}-01`)),
     dateTime: (date: Date) => dayAndTime.format(date),
@@ -39,7 +56,7 @@ export function formatters(locale: Locale, currency: string) {
     /** "Elena and Marcus". */
     allOf: (items: readonly string[]) => allOf.format(items),
     /** A share in basis points, as a percentage. */
-    share: (bps: number) => percent.format(bps / 10_000),
+    share: (bps: number) => isolated(percent.format(bps / 10_000)),
     count: (value: number) => count.format(value),
   };
 }

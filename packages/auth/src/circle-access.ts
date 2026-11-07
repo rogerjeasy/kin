@@ -25,6 +25,13 @@ export const CIRCLE_ACTIONS = {
   "proposal.answer": ["organizer", "contributor", "parent"],
   /** Ask Kin to propose a refill the family's rules allow. Proposing buys nothing: the agreement's yeses still do. */
   "refill.propose": ["organizer", "contributor", "parent"],
+  /**
+   * Record the parent's standing permission (a mandate), end it, or take it back up. The parent does so in
+   * their own name; in a demo circle the organizer plays the parent's spoken yes, and the record says simulated.
+   */
+  "mandate.grant": ["organizer", "parent"],
+  /** Hold a mandate still without ending it: anyone who answers for the family, since stopping is always safe. */
+  "mandate.pause": ["organizer", "contributor", "parent"],
   /** Stop all approvals for 24 hours (section 15.3). An observer changes nothing. */
   "circle.pause": ["organizer", "contributor", "parent", "caregiver"],
   "member.invite": ["organizer"],
@@ -33,6 +40,8 @@ export const CIRCLE_ACTIONS = {
   /** Accept the newest version: the members who share the cost, and the parent. */
   "agreement.accept": ["organizer", "contributor", "parent"],
   "audit.view": ["organizer"],
+  /** Have Kin keep the head of the record's hash chain when the record is checked or exported. An observer reads and never writes. */
+  "audit_head.keep": ["organizer", "contributor", "parent"],
   "caregiver_rate.manage": ["organizer"],
   "caregiver_bill.submit": ["caregiver"],
   /** Say where one's own pay goes. Nobody else may, so nobody can redirect it. */
@@ -40,6 +49,8 @@ export const CIRCLE_ACTIONS = {
   /** Hold up a letter, bill or receipt for Kin to read, and ask Kin to check a demand for money against the record. */
   "letter.read": ["organizer", "contributor", "parent"],
   "claim.check": ["organizer", "contributor", "parent"],
+  /** Place a call to the family office line, or try it from the simulator, and have its verdict recorded and the family told. */
+  "office_line.try": ["organizer", "contributor", "parent"],
   /** Send a caregiver's bill for the family's approval, or decline it: the members who share the cost. */
   "caregiver_bill.review": ["organizer", "contributor"],
   /** File a receipt for money spent from one's own pocket: the members who share the cost. */

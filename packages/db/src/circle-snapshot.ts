@@ -6,6 +6,8 @@ import type {
   CircleRole,
   CaregiverBillDetails,
   Ledger,
+  MandateCadence,
+  MandateStatus,
   MemberStatus,
   MonthlyShareState,
   ParentLevel,
@@ -48,6 +50,8 @@ export type CircleSnapshot = {
   /** What the family allowed Kin to buy for the parent. Not shown to a caregiver. */
   readonly purchaseRules: readonly PurchaseRuleRecord[];
   readonly purchases: readonly PurchaseRecord[];
+  /** The parent's standing permissions, with this period's use. Not shown to a caregiver. */
+  readonly mandates: readonly MandateRecord[];
   readonly documents: readonly DocumentRecord[];
   /** Pending and answered invitations. Only an organizer reads them. */
   readonly invitations: readonly InvitationRecord[];
@@ -98,6 +102,8 @@ export type MemberRecord = {
   readonly parentLevel: ParentLevel | null;
   readonly relationship: string | null;
   readonly portrait: string | null;
+  /** The currency the member gives in, or `null` for the circle's own. */
+  readonly currency: string | null;
   readonly status: MemberStatus;
   readonly joinedAt: Date;
 };
@@ -239,6 +245,31 @@ export type PurchaseRuleRecord = {
   readonly monthlyBudgetCents: number;
   /** What this rule's purchases already cost this month, counting those waiting for a yes. */
   readonly committedCents: number;
+};
+
+export type MandateRecord = {
+  readonly id: string;
+  readonly ruleId: string;
+  /** The parent whose permission it is. */
+  readonly grantedBy: string;
+  /** Who recorded it: the parent, or in a demo circle the organizer playing the parent's spoken yes. */
+  readonly recordedBy: string;
+  readonly perPurchaseCents: number;
+  readonly perPeriodCents: number;
+  readonly cadence: MandateCadence;
+  readonly validFrom: string;
+  readonly expiresOn: string;
+  readonly status: MandateStatus;
+  readonly spokenText: string | null;
+  /** A grant made in a demo circle is simulated, and shown so. */
+  readonly simulated: boolean;
+  readonly digest: string;
+  readonly grantedAt: Date;
+  readonly endedAt: Date | null;
+  /** What this period's purchases under it cost, counting those still waiting. */
+  readonly usedCents: number;
+  readonly usedCount: number;
+  readonly uses: readonly { readonly proposalId: string; readonly cents: number; readonly period: string; readonly at: Date; readonly state: string }[];
 };
 
 export type PurchaseRecord = {

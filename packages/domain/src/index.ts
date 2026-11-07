@@ -19,6 +19,7 @@ export {
   APPROVAL_WINDOW_HOURS,
   INDEPENDENT_APPROVER_ROLES,
   PROPOSAL_KINDS,
+  parentMustDecide,
   planApprovals,
 } from "./approval-plan.ts";
 export type {
@@ -47,6 +48,22 @@ export {
   planPurchase,
 } from "./purchase.ts";
 export type { DeliveryState, PurchasePlan, PurchaseRefusal, PurchaseRequest, PurchaseRule } from "./purchase.ts";
+export { MANDATE_CADENCES, MANDATE_STATUSES, MAX_MANDATE_DAYS, MandateTermsError, checkMandate, checkMandateTerms, decideMandate, mandateExcessAboveParentLimit } from "./mandate.ts";
+export type { Mandate, MandateCadence, MandateCandidate, MandateCart, MandateDecision, MandateRefusal, MandateStatus, MandateTerms, MandateTermsRefusal } from "./mandate.ts";
+export {
+  INTAKE_QUESTIONS,
+  MAX_ANSWER_CHARS,
+  MAX_CALLER_TURNS,
+  SCRIPT_KEYS,
+  decideCall,
+  hear,
+  nextPrompt,
+  pendingQuestion,
+  pressureSignals,
+  spokenAmountCents,
+  startIntake,
+} from "./office-line.ts";
+export type { Answers, CallVerdict, IntakeQuestion, IntakeState, PressureSignal, RecordFacts, ScriptKey } from "./office-line.ts";
 export { spokenAnswer } from "./spoken-answer.ts";
 export type { SpokenAnswer } from "./spoken-answer.ts";
 export { CAREGIVER_BILL_PURPOSE, CaregiverPayoutError, planCaregiverPayout } from "./caregiver-payout.ts";
@@ -114,8 +131,11 @@ export {
   centsFromDecimal,
   decimalAmount,
   formatMoney,
+  minorDigitsOf,
   sumCents,
 } from "./money.ts";
+export { CurrencyConversionError, SIMULATED_RATES, convertMoney } from "./currency-conversion.ts";
+export type { ConversionStamp, ConvertedMoney, RateTable } from "./currency-conversion.ts";
 export type { Money } from "./money.ts";
 export { PAUSE_HOURS, isPaused, pauseEndsAt } from "./pause.ts";
 export { canPayOut, cashAvailableForPayouts } from "./payout-cash.ts";
@@ -138,6 +158,8 @@ export type { Receipt, ReceiptCategory } from "./receipt.ts";
 export { SETTLEMENT_PURPOSE, SettlementProposalError, planSettlementPayouts } from "./settlement-proposals.ts";
 export type { SettlementPayout, SettlementPayoutRequest } from "./settlement-proposals.ts";
 export { settlePeriod } from "./settle-period.ts";
+export { simulateScenario } from "./simulate.ts";
+export type { BillRehearsal, Scenario, ScenarioQuery, ScenarioResult } from "./simulate.ts";
 export { MONTHLY_SHARE_STATES, MONTHLY_SHARE_TRANSITIONS, checkMonthlyShare, monthlyShareIsLive, monthlyShareMayMove } from "./monthly-share.ts";
 export type { MonthlyShareState } from "./monthly-share.ts";
 export { TOP_UP_LIMITS, checkTopUp } from "./top-up.ts";
@@ -171,3 +193,5 @@ export type {
 } from "./state-machines.ts";
 export { CAREGIVER_CATEGORY, monthlyStatement, yearInReview } from "./statement.ts";
 export type { PeriodFigures, StatementAmount, StatementQuery, YearInReview, YearMonth } from "./statement.ts";
+export { LEDGER_PROBLEMS, auditLedger } from "./verify-ledger.ts";
+export type { LedgerAudit, LedgerProblem, LedgerProblemCode } from "./verify-ledger.ts";

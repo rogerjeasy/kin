@@ -6,7 +6,14 @@ export type OrderProgress = Exclude<DeliveryState, "awaiting">;
 /** What Kin asks of a seller (docs/architecture.md section 8.6): take an order, and say where it is. */
 export type Merchant = {
   /** The same `key` always names the same order, so a repeated request buys nothing twice. */
-  readonly placeOrder: (order: { readonly key: string; readonly item: string; readonly cents: number; readonly currency: string }) => Promise<{ readonly ref: string }>;
+  readonly placeOrder: (order: {
+    readonly key: string;
+    readonly item: string;
+    readonly cents: number;
+    readonly currency: string;
+    /** The parent's standing permission the order is bought under, with the most it allows for one purchase: the seller's own check. */
+    readonly mandate?: { readonly id: string; readonly allowanceCents: number };
+  }) => Promise<{ readonly ref: string }>;
   readonly progressOf: (order: { readonly ref: string; readonly placedAt: Date; readonly now: Date }) => Promise<OrderProgress>;
 };
 
@@ -16,7 +23,11 @@ export type Merchant = {
  * Kin writes about it says simulated.
  */
 export const simulatedMerchant: Merchant = {
-  placeOrder: async ({ key }) => ({ ref: `simulated-order-${key}` }),
+  placeOrder: async ({ key, cents, mandate }) => {
+    // A second, independent enforcement point: the seller refuses a charge beyond the allowance.
+    if (mandate !== undefined && cents > mandate.allowanceCents) throw new MerchantError(false);
+    return { ref: `simulated-order-${key}` };
+  },
   progressOf: async ({ placedAt, now }) => deliveryStateAfter(Math.max(0, (now.getTime() - placedAt.getTime()) / 1000)),
 };
 
@@ -50,7 +61,7 @@ export function httpMerchant(baseUrl: string, send: typeof fetch = fetch): Merch
   };
   return {
     placeOrder: async (order) => {
-      const body = await read(await send(url("/orders"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(order) }).catch(() => { throw new MerchantError(true); }));
+      const body = await read(await send(url("/orders"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: order.key, item: order.item, cents: order.cents, currency: order.currency }) }).catch(() => { throw new MerchantError(true); }));
       const ref = body["ref"];
       if (typeof ref !== "string" || !ORDER_REF.test(ref)) throw new MerchantError(true);
       return { ref };

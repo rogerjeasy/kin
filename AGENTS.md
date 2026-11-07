@@ -52,7 +52,8 @@ The root `package.json` is the source of truth for commands. Keep this contract 
 | `lint` | Lints every workspace |
 | `typecheck` | Type-checks every workspace in strict mode |
 | `test` | Unit and integration tests (Vitest) |
-| `test:e2e` | End-to-end and responsive tests (Playwright) |
+| `test:e2e` | End-to-end and responsive tests (Playwright), the whole suite |
+| `test:e2e:key` | The key journeys only. CI runs this to stay short; run `test:e2e` before a release. |
 | `build` | Builds every app |
 | `check` | `lint`, `typecheck` and `test` together. Run it before calling anything done. |
 

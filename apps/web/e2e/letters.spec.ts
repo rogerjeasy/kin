@@ -89,7 +89,7 @@ for (const viewport of viewports) {
       await check.getByRole("button", { name: "Check this demand" }).click();
 
       const verdict = check.getByRole("status");
-      await expect(verdict).toContainText("Matches nothing on record");
+      await expect(verdict).toContainText("Already paid");
       await expect(verdict).toContainText("Please do not pay it again");
       await expect(verdict).toContainText("Kin told 5 people in the circle.");
       await expectNoHorizontalOverflow(page);

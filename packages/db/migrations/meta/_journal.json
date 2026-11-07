@@ -141,6 +141,55 @@
       "when": 1793053000756,
       "tag": "0019_receipts-and-settlement-payouts",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794085945361,
+      "tag": "0020_mandates",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794085953614,
+      "tag": "0021_mandate-access",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794085866441,
+      "tag": "0022_office-line",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794085866442,
+      "tag": "0023_office-line-access",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794085866443,
+      "tag": "0024_cross-border",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1794088679298,
+      "tag": "0025_audit-heads",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794088680016,
+      "tag": "0026_audit-heads-access",
+      "breakpoints": true
     }
   ]
 }

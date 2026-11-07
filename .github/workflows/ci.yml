@@ -34,7 +34,8 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: pnpm --filter @kin/web exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
+      # The key journeys only, to keep the pipeline short; `pnpm test:e2e` runs everything.
+      - run: pnpm test:e2e:key
       - if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

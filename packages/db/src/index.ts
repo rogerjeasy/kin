@@ -2,11 +2,17 @@ export { connect } from "./connection.ts";
 export { CaregiverBillingError, configureCaregiver, setOwnReceiver, submitCaregiverBill } from "./caregiver-billing.ts";
 export type { CaregiverBillingReason } from "./caregiver-billing.ts";
 export { declineCaregiverBill, sendCaregiverBill } from "./caregiver-review.ts";
+export { readAuditHeads, recordAuditHead } from "./audit-heads.ts";
+export type { AuditHeadKind, AuditHeadRecord } from "./audit-heads.ts";
+export { recordOfficeCall, readOfficeCalls } from "./office-calls.ts";
+export type { OfficeCallInput, OfficeCallRecord, TranscriptTurn } from "./office-calls.ts";
 export { LetterError, addLetter, recordClaimCheck } from "./letters.ts";
 export type { ClaimCheckInput, LetterInput, LetterReason, LetterRecorded } from "./letters.ts";
 export { RECEIPT_TOPIC, creditReceipt, decideReceipt, submitReceipt } from "./receipts.ts";
 export type { CreditOutcome } from "./receipts.ts";
 export { NothingToSettleError, SettlementExistsError, proposeSettlement, setOwnSettlementReceiver } from "./settlement-proposals.ts";
+export { MandateError, grantMandate, newMandateId, setMandateStatus } from "./mandates.ts";
+export type { MandateReason } from "./mandates.ts";
 export { AgreementError, acceptAgreement, proposeAgreement, readAgreementVersions } from "./agreements.ts";
 export type { AgreementReason } from "./agreements.ts";
 export {
@@ -39,7 +45,7 @@ export {
   recordOrderPlaced,
   recordPurchaseHeld,
 } from "./purchases.ts";
-export type { DeliveryJob, PurchaseBegin, PurchaseJob, RefillReason } from "./purchases.ts";
+export type { DeliveryJob, PurchaseBegin, PurchaseJob, RefillMandate, RefillProposed, RefillReason } from "./purchases.ts";
 export type { Database, Transaction } from "./connection.ts";
 export { asPerson, asProvisioner, asService } from "./scope.ts";
 export { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";

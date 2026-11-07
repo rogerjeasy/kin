@@ -73,6 +73,8 @@ export const members = pgTable(
     relationship: text("relationship"),
     /** The key of a portrait the app knows, or `null` for initials. */
     portrait: text("portrait"),
+    /** The currency the member thinks in and gives in. `null` means the circle's. The ledger stays in the circle's currency. */
+    currency: text("currency"),
     status: memberStatus("status").notNull().default("active"),
     /** The seat a visitor takes in their own demo circle. A person has one at a time. */
     demoSeat: boolean("demo_seat").notNull().default(false),
@@ -86,6 +88,7 @@ export const members = pgTable(
     index("members_user_idx").on(t.userId),
     uniqueIndex("members_one_demo_seat").on(t.userId).where(sql`${t.demoSeat} and ${t.status} = 'active'`),
     check("members_demo_seat_has_person", sql`not ${t.demoSeat} or ${t.userId} is not null`),
+    check("members_currency_code", sql`${t.currency} is null or ${t.currency} ~ '^[A-Z]{3}$'`),
     check("members_name_present", sql`length(trim(${t.displayName})) > 0`),
     check("members_parent_level_only_for_parent", sql`(${t.role} = 'parent') = (${t.parentLevel} is not null)`),
   ],

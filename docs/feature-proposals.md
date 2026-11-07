@@ -36,6 +36,8 @@ Prizes: 1st $12,000, 2nd $8,000, 3rd $5,000. Category prizes of $5,000 each: Mos
 
 ## 1. Spoken mandates: the parent's standing permission
 
+> **Status: built for the demo** (decision 64 in `architecture.md` section 21). Built: the `mandates` and `mandate_uses` tables, the pure checker in `packages/domain/src/mandate.ts`, the mandate-match approval in `propose_refill`, the family screen at `/dashboard/circle/mandates`, Rose's seeded permission in the demo circle, and the simulated seller's allowance check. Not built: speech capture and the Claude compile of a spoken grant, the agent tools `propose_mandate`, `list_mandates` and `revoke_mandate`, voice review and revoke, the sibling co-signature above a limit, the merchant-initiated PayPal capture with `custom_id`, and the demo pharmacy's HTTP allowance.
+
 ### What it is
 
 Rose grants Kin a bounded standing permission by voice, once: "You may order my blood pressure medication every month, up to fifty dollars, from the pharmacy." Kin compiles it, reads it back, records her confirmation, and from then on the purchasing agent acts within it without calling her each time. Anything outside it still needs a live yes.
@@ -119,6 +121,10 @@ Rose's phone rings. "Your gas is being cut off today unless you pay 300 dollars.
 - `claim_checks` extended with caller metadata and a transcript reference. Alerts.
 - A fixed test set of about thirty scripted scam and legitimate calls. Measure verdict accuracy and non-disclosure: assert that no reply contains an amount, date or name outside the script.
 
+### Built so far
+
+The call logic is plain code: `packages/domain/src/office-line.ts` (intake, `checkClaim` verdict, pressure rules, the closed set of sentences) behind the `CallLine` interface of `packages/telephony`, with a scripted fake line. The dashboard's "try the office line" screen (`/dashboard/office-line`) plays a written caller through the same `takeCall`, records an `office_calls` row (circle-scoped, row-level security) with its claim check, and alerts the family. Not built: the Twilio adapter, Claude extraction and phrasing (replies are fixed per language, so nothing is left for a model to disclose), and the thirty-call evaluation set.
+
 ### Guardrails and risks
 
 - The receptionist can be lied to and it changes nothing: no write tools, scripted outputs, no data in replies.
@@ -169,6 +175,12 @@ The video's last beat. Elena opens the audit export, and `kin-verify october.zip
 - Hash and signature columns and the chain rule in `domain`. The export bundle builder in the worker. `packages/verify`.
 - The auditor role in the agent package, MCP read tools, a findings schema and table, the acknowledge flow, the impact-metrics job.
 - Tests: any mutation of an exported entry fails verification; the golden export verifies in CI.
+
+### Built so far
+
+- `packages/verify` and `kin-verify <export.json> [--head <hash>]`: recomputes a per-circle SHA-256 hash chain, re-checks every ledger rule (`auditLedger` in `domain`), recomputes the balances and each settlement from the entries, and checks every figure in the sentences Kin showed. Try it with `pnpm --filter @kin/verify run sample out.json` then `... run kin-verify out.json`.
+- The chain is computed at export time from the ledger, so no ledger table changed. Tamper evidence comes from the heads Kin kept (`audit_heads`, decision 66): each visit to the verify screen and each download keeps the current head, and every export carries them, so a changed or removed past entry fails without any outside note. They sit in Kin's own database, so an administrator of it could rewrite both; saving a head elsewhere (`--head`) closes that. Recording heads at the month's close, external anchoring, KMS-signed approvals, the PayPal Transaction Search diff, the findings table with acknowledgement and the impact metrics are not built.
+- The dashboard screen `/dashboard/record/verify` shows the verdict and an auditor panel (separate prompt, no tools, `reviewFindings` in `packages/agent`): plain code decides every finding, the model only words it, and a sentence with a figure the code did not supply falls back to the fixed one.
 
 ### Guardrails and risks
 

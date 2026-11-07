@@ -30,13 +30,15 @@ export type Persona = {
   readonly role: CircleRole;
   readonly parentLevel: ParentLevel | null;
   readonly relationship: string | null;
+  /** The currency the persona gives in, when it is not the circle's. */
+  readonly currency?: string;
   readonly joinedAt: Date;
 };
 
 export const PERSONAS: readonly Persona[] = [
   { key: "rose", name: "Rose", role: "parent", parentLevel: "decides", relationship: null, joinedAt: new Date("2026-09-01T14:00:00Z") },
   { key: "elena", name: "Elena", role: "organizer", parentLevel: null, relationship: "daughter", joinedAt: new Date("2026-09-01T14:00:00Z") },
-  { key: "marcus", name: "Marcus", role: "contributor", parentLevel: null, relationship: "son", joinedAt: new Date("2026-09-02T18:30:00Z") },
+  { key: "marcus", name: "Marcus", role: "contributor", parentLevel: null, relationship: "son", currency: "EUR", joinedAt: new Date("2026-09-02T18:30:00Z") },
   { key: "ana", name: "Ana", role: "contributor", parentLevel: null, relationship: "daughter", joinedAt: new Date("2026-09-02T20:15:00Z") },
   { key: "amara", name: "Amara", role: "caregiver", parentLevel: null, relationship: "caregiver", joinedAt: new Date("2026-09-05T15:00:00Z") },
   // The family's lawyer reads everything and changes nothing, so the demo shows every role.
@@ -171,6 +173,35 @@ export type DemoPurchaseRule = {
  */
 export const PURCHASE_RULES: readonly DemoPurchaseRule[] = [
   { seller: "pharmacy", item: "Monthly prescription refill (30 days)", category: "pharmacy", priceCents: 6400, limitCents: 7500, monthlyBudgetCents: 15000 },
+];
+
+export type DemoMandate = {
+  readonly seller: PayeeKey;
+  readonly perPurchaseCents: number;
+  readonly perPeriodCents: number;
+  readonly validFrom: string;
+  readonly expiresOn: string;
+  readonly grantedAt: Date;
+  /** What Rose said, as Kin wrote it down. */
+  readonly spokenText: string;
+};
+
+/**
+ * Rose's standing permission, spoken once at the start of the month: Kin may
+ * order her prescription from the pharmacy, once a month, up to seventy
+ * dollars. It covers the refill's $64.00, so that refill is bought without
+ * calling her; a price above seventy would ask her instead.
+ */
+export const MANDATES: readonly DemoMandate[] = [
+  {
+    seller: "pharmacy",
+    perPurchaseCents: 7000,
+    perPeriodCents: 7000,
+    validFrom: "2026-10-01",
+    expiresOn: "2027-09-30",
+    grantedAt: new Date("2026-10-02T15:00:00Z"),
+    spokenText: "You may order my blood pressure medication every month, up to seventy dollars, from the pharmacy.",
+  },
 ];
 
 /** When Kin closed the month and raised the settlement. */

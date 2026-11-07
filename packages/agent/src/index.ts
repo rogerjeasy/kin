@@ -9,3 +9,5 @@ export type { ReadVisitsRequest, ReadVisitsResult } from "./read-visits.ts";
 export { ModelUnavailableError } from "./structured-model.ts";
 export type { StructuredImage, StructuredModel, StructuredReply, StructuredRequest } from "./structured-model.ts";
 export { VISIT_PROMPT_VERSION } from "./visit-prompt.ts";
+export { AUDITOR_PROMPT_VERSION, SEVERITIES, reviewFindings } from "./audit-review.ts";
+export type { ReviewItem, ReviewedItem, Severity } from "./audit-review.ts";

@@ -66,3 +66,17 @@ export async function insertShare(
     }),
   );
 }
+
+/**
+ * Ends the demo's seeded mandate, so a test about the family's own approval
+ * starts from a refill that waits for a yes. Done as the owner: no role of
+ * Kin's may end a mandate except through its operation.
+ */
+export async function endMandates(db: TestDatabases, circleId: string): Promise<void> {
+  await db.admin.execute(sql`update mandates set status = 'revoked', ended_at = now() where circle_id = ${circleId}`);
+}
+
+/** Pauses the demo's seeded mandate, as the owner, for the same reason. */
+export async function pauseMandates(db: TestDatabases, circleId: string): Promise<void> {
+  await db.admin.execute(sql`update mandates set status = 'paused' where circle_id = ${circleId}`);
+}

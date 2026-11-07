@@ -2,6 +2,7 @@ import {
   CIRCLE_ROLES,
   DELIVERY_TRANSITIONS,
   DIRECTIONS,
+  MANDATE_STATUSES,
   MONTHLY_SHARE_STATES,
   ENTRY_KINDS,
   ENTRY_SOURCE_TYPES,
@@ -57,6 +58,7 @@ export const memberStatus = pgEnum("member_status", MEMBER_STATUSES);
 export const invitationStatus = pgEnum("invitation_status", INVITATION_STATUSES);
 export const payeeStatus = pgEnum("payee_status", PAYEE_STATUSES);
 export const voteDecision = pgEnum("vote_decision", VOTE_DECISIONS);
+export const mandateStatus = pgEnum("mandate_status", MANDATE_STATUSES);
 export const approvalMethod = pgEnum("approval_method", APPROVAL_METHODS);
 export const documentKind = pgEnum("document_kind", DOCUMENT_KINDS);
 export const receiptState = pgEnum("receipt_state", RECEIPT_STATES);

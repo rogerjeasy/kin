@@ -43,6 +43,8 @@ describe("what a member may do in a circle", () => {
       // Holding up a letter and checking a demand: the people who see the circle's money and may act on it, never a caregiver or an observer.
       expect(authorize(active(role), "letter.read").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
       expect(authorize(active(role), "claim.check").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
+      expect(authorize(active(role), "office_line.try").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
+      expect(authorize(active(role), "audit_head.keep").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
     }
   });
 

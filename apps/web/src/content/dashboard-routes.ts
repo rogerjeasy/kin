@@ -13,8 +13,16 @@ export type DashboardSection = keyof typeof dashboardRoutes;
 /** The family agreement: a screen within the circle's section, not a section of its own. */
 export const agreementRoute = "/dashboard/circle/agreement";
 
+/** The parent's standing permissions: a screen within the circle's section, like the agreement. */
+export const mandatesRoute = "/dashboard/circle/mandates";
+
 /** What Kin says aloud about confirmed money: a screen of the overview, not a section of its own. */
 export const listenRoute = "/dashboard/listen";
+
+/** The family office line, where a demanding caller is handed to Kin: a screen of the bills, not a section of its own. */
+export const officeLineRoute = "/dashboard/office-line";
+/** Where the circle's record is checked again; its `/export` is the file anyone can check offline with `kin-verify`. */
+export const verifyRoute = "/dashboard/record/verify";
 
 /** The sidebar, in order. */
 export const dashboardNav = ["overview", "approvals", "bills", "fairness", "record", "circle"] as const satisfies readonly DashboardSection[];

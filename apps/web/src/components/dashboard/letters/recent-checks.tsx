@@ -36,7 +36,7 @@ export function RecentChecks({ circle, locale, copy, speech }: Props) {
           {checks.map((check) => (
             <li key={check.id} className="flex min-w-0 flex-col gap-2 py-3 first:pt-0 last:pb-0">
               <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-                <VerdictPill verdict={check.verdict} labels={copy.check.verdicts} />
+                <VerdictPill verdict={check.verdict} payeeId={check.payeeId} labels={copy.check.verdicts} />
                 <span className="text-sm text-muted-foreground">{format.day(check.checkedOn)}</span>
                 {check.claimedCents === null ? null : <span className="text-sm text-muted-foreground">{fill(copy.recent.amount, { amount: format.money(check.claimedCents) })}</span>}
               </div>
