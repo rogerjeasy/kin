@@ -2,6 +2,7 @@ import { planApprovals, planSettlementPayouts, rosesMonth, settlePeriod } from "
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
+import { proposeAgreement } from "./agreements.ts";
 import { CaregiverBillingError } from "./caregiver-billing.ts";
 import { NothingToSettleError, SettlementExistsError, proposeSettlement, setOwnSettlementReceiver } from "./settlement-proposals.ts";
 import { asPerson } from "./scope.ts";
@@ -109,6 +110,31 @@ describe("putting the month's settlement to the family", () => {
     expect(await refusal([first, first])).toMatch(/invalid settlement payout/);
     expect(await proposals(circle.circleId)).toEqual([]);
     expect((await snapshotFor(db, circle.userId, circle.circleId)).settlements.filter((each) => each.state !== "superseded")).toEqual([]);
+  });
+});
+
+describe("the agreement a settlement is planned against", () => {
+  it("is the one in force: a newer version nobody has accepted cannot govern a payout, even named directly", async () => {
+    const { circle } = await circleToSettle();
+    const today = new Date(NOW).toISOString().slice(0, 10);
+    // A looser version with a second signer outstanding stays a proposal; the one in force does not change.
+    await asPerson(db.app, circle.userId, (tx) =>
+      proposeAgreement(tx, {
+        circleId: circle.circleId,
+        terms: {
+          shares: [{ memberId: circle.members.marcus, bps: 4500 }, { memberId: circle.members.elena, bps: 3000 }, { memberId: circle.members.ana, bps: 2500 }],
+          care: null,
+          approvals: { ceilingCents: 9_000_000, secondApprovalAboveCents: 8_000_000, parentDecidesAboveCents: 8_000_000 },
+          effectiveOn: today,
+        },
+      }),
+    );
+    const newest = Number((await serviceRows(db, circle.circleId, "select max(version) as v from agreements where circle_id = $1", [circle.circleId]))[0]?.v);
+    const error: unknown = await asPerson(db.app, circle.userId, (tx) =>
+      tx.execute(sql`select kin_private.propose_settlement(${circle.circleId}::uuid, ${PERIOD}, ${newest}::integer, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, '[{}]'::jsonb)`),
+    ).then(() => null, (reason: unknown) => reason);
+    if (error === null) throw new Error("The database accepted a settlement planned against an unaccepted agreement");
+    expect(String((error as { cause?: Error }).cause?.message ?? error)).toMatch(/planned against another agreement/);
   });
 });
 

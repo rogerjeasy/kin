@@ -36,6 +36,9 @@ export type DemandResult =
   | { readonly ok: true; readonly claimCheckId: string; readonly verdict: ClaimVerdict; readonly words: string; readonly told: number }
   | { readonly ok: false; readonly reason: LetterFailure };
 
+/** Stands for the payee's name while a model words a verdict, so the name is never part of its instructions. */
+const PAYEE_TOKEN = "«payee»";
+
 const fail = (reason: LetterFailure): { readonly ok: false; readonly reason: LetterFailure } => ({ ok: false, reason });
 
 /** A photograph's base64 text may be at most this long: about 3 MB of picture. */
@@ -171,10 +174,19 @@ export async function checkDemand(context: LettersContext, input: unknown): Prom
   });
 
   const dictionary = await getDictionary(locale);
-  const { text: template, figures } = claimWords(dictionary, circleFormatters(locale, circle), { payee, claimedCents, result });
+  const formatters = circleFormatters(locale, circle);
+  const fixed = claimWords(dictionary, formatters, { payee, claimedCents, result });
+  // The name is free text from a person, and a scammer's own words, so the model never sees it: it words a
+  // statement holding a token, the name goes in afterwards, and wording that loses the token falls back to the fixed sentence.
+  const worded = claimWords(dictionary, formatters, { payee: PAYEE_TOKEN, claimedCents, result });
   // The model is asked only when this person and this server still have a use left; otherwise the fixed wording stands.
   const model = context.model ?? null;
-  const wording = await narrate(model !== null && spendUse(context, context, (context.now ?? Date.now)()) ? model : null, { figures, statement: template, language: LANGUAGE_NAMES[locale] }, template);
+  const narration = await narrate(
+    model !== null && spendUse(context, context, (context.now ?? Date.now)()) ? model : null,
+    { figures: worded.figures.filter((figure) => figure !== PAYEE_TOKEN), statement: worded.text, language: LANGUAGE_NAMES[locale] },
+    worded.text,
+  );
+  const wording = { text: (narration.text.includes(PAYEE_TOKEN) ? narration.text : fixed.text).replaceAll(PAYEE_TOKEN, () => payee) };
 
   try {
     const claimCheckId = await asPerson(context.db, context.userId, (tx) =>

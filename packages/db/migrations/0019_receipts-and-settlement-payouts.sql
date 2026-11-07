@@ -196,7 +196,7 @@ CREATE FUNCTION kin_private.propose_settlement(
     IF EXISTS (SELECT 1 FROM public.settlements WHERE circle_id = p_circle AND period = p_period AND state <> 'superseded') THEN
       RAISE EXCEPTION 'kin: the period already has a settlement' USING ERRCODE = 'KB010';
     END IF;
-    SELECT * INTO v_agreement FROM public.agreements WHERE circle_id = p_circle ORDER BY version DESC LIMIT 1;
+    SELECT * INTO v_agreement FROM kin_private.agreement_in_force(p_circle);
     IF NOT FOUND THEN
       RAISE EXCEPTION 'kin: the circle has no agreement to approve with' USING ERRCODE = 'KB008';
     END IF;
