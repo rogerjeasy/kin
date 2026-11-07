@@ -29,6 +29,7 @@ for (const viewport of viewports) {
     await expect(page.getByRole("heading", { name: "Standing permissions", level: 1 })).toBeVisible();
     await expect(page.getByRole("main")).toContainText("up to $70.00 each time and $70.00 in a month");
     await expect(page.getByRole("main")).toContainText("$64.00 of $70.00 used this month");
+    await expect(page.getByRole("main")).toContainText("usual limit by up to $20.00");
     await expect(page.getByRole("main")).toContainText("You may order Monthly prescription refill (30 days) from Elm Street Pharmacy");
     await expectNoHorizontalOverflow(page);
   });
@@ -66,7 +67,9 @@ test("a new permission is read back before it is recorded, and one above what it
   await page.getByRole("button", { name: "Read it back" }).click();
   await expect(page.getByText("Kin reads this back")).toBeVisible();
   await expect(page.getByRole("main")).toContainText("up to $60.00 each time and $60.00 in a month");
-  await page.getByRole("button", { name: /^Confirm: .* said yes$/ }).click();
+  // $60.00 is above the $50.00 Rose usually decides herself, so the read-back says she is saying yes ahead of time.
+  await expect(page.getByRole("main")).toContainText("yes ahead of time to amounts above the $50.00");
+  await page.getByRole("button", { name: /^Confirm: .* said yes ahead of time$/ }).click();
   await expect(page.getByText("Recorded. The next refill inside it is bought without asking.")).toBeVisible();
 
   // $64.00 is more than the $60.00 she allowed, so Kin says why and asks.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { checkMandate, checkMandateTerms, decideMandate, type Mandate, type MandateCandidate, type MandateCart } from "./mandate.ts";
+import { checkMandate, checkMandateTerms, decideMandate, mandateExcessAboveParentLimit, type Mandate, type MandateCandidate, type MandateCart } from "./mandate.ts";
 
 const mandate: Mandate = { mandateId: "m1", status: "active", ruleId: "r1", perPurchaseCents: 5_000, perPeriodCents: 5_000, cadence: "monthly", validFrom: "2026-11-01", expiresOn: "2027-10-31" };
 const cart: MandateCart = { ruleId: "r1", totalCents: 4_200 };
@@ -69,5 +69,28 @@ describe("checkMandateTerms", () => {
     [{ ...terms, expiresOn: "2028-01-01" }, 300_000, "too_long"],
   ] as const)("refuses %j", (bad, ceiling, reason) => {
     expect(() => checkMandateTerms(bad, ceiling)).toThrow(expect.objectContaining({ reason }));
+  });
+});
+
+describe("mandateExcessAboveParentLimit", () => {
+  const approvals = { ceilingCents: 10_000, secondApprovalAboveCents: 20_000, parentDecidesAboveCents: 5_000 };
+  const terms = { ...mandate, perPurchaseCents: 7_000, perPeriodCents: 7_000 };
+
+  it("says by how much a cap passes what the parent usually decides", () => {
+    expect(mandateExcessAboveParentLimit(terms, "decides", approvals)).toBe(2_000);
+  });
+
+  it("is zero at or under the threshold, as the approval plan reads it", () => {
+    expect(mandateExcessAboveParentLimit({ ...terms, perPurchaseCents: 5_000 }, "decides", approvals)).toBe(0);
+    expect(mandateExcessAboveParentLimit({ ...terms, perPurchaseCents: 5_001 }, "decides", approvals)).toBe(1);
+  });
+
+  it("is zero when the parent does not decide, since nothing is then hers to give ahead of time", () => {
+    expect(mandateExcessAboveParentLimit(terms, "informed", approvals)).toBe(0);
+    expect(mandateExcessAboveParentLimit(terms, "represented", approvals)).toBe(0);
+  });
+
+  it("refuses an amount that is not whole cents", () => {
+    expect(() => mandateExcessAboveParentLimit({ ...terms, perPurchaseCents: 70.5 }, "decides", approvals)).toThrow();
   });
 });

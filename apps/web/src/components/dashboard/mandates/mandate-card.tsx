@@ -42,6 +42,7 @@ export function MandateCard({ copy, format, view, seller, parent, recordedBy }: 
         <p className="min-w-0 flex-1 text-base font-medium text-pretty">{readBack(copy, format, terms, { item, seller })}</p>
         <StatusPill tone={status.tone} icon={status.icon}>{copy.statuses[mandate.status]}</StatusPill>
       </div>
+      {view.aboveUsualCents > 0 ? <p className="text-sm font-medium text-pretty">{fill(copy.aboveUsual.tag, { parent, over: format.money(view.aboveUsualCents) })}</p> : null}
       {mandate.spokenText ? <p className="text-sm text-muted-foreground text-pretty">{fill(copy.spoke, { parent, text: mandate.spokenText })}</p> : null}
       <div className="space-y-1.5">
         <p className="text-sm tabular-nums">{fill(copy.used, { used: format.money(mandate.usedCents), cap: format.money(mandate.perPeriodCents) })}</p>

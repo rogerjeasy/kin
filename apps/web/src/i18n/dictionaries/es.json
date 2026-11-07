@@ -2008,7 +2008,8 @@
         "above_per_purchase": "el precio supera lo permitido para una compra",
         "over_period": "superaría lo permitido para el mes",
         "already_used_this_period": "se permitía uno al mes y el de este mes ya está comprado"
-      }
+      },
+      "aboveUsual": "Por encima del límite habitual, permitido por adelantado"
     },
     "letters": {
       "title": "Cartas y llamadas",
@@ -2182,6 +2183,11 @@
         "bad_cadence": "Elija la frecuencia.",
         "amount": "Los importes solo llevan cifras, por ejemplo 50.00.",
         "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
+      },
+      "aboveUsual": {
+        "notice": "{parent} dice que sí por adelantado a importes superiores a los {limit} que {parent} suele decidir en persona: hasta {perPurchase} cada vez y {perPeriod} al mes, hasta el {until}.",
+        "grant": "Confirmar: {parent} dijo que sí por adelantado",
+        "tag": "Por encima del límite habitual de {parent}, hasta {over}"
       }
     },
     "officeLine": {

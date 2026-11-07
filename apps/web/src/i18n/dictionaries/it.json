@@ -2008,7 +2008,8 @@
         "above_per_purchase": "il prezzo supera quanto permesso per un acquisto",
         "over_period": "supererebbe quanto permesso per il mese",
         "already_used_this_period": "ne era permesso uno al mese e quello di questo mese è acquistato"
-      }
+      },
+      "aboveUsual": "Oltre il limite abituale, consentito in anticipo"
     },
     "letters": {
       "title": "Lettere e telefonate",
@@ -2182,6 +2183,11 @@
         "bad_cadence": "Scegli la frequenza.",
         "amount": "Gli importi contengono solo cifre, per esempio 50.00.",
         "unavailable": "Kin non ha potuto farlo ora. Riprova tra un momento."
+      },
+      "aboveUsual": {
+        "notice": "{parent} dice sì in anticipo a importi superiori ai {limit} che {parent} decide di solito di persona: fino a {perPurchase} ogni volta e {perPeriod} al mese, fino al {until}.",
+        "grant": "Conferma: {parent} ha detto sì in anticipo",
+        "tag": "Oltre il limite abituale di {parent}, fino a {over}"
       }
     },
     "officeLine": {

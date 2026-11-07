@@ -123,14 +123,21 @@ function standingRule({ kind, cents, payee }: ApprovalRequest): AutoPayRule | nu
   return cents >= rule.minCents && cents <= rule.maxCents ? rule : null;
 }
 
+/**
+ * Whether the parent herself must say yes to an amount: she takes part as one
+ * who decides and it is above the threshold the family agreed with her. The
+ * one place this rule lives; a standing permission asks it too (`mandate.ts`).
+ */
+export function parentMustDecide(cents: number, parentLevel: ParentLevel, terms: ApprovalTerms): boolean {
+  return parentLevel === "decides" && cents > terms.parentDecidesAboveCents;
+}
+
 function slotsFor(
   cents: number,
   parentLevel: ParentLevel,
   terms: ApprovalTerms,
 ): ApprovalSlot[] {
-  const parentDecides =
-    parentLevel === "decides" && cents > terms.parentDecidesAboveCents;
-  const first: ApprovalSlot = parentDecides
+  const first: ApprovalSlot = parentMustDecide(cents, parentLevel, terms)
     ? { reason: "parent_decides", roles: ["parent"] }
     : { reason: "organizer", roles: ["organizer"] };
   if (cents <= terms.secondApprovalAboveCents) return [first];

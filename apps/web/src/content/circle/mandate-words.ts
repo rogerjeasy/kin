@@ -5,7 +5,12 @@ import { fill } from "@/i18n/template";
 import type { Formatters } from "@/lib/format";
 
 /** What Kin reads back to the parent: the terms in her own order, every figure from the record. */
-export function readBack(copy: Dictionary["dashboard"]["mandates"], format: Formatters, terms: MandateTerms, words: { readonly item: string; readonly seller: string }): string {
+export function readBack(
+  copy: Dictionary["dashboard"]["mandates"],
+  format: Formatters,
+  terms: MandateTerms,
+  words: { readonly item: string; readonly seller: string },
+): string {
   return fill(copy.readBack, {
     item: words.item,
     seller: words.seller,
@@ -14,6 +19,17 @@ export function readBack(copy: Dictionary["dashboard"]["mandates"], format: Form
     perPeriod: format.money(terms.perPeriodCents),
     from: format.dayWithYear(terms.validFrom),
     until: format.dayWithYear(terms.expiresOn),
+  });
+}
+
+/** The plain-words notice that she is saying yes ahead of time to amounts above what she usually decides herself. */
+export function aboveUsualNotice(copy: Dictionary["dashboard"]["mandates"], format: Formatters, terms: MandateTerms, parent: string, aboveUsualCents: number): string {
+  return fill(copy.aboveUsual.notice, {
+    parent,
+    limit: format.money(terms.perPurchaseCents - aboveUsualCents),
+    perPurchase: format.money(terms.perPurchaseCents),
+    perPeriod: format.money(terms.perPeriodCents),
+    until: format.day(terms.expiresOn),
   });
 }
 

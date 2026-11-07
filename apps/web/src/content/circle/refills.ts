@@ -2,6 +2,7 @@ import type { CircleSnapshot, PurchaseRecord, PurchaseRuleRecord } from "@kin/db
 import { DELIVERY_TRANSITIONS, isPaused, type DeliveryState } from "@kin/domain";
 
 import { may } from "@/server/dashboard-context";
+import { aboveUsualLimit } from "@/server/mandates";
 
 export type RuleView = {
   readonly rule: PurchaseRuleRecord;
@@ -17,6 +18,8 @@ export type OrderView = {
   readonly proposalState: string;
   /** The parent's standing permission approved it, so no one was asked. */
   readonly viaMandate: boolean;
+  /** Bought under a standing permission although it is more than the parent usually decides herself. */
+  readonly aboveUsualLimit: boolean;
 };
 
 const WAITING: readonly string[] = ["pending_approval", "approved", "executing"];
@@ -25,11 +28,15 @@ const WAITING: readonly string[] = ["pending_approval", "approved", "executing"]
 export function refillViews(circle: CircleSnapshot): { readonly rules: readonly RuleView[]; readonly orders: readonly OrderView[] } {
   const stateOf = new Map<string, string>(circle.proposals.map((proposal) => [proposal.id, proposal.state]));
   const orders = circle.purchases
-    .map((purchase) => ({
-      purchase,
-      proposalState: stateOf.get(purchase.proposalId) ?? "pending_approval",
-      viaMandate: circle.proposals.some((proposal) => proposal.id === purchase.proposalId && proposal.votes.some((vote) => vote.method === "mandate")),
-    }))
+    .map((purchase) => {
+      const viaMandate = circle.proposals.some((proposal) => proposal.id === purchase.proposalId && proposal.votes.some((vote) => vote.method === "mandate"));
+      return {
+        purchase,
+        proposalState: stateOf.get(purchase.proposalId) ?? "pending_approval",
+        viaMandate,
+        aboveUsualLimit: viaMandate && aboveUsualLimit(circle, purchase.cents),
+      };
+    })
     .toReversed();
   const mayAsk = may(circle, "refill.propose") && !isPaused(circle.circle.pausedUntil, circle.circle.now);
   const rules = circle.purchaseRules.map((rule) => ({

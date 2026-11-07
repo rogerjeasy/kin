@@ -7,7 +7,7 @@ import { useState, type FormEvent } from "react";
 import { Field, inputClass } from "@/components/dashboard/create-circle/field";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { Button } from "@/components/ui/button";
-import { readBack } from "@/content/circle/mandate-words";
+import { aboveUsualNotice, readBack } from "@/content/circle/mandate-words";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 import { fill } from "@/i18n/template";
@@ -39,6 +39,7 @@ type Draft = { ruleId: string; perPurchase: string; perPeriod: string; cadence: 
 export function MandateForm({ locale, currency, copy, parent, rules, today, defaultEnd, playsParent }: Props) {
   const [draft, setDraft] = useState<Draft>({ ruleId: rules[0]?.id ?? "", perPurchase: "", perPeriod: "", cadence: "monthly", validFrom: today, expiresOn: defaultEnd, spoken: "" });
   const [review, setReview] = useState<MandateTerms | null>(null);
+  const [aboveUsualCents, setAboveUsualCents] = useState(0);
   const [granted, setGranted] = useState(false);
   const { send, pending, error } = useMandateRequest();
   const router = useRouter();
@@ -56,7 +57,10 @@ export function MandateForm({ locale, currency, copy, parent, rules, today, defa
     event.preventDefault();
     if (review === null) {
       const reply = await send({ operation: "review", draft: request });
-      if (reply.ok && reply.terms) setReview(reply.terms);
+      if (reply.ok && reply.terms) {
+        setReview(reply.terms);
+        setAboveUsualCents(reply.aboveUsualCents ?? 0);
+      }
       return;
     }
     const reply = await send({ operation: "grant", draft: request, ...(draft.spoken.trim() === "" ? {} : { spokenText: draft.spoken.trim() }) });
@@ -113,6 +117,9 @@ export function MandateForm({ locale, currency, copy, parent, rules, today, defa
           <div className="min-w-0 space-y-2 rounded-xl border bg-secondary/40 p-4">
             <h3 className="font-semibold">{form.readBackTitle}</h3>
             <p className="text-pretty">{readBack(copy, format, review, { item: rule.item, seller: rule.seller })}</p>
+            {aboveUsualCents > 0 ? (
+              <p role="note" className="text-pretty font-medium">{aboveUsualNotice(copy, format, review, parent, aboveUsualCents)}</p>
+            ) : null}
           </div>
         ) : null}
         {error ? <p role="alert" className="text-sm text-danger">{copy.errors[error] ?? copy.errors.unavailable}</p> : null}
@@ -124,7 +131,7 @@ export function MandateForm({ locale, currency, copy, parent, rules, today, defa
             </Button>
           ) : null}
           <Button type="submit" disabled={pending || rules.length === 0} className="h-auto min-h-11 max-w-full whitespace-normal text-start">
-            {pending ? (review === null ? form.reviewing : form.granting) : review === null ? form.review : fill(form.grant, { parent })}
+            {pending ? (review === null ? form.reviewing : form.granting) : review === null ? form.review : fill(aboveUsualCents > 0 ? copy.aboveUsual.grant : form.grant, { parent })}
           </Button>
         </div>
       </form>
