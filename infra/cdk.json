@@ -36,7 +36,7 @@
       "webhookId": "3PS4036436315174J"
     },
     "kin:speech": true,
-    "kin:claude": false,
+    "kin:claude": true,
     "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
     "@aws-cdk/aws-apigateway:authorizerChangeDeploymentLogicalId": true,
     "@aws-cdk/aws-apigateway:disableCloudWatchRole": true,
