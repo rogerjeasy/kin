@@ -1691,6 +1691,33 @@
         "not_confirmed": "Rien n’a été enregistré : Kin n’a pas entendu un oui clair pour confirmer.",
         "unavailable": "Un problème est survenu. Veuillez réessayer."
       }
+    },
+    "listen": {
+      "title": "Ce que Kin vous dit",
+      "lede": "Chaque paiement, achat et contribution confirmé, dit en une phrase calme. Choisissez la fréquence.",
+      "everyLabel": "Fréquence",
+      "every": {
+        "now": "Au fur et à mesure",
+        "day": "Une fois par jour",
+        "week": "Une fois par semaine"
+      },
+      "intro": {
+        "day": "Voici ce qui s’est passé depuis hier.",
+        "week": "Voici ce qui s’est passé cette semaine."
+      },
+      "sentences": {
+        "contribution": "{name} a versé {amount} à la cagnotte de la famille.",
+        "payout": "{payee} a reçu {amount} de la cagnotte de la famille.",
+        "purchase": "Votre commande ({category}) est payée. Elle a coûté {amount}."
+      },
+      "simulated": "Celui-ci est simulé.",
+      "play": "Écouter",
+      "playing": "Kin parle…",
+      "heading": "Kin dira",
+      "empty": "Rien n’a été confirmé sur cette période. Kin vous le dira dès que ce sera le cas.",
+      "unavailable": "Kin ne peut pas parler pour le moment. Les mots sont à l’écran.",
+      "link": "Écouter ce que Kin vous dit",
+      "kinNever": "Kin informe. Kin ne demande jamais de secrets."
     }
   }
 }

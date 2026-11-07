@@ -6,12 +6,12 @@ import { SpokenAmount } from "@/components/shared/spoken-amount";
 
 export type HeardLine = { key: string; day: string; text: string; amount: string };
 
-type RoseHeardPanelProps = { title: string; description: string; lines: readonly HeardLine[]; className?: string };
+type RoseHeardPanelProps = { title: string; description: string; link?: { href: string; label: string }; lines: readonly HeardLine[]; className?: string };
 
 /** The sentences Kin spoke to Rose, with each amount as she heard it. */
-export function RoseHeardPanel({ title, description, lines, className }: RoseHeardPanelProps) {
+export function RoseHeardPanel({ title, description, link, lines, className }: RoseHeardPanelProps) {
   return (
-    <Panel title={title} description={description} className={className}>
+    <Panel title={title} description={description} link={link} className={className}>
       <ol className="space-y-5">
         {lines.map((line) => (
           <li key={line.key} className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3">

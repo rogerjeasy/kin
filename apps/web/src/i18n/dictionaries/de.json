@@ -1691,6 +1691,33 @@
         "not_confirmed": "Nichts gespeichert: Kin hat kein klares Ja zur Bestätigung gehört.",
         "unavailable": "Etwas ist schiefgegangen. Bitte erneut versuchen."
       }
+    },
+    "listen": {
+      "title": "Was Kin Ihnen sagt",
+      "lede": "Jede bestätigte Zahlung, jeder Einkauf und jeder Beitrag, in einem ruhigen Satz. Wählen Sie, wie oft Sie es hören.",
+      "everyLabel": "Wie oft",
+      "every": {
+        "now": "Sofort",
+        "day": "Einmal am Tag",
+        "week": "Einmal pro Woche"
+      },
+      "intro": {
+        "day": "Das ist am letzten Tag passiert.",
+        "week": "Das ist diese Woche passiert."
+      },
+      "sentences": {
+        "contribution": "{name} hat {amount} in die Familienkasse eingezahlt.",
+        "payout": "{payee} hat {amount} aus der Familienkasse erhalten.",
+        "purchase": "Ihre Bestellung ({category}) ist bezahlt. Sie kostete {amount}."
+      },
+      "simulated": "Diese Zahlung ist simuliert.",
+      "play": "Anhören",
+      "playing": "Kin spricht…",
+      "heading": "Kin sagt",
+      "empty": "In diesem Zeitraum wurde nichts bestätigt. Kin sagt es Ihnen, sobald es etwas gibt.",
+      "unavailable": "Kin kann gerade nicht sprechen. Die Worte stehen auf dem Bildschirm.",
+      "link": "Anhören, was Kin Ihnen sagt",
+      "kinNever": "Kin informiert. Kin fragt nie nach Geheimnissen."
     }
   }
 }

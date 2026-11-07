@@ -4,8 +4,11 @@ import { fakeTranscriber, fakeVoice } from "@kin/speech/testing";
 import { testDatabases } from "../../../../packages/db/src/testing/databases.ts";
 import { describe, expect, it } from "vitest";
 
+import { announcements } from "@/content/circle/announcements";
+import { formatters } from "@/lib/format";
+
 import { createRateLimiter } from "./model";
-import { answerByVoice, sayBill, sayProposal, transcribe, type SpeechContext } from "./speech-actions";
+import { answerByVoice, sayAnnouncement, sayBill, sayProposal, transcribe, type SpeechContext } from "./speech-actions";
 
 const db = testDatabases();
 const CLOCK = new Date("2026-10-30T18:00:00Z");
@@ -126,5 +129,40 @@ describe("a spoken answer to a proposal", () => {
     expect(await answerByVoice(context(seen, circle.userId), { proposalId: crypto.randomUUID(), pcm, locale: "en", step: "answer", decision: null })).toEqual({ ok: false, reason: "refused" });
     const real = { ...seen, circle: { ...seen.circle, demo: false } };
     expect(await answerByVoice(context(real, circle.userId), { proposalId: proposal.id, pcm, locale: "en", step: "answer", decision: null })).toEqual({ ok: false, reason: "refused" });
+  });
+});
+
+describe("Kin saying what was confirmed", () => {
+  it("says the latest confirmed event from the record, in fixed wording, and says when it is simulated", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    const [latest] = announcements(seen, "now");
+    if (!latest) throw new Error("The demo has no confirmed money event");
+    const voice = fakeVoice();
+    const result = await sayAnnouncement(context(seen, circle.userId, { services: { transcriber: fakeTranscriber(), voice } }), { every: "now", locale: "en" });
+    expect(result).toMatchObject({ ok: true, contentType: "audio/mpeg" });
+    const said = voice.said[0]?.text ?? "";
+    expect(said).toContain(formatters("en", "USD").money(latest.cents));
+    expect(said.endsWith("This one is simulated.")).toBe(latest.entry.simulated);
+  });
+
+  it("gathers a week's events under one opening line", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    const voice = fakeVoice();
+    await sayAnnouncement(context(seen, circle.userId, { services: { transcriber: fakeTranscriber(), voice } }), { every: "week", locale: "en" });
+    const said = voice.said[0]?.text ?? "";
+    expect(said.startsWith("Here is what happened this week.")).toBe(true);
+    for (const view of announcements(seen, "week")) expect(said).toContain(formatters("en", "USD").money(view.cents));
+  });
+
+  it("refuses a caregiver first, then an unknown rhythm or language, and says nothing when nothing is confirmed", async () => {
+    const { circle, caregiver } = await caregiverCircle();
+    expect(await sayAnnouncement(context(await snapshot(circle, caregiver), caregiver), { every: "now", locale: "en" })).toEqual({ ok: false, reason: "refused" });
+    const seen = await snapshot(circle, circle.userId);
+    expect(await sayAnnouncement(context(seen, circle.userId), { every: "hourly", locale: "en" })).toEqual({ ok: false, reason: "invalid" });
+    expect(await sayAnnouncement(context(seen, circle.userId), { every: "now", locale: "xx" })).toEqual({ ok: false, reason: "invalid" });
+    const quiet = { ...seen, ledger: { ...seen.ledger, entries: [] } };
+    expect(await sayAnnouncement(context(quiet, circle.userId), { every: "now", locale: "en" })).toEqual({ ok: false, reason: "invalid" });
   });
 });

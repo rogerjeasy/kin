@@ -21,7 +21,7 @@ import { givenRows } from "@/components/dashboard/words/given-rows";
 import { planLabel } from "@/components/dashboard/words/plan-words";
 import { ButtonLink } from "@/components/shared/button-link";
 import { Button } from "@/components/ui/button";
-import { agreementRoute, dashboardRoutes } from "@/content/dashboard-routes";
+import { agreementRoute, dashboardRoutes, listenRoute } from "@/content/dashboard-routes";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
@@ -161,6 +161,7 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
           <RoseHeardPanel
             title={fill(overview.heard.title, slots)}
             description={fill(overview.heard.text, slots)}
+            link={{ href: path(listenRoute), label: dictionary.dashboard.listen.link }}
             lines={heard.map((line) => ({
               key: line.id,
               day: format.day(line.day),

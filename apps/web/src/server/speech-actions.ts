@@ -4,7 +4,9 @@ import { CaregiverBillError, calculateCaregiverBill, spokenAnswer, type SpokenAn
 import { MAX_RECORDING_BYTES, SpeechUnavailableError, isSpeechLocale, type SpeechLocale } from "@kin/speech";
 import { createHash } from "node:crypto";
 
+import { announcementText } from "@/components/dashboard/words/announcement-words";
 import { answerReadBack, billReadBack, proposalReadBack } from "@/components/dashboard/words/speech-words";
+import { announcements, isAnnounceEvery } from "@/content/circle/announcements";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
 import { circleSlots } from "@/content/circle/words";
@@ -70,6 +72,21 @@ export async function sayProposal(context: SpeechContext, input: { proposalId: s
   const text = input.decision === null
     ? proposalReadBack(dictionary, names, format, proposal, circleSlots(context.circle, format).month)
     : answerReadBack(dictionary, names, format, proposal, input.decision);
+  return say(context, text, input.locale);
+}
+
+/**
+ * Reads the circle's confirmed money events aloud, for the rhythm the person
+ * chose. Built here from the ledger with fixed wording, never from text sent
+ * in, and only for roles that may see the circle's money (a caregiver may not).
+ */
+export async function sayAnnouncement(context: SpeechContext, input: { every: unknown; locale: string }): Promise<Spoken | Failure> {
+  if (!authorize({ role: context.circle.viewer.role, status: "active" }, "money.view").allowed) return fail("refused");
+  if (!isAnnounceEvery(input.every) || !isSpeechLocale(input.locale)) return fail("invalid");
+  const views = announcements(context.circle, input.every);
+  if (views.length === 0) return fail("invalid");
+  const dictionary = await getDictionary(input.locale);
+  const text = announcementText(dictionary.dashboard.listen, circleNames(context.circle, dictionary), circleFormatters(input.locale, context.circle), views, input.every);
   return say(context, text, input.locale);
 }
 
