@@ -176,6 +176,12 @@ The video's last beat. Elena opens the audit export, and `kin-verify october.zip
 - The auditor role in the agent package, MCP read tools, a findings schema and table, the acknowledge flow, the impact-metrics job.
 - Tests: any mutation of an exported entry fails verification; the golden export verifies in CI.
 
+### Built so far
+
+- `packages/verify` and `kin-verify <export.json> [--head <hash>]`: recomputes a per-circle SHA-256 hash chain, re-checks every ledger rule (`auditLedger` in `domain`), recomputes the balances and each settlement from the entries, and checks every figure in the sentences Kin showed. Try it with `pnpm --filter @kin/verify run sample out.json` then `... run kin-verify out.json`.
+- The chain is computed at export time from the ledger, so no ledger table changed. Tamper evidence therefore depends on a head written down earlier (`--head`); persisting heads per month, KMS-signed approvals, the PayPal Transaction Search diff, the findings table with acknowledgement and the impact metrics are not built.
+- The dashboard screen `/dashboard/record/verify` shows the verdict and an auditor panel (separate prompt, no tools, `reviewFindings` in `packages/agent`): plain code decides every finding, the model only words it, and a sentence with a figure the code did not supply falls back to the fixed one.
+
 ### Guardrails and risks
 
 - The export contains no medical data, as policy already requires.

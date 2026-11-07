@@ -2244,6 +2244,78 @@
       },
       "link": "Die Bürolinie ausprobieren",
       "linkText": "Geben Sie einen drängenden Anrufer an Kin weiter. Es prüft die Forderung an den Unterlagen und informiert die Familie."
+    },
+    "verify": {
+      "title": "Aufzeichnung prüfen",
+      "lede": "Kin rechnet die gesamte Aufzeichnung noch einmal mit einfacher Arithmetik nach, und jeder kann die Prüfung auf dem eigenen Computer wiederholen. Ein zweiter Leser, getrennt vom Assistenten, der mit Ihrer Familie spricht, sucht dann nach allem, was nicht stimmt.",
+      "link": "Aufzeichnung prüfen",
+      "download": "Export herunterladen (JSON)",
+      "offlineTitle": "Selbst prüfen",
+      "offlineText": "Laden Sie den Export herunter und führen Sie diesen Befehl auf einem beliebigen Computer aus. Er braucht kein Konto und kein Netz und verlangt nicht, dass Sie Kin vertrauen.",
+      "pass": "Die Aufzeichnung stimmt",
+      "fail": "Die Aufzeichnung stimmt nicht",
+      "passNote": "{count} Einträge, alle Prüfungen bestanden.",
+      "failNote": "{failed} von {total} Prüfungen sind fehlgeschlagen.",
+      "entries": "Einträge",
+      "pool": "Im Topf",
+      "head": "Kettenkopf",
+      "headNote": "Notieren Sie ihn. Jeder spätere Export muss ihn noch enthalten.",
+      "checksTitle": "Was geprüft wurde",
+      "checks": {
+        "chain": {
+          "label": "Fingerabdrücke",
+          "ok": "Alle {count} Einträge passen zu ihrem Fingerabdruck und zum vorherigen: Nach dem Schreiben wurde nichts geändert.",
+          "bad": "Ein Eintrag passt nicht mehr zu seinem Fingerabdruck: Die Aufzeichnung wurde nach dem Schreiben geändert."
+        },
+        "head": {
+          "label": "Kopf der Kette",
+          "ok": "Der Kopf ist der Kopf dieser Einträge.",
+          "bad": "Der Kopf passt nicht zu diesen Einträgen."
+        },
+        "ledger": {
+          "label": "Regeln des Hauptbuchs",
+          "ok": "Jeder Eintrag ist ausgeglichen, jede Korrektur spiegelt das Korrigierte, und der Topf fiel nie unter null ({count} Einträge).",
+          "bad": "Einige Einträge verletzen eine Regel des Hauptbuchs."
+        },
+        "settlement": {
+          "label": "Abrechnungen",
+          "ok": "{count} Abrechnungen wurden aus den Einträgen neu berechnet und stimmen genau überein.",
+          "bad": "Eine neu berechnete Abrechnung stimmt nicht mit der im Export überein."
+        },
+        "wording": {
+          "label": "Formulierungen",
+          "ok": "Jede Zahl in {count} Sätzen steht in der Aufzeichnung.",
+          "bad": "Ein Satz, der Menschen gezeigt wird, nennt eine Zahl, die nicht in der Aufzeichnung steht."
+        }
+      },
+      "auditor": {
+        "title": "Die unabhängige Prüferin",
+        "text": "Die Prüferin teilt nichts mit dem Assistenten, der mit Ihrer Familie spricht. Einfacher Code findet, was zu melden ist, samt jeder Zahl. Die Prüferin erklärt es nur, und jeder Satz mit einer Zahl, die der Code nicht geliefert hat, wird durch Kins feste Formulierung ersetzt.",
+        "ask": "Prüferin um Erklärung bitten",
+        "unavailable": "Die Prüferin ist hier nicht verfügbar, daher stehen hier Kins feste Sätze.",
+        "busy": "Die Prüferin wurde zu oft gefragt. Hier stehen Kins feste Sätze.",
+        "none": "Nichts zu melden. Jede Bewegung hat ihren Grund, jede Korrektur spiegelt das Korrigierte, und keine Zahlung liegt weit über dem, was der Empfänger üblicherweise erhält.",
+        "fixed": "Feste Formulierung",
+        "worded": "Von der Prüferin formuliert",
+        "severity": {
+          "info": "Zur Information",
+          "attention": "Einen Blick wert",
+          "critical": "Ernst"
+        },
+        "about": "Betrifft"
+      },
+      "findings": {
+        "chain": "Ein Eintrag passt nicht mehr zu seinem Fingerabdruck, die Aufzeichnung wurde also nach dem Schreiben geändert.",
+        "head": "Der angegebene Kettenkopf ist nicht der Kopf seiner Einträge, oder ein früherer Kopf fehlt.",
+        "ledger": "Einige Einträge verletzen eine Regel des Hauptbuchs.",
+        "settlement": "Eine neu berechnete Abrechnung stimmt nicht mit der im Export überein.",
+        "wording": "Ein Satz, der Menschen gezeigt wird, nennt eine Zahl, die nicht in der Aufzeichnung steht."
+      },
+      "observations": {
+        "reversal": "Eine Korrektur vom {day} hebt einen früheren Eintrag über {amount} auf.",
+        "payout_above_usual": "Eine Zahlung von {amount} am {day} liegt deutlich über dem, was dieser Empfänger üblicherweise erhält.",
+        "simulated_and_real": "Die Aufzeichnung mischt simulierte Einträge mit echten Sandbox-Transaktionen."
+      }
     }
   }
 }

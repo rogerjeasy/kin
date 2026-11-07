@@ -2244,6 +2244,78 @@
       },
       "link": "Essayer la ligne du bureau",
       "linkText": "Passez un appelant insistant à Kin. Il vérifie la demande dans le dossier et prévient la famille."
+    },
+    "verify": {
+      "title": "Vérifier le registre",
+      "lede": "Kin additionne de nouveau tout le registre avec de l'arithmétique simple, et chacun peut refaire la vérification sur son propre ordinateur. Un second lecteur, distinct de l'assistant qui parle à votre famille, cherche ensuite ce qui ne tient pas.",
+      "link": "Vérifier le registre",
+      "download": "Télécharger l'export (JSON)",
+      "offlineTitle": "Vérifiez vous-même",
+      "offlineText": "Téléchargez l'export et lancez cette commande sur n'importe quel ordinateur. Elle ne demande ni compte ni réseau, et ne vous demande pas de faire confiance à Kin.",
+      "pass": "Le registre est cohérent",
+      "fail": "Le registre n'est pas cohérent",
+      "passNote": "{count} écritures, toutes les vérifications réussies.",
+      "failNote": "{failed} vérifications sur {total} ont échoué.",
+      "entries": "Écritures",
+      "pool": "Dans la cagnotte",
+      "head": "Tête de la chaîne",
+      "headNote": "Notez-la. Tout export ultérieur doit encore la contenir.",
+      "checksTitle": "Ce qui a été vérifié",
+      "checks": {
+        "chain": {
+          "label": "Empreintes",
+          "ok": "Chacune des {count} écritures correspond à son empreinte et à la précédente : rien n'a été modifié après son enregistrement.",
+          "bad": "Une écriture ne correspond plus à son empreinte : le registre a été modifié après son enregistrement."
+        },
+        "head": {
+          "label": "Tête de la chaîne",
+          "ok": "La tête est bien celle de ces écritures.",
+          "bad": "La tête ne correspond pas à ces écritures."
+        },
+        "ledger": {
+          "label": "Règles du registre",
+          "ok": "Chaque écriture est équilibrée, chaque correction reflète ce qu'elle corrige, et la cagnotte n'est jamais passée sous zéro ({count} écritures).",
+          "bad": "Certaines écritures enfreignent une règle du registre."
+        },
+        "settlement": {
+          "label": "Règlements",
+          "ok": "{count} règlements ont été recalculés à partir des écritures et correspondent exactement.",
+          "bad": "Un règlement recalculé à partir des écritures ne correspond pas à celui de l'export."
+        },
+        "wording": {
+          "label": "Formulations",
+          "ok": "Chaque chiffre de {count} phrases figure dans le registre.",
+          "bad": "Une phrase montrée aux personnes indique un chiffre absent du registre."
+        }
+      },
+      "auditor": {
+        "title": "L'auditeur indépendant",
+        "text": "L'auditeur ne partage rien avec l'assistant qui parle à votre famille. Du code simple trouve ce qu'il faut signaler, chiffres compris. L'auditeur ne fait que l'expliquer, et toute phrase avec un chiffre que le code n'a pas fourni est remplacée par la formulation fixe de Kin.",
+        "ask": "Demander à l'auditeur d'expliquer",
+        "unavailable": "L'auditeur n'est pas disponible ici : ce sont les phrases fixes de Kin.",
+        "busy": "L'auditeur a été sollicité trop souvent. Ce sont les phrases fixes de Kin.",
+        "none": "Rien à signaler. Chaque mouvement a sa cause, chaque correction reflète ce qu'elle corrige, et aucun paiement n'est très supérieur à ce que son bénéficiaire reçoit d'habitude.",
+        "fixed": "Formulation fixe",
+        "worded": "Formulé par l'auditeur",
+        "severity": {
+          "info": "Pour information",
+          "attention": "À regarder",
+          "critical": "Grave"
+        },
+        "about": "Concerne"
+      },
+      "findings": {
+        "chain": "Une écriture ne correspond plus à son empreinte : le registre a été modifié après son enregistrement.",
+        "head": "La tête de chaîne indiquée n'est pas celle de ses écritures, ou une tête antérieure manque.",
+        "ledger": "Certaines écritures enfreignent une règle du registre.",
+        "settlement": "Un règlement recalculé ne correspond pas à celui de l'export.",
+        "wording": "Une phrase montrée aux personnes indique un chiffre absent du registre."
+      },
+      "observations": {
+        "reversal": "Une correction du {day} annule une écriture antérieure de {amount}.",
+        "payout_above_usual": "Un paiement de {amount} le {day} dépasse nettement ce que ce bénéficiaire reçoit d'habitude.",
+        "simulated_and_real": "Le registre mélange des écritures simulées et de vraies transactions du bac à sable."
+      }
     }
   }
 }

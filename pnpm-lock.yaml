@@ -223,6 +223,9 @@ importers:
       '@kin/telephony':
         specifier: workspace:*
         version: link:../../packages/telephony
+      '@kin/verify':
+        specifier: workspace:*
+        version: link:../../packages/verify
       ag-grid-community:
         specifier: ^36.2.0
         version: 36.2.0
@@ -440,6 +443,15 @@ importers:
 
   packages/telephony:
     dependencies:
+      '@kin/domain':
+        specifier: workspace:*
+        version: link:../domain
+
+  packages/verify:
+    dependencies:
+      '@kin/agent':
+        specifier: workspace:*
+        version: link:../agent
       '@kin/domain':
         specifier: workspace:*
         version: link:../domain

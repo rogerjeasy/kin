@@ -21,6 +21,8 @@ export const listenRoute = "/dashboard/listen";
 
 /** The family office line, where a demanding caller is handed to Kin: a screen of the bills, not a section of its own. */
 export const officeLineRoute = "/dashboard/office-line";
+/** Where the circle's record is checked again; its `/export` is the file anyone can check offline with `kin-verify`. */
+export const verifyRoute = "/dashboard/record/verify";
 
 /** The sidebar, in order. */
 export const dashboardNav = ["overview", "approvals", "bills", "fairness", "record", "circle"] as const satisfies readonly DashboardSection[];
