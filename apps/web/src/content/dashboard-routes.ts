@@ -16,6 +16,9 @@ export const agreementRoute = "/dashboard/circle/agreement";
 /** What Kin says aloud about confirmed money: a screen of the overview, not a section of its own. */
 export const listenRoute = "/dashboard/listen";
 
+/** The family office line, where a demanding caller is handed to Kin: a screen of the bills, not a section of its own. */
+export const officeLineRoute = "/dashboard/office-line";
+
 /** The sidebar, in order. */
 export const dashboardNav = ["overview", "approvals", "bills", "fairness", "record", "circle"] as const satisfies readonly DashboardSection[];
 

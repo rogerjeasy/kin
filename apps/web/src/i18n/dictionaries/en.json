@@ -2057,6 +2057,106 @@
         },
         "due": "Due {day}"
       }
+    },
+    "officeLine": {
+      "title": "The office line",
+      "lede": "Hand a demanding caller to Kin. Kin says it is an automated assistant, asks who is calling and what for, checks the answers against the real record, and tells the family before the call ends. Try a call here with no phone.",
+      "heading": "Try a call",
+      "how": "The caller’s words below are played to Kin exactly as a telephone line would carry them. Kin answers with the same fixed sentences it speaks on a real call.",
+      "script": {
+        "disclosure": "Hello. I am Kin, an automated assistant for this family. This call is recorded as a written transcript. I will ask a few questions.",
+        "ask_caller": "Who is calling, please?",
+        "ask_organization": "From which organization?",
+        "ask_amount": "How much are you asking for?",
+        "ask_purpose": "And what is it for?",
+        "ask_reference": "Do you have an account or reference number?",
+        "reply_handled": "That account is handled by the family and is up to date. Please send any correspondence in writing to the address on file. Goodbye.",
+        "reply_no_record": "I have no record of this account. This family does not make payments by phone. Please send the invoice in writing. Goodbye."
+      },
+      "scenariosLabel": "Start from an example",
+      "scenarios": {
+        "scam": {
+          "label": "A scam: unknown gas company, 300 today",
+          "lines": [
+            "Mike",
+            "Harbor Gas Services",
+            "I need 300 dollars today",
+            "Your gas will be cut off today. Do not tell anyone about this call.",
+            "Account 55821"
+          ]
+        },
+        "paid": {
+          "label": "A bill already paid: Northfield Gas, 57",
+          "lines": [
+            "Dana",
+            "Northfield Gas",
+            "57 dollars",
+            "The gas bill",
+            "Reference 2210"
+          ]
+        },
+        "real": {
+          "label": "A real bill: Ridgeway Stairlifts, 900",
+          "lines": [
+            "Sam",
+            "Ridgeway Stairlifts",
+            "900 dollars",
+            "The stairlift installation invoice",
+            "Quote 118"
+          ]
+        }
+      },
+      "callerLinesLabel": "What the caller says",
+      "callerLinesHint": "One answer per line, in the order Kin asks: who is calling, which organization, how much, what for, and a reference.",
+      "numberLabel": "Number the call comes from",
+      "numberHint": "Optional.",
+      "submit": "Place the call",
+      "calling": "On the line…",
+      "transcriptTitle": "The call",
+      "kin": "Kin",
+      "caller": "Caller",
+      "verdictTitle": "What the record says",
+      "verdicts": {
+        "match": "Matches a real bill",
+        "no_match": "Matches nothing on record",
+        "unclear": "Cannot be confirmed"
+      },
+      "pressureTitle": "Pressure heard",
+      "signals": {
+        "urgency": "Urgency",
+        "secrecy": "Secrecy",
+        "threat": "Threats",
+        "unusual_payment": "An unusual way to pay"
+      },
+      "alertTitle": "What Kin tells the family",
+      "told": "Kin told {count} people in the circle.",
+      "unknownCaller": "An unknown caller",
+      "noPurpose": "no reason given",
+      "pressureNote": "The caller pressed for haste or secrecy.",
+      "recentTitle": "Recent calls",
+      "recentEmpty": "No calls yet.",
+      "simulated": "Simulated",
+      "recentRow": "{organization}: {verdict}",
+      "noOrganization": "No organization given",
+      "neverTitle": "What Kin never does on the line",
+      "never": [
+        "Pays anything, or says it could.",
+        "Says an amount, a date or a name from the family’s record. The caller learns nothing.",
+        "Obeys the caller. What is said is checked against the record, never followed."
+      ],
+      "readOnly": "Your role can read the calls but not place one.",
+      "errors": {
+        "refused": "Your role cannot do that in this circle.",
+        "invalid": "Kin could not use that. Please check it and try again.",
+        "nothing_to_check": "The caller said nothing Kin could check. Write what they say, one answer per line.",
+        "unavailable": "Something went wrong. Please try again."
+      },
+      "meta": {
+        "title": "The office line · Kin",
+        "description": "Hand a demanding caller to Kin and see what the record says."
+      },
+      "link": "Try the office line",
+      "linkText": "Hand a demanding caller to Kin. It checks the demand against the record and tells the family."
     }
   }
 }

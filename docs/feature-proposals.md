@@ -119,6 +119,10 @@ Rose's phone rings. "Your gas is being cut off today unless you pay 300 dollars.
 - `claim_checks` extended with caller metadata and a transcript reference. Alerts.
 - A fixed test set of about thirty scripted scam and legitimate calls. Measure verdict accuracy and non-disclosure: assert that no reply contains an amount, date or name outside the script.
 
+### Built so far
+
+The call logic is plain code: `packages/domain/src/office-line.ts` (intake, `checkClaim` verdict, pressure rules, the closed set of sentences) behind the `CallLine` interface of `packages/telephony`, with a scripted fake line. The dashboard's "try the office line" screen (`/dashboard/office-line`) plays a written caller through the same `takeCall`, records an `office_calls` row (circle-scoped, row-level security) with its claim check, and alerts the family. Not built: the Twilio adapter, Claude extraction and phrasing (replies are fixed per language, so nothing is left for a model to disclose), and the thirty-call evaluation set.
+
 ### Guardrails and risks
 
 - The receptionist can be lied to and it changes nothing: no write tools, scripted outputs, no data in replies.

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { check, date, foreignKey, integer, jsonb, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, date, foreignKey, integer, jsonb, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
 
 import { at, cents, circleId, createdAt, id, periodCheck } from "./columns.ts";
 import { circles, members } from "./circles.ts";
@@ -87,5 +87,41 @@ export const narrations = pgTable(
     foreignKey({ name: "narrations_claim_check_fk", columns: [t.circleId, t.claimCheckId], foreignColumns: [claimChecks.circleId, claimChecks.id] }),
     check("narrations_topic_key", sql`${t.topic} ~ '^[a-zA-Z0-9_-]+$'`),
     check("narrations_delivered", sql`(${t.state} = 'delivered') = (${t.deliveredAt} is not null)`),
+  ],
+);
+
+/**
+ * A call to the family office line (docs/feature-proposals.md section 2): who
+ * rang, what they said, the verdict plain code reached and the claim check it
+ * produced. The transcript is text, never audio. A call placed from the
+ * "try the office line" screen is marked simulated.
+ */
+export const officeCalls = pgTable(
+  "office_calls",
+  {
+    id: id(),
+    circleId: circleId(),
+    /** The number the call came from, when a telephone line carried it. */
+    callerNumber: text("caller_number"),
+    callerName: text("caller_name"),
+    organization: text("organization"),
+    claimedCents: cents("claimed_cents"),
+    purpose: text("purpose"),
+    reference: text("reference"),
+    /** Every sentence said, as `{ from, text }`. Data, never instructions. */
+    transcript: jsonb("transcript").notNull(),
+    verdict: claimVerdict("verdict").notNull(),
+    /** Urgency, secrecy, threats or an odd way to pay, found in what the caller said. */
+    pressureSignals: text("pressure_signals").array().notNull().default(sql`'{}'::text[]`),
+    simulated: boolean("simulated").notNull().default(false),
+    claimCheckId: uuid("claim_check_id").notNull(),
+    calledOn: date("called_on", { mode: "string" }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    unique("office_calls_circle_row").on(t.circleId, t.id),
+    foreignKey({ name: "office_calls_claim_check_fk", columns: [t.circleId, t.claimCheckId], foreignColumns: [claimChecks.circleId, claimChecks.id] }),
+    check("office_calls_claimed_positive", sql`${t.claimedCents} is null or ${t.claimedCents} > 0`),
+    check("office_calls_transcript_list", sql`jsonb_typeof(${t.transcript}) = 'array'`),
   ],
 );

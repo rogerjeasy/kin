@@ -2057,6 +2057,106 @@
         },
         "due": "Fällig am {day}"
       }
+    },
+    "officeLine": {
+      "title": "Die Bürolinie",
+      "lede": "Geben Sie einen drängenden Anrufer an Kin weiter. Kin sagt, dass es ein automatischer Assistent ist, fragt, wer anruft und wofür, prüft die Antworten an den echten Unterlagen und informiert die Familie, bevor das Gespräch endet. Probieren Sie hier einen Anruf ohne Telefon.",
+      "heading": "Einen Anruf ausprobieren",
+      "how": "Die Wörter des Anrufers unten werden Kin so zugespielt, wie eine Telefonleitung sie trägt. Kin antwortet mit denselben festen Sätzen wie bei einem echten Anruf.",
+      "script": {
+        "disclosure": "Guten Tag. Ich bin Kin, ein automatischer Assistent dieser Familie. Dieses Gespräch wird als schriftliches Protokoll festgehalten. Ich stelle Ihnen einige Fragen.",
+        "ask_caller": "Wer spricht, bitte?",
+        "ask_organization": "Von welcher Organisation?",
+        "ask_amount": "Welchen Betrag verlangen Sie?",
+        "ask_purpose": "Und wofür?",
+        "ask_reference": "Haben Sie eine Konto- oder Referenznummer?",
+        "reply_handled": "Dieses Konto wird von der Familie betreut und ist aktuell. Bitte senden Sie alle Schreiben schriftlich an die hinterlegte Adresse. Auf Wiederhören.",
+        "reply_no_record": "Zu diesem Konto liegt mir nichts vor. Diese Familie zahlt nicht per Telefon. Bitte senden Sie die Rechnung schriftlich. Auf Wiederhören."
+      },
+      "scenariosLabel": "Mit einem Beispiel beginnen",
+      "scenarios": {
+        "scam": {
+          "label": "Ein Betrug: unbekannte Gasfirma, heute 300",
+          "lines": [
+            "Mike",
+            "Harbor Gas Services",
+            "Ich brauche 300 Dollar",
+            "Ihr Gas wird heute abgestellt. Sagen Sie niemandem etwas von diesem Anruf.",
+            "Konto 55821"
+          ]
+        },
+        "paid": {
+          "label": "Eine bereits bezahlte Rechnung: Northfield Gas, 57",
+          "lines": [
+            "Dana",
+            "Northfield Gas",
+            "57 Dollar",
+            "Die Gasrechnung",
+            "Referenz 2210"
+          ]
+        },
+        "real": {
+          "label": "Eine echte Rechnung: Ridgeway Stairlifts, 900",
+          "lines": [
+            "Sam",
+            "Ridgeway Stairlifts",
+            "900 Dollar",
+            "Die Rechnung für den Treppenlift",
+            "Angebot 118"
+          ]
+        }
+      },
+      "callerLinesLabel": "Was der Anrufer sagt",
+      "callerLinesHint": "Eine Antwort pro Zeile, in der Reihenfolge von Kins Fragen: wer anruft, welche Organisation, wie viel, wofür und eine Referenz.",
+      "numberLabel": "Nummer, von der der Anruf kommt",
+      "numberHint": "Freiwillig.",
+      "submit": "Anruf starten",
+      "calling": "In der Leitung…",
+      "transcriptTitle": "Der Anruf",
+      "kin": "Kin",
+      "caller": "Anrufer",
+      "verdictTitle": "Was die Unterlagen sagen",
+      "verdicts": {
+        "match": "Passt zu einer echten Rechnung",
+        "no_match": "Passt zu nichts in den Unterlagen",
+        "unclear": "Nicht zu bestätigen"
+      },
+      "pressureTitle": "Druck bemerkt",
+      "signals": {
+        "urgency": "Dringlichkeit",
+        "secrecy": "Geheimhaltung",
+        "threat": "Drohungen",
+        "unusual_payment": "Ein ungewöhnlicher Zahlungsweg"
+      },
+      "alertTitle": "Was Kin der Familie sagt",
+      "told": "Kin hat {count} Personen im Kreis informiert.",
+      "unknownCaller": "Ein unbekannter Anrufer",
+      "noPurpose": "kein Grund genannt",
+      "pressureNote": "Der Anrufer drängte zur Eile oder zur Geheimhaltung.",
+      "recentTitle": "Letzte Anrufe",
+      "recentEmpty": "Noch keine Anrufe.",
+      "simulated": "Simuliert",
+      "recentRow": "{organization}: {verdict}",
+      "noOrganization": "Keine Organisation genannt",
+      "neverTitle": "Was Kin am Telefon nie tut",
+      "never": [
+        "Etwas bezahlen oder sagen, dass es könnte.",
+        "Einen Betrag, ein Datum oder einen Namen aus den Unterlagen der Familie nennen. Der Anrufer erfährt nichts.",
+        "Dem Anrufer gehorchen. Das Gesagte wird mit den Unterlagen verglichen, nie befolgt."
+      ],
+      "readOnly": "Ihre Rolle darf Anrufe lesen, aber keinen auslösen.",
+      "errors": {
+        "refused": "Ihre Rolle darf das in diesem Kreis nicht.",
+        "invalid": "Kin konnte das nicht verwenden. Bitte prüfen Sie es und versuchen Sie es erneut.",
+        "nothing_to_check": "Der Anrufer sagte nichts, das Kin prüfen konnte. Schreiben Sie auf, was er sagt, eine Antwort pro Zeile.",
+        "unavailable": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+      },
+      "meta": {
+        "title": "Die Bürolinie · Kin",
+        "description": "Geben Sie einen drängenden Anrufer an Kin weiter und sehen Sie, was die Unterlagen sagen."
+      },
+      "link": "Die Bürolinie ausprobieren",
+      "linkText": "Geben Sie einen drängenden Anrufer an Kin weiter. Es prüft die Forderung an den Unterlagen und informiert die Familie."
     }
   }
 }

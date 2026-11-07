@@ -2057,6 +2057,106 @@
         },
         "due": "Scadenza: {day}"
       }
+    },
+    "officeLine": {
+      "title": "La linea dell’ufficio",
+      "lede": "Passa a Kin un chiamante insistente. Kin dice di essere un assistente automatico, chiede chi chiama e perché, controlla le risposte sui documenti reali e avvisa la famiglia prima che la chiamata finisca. Prova qui una chiamata senza telefono.",
+      "heading": "Prova una chiamata",
+      "how": "Le parole del chiamante qui sotto vengono passate a Kin come le porterebbe una linea telefonica. Kin risponde con le stesse frasi fisse di una chiamata vera.",
+      "script": {
+        "disclosure": "Buongiorno. Sono Kin, un assistente automatico di questa famiglia. Questa chiamata viene conservata come trascrizione scritta. Le farò qualche domanda.",
+        "ask_caller": "Chi parla, per favore?",
+        "ask_organization": "Da quale organizzazione?",
+        "ask_amount": "Che somma chiede?",
+        "ask_purpose": "E per quale motivo?",
+        "ask_reference": "Ha un numero di conto o di riferimento?",
+        "reply_handled": "Questo conto è gestito dalla famiglia ed è in regola. Invii ogni corrispondenza per iscritto all’indirizzo in archivio. Arrivederci.",
+        "reply_no_record": "Non ho alcuna traccia di questo conto. Questa famiglia non fa pagamenti per telefono. Invii la fattura per iscritto. Arrivederci."
+      },
+      "scenariosLabel": "Parti da un esempio",
+      "scenarios": {
+        "scam": {
+          "label": "Una truffa: società del gas sconosciuta, 300 oggi",
+          "lines": [
+            "Mike",
+            "Harbor Gas Services",
+            "Mi servono 300 dollari",
+            "Il suo gas sarà tagliato oggi. Non dica a nessuno di questa chiamata.",
+            "Conto 55821"
+          ]
+        },
+        "paid": {
+          "label": "Una fattura già pagata: Northfield Gas, 57",
+          "lines": [
+            "Dana",
+            "Northfield Gas",
+            "57 dollari",
+            "La fattura del gas",
+            "Riferimento 2210"
+          ]
+        },
+        "real": {
+          "label": "Una fattura vera: Ridgeway Stairlifts, 900",
+          "lines": [
+            "Sam",
+            "Ridgeway Stairlifts",
+            "900 dollari",
+            "La fattura per l’installazione del montascale",
+            "Preventivo 118"
+          ]
+        }
+      },
+      "callerLinesLabel": "Che cosa dice il chiamante",
+      "callerLinesHint": "Una risposta per riga, nell’ordine delle domande di Kin: chi chiama, quale organizzazione, quanto, perché e un riferimento.",
+      "numberLabel": "Numero da cui arriva la chiamata",
+      "numberHint": "Facoltativo.",
+      "submit": "Fai la chiamata",
+      "calling": "In linea…",
+      "transcriptTitle": "La chiamata",
+      "kin": "Kin",
+      "caller": "Chiamante",
+      "verdictTitle": "Che cosa dicono i documenti",
+      "verdicts": {
+        "match": "Corrisponde a una fattura vera",
+        "no_match": "Non corrisponde a nulla nei documenti",
+        "unclear": "Non si può confermare"
+      },
+      "pressureTitle": "Pressione rilevata",
+      "signals": {
+        "urgency": "Urgenza",
+        "secrecy": "Segretezza",
+        "threat": "Minacce",
+        "unusual_payment": "Un modo di pagare insolito"
+      },
+      "alertTitle": "Che cosa Kin dice alla famiglia",
+      "told": "Kin ha avvisato {count} persone del cerchio.",
+      "unknownCaller": "Un chiamante sconosciuto",
+      "noPurpose": "nessun motivo indicato",
+      "pressureNote": "Il chiamante ha spinto alla fretta o al segreto.",
+      "recentTitle": "Chiamate recenti",
+      "recentEmpty": "Ancora nessuna chiamata.",
+      "simulated": "Simulata",
+      "recentRow": "{organization}: {verdict}",
+      "noOrganization": "Nessuna organizzazione indicata",
+      "neverTitle": "Che cosa Kin non fa mai in linea",
+      "never": [
+        "Pagare qualcosa, o dire che potrebbe.",
+        "Dire un importo, una data o un nome dei documenti della famiglia. Il chiamante non scopre nulla.",
+        "Obbedire al chiamante. Ciò che viene detto è confrontato con i documenti, mai eseguito."
+      ],
+      "readOnly": "Il tuo ruolo può leggere le chiamate ma non farne.",
+      "errors": {
+        "refused": "Il tuo ruolo non può farlo in questo cerchio.",
+        "invalid": "Kin non ha potuto usarlo. Controlla e riprova.",
+        "nothing_to_check": "Il chiamante non ha detto nulla che Kin potesse controllare. Scrivi ciò che dice, una risposta per riga.",
+        "unavailable": "Qualcosa è andato storto. Riprova."
+      },
+      "meta": {
+        "title": "La linea dell’ufficio · Kin",
+        "description": "Passa a Kin un chiamante insistente e guarda che cosa dicono i documenti."
+      },
+      "link": "Prova la linea dell’ufficio",
+      "linkText": "Passa a Kin un chiamante insistente. Kin controlla la richiesta sui documenti e avvisa la famiglia."
     }
   }
 }

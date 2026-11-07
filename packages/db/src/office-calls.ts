@@ -1,0 +1,94 @@
+import { desc, eq, sql } from "drizzle-orm";
+
+import type { Transaction } from "./connection.ts";
+import { LetterError } from "./letters.ts";
+import { officeCalls } from "./schema/index.ts";
+import type { ClaimVerdict } from "./values.ts";
+
+const REASONS: Readonly<Record<string, "refused" | "invalid">> = { "42501": "refused", "23514": "invalid", "22P02": "invalid" };
+
+function codeOf(error: unknown): string | null {
+  if (error === null || typeof error !== "object") return null;
+  if ("code" in error && typeof error.code === "string") return error.code;
+  return "cause" in error ? codeOf(error.cause) : null;
+}
+
+export type TranscriptTurn = { readonly from: "kin" | "caller"; readonly text: string };
+
+export type OfficeCallInput = {
+  readonly circleId: string;
+  readonly callerNumber: string | null;
+  readonly callerName: string | null;
+  readonly organization: string | null;
+  readonly claimedCents: number | null;
+  readonly purpose: string | null;
+  readonly reference: string | null;
+  readonly transcript: readonly TranscriptTurn[];
+  readonly pressureSignals: readonly string[];
+  readonly simulated: boolean;
+  readonly payeeId: string | null;
+  readonly foundEntryId: string | null;
+  readonly verdict: ClaimVerdict;
+  /** A key the app words in each language, such as `falseDemand`. */
+  readonly topic: string;
+  /** The family's alert, after the number guard. */
+  readonly spoken: string;
+  /** What the caller claimed, as one line for the claim check. */
+  readonly claim: string;
+};
+
+/**
+ * Records a call to the office line, the claim check it produced, and the
+ * alert to every member who sees the circle's money. Run as the person inside
+ * `asPerson`: the database operation rechecks their role.
+ */
+export async function recordOfficeCall(tx: Transaction, input: OfficeCallInput): Promise<{ callId: string; claimCheckId: string }> {
+  try {
+    const signals = `{${input.pressureSignals.join(",")}}`;
+    const result = await tx.execute<{ recorded: { callId: string; claimCheckId: string } }>(
+      sql`select kin_private.record_office_call(${input.circleId}::uuid, ${input.callerNumber}, ${input.callerName}, ${input.organization}, ${input.claimedCents}::bigint, ${input.purpose}, ${input.reference}, ${JSON.stringify(input.transcript)}::jsonb, ${signals}::text[], ${input.simulated}, ${input.payeeId}::uuid, ${input.foundEntryId}::uuid, ${input.verdict}::public.claim_verdict, ${input.topic}, ${input.spoken}, ${input.claim}) as recorded`,
+    );
+    const recorded = result.rows[0]?.recorded;
+    if (!recorded) throw new Error("The office call operation returned nothing");
+    return recorded;
+  } catch (error) {
+    const reason = REASONS[codeOf(error) ?? ""];
+    if (reason) throw new LetterError(reason);
+    throw error;
+  }
+}
+
+export type OfficeCallRecord = {
+  readonly id: string;
+  readonly calledOn: string;
+  readonly organization: string | null;
+  readonly claimedCents: number | null;
+  readonly verdict: ClaimVerdict;
+  readonly pressureSignals: readonly string[];
+  readonly simulated: boolean;
+  readonly transcript: readonly TranscriptTurn[];
+};
+
+function turns(value: unknown): TranscriptTurn[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((turn: unknown) => {
+    if (turn === null || typeof turn !== "object") return [];
+    const { from, text } = turn as { from?: unknown; text?: unknown };
+    return (from === "kin" || from === "caller") && typeof text === "string" ? [{ from, text }] : [];
+  });
+}
+
+/** The circle's most recent calls to the office line, newest first. Row-level security limits who sees any. */
+export async function readOfficeCalls(tx: Transaction, circleId: string, limit = 20): Promise<OfficeCallRecord[]> {
+  const rows = await tx.select().from(officeCalls).where(eq(officeCalls.circleId, circleId)).orderBy(desc(officeCalls.createdAt)).limit(limit);
+  return rows.map((row) => ({
+    id: row.id,
+    calledOn: row.calledOn,
+    organization: row.organization,
+    claimedCents: row.claimedCents,
+    verdict: row.verdict,
+    pressureSignals: row.pressureSignals,
+    simulated: row.simulated,
+    transcript: turns(row.transcript),
+  }));
+}

@@ -47,6 +47,20 @@ export {
   planPurchase,
 } from "./purchase.ts";
 export type { DeliveryState, PurchasePlan, PurchaseRefusal, PurchaseRequest, PurchaseRule } from "./purchase.ts";
+export {
+  INTAKE_QUESTIONS,
+  MAX_ANSWER_CHARS,
+  MAX_CALLER_TURNS,
+  SCRIPT_KEYS,
+  decideCall,
+  hear,
+  nextPrompt,
+  pendingQuestion,
+  pressureSignals,
+  spokenAmountCents,
+  startIntake,
+} from "./office-line.ts";
+export type { Answers, CallVerdict, IntakeQuestion, IntakeState, PressureSignal, RecordFacts, ScriptKey } from "./office-line.ts";
 export { spokenAnswer } from "./spoken-answer.ts";
 export type { SpokenAnswer } from "./spoken-answer.ts";
 export { CAREGIVER_BILL_PURPOSE, CaregiverPayoutError, planCaregiverPayout } from "./caregiver-payout.ts";
