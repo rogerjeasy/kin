@@ -137,6 +137,7 @@ async function writePeople(tx: Transaction, ids: Ids, userId: string | null): Pr
       role: persona.role,
       parentLevel: persona.parentLevel,
       relationship: persona.relationship,
+      currency: persona.currency ?? null,
       // Daniel has no photograph, so he is drawn by his initials.
       portrait: persona.key === "daniel" ? null : persona.key,
       joinedAt: ids.time.at(persona.joinedAt),

@@ -1253,6 +1253,7 @@
         "care": "Pflegezeit",
         "given": "Insgesamt beigetragen",
         "target": "Vereinbarter Anteil",
+        "ownCurrency": "Vereinbarter Anteil in {currency} (simulierter Kurs)",
         "owed": "Die Kasse schuldet {name} {amount}",
         "owes": "{name} schuldet der Kasse {amount}",
         "level": "{name} ist ausgeglichen",

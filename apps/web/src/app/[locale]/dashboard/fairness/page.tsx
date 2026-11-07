@@ -15,6 +15,7 @@ import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
+import { ownCurrencyLines } from "@/content/circle/own-currency";
 import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
@@ -92,6 +93,7 @@ export default async function FairnessPage({ params }: PageProps<"/[locale]/dash
                   { label: copy.care, value: format.money(input.careCreditCents) },
                   { label: copy.given, value: format.money(position.contributedCents), strong: true },
                   { label: copy.target, value: format.money(position.targetCents) },
+                  ...ownCurrencyLines(circle, locale, { memberId, targetCents: position.targetCents }, copy.ownCurrency),
                 ]}
                 position={positionStatus(format, position.positionCents, copy, name)}
                 explanation={[

@@ -1253,6 +1253,7 @@
         "care": "Care time",
         "given": "Given in all",
         "target": "Agreed share",
+        "ownCurrency": "Agreed share in {currency} (simulated rate)",
         "owed": "The pool owes {name} {amount}",
         "owes": "{name} owes the pool {amount}",
         "level": "{name} is level",

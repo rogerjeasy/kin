@@ -1253,6 +1253,7 @@
         "care": "Tiempo de cuidado",
         "given": "Total dado",
         "target": "Parte acordada",
+        "ownCurrency": "Parte acordada en {currency} (cambio simulado)",
         "owed": "El fondo le debe {amount} a {name}",
         "owes": "{name} le debe {amount} al fondo",
         "level": "{name} está al día",

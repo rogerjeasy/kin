@@ -1,0 +1,2 @@
+ALTER TABLE "members" ADD COLUMN "currency" text;--> statement-breakpoint
+ALTER TABLE "members" ADD CONSTRAINT "members_currency_code" CHECK ("members"."currency" is null or "members"."currency" ~ '^[A-Z]{3}$');

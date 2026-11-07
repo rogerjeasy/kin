@@ -30,13 +30,15 @@ export type Persona = {
   readonly role: CircleRole;
   readonly parentLevel: ParentLevel | null;
   readonly relationship: string | null;
+  /** The currency the persona gives in, when it is not the circle's. */
+  readonly currency?: string;
   readonly joinedAt: Date;
 };
 
 export const PERSONAS: readonly Persona[] = [
   { key: "rose", name: "Rose", role: "parent", parentLevel: "decides", relationship: null, joinedAt: new Date("2026-09-01T14:00:00Z") },
   { key: "elena", name: "Elena", role: "organizer", parentLevel: null, relationship: "daughter", joinedAt: new Date("2026-09-01T14:00:00Z") },
-  { key: "marcus", name: "Marcus", role: "contributor", parentLevel: null, relationship: "son", joinedAt: new Date("2026-09-02T18:30:00Z") },
+  { key: "marcus", name: "Marcus", role: "contributor", parentLevel: null, relationship: "son", currency: "EUR", joinedAt: new Date("2026-09-02T18:30:00Z") },
   { key: "ana", name: "Ana", role: "contributor", parentLevel: null, relationship: "daughter", joinedAt: new Date("2026-09-02T20:15:00Z") },
   { key: "amara", name: "Amara", role: "caregiver", parentLevel: null, relationship: "caregiver", joinedAt: new Date("2026-09-05T15:00:00Z") },
   // The family's lawyer reads everything and changes nothing, so the demo shows every role.
