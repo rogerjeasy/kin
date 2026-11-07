@@ -18,7 +18,7 @@ type AppShellProps = ShellContext & { children: ReactNode };
  */
 export function AppShell({ children, ...context }: AppShellProps) {
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+    <div className="min-h-dvh lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] print:block">
       <Sidebar {...context} />
       <div className="flex min-w-0 flex-col">
         <TopBar {...context} />
@@ -32,7 +32,7 @@ export function AppShell({ children, ...context }: AppShellProps) {
           </div>
         </main>
       </div>
-      <BottomNav locale={context.locale} copy={context.dictionary.dashboard.shell} badges={context.badges} sections={context.sections} className="lg:hidden" />
+      <BottomNav locale={context.locale} copy={context.dictionary.dashboard.shell} badges={context.badges} sections={context.sections} className="lg:hidden print:hidden" />
     </div>
   );
 }

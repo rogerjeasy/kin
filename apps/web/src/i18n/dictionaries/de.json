@@ -1691,6 +1691,78 @@
         "not_confirmed": "Nichts gespeichert: Kin hat kein klares Ja zur Bestätigung gehört.",
         "unavailable": "Etwas ist schiefgegangen. Bitte erneut versuchen."
       }
+    },
+    "statement": {
+      "title": "Abrechnung",
+      "lede": "Eine Seite für den ganzen Kreis, für jedes Mitglied gleich. Jede Zahl stammt aus dem Verlauf; nichts ist geschätzt.",
+      "print": "Drucken oder als PDF speichern",
+      "link": "Monatsabrechnung und Jahresrückblick",
+      "month": "Monat",
+      "forMonth": "Abrechnung für {month}",
+      "glance": {
+        "title": "Der Monat auf einen Blick",
+        "paidIn": "Eingezahlt",
+        "spent": "Ausgegeben",
+        "caregiver": "Lohn der Pflegekraft",
+        "fees": "PayPal-Gebühren"
+      },
+      "contributions": {
+        "title": "Beiträge",
+        "empty": "Diesen Monat hat niemand eingezahlt."
+      },
+      "spending": {
+        "title": "Ausgaben nach Kategorie",
+        "empty": "Diesen Monat wurde nichts ausgegeben."
+      },
+      "caregiver": {
+        "title": "Lohn der Pflegekraft",
+        "empty": "Diesen Monat wurde keine Pflegekraft bezahlt."
+      },
+      "settlement": {
+        "title": "Ausgleich",
+        "text": "Aus dem Verlauf dieses Monats berechnet. Nichts bewegt sich vor der Freigabe.",
+        "none": "Alle liegen bei ihrem vereinbarten Anteil.",
+        "payout": "{name} bekommt {amount} zurück",
+        "collection": "{name} zahlt {amount} ein",
+        "settled": "Diesen Monat ausgeglichen: {collected} eingezogen, {paid} zurückgezahlt."
+      },
+      "next": {
+        "title": "Erwartet im nächsten Monat",
+        "text": "Erwartete Beträge. Der echte Betrag kommt mit jeder Rechnung.",
+        "item": "{payee}: etwa {amount}, fällig am {day}",
+        "empty": "Noch keine Rechnungen erwartet."
+      },
+      "year": {
+        "title": "Rückblick {year}",
+        "text": "Summen für das Kalenderjahr, nach Monat, Kategorie und Person.",
+        "month": "Monat",
+        "paidIn": "Eingezahlt",
+        "spent": "Ausgegeben",
+        "caregiver": "Lohn der Pflegekraft",
+        "categories": "Nach Kategorie",
+        "ownPocket": "Aus eigener Tasche bezahlt",
+        "empty": "In diesem Jahr wurde nichts erfasst."
+      },
+      "audit": {
+        "download": "Prüfexport herunterladen (CSV)",
+        "note": "Jede Bewegung mit Datum, Quelle und Referenz.",
+        "csv": {
+          "date": "Datum",
+          "id": "Buchungs-ID",
+          "entry": "Buchung",
+          "kind": "Art",
+          "source": "Quelle",
+          "reference": "Quellenreferenz",
+          "reverses": "Storniert",
+          "account": "Konto",
+          "debit": "Soll",
+          "credit": "Haben",
+          "currency": "Währung",
+          "simulated": "Simuliert",
+          "yes": "ja",
+          "no": "nein"
+        }
+      }
     }
   }
 }
