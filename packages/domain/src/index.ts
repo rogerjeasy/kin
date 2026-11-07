@@ -47,6 +47,8 @@ export {
   planPurchase,
 } from "./purchase.ts";
 export type { DeliveryState, PurchasePlan, PurchaseRefusal, PurchaseRequest, PurchaseRule } from "./purchase.ts";
+export { MANDATE_CADENCES, MANDATE_STATUSES, MAX_MANDATE_DAYS, MandateTermsError, checkMandate, checkMandateTerms, decideMandate } from "./mandate.ts";
+export type { Mandate, MandateCadence, MandateCandidate, MandateCart, MandateDecision, MandateRefusal, MandateStatus, MandateTerms, MandateTermsRefusal } from "./mandate.ts";
 export { spokenAnswer } from "./spoken-answer.ts";
 export type { SpokenAnswer } from "./spoken-answer.ts";
 export { CAREGIVER_BILL_PURPOSE, CaregiverPayoutError, planCaregiverPayout } from "./caregiver-payout.ts";

@@ -15,6 +15,8 @@ export type OrderView = {
   readonly purchase: PurchaseRecord;
   /** The proposal's own state: waiting for a yes, rejected and so on. */
   readonly proposalState: string;
+  /** The parent's standing permission approved it, so no one was asked. */
+  readonly viaMandate: boolean;
 };
 
 const WAITING: readonly string[] = ["pending_approval", "approved", "executing"];
@@ -23,7 +25,11 @@ const WAITING: readonly string[] = ["pending_approval", "approved", "executing"]
 export function refillViews(circle: CircleSnapshot): { readonly rules: readonly RuleView[]; readonly orders: readonly OrderView[] } {
   const stateOf = new Map<string, string>(circle.proposals.map((proposal) => [proposal.id, proposal.state]));
   const orders = circle.purchases
-    .map((purchase) => ({ purchase, proposalState: stateOf.get(purchase.proposalId) ?? "pending_approval" }))
+    .map((purchase) => ({
+      purchase,
+      proposalState: stateOf.get(purchase.proposalId) ?? "pending_approval",
+      viaMandate: circle.proposals.some((proposal) => proposal.id === purchase.proposalId && proposal.votes.some((vote) => vote.method === "mandate")),
+    }))
     .toReversed();
   const mayAsk = may(circle, "refill.propose") && !isPaused(circle.circle.pausedUntil, circle.circle.now);
   const rules = circle.purchaseRules.map((rule) => ({

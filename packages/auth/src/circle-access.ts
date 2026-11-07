@@ -25,6 +25,13 @@ export const CIRCLE_ACTIONS = {
   "proposal.answer": ["organizer", "contributor", "parent"],
   /** Ask Kin to propose a refill the family's rules allow. Proposing buys nothing: the agreement's yeses still do. */
   "refill.propose": ["organizer", "contributor", "parent"],
+  /**
+   * Record the parent's standing permission (a mandate), end it, or take it back up. The parent does so in
+   * their own name; in a demo circle the organizer plays the parent's spoken yes, and the record says simulated.
+   */
+  "mandate.grant": ["organizer", "parent"],
+  /** Hold a mandate still without ending it: anyone who answers for the family, since stopping is always safe. */
+  "mandate.pause": ["organizer", "contributor", "parent"],
   /** Stop all approvals for 24 hours (section 15.3). An observer changes nothing. */
   "circle.pause": ["organizer", "contributor", "parent", "caregiver"],
   "member.invite": ["organizer"],

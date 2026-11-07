@@ -64,6 +64,12 @@ export type ApprovalPlan =
       readonly agreementVersion: number;
     }
   | {
+      /** The parent's standing permission approved it (see `mandate.ts`); `planApprovals` never makes this plan. */
+      readonly outcome: "mandate";
+      readonly mandateId: string;
+      readonly agreementVersion: number;
+    }
+  | {
       readonly outcome: "needs_approval";
       readonly slots: readonly ApprovalSlot[];
       /** The member being paid, who may not be the only one to say yes. */

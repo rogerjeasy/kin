@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { fill } from "@/i18n/template";
 
 type Props = {
   ruleId: string;
@@ -12,6 +13,12 @@ type Props = {
   working: string;
   /** What Kin says once it has proposed the refill. */
   asked: string;
+  /** What Kin says when the parent's standing permission covered it, so nobody was asked. */
+  underMandate: string;
+  /** What Kin says when a standing permission did not cover it: `{why}` is the reason, and the refill waits for a yes. */
+  outsideMandate: string;
+  /** The reason a permission did not cover a refill, by its key. */
+  mandateWhy: Readonly<Record<string, string>>;
   /** What Kin says for each reason the request can be refused, and when it cannot be reached. */
   reasons: Readonly<Record<string, string>>;
 };
@@ -21,7 +28,7 @@ type Props = {
  * agreement and answers with a reason when it refuses; the browser only
  * carries the rule's ID. Kin proposes the refill and nothing is bought here.
  */
-export function RefillButton({ ruleId, label, working, asked, reasons }: Props) {
+export function RefillButton({ ruleId, label, working, asked, underMandate, outsideMandate, mandateWhy, reasons }: Props) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ text: string; tone: "ok" | "error" } | null>(null);
   const router = useRouter();
@@ -31,9 +38,11 @@ export function RefillButton({ ruleId, label, working, asked, reasons }: Props) 
     setMessage(null);
     try {
       const response = await fetch("/api/refills", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ruleId }) });
-      const body = (await response.json().catch(() => null)) as { ok?: boolean; reason?: string } | null;
+      const body = (await response.json().catch(() => null)) as { ok?: boolean; reason?: string; mandate?: { outcome?: string; reason?: string } } | null;
       if (body?.ok === true) {
-        setMessage({ text: asked, tone: "ok" });
+        const mandate = body.mandate;
+        const why = mandate?.outcome === "ask_parent" ? (mandateWhy[mandate.reason ?? ""] ?? "") : "";
+        setMessage({ text: mandate?.outcome === "covered" ? underMandate : why ? fill(outsideMandate, { why }) : asked, tone: "ok" });
         router.refresh();
       } else {
         setMessage({ text: reasons[body?.reason ?? "unavailable"] ?? reasons["unavailable"] ?? "", tone: "error" });

@@ -9,6 +9,8 @@ export function planLabel(plan: ApprovalPlan): PlanLabel {
   switch (plan.outcome) {
     case "standing_rule":
       return "standing";
+    case "mandate":
+      return "mandate";
     case "refused":
       return "refused";
     case "paused":

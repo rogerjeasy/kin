@@ -1,4 +1,5 @@
-import { ClockIcon, PackageCheckIcon } from "lucide-react";
+import { ClockIcon, PackageCheckIcon, ShieldCheckIcon } from "lucide-react";
+import Link from "next/link";
 
 import { Panel } from "@/components/dashboard/ui/panel";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";
@@ -21,6 +22,8 @@ type Props = {
   simulated: boolean;
   /** Whether the viewer may ask Kin to reorder at all, for the note when they may not. */
   mayAsk: boolean;
+  /** Where the parent's standing permissions are kept. */
+  mandatesHref: string;
 };
 
 const REFRESH_SECONDS = 15;
@@ -36,7 +39,7 @@ function proposalStatusWords(copy: Props["copy"], state: string): string {
  * button asks Kin to propose; the purchase waits on the Approvals list for
  * the yes the agreement asks for, and its delivery shows here once bought.
  */
-export function RefillsPanel({ copy, format, rules, orders, sellerName, simulated, mayAsk }: Props) {
+export function RefillsPanel({ copy, format, rules, orders, sellerName, simulated, mayAsk, mandatesHref }: Props) {
   if (rules.length === 0 && orders.length === 0) return null;
   const steps = DELIVERY_STEPS.map((key) => ({ key, label: copy.states[key] }));
   return (
@@ -45,6 +48,9 @@ export function RefillsPanel({ copy, format, rules, orders, sellerName, simulate
         {copy.title}
       </h2>
       <p className="max-w-3xl text-sm text-muted-foreground">{copy.lede}</p>
+      <Link href={mandatesHref} className="inline-flex min-h-11 items-center text-sm font-semibold underline-offset-4 hover:underline">
+        {copy.mandatesLink}
+      </Link>
       {anyOnTheWay(orders) ? <KeepLooking seconds={REFRESH_SECONDS} /> : null}
       {rules.map(({ rule, remainingCents, askable }) => (
         <Panel
@@ -54,7 +60,7 @@ export function RefillsPanel({ copy, format, rules, orders, sellerName, simulate
           aside={<StatusPill tone="neutral">{fill(copy.budget, { left: format.money(remainingCents), budget: format.money(rule.monthlyBudgetCents) })}</StatusPill>}
         >
           {askable ? (
-            <RefillButton ruleId={rule.id} label={copy.ask} working={copy.asking} asked={copy.asked} reasons={copy.reasons} />
+            <RefillButton ruleId={rule.id} label={copy.ask} working={copy.asking} asked={copy.asked} underMandate={copy.underMandate} outsideMandate={copy.outsideMandate} mandateWhy={copy.mandateWhy} reasons={copy.reasons} />
           ) : (
             <p className="text-sm text-muted-foreground">{mayAsk ? copy.alreadyAsked : copy.cannotAsk}</p>
           )}
@@ -63,12 +69,13 @@ export function RefillsPanel({ copy, format, rules, orders, sellerName, simulate
       {orders.length > 0 ? (
         <Panel title={copy.ordersTitle} description={simulated ? copy.simulated : undefined}>
           <ul className="space-y-5">
-            {orders.map(({ purchase, proposalState }) => (
+            {orders.map(({ purchase, proposalState, viaMandate }) => (
               <li key={purchase.id} className="min-w-0 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="min-w-0 font-medium text-balance">
                     {purchase.item} · <span className="tabular-nums">{format.money(purchase.cents)}</span>
                   </p>
+                  {viaMandate ? <StatusPill tone="neutral" icon={ShieldCheckIcon}>{copy.viaMandate}</StatusPill> : null}
                   {purchase.state === "delivered" ? (
                     <StatusPill tone="positive" icon={PackageCheckIcon}>{copy.states.delivered}</StatusPill>
                   ) : proposalState === "settled" ? null : (

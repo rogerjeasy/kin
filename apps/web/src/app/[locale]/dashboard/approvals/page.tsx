@@ -22,7 +22,9 @@ import { waitingProposals } from "@/content/circle/proposal-view";
 import { refillViews } from "@/content/circle/refills";
 import { monthTotals, recordEntries } from "@/content/circle/record";
 import { circleSlots } from "@/content/circle/words";
+import { mandatesRoute } from "@/content/dashboard-routes";
 import { dashboardMetadata } from "@/i18n/page-context";
+import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
 import { dashboardContext, may } from "@/server/dashboard-context";
 import { speechServices } from "@/server/speech";
@@ -107,6 +109,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
         sellerName={names.payee}
         simulated={circle.circle.demo}
         mayAsk={may(circle, "refill.propose")}
+        mandatesHref={localizedPath(locale, mandatesRoute)}
       />
       {answered.length > 0 ? (
         <AnsweredList

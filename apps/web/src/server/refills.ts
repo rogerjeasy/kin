@@ -1,5 +1,5 @@
 import { authorize } from "@kin/auth";
-import { RefillError, asPerson, proposeRefill, type CircleSnapshot, type Database, type RefillReason } from "@kin/db";
+import { RefillError, asPerson, proposeRefill, type CircleSnapshot, type Database, type RefillMandate, type RefillReason } from "@kin/db";
 
 export type RefillContext = {
   readonly db: Database;
@@ -7,7 +7,7 @@ export type RefillContext = {
   readonly circle: CircleSnapshot;
 };
 
-export type RefillResult = { readonly ok: true; readonly id: string } | { readonly ok: false; readonly reason: RefillReason };
+export type RefillResult = { readonly ok: true; readonly id: string; readonly mandate: RefillMandate } | { readonly ok: false; readonly reason: RefillReason };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -25,7 +25,7 @@ export async function runRefill(context: RefillContext, input: unknown): Promise
   const circleId = context.circle.circle.id;
   const now = context.circle.circle.now;
   try {
-    return { ok: true, id: await asPerson(context.db, context.userId, (tx) => proposeRefill(tx, { circleId, ruleId, now })) };
+    return { ok: true, ...(await asPerson(context.db, context.userId, (tx) => proposeRefill(tx, { circleId, ruleId, now }))) };
   } catch (error) {
     if (error instanceof RefillError) return { ok: false, reason: error.reason };
     throw error;

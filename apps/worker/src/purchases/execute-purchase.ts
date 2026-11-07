@@ -57,7 +57,7 @@ export async function executePurchase(deps: PurchaseDeps, circleId: string, exec
       return done("failed");
     }
     try {
-      const { ref } = await deps.merchant.placeOrder({ key: job.idempotencyKey, item: job.item, cents: job.cents, currency: job.currency });
+      const { ref } = await deps.merchant.placeOrder({ key: job.idempotencyKey, item: job.item, cents: job.cents, currency: job.currency, ...(job.mandate ? { mandate: job.mandate } : {}) });
       await recordOrderPlaced(tx, job, { ref, at: deps.now(), firstLookInSeconds: DELIVERY_SCHEDULE_SECONDS.shipped });
     } catch (error) {
       if (!(error instanceof MerchantError)) throw error;

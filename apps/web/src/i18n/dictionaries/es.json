@@ -981,7 +981,8 @@
         "organizer": "Aprueba la persona responsable",
         "organizerAndSecond": "Dos síes",
         "refused": "Supera el límite del acuerdo",
-        "paused": "Retenido por la pausa"
+        "paused": "Retenido por la pausa",
+        "mandate": "Aprobado por un permiso permanente"
       },
       "sandbox": "Sandbox de PayPal"
     },
@@ -1166,7 +1167,8 @@
         "saidNo": "{name} dijo que no {method}, {time}",
         "methods": {
           "voice": "por teléfono",
-          "app": "en la app"
+          "app": "en la app",
+          "mandate": "por permiso permanente"
         },
         "open": "Esperando a {names}",
         "parentCall": "Kin se lo preguntará a {parent} en la próxima llamada."
@@ -1952,6 +1954,21 @@
         "paused": "Los pagos están en pausa. Inténtelo de nuevo cuando termine.",
         "no_agreement": "La familia aún no tiene un acuerdo en vigor.",
         "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
+      },
+      "mandatesLink": "Permisos permanentes",
+      "underMandate": "Comprado con el permiso permanente. No hizo falta preguntar a nadie.",
+      "outsideMandate": "Fuera del permiso permanente ({why}). El reabastecimiento espera un sí.",
+      "viaMandate": "Con un permiso permanente",
+      "mandateWhy": {
+        "not_active": "ha terminado",
+        "paused": "está en pausa",
+        "not_started": "aún no ha comenzado",
+        "expired": "ha caducado",
+        "circle_paused": "los pagos están en pausa",
+        "out_of_scope": "no cubre este reabastecimiento",
+        "above_per_purchase": "el precio supera lo permitido para una compra",
+        "over_period": "superaría lo permitido para el mes",
+        "already_used_this_period": "se permitía uno al mes y el de este mes ya está comprado"
       }
     },
     "letters": {
@@ -2056,6 +2073,76 @@
           "duplicate": "Ya está en la lista"
         },
         "due": "Vence el {day}"
+      }
+    },
+    "mandates": {
+      "title": "Permisos permanentes",
+      "lede": "Lo que {parent} permitió a Kin hacer sin preguntar cada vez. Un reabastecimiento dentro de un permiso se compra al instante, y el registro nombra el permiso como aprobador. Todo lo que queda fuera sigue esperando un sí de verdad.",
+      "back": "Volver a las aprobaciones",
+      "simulated": "Simulado: esto es la demostración, el permiso sustituye a uno hablado y no se mueve dinero real.",
+      "empty": "Aún no hay un permiso permanente. Cada reabastecimiento espera un sí.",
+      "readBack": "Puede pedir {item} a {seller}, {cadence}, hasta {perPurchase} cada vez y {perPeriod} al mes, desde el {from} hasta el {until}.",
+      "cadences": {
+        "monthly": "una vez al mes",
+        "as_needed": "cuando haga falta"
+      },
+      "statuses": {
+        "active": "Vigente",
+        "paused": "En pausa",
+        "revoked": "Terminado"
+      },
+      "used": "{used} de {cap} usados este mes",
+      "spoke": "{parent} dijo: «{text}»",
+      "recordedBy": "Registrado por {name}",
+      "sealed": "Sellado: {digest}",
+      "simulatedTag": "Simulado",
+      "usesTitle": "Comprado con este permiso",
+      "noUses": "Todavía no se ha comprado nada con este permiso.",
+      "useLine": "{amount} el {day}",
+      "actions": {
+        "pause": "Pausar",
+        "resume": "Reanudar",
+        "revoke": "Terminar",
+        "working": "Procesando…",
+        "paused": "En pausa. Los reabastecimientos vuelven a pedir un sí.",
+        "resumed": "Vigente de nuevo.",
+        "revoked": "Terminado. Ya no se puede usar."
+      },
+      "form": {
+        "title": "Registrar un permiso permanente",
+        "text": "Léaselo a {parent} y luego confirme. Kin solo compra lo que encaja en él y pregunta antes por lo demás.",
+        "demoNote": "En esta demostración usted hace el sí hablado de {parent}. El registro indica simulado.",
+        "rule": "Qué cubre",
+        "perPurchase": "Máximo por compra",
+        "perPeriod": "Máximo al mes",
+        "amountHint": "Importes en {currency}, por ejemplo 50.00.",
+        "cadence": "Con qué frecuencia",
+        "validFrom": "Comienza",
+        "expiresOn": "Termina",
+        "spoken": "Lo que se dijo (opcional)",
+        "review": "Leerlo de vuelta",
+        "reviewing": "Comprobando…",
+        "readBackTitle": "Kin lee esto de vuelta",
+        "edit": "Cambiarlo",
+        "grant": "Confirmar: {parent} dijo sí",
+        "granting": "Registrando…",
+        "granted": "Registrado. El próximo reabastecimiento dentro de él se compra sin preguntar."
+      },
+      "errors": {
+        "refused": "No puede hacer eso.",
+        "invalid": "No se pudo leer.",
+        "parent_only": "Solo el padre o la madre puede conceder un permiso permanente.",
+        "no_parent": "El círculo no tiene a nadie que lo conceda.",
+        "no_agreement": "La familia aún no tiene un acuerdo vigente.",
+        "key_reused": "Ese permiso ya se registró de otra manera.",
+        "above_ceiling": "Supera el tope del acuerdo.",
+        "not_money": "Los importes deben ser mayores que cero.",
+        "caps_inverted": "Una compra no puede permitirse por más que el mes.",
+        "bad_dates": "El final debe ser posterior al comienzo.",
+        "too_long": "Un permiso dura un año como máximo.",
+        "bad_cadence": "Elija la frecuencia.",
+        "amount": "Los importes solo llevan cifras, por ejemplo 50.00.",
+        "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
       }
     }
   }
