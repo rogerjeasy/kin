@@ -171,3 +171,5 @@ export type {
 } from "./state-machines.ts";
 export { CAREGIVER_CATEGORY, monthlyStatement, yearInReview } from "./statement.ts";
 export type { PeriodFigures, StatementAmount, StatementQuery, YearInReview, YearMonth } from "./statement.ts";
+export { LEDGER_PROBLEMS, auditLedger } from "./verify-ledger.ts";
+export type { LedgerAudit, LedgerProblem, LedgerProblemCode } from "./verify-ledger.ts";

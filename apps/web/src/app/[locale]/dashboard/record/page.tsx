@@ -1,5 +1,5 @@
 import { describeAccount } from "@kin/domain";
-import { DownloadIcon, FileTextIcon } from "lucide-react";
+import { DownloadIcon, FileTextIcon, ShieldCheckIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { describeAccountCode, describeEntry, entryTag } from "@/components/dashboard/words/entry-words";
 import { Button } from "@/components/ui/button";
-import { dashboardRoutes } from "@/content/dashboard-routes";
+import { dashboardRoutes, verifyRoute } from "@/content/dashboard-routes";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
@@ -31,6 +31,7 @@ export default async function RecordPage({ params }: PageProps<"/[locale]/dashbo
   const format = circleFormatters(locale, circle);
   const names = circleNames(circle, dictionary);
   const entries = recordEntries(circle);
+  const verifyRoutePath = localizedPath(locale, verifyRoute);
 
   const items = entries.map((view) => {
     const { entry } = view;
@@ -73,6 +74,12 @@ export default async function RecordPage({ params }: PageProps<"/[locale]/dashbo
                 <Link href={`${localizedPath(locale, dashboardRoutes.record)}/statement`}>
                   <FileTextIcon aria-hidden="true" />
                   {dictionary.dashboard.statement.link}
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">
+                <Link href={verifyRoutePath}>
+                  <ShieldCheckIcon aria-hidden="true" />
+                  {dictionary.dashboard.verify.link}
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">

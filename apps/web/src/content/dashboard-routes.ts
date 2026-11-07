@@ -16,6 +16,9 @@ export const agreementRoute = "/dashboard/circle/agreement";
 /** What Kin says aloud about confirmed money: a screen of the overview, not a section of its own. */
 export const listenRoute = "/dashboard/listen";
 
+/** Where the circle's record is checked again; its `/export` is the file anyone can check offline with `kin-verify`. */
+export const verifyRoute = "/dashboard/record/verify";
+
 /** The sidebar, in order. */
 export const dashboardNav = ["overview", "approvals", "bills", "fairness", "record", "circle"] as const satisfies readonly DashboardSection[];
 

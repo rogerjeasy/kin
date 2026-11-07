@@ -1,0 +1,21 @@
+{
+  "name": "@kin/verify",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "bin": {
+    "kin-verify": "./src/cli.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "kin-verify": "node src/cli.ts",
+    "sample": "node src/sample.ts"
+  },
+  "dependencies": {
+    "@kin/agent": "workspace:*",
+    "@kin/domain": "workspace:*"
+  }
+}

@@ -2057,6 +2057,78 @@
         },
         "due": "Due {day}"
       }
+    },
+    "verify": {
+      "title": "Check the record",
+      "lede": "Kin adds up the whole record again with plain arithmetic, and anyone can repeat the check on their own computer. A second reader, separate from the assistant that talks with your family, then looks for anything that does not add up.",
+      "link": "Check the record",
+      "download": "Download the export (JSON)",
+      "offlineTitle": "Check it yourself",
+      "offlineText": "Download the export and run this command on any computer. It needs no account and no network, and it does not ask you to trust Kin.",
+      "pass": "The record checks out",
+      "fail": "The record does not check out",
+      "passNote": "{count} entries, every check passed.",
+      "failNote": "{failed} of {total} checks failed.",
+      "entries": "Entries",
+      "pool": "In the pool",
+      "head": "Chain head",
+      "headNote": "Write this down. Any later export must still contain it.",
+      "checksTitle": "What was checked",
+      "checks": {
+        "chain": {
+          "label": "Fingerprints",
+          "ok": "Every one of {count} entries matches its fingerprint and the one before it, so nothing was changed after it was written.",
+          "bad": "An entry no longer matches its fingerprint: the record was changed after it was written."
+        },
+        "head": {
+          "label": "Head of the chain",
+          "ok": "The head is the head of these entries.",
+          "bad": "The head does not match these entries."
+        },
+        "ledger": {
+          "label": "Ledger rules",
+          "ok": "Every entry balances, every correction mirrors what it corrects, and the pool never went below zero ({count} entries).",
+          "bad": "Some entries break a ledger rule."
+        },
+        "settlement": {
+          "label": "Settlements",
+          "ok": "{count} settlements were worked out again from the entries and match exactly.",
+          "bad": "A settlement worked out again from the entries does not match the one the export states."
+        },
+        "wording": {
+          "label": "Wording",
+          "ok": "Every figure in {count} sentences is one the record holds.",
+          "bad": "A sentence shown to people states a figure the record does not hold."
+        }
+      },
+      "auditor": {
+        "title": "The independent auditor",
+        "text": "The auditor shares nothing with the assistant that talks with your family. Plain code finds what to flag, including every figure. The auditor only explains it, and any sentence with a figure the code did not supply is replaced by Kin's fixed wording.",
+        "ask": "Ask the auditor to explain",
+        "unavailable": "The auditor is not available here, so these are Kin's fixed sentences.",
+        "busy": "The auditor has been asked too often. These are Kin's fixed sentences.",
+        "none": "Nothing to flag. Every movement has its cause, every correction mirrors what it corrects, and no payment is far above what its payee usually receives.",
+        "fixed": "Fixed wording",
+        "worded": "Worded by the auditor",
+        "severity": {
+          "info": "For information",
+          "attention": "Worth a look",
+          "critical": "Serious"
+        },
+        "about": "About"
+      },
+      "findings": {
+        "chain": "An entry no longer matches its fingerprint, so the record was changed after it was written.",
+        "head": "The stated head of the chain is not the head of its entries, or an earlier head is missing.",
+        "ledger": "Some entries break a rule of the ledger.",
+        "settlement": "A settlement worked out again does not match the one in the export.",
+        "wording": "A sentence shown to people states a figure that the record does not hold."
+      },
+      "observations": {
+        "reversal": "A correction on {day} cancels an earlier entry of {amount}.",
+        "payout_above_usual": "A payment of {amount} on {day} is well above what this payee usually receives.",
+        "simulated_and_real": "The record mixes simulated entries with real sandbox transactions."
+      }
     }
   }
 }

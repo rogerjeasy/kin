@@ -2057,6 +2057,78 @@
         },
         "due": "Scadenza: {day}"
       }
+    },
+    "verify": {
+      "title": "Verifica il registro",
+      "lede": "Kin rifà la somma di tutto il registro con semplice aritmetica, e chiunque può ripetere la verifica sul proprio computer. Un secondo lettore, separato dall'assistente che parla con la tua famiglia, cerca poi ciò che non quadra.",
+      "link": "Verifica il registro",
+      "download": "Scarica l'esportazione (JSON)",
+      "offlineTitle": "Verifica da solo",
+      "offlineText": "Scarica l'esportazione ed esegui questo comando su qualsiasi computer. Non richiede un account né la rete, e non ti chiede di fidarti di Kin.",
+      "pass": "Il registro è coerente",
+      "fail": "Il registro non è coerente",
+      "passNote": "{count} registrazioni, tutti i controlli superati.",
+      "failNote": "{failed} controlli su {total} non superati.",
+      "entries": "Registrazioni",
+      "pool": "Nel fondo",
+      "head": "Testa della catena",
+      "headNote": "Annotala. Ogni esportazione successiva deve ancora contenerla.",
+      "checksTitle": "Cosa è stato controllato",
+      "checks": {
+        "chain": {
+          "label": "Impronte",
+          "ok": "Ognuna delle {count} registrazioni corrisponde alla propria impronta e a quella precedente: nulla è stato modificato dopo la scrittura.",
+          "bad": "Una registrazione non corrisponde più alla propria impronta: il registro è stato modificato dopo la scrittura."
+        },
+        "head": {
+          "label": "Testa della catena",
+          "ok": "La testa è quella di queste registrazioni.",
+          "bad": "La testa non corrisponde a queste registrazioni."
+        },
+        "ledger": {
+          "label": "Regole del registro",
+          "ok": "Ogni registrazione è in pareggio, ogni correzione rispecchia ciò che corregge e il fondo non è mai sceso sotto zero ({count} registrazioni).",
+          "bad": "Alcune registrazioni violano una regola del registro."
+        },
+        "settlement": {
+          "label": "Conguagli",
+          "ok": "{count} conguagli sono stati ricalcolati dalle registrazioni e coincidono esattamente.",
+          "bad": "Un conguaglio ricalcolato dalle registrazioni non coincide con quello dell'esportazione."
+        },
+        "wording": {
+          "label": "Formulazioni",
+          "ok": "Ogni cifra di {count} frasi è presente nel registro.",
+          "bad": "Una frase mostrata alle persone riporta una cifra assente dal registro."
+        }
+      },
+      "auditor": {
+        "title": "Il revisore indipendente",
+        "text": "Il revisore non condivide nulla con l'assistente che parla con la tua famiglia. Un codice semplice trova cosa segnalare, cifre comprese. Il revisore si limita a spiegarlo, e ogni frase con una cifra non fornita dal codice è sostituita dalla formulazione fissa di Kin.",
+        "ask": "Chiedi al revisore di spiegare",
+        "unavailable": "Il revisore non è disponibile qui: queste sono le frasi fisse di Kin.",
+        "busy": "Il revisore è stato interpellato troppe volte. Queste sono le frasi fisse di Kin.",
+        "none": "Niente da segnalare. Ogni movimento ha la sua causa, ogni correzione rispecchia ciò che corregge e nessun pagamento supera di molto ciò che il beneficiario riceve di solito.",
+        "fixed": "Formulazione fissa",
+        "worded": "Formulato dal revisore",
+        "severity": {
+          "info": "Per informazione",
+          "attention": "Da guardare",
+          "critical": "Grave"
+        },
+        "about": "Riguarda"
+      },
+      "findings": {
+        "chain": "Una registrazione non corrisponde più alla propria impronta: il registro è stato modificato dopo la scrittura.",
+        "head": "La testa della catena indicata non è quella delle sue registrazioni, oppure ne manca una precedente.",
+        "ledger": "Alcune registrazioni violano una regola del registro.",
+        "settlement": "Un conguaglio ricalcolato non coincide con quello dell'esportazione.",
+        "wording": "Una frase mostrata alle persone riporta una cifra assente dal registro."
+      },
+      "observations": {
+        "reversal": "Una correzione del {day} annulla una registrazione precedente di {amount}.",
+        "payout_above_usual": "Un pagamento di {amount} il {day} supera nettamente ciò che questo beneficiario riceve di solito.",
+        "simulated_and_real": "Il registro mescola registrazioni simulate e vere transazioni sandbox."
+      }
     }
   }
 }
