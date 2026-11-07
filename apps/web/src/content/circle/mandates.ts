@@ -1,12 +1,15 @@
 import type { CircleSnapshot, MandateRecord } from "@kin/db";
 
 import { may } from "@/server/dashboard-context";
+import { excessAboveUsualLimit } from "@/server/mandates";
 
 export type MandateView = {
   readonly mandate: MandateRecord;
   /** The refill rule it covers, by the item's own name. */
   readonly item: string;
   readonly payeeId: string;
+  /** How far its per-purchase cap passes what the parent usually decides herself; 0 when it does not. */
+  readonly aboveUsualCents: number;
   readonly canPause: boolean;
   readonly canResume: boolean;
   readonly canEnd: boolean;
@@ -32,6 +35,7 @@ export function mandateViews(circle: CircleSnapshot): MandateView[] {
         mandate,
         item: rule?.item ?? "",
         payeeId: rule?.payeeId ?? "",
+        aboveUsualCents: excessAboveUsualLimit(circle, mandate),
         canPause: pauses && mandate.status === "active",
         canResume: grants && mandate.status === "paused",
         canEnd: grants && mandate.status !== "revoked",

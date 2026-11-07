@@ -1,4 +1,7 @@
+import type { ApprovalTerms } from "./agreement.ts";
+import { parentMustDecide } from "./approval-plan.ts";
 import { assertCents } from "./money.ts";
+import type { ParentLevel } from "./roles.ts";
 
 /**
  * A mandate is the parent's standing permission, spoken once: Kin may buy one
@@ -64,6 +67,18 @@ export function checkMandateTerms(terms: MandateTerms, ceilingCents: number): vo
   const days = dayNumber(terms.expiresOn) - dayNumber(terms.validFrom);
   if (days <= 0) throw new MandateTermsError("bad_dates");
   if (days > MAX_MANDATE_DAYS) throw new MandateTermsError("too_long");
+}
+
+/**
+ * How far a mandate's per-purchase cap reaches above what the parent usually
+ * decides herself, in cents; 0 when it does not, or when she does not decide.
+ * Such a mandate is only acceptable if she knowingly says yes ahead of time,
+ * so the grant says it in words and the record shows it later. The threshold
+ * test is the approval plan's own (`parentMustDecide`), not a copy.
+ */
+export function mandateExcessAboveParentLimit(terms: MandateTerms, parentLevel: ParentLevel, approvals: ApprovalTerms): number {
+  assertCents(terms.perPurchaseCents);
+  return parentMustDecide(terms.perPurchaseCents, parentLevel, approvals) ? terms.perPurchaseCents - approvals.parentDecidesAboveCents : 0;
 }
 
 export type MandateRefusal =

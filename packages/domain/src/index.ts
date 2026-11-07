@@ -19,6 +19,7 @@ export {
   APPROVAL_WINDOW_HOURS,
   INDEPENDENT_APPROVER_ROLES,
   PROPOSAL_KINDS,
+  parentMustDecide,
   planApprovals,
 } from "./approval-plan.ts";
 export type {
@@ -47,7 +48,7 @@ export {
   planPurchase,
 } from "./purchase.ts";
 export type { DeliveryState, PurchasePlan, PurchaseRefusal, PurchaseRequest, PurchaseRule } from "./purchase.ts";
-export { MANDATE_CADENCES, MANDATE_STATUSES, MAX_MANDATE_DAYS, MandateTermsError, checkMandate, checkMandateTerms, decideMandate } from "./mandate.ts";
+export { MANDATE_CADENCES, MANDATE_STATUSES, MAX_MANDATE_DAYS, MandateTermsError, checkMandate, checkMandateTerms, decideMandate, mandateExcessAboveParentLimit } from "./mandate.ts";
 export type { Mandate, MandateCadence, MandateCandidate, MandateCart, MandateDecision, MandateRefusal, MandateStatus, MandateTerms, MandateTermsRefusal } from "./mandate.ts";
 export {
   INTAKE_QUESTIONS,

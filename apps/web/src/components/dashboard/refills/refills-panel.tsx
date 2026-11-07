@@ -69,13 +69,14 @@ export function RefillsPanel({ copy, format, rules, orders, sellerName, simulate
       {orders.length > 0 ? (
         <Panel title={copy.ordersTitle} description={simulated ? copy.simulated : undefined}>
           <ul className="space-y-5">
-            {orders.map(({ purchase, proposalState, viaMandate }) => (
+            {orders.map(({ purchase, proposalState, viaMandate, aboveUsualLimit }) => (
               <li key={purchase.id} className="min-w-0 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="min-w-0 font-medium text-balance">
                     {purchase.item} · <span className="tabular-nums">{format.money(purchase.cents)}</span>
                   </p>
                   {viaMandate ? <StatusPill tone="neutral" icon={ShieldCheckIcon}>{copy.viaMandate}</StatusPill> : null}
+                  {aboveUsualLimit ? <StatusPill tone="waiting">{copy.aboveUsual}</StatusPill> : null}
                   {purchase.state === "delivered" ? (
                     <StatusPill tone="positive" icon={PackageCheckIcon}>{copy.states.delivered}</StatusPill>
                   ) : proposalState === "settled" ? null : (

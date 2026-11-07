@@ -2008,7 +2008,8 @@
         "above_per_purchase": "the price is more than was allowed for one purchase",
         "over_period": "it would pass what was allowed for the month",
         "already_used_this_period": "one a month was allowed and this month's is bought"
-      }
+      },
+      "aboveUsual": "Above the usual limit, allowed ahead of time"
     },
     "letters": {
       "title": "Letters and calls",
@@ -2182,6 +2183,11 @@
         "bad_cadence": "Choose how often.",
         "amount": "Amounts need digits only, such as 50.00.",
         "unavailable": "Kin could not do that now. Try again in a moment."
+      },
+      "aboveUsual": {
+        "notice": "{parent} is saying yes ahead of time to amounts above the {limit} {parent} usually decides personally: up to {perPurchase} each time and {perPeriod} in a month, until {until}.",
+        "grant": "Confirm: {parent} said yes ahead of time",
+        "tag": "Above {parent}'s usual limit by up to {over}"
       }
     },
     "officeLine": {

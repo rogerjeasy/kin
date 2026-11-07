@@ -1,11 +1,12 @@
 import { authorize } from "@kin/auth";
 import { MandateError, asPerson, grantMandate, newMandateId, setMandateStatus, type CircleSnapshot, type Database, type MandateReason } from "@kin/db";
-import { InvalidDecimalError, MANDATE_CADENCES, MandateTermsError, calendarDay, centsFromDecimal, checkMandateTerms, type MandateTerms } from "@kin/domain";
+import { InvalidDecimalError, MANDATE_CADENCES, MandateTermsError, calendarDay, centsFromDecimal, checkMandateTerms, mandateExcessAboveParentLimit, parentMustDecide, type MandateTerms } from "@kin/domain";
 
 export type MandateContext = { readonly db: Database; readonly userId: string; readonly circle: CircleSnapshot };
 export type MandateFailure = MandateReason | "amount" | "unavailable";
 export type MandateResult =
-  | { readonly ok: true; readonly terms: MandateTerms }
+  /** `aboveUsualCents`: how far the per-purchase cap passes what the parent usually decides herself, 0 when it does not. */
+  | { readonly ok: true; readonly terms: MandateTerms; readonly aboveUsualCents: number }
   | { readonly ok: true; readonly id: string }
   | { readonly ok: false; readonly reason: MandateFailure };
 
@@ -37,7 +38,7 @@ export async function runMandate(context: MandateContext, input: unknown): Promi
       const ceiling = context.circle.agreement?.approvals.ceilingCents;
       if (ceiling === undefined) return refusal("no_agreement");
       checkMandateTerms(terms, ceiling);
-      if (row["operation"] === "review") return { ok: true, terms };
+      if (row["operation"] === "review") return { ok: true, terms, aboveUsualCents: excessAboveUsualLimit(context.circle, terms) };
       const spoken = row["spokenText"];
       if (spoken !== undefined && (typeof spoken !== "string" || spoken.length > MAX_SPOKEN_CHARS)) return refusal("invalid");
       const id = newMandateId();
@@ -60,6 +61,24 @@ export async function runMandate(context: MandateContext, input: unknown): Promi
     if (error instanceof InvalidDecimalError) return refusal("amount");
     throw error;
   }
+}
+
+/** The parent's level and the agreement's thresholds, or `null` when either is missing. */
+function parentDecision(circle: CircleSnapshot) {
+  const level = circle.members.find((member) => member.role === "parent" && member.status === "active")?.parentLevel;
+  return level && circle.agreement ? { level, approvals: circle.agreement.approvals } : null;
+}
+
+/** How far a mandate's cap passes what the parent usually decides herself, by the approval plan's own rule. */
+export function excessAboveUsualLimit(circle: CircleSnapshot, terms: MandateTerms): number {
+  const decision = parentDecision(circle);
+  return decision ? mandateExcessAboveParentLimit(terms, decision.level, decision.approvals) : 0;
+}
+
+/** Whether the parent herself would have been asked about an amount, so a standing permission that bought it went above her usual limit. */
+export function aboveUsualLimit(circle: CircleSnapshot, cents: number): boolean {
+  const decision = parentDecision(circle);
+  return decision !== null && parentMustDecide(cents, decision.level, decision.approvals);
 }
 
 /** The draft as the form sends it, read into terms. `null` when its shape is not the form's. */

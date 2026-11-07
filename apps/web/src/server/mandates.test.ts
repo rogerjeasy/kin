@@ -29,13 +29,16 @@ describe("recording a standing permission", () => {
     const seen = await snapshot(circle, circle.userId);
 
     const review = await runMandate(context(seen, circle.userId), { operation: "review", draft: draft(seen) });
-    expect(review).toMatchObject({ ok: true, terms: { perPurchaseCents: 6000, perPeriodCents: 6000, cadence: "monthly" } });
+    expect(review).toMatchObject({ ok: true, terms: { perPurchaseCents: 6000, perPeriodCents: 6000, cadence: "monthly" }, aboveUsualCents: 1000 });
+    // Rose decides above $50.00: a $40.00 cap stays inside her usual limit and says nothing of it.
+    expect(await runMandate(context(seen, circle.userId), { operation: "review", draft: draft(seen, { perPurchase: "40.00", perPeriod: "40.00" }) })).toMatchObject({ ok: true, aboveUsualCents: 0 });
     expect(await serviceRows(db, circle.circleId, "select count(*)::int as n from mandates where circle_id = $1", [circle.circleId])).toEqual([{ n: 1 }]);
 
     const granted = await runMandate(context(seen, circle.userId), { operation: "grant", draft: draft(seen), spokenText: "Sixty dollars a month, no more." });
     expect(granted).toMatchObject({ ok: true });
     const views = mandateViews(await snapshot(circle, circle.userId));
     expect(views).toHaveLength(2);
+    expect(views.map((view) => view.aboveUsualCents).toSorted()).toEqual([1000, 2000]);
     expect(views[0]).toMatchObject({ item: "Monthly prescription refill (30 days)", canEnd: true, mandate: { perPurchaseCents: 6000, simulated: true, spokenText: "Sixty dollars a month, no more." } });
   });
 

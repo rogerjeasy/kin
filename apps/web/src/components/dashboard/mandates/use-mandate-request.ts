@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import type { MandateFailure } from "@/server/mandates";
 
-export type MandateReply = { readonly ok: true; readonly terms?: MandateTerms } | { readonly ok: false; readonly reason: MandateFailure };
+export type MandateReply = { readonly ok: true; readonly terms?: MandateTerms; readonly aboveUsualCents?: number } | { readonly ok: false; readonly reason: MandateFailure };
 
 /**
  * Sends one request to the mandate boundary and keeps its state. The server
