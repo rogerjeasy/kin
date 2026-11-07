@@ -161,7 +161,8 @@ CREATE POLICY app_answer ON public.approvals FOR INSERT TO kin_app
     kin_private.answers_proposals(circle_id)
     AND member_id = kin_private.my_member_id(circle_id)
     AND role = kin_private.my_role(circle_id)
-    AND method <> 'mandate'
+    -- Compared as text: PostgreSQL refuses to use an enum value in the transaction that added it, and a deploy runs every pending migration in one.
+    AND method::text <> 'mandate'
     AND (
       decision = 'reject'
       OR EXISTS (SELECT 1 FROM public.circles c WHERE c.id = approvals.circle_id AND c.demo)
