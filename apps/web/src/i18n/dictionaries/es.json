@@ -2298,18 +2298,22 @@
       "entries": "Asientos",
       "pool": "En el fondo",
       "head": "Cabeza de la cadena",
-      "headNote": "Anótala. Toda exportación posterior debe seguir conteniéndola.",
+      "headNote": "Anótala o guárdala donde Kin no llegue. Toda exportación posterior debe seguir conteniéndola.",
+      "kept": "Comprobado con {count} cabezas que Kin registró antes, la más antigua del {day}.",
+      "keptNone": "Kin aún no tiene una cabeza anterior con la que comparar, así que esta comprobación solo muestra que el registro es coherente consigo mismo. Kin registra ahora la cabeza cada vez que se abre esta página o se descarga una exportación.",
+      "keptLimit": "Kin guarda estas cabezas en su propia base de datos. Detectan cualquier entrada cambiada o eliminada desde entonces, pero alguien con permisos de administrador sobre esa base podría reescribir a la vez el registro y las cabezas. Para estar seguro, guarde de vez en cuando la cabeza de abajo en un lugar al que Kin no llegue, por ejemplo en un correo a usted mismo.",
       "checksTitle": "Qué se comprobó",
       "checks": {
         "chain": {
           "label": "Huellas",
-          "ok": "Cada una de las {count} entradas coincide con su huella y con la anterior. Esto muestra que el registro es coherente consigo mismo; para probar que nada cambió desde una exportación anterior, compárelo con una cabecera que anotó entonces.",
+          "ok": "Cada una de las {count} entradas coincide con su huella y con la anterior. Por sí sola, esta comprobación muestra que el registro es coherente consigo mismo; la comprobación de la cabeza lo compara con lo que Kin registró antes.",
           "bad": "Un asiento ya no coincide con su huella: el registro se cambió después de escribirse."
         },
         "head": {
           "label": "Cabeza de la cadena",
-          "ok": "La cabeza es la de estos asientos.",
-          "bad": "La cabeza no coincide con estos asientos."
+          "ok": "La cabeza es la de estos asientos, y cada una de las {count} cabezas que Kin registró antes sigue siendo lo que dan los asientos en ese punto: nada de lo registrado se cambió ni se eliminó.",
+          "okAlone": "La cabeza es la de estos asientos. Todavía no hay una cabeza anterior con la que comparar.",
+          "bad": "La cabeza no coincide con estos asientos, o un asiento se cambió o se eliminó desde que Kin registró una cabeza anterior."
         },
         "ledger": {
           "label": "Reglas del libro",
@@ -2345,7 +2349,7 @@
       },
       "findings": {
         "chain": "Un asiento ya no coincide con su huella, así que el registro se cambió después de escribirse.",
-        "head": "La cabeza de cadena indicada no es la de sus asientos, o falta una cabeza anterior.",
+        "head": "La cabeza de cadena indicada no es la de sus asientos, o una cabeza que Kin registró antes ya no coincide.",
         "ledger": "Algunos asientos incumplen una regla del libro.",
         "settlement": "Una liquidación recalculada no coincide con la de la exportación.",
         "wording": "Una frase mostrada a las personas indica una cifra que el registro no contiene."

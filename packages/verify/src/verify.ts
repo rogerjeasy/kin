@@ -30,6 +30,8 @@ export type VerificationReport = {
   readonly circleId: string;
   readonly entryCount: number;
   readonly head: string;
+  /** How many heads Kin had kept before this export, and the oldest one's time (ISO), so a reader can say what the check stood against. */
+  readonly keptHeads: { readonly count: number; readonly oldest: string | null };
   readonly poolCents: number;
   readonly currency: string;
   readonly checks: readonly Check[];
@@ -53,14 +55,28 @@ function checkChain(bundle: AuditBundle): Check {
   return pass("chain", `Every one of ${bundle.entries.length} entries matches its hash and the one before it`);
 }
 
+/** The chain's hash after `count` entries, or `null` when the export has fewer entries than that. */
+function chainValueAt(circleId: string, hashes: readonly string[], count: number): string | null {
+  return count === 0 ? genesisHash(circleId) : (hashes[count - 1] ?? null);
+}
+
 function checkHead(bundle: AuditBundle, options: VerifyOptions): Check {
-  const head = bundle.entries.length === 0 ? genesisHash(bundle.circleId) : (chainHashes(bundle.circleId, bundle.entries).at(-1) ?? "");
+  const hashes = chainHashes(bundle.circleId, bundle.entries);
+  const head = hashes.at(-1) ?? genesisHash(bundle.circleId);
   if (head !== bundle.head) return fail("head", "The head the export states is not the head of its entries");
+  // Each head Kin kept earlier must still be the chain's value at its count: an entry changed or removed since then breaks it.
+  const departed = bundle.heads.filter((stored) => chainValueAt(bundle.circleId, hashes, stored.count) !== stored.head).toSorted((a, b) => a.count - b.count);
+  const [first] = departed;
+  if (first) {
+    const entry = bundle.entries[first.count - 1];
+    return fail("head", `${departed.length} of ${bundle.heads.length} head(s) Kin kept earlier no longer match the entries, the first at entry ${first.count}: history was changed or removed`, entry ? [entry.id] : []);
+  }
   const { expectedHead } = options;
-  if (expectedHead !== undefined && !chainHashes(bundle.circleId, bundle.entries).concat(genesisHash(bundle.circleId)).includes(expectedHead)) {
+  if (expectedHead !== undefined && !hashes.concat(genesisHash(bundle.circleId)).includes(expectedHead)) {
     return fail("head", "The head written down earlier is not in this export: history was changed or removed");
   }
-  return pass("head", expectedHead === undefined ? `Head ${head}` : "The head written down earlier is in this export");
+  const kept = bundle.heads.length === 0 ? "" : `; all ${bundle.heads.length} head(s) Kin kept earlier still match`;
+  return pass("head", expectedHead === undefined ? `Head ${head}${kept}` : `The head written down earlier is in this export${kept}`);
 }
 
 function checkLedger(bundle: AuditBundle, audit: ReturnType<typeof auditLedger>): Check {
@@ -193,6 +209,7 @@ export function verifyBundle(bundle: AuditBundle, options: VerifyOptions = {}): 
     circleId: bundle.circleId,
     entryCount: bundle.entries.length,
     head: bundle.head,
+    keptHeads: { count: bundle.heads.length, oldest: bundle.heads.map((stored) => stored.recordedAt).toSorted()[0] ?? null },
     poolCents: audit.poolCents,
     currency: bundle.currency,
     checks,

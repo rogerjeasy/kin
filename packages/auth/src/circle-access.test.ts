@@ -44,6 +44,7 @@ describe("what a member may do in a circle", () => {
       expect(authorize(active(role), "letter.read").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
       expect(authorize(active(role), "claim.check").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
       expect(authorize(active(role), "office_line.try").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
+      expect(authorize(active(role), "audit_head.keep").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
     }
   });
 

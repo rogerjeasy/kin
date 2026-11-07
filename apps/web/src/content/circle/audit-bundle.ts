@@ -1,6 +1,6 @@
 import type { CircleSnapshot } from "@kin/db";
 import { payoutFeeReserve } from "@kin/paypal";
-import { buildBundle, claimSettlement, type AuditBundle, type SettlementClaim } from "@kin/verify";
+import { buildBundle, claimSettlement, type AuditBundle, type SettlementClaim, type StoredHead } from "@kin/verify";
 
 import { describeEntry } from "@/components/dashboard/words/entry-words";
 import type { Dictionary } from "@/i18n/dictionary";
@@ -32,16 +32,18 @@ function settlementClaims(circle: CircleSnapshot): SettlementClaim[] {
 /**
  * The circle's record as an audit export: its entries in the order the ledger
  * accepted them with their hash chain, the line the screens show for each one
- * (so a second reader can check its figures), and the settlements. It adds
- * nothing the circle's own ledger does not hold.
+ * (so a second reader can check its figures), the settlements, and the heads
+ * Kin kept at earlier visits so a past change cannot pass. It adds nothing
+ * the circle's own ledger does not hold.
  */
-export function circleBundle(circle: CircleSnapshot, dictionary: Dictionary, names: CircleNames, format: Formatters): AuditBundle {
+export function circleBundle(circle: CircleSnapshot, dictionary: Dictionary, names: CircleNames, format: Formatters, heads: readonly StoredHead[]): AuditBundle {
   const { ledger } = circle;
   return buildBundle({
     circleId: ledger.circleId,
     currency: ledger.currency,
     generatedOn: ledger.entries.at(-1)?.occurredOn ?? `${openPeriod(circle)}-01`,
     entries: ledger.entries,
+    heads,
     wording: ledger.entries.map((entry) => {
       const view = entryView(entry);
       return { entryId: entry.id, text: `${describeEntry(dictionary, names, view)}: ${format.money(view.cents)}, ${format.day(entry.occurredOn)}` };

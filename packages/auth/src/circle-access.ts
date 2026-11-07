@@ -40,6 +40,8 @@ export const CIRCLE_ACTIONS = {
   /** Accept the newest version: the members who share the cost, and the parent. */
   "agreement.accept": ["organizer", "contributor", "parent"],
   "audit.view": ["organizer"],
+  /** Have Kin keep the head of the record's hash chain when the record is checked or exported. An observer reads and never writes. */
+  "audit_head.keep": ["organizer", "contributor", "parent"],
   "caregiver_rate.manage": ["organizer"],
   "caregiver_bill.submit": ["caregiver"],
   /** Say where one's own pay goes. Nobody else may, so nobody can redirect it. */

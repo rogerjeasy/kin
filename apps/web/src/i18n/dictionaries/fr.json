@@ -2298,18 +2298,22 @@
       "entries": "Écritures",
       "pool": "Dans la cagnotte",
       "head": "Tête de la chaîne",
-      "headNote": "Notez-la. Tout export ultérieur doit encore la contenir.",
+      "headNote": "Notez-la, ou conservez-la là où Kin n'a pas accès. Tout export ultérieur doit encore la contenir.",
+      "kept": "Vérifié par rapport à {count} têtes que Kin a enregistrées plus tôt, la plus ancienne le {day}.",
+      "keptNone": "Kin n'a pas encore de tête antérieure à laquelle comparer : cette vérification montre seulement que le registre est cohérent avec lui-même. Kin enregistre désormais la tête à chaque ouverture de cette page et à chaque export téléchargé.",
+      "keptLimit": "Kin conserve ces têtes dans sa propre base de données. Elles révèlent toute écriture modifiée ou supprimée depuis, mais quelqu'un disposant des droits d'administrateur de cette base pourrait réécrire à la fois le registre et les têtes. Pour en être certain, conservez de temps en temps la tête ci-dessous là où Kin n'a pas accès, par exemple dans un e-mail envoyé à vous-même.",
       "checksTitle": "Ce qui a été vérifié",
       "checks": {
         "chain": {
           "label": "Empreintes",
-          "ok": "Chacune des {count} écritures correspond à son empreinte et à la précédente. Le registre est donc cohérent avec lui-même; pour prouver que rien n'a changé depuis un export antérieur, comparez-le à une tête que vous avez notée alors.",
+          "ok": "Chacune des {count} écritures correspond à son empreinte et à la précédente. À elle seule, cette vérification montre que le registre est cohérent avec lui-même ; la vérification de la tête le compare à ce que Kin a enregistré plus tôt.",
           "bad": "Une écriture ne correspond plus à son empreinte : le registre a été modifié après son enregistrement."
         },
         "head": {
           "label": "Tête de la chaîne",
-          "ok": "La tête est bien celle de ces écritures.",
-          "bad": "La tête ne correspond pas à ces écritures."
+          "ok": "La tête est bien celle de ces écritures, et chacune des {count} têtes enregistrées plus tôt par Kin est toujours ce que donnent les écritures à ce moment-là : rien de ce qui a été enregistré n'a été modifié ni supprimé.",
+          "okAlone": "La tête est bien celle de ces écritures. Il n'y a pas encore de tête antérieure à comparer.",
+          "bad": "La tête ne correspond pas à ces écritures, ou une écriture a été modifiée ou supprimée depuis qu'une tête antérieure a été enregistrée."
         },
         "ledger": {
           "label": "Règles du registre",
@@ -2345,7 +2349,7 @@
       },
       "findings": {
         "chain": "Une écriture ne correspond plus à son empreinte : le registre a été modifié après son enregistrement.",
-        "head": "La tête de chaîne indiquée n'est pas celle de ses écritures, ou une tête antérieure manque.",
+        "head": "La tête de chaîne indiquée n'est pas celle de ses écritures, ou une tête enregistrée plus tôt par Kin ne correspond plus.",
         "ledger": "Certaines écritures enfreignent une règle du registre.",
         "settlement": "Un règlement recalculé ne correspond pas à celui de l'export.",
         "wording": "Une phrase montrée aux personnes indique un chiffre absent du registre."

@@ -21,6 +21,8 @@ import { dashboardRoutes, verifyRoute } from "@/content/dashboard-routes";
 import { pageContext } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
+import { keepHead, keptHeads } from "@/server/audit-heads";
+import { databases } from "@/server/database";
 import { auditorReview } from "@/server/auditor";
 import { dashboardContext } from "@/server/dashboard-context";
 
@@ -42,16 +44,19 @@ export default async function VerifyPage({ params, searchParams }: PageProps<"/[
   const asked = auditor === "1";
   const base = localizedPath(locale, verifyRoute);
 
-  const bundle = circleBundle(circle, dictionary, names, format);
+  const bundle = circleBundle(circle, dictionary, names, format, await keptHeads(databases().app, viewer.userId, circle));
   const report = verifyBundle(bundle);
+  // Kept after the check, so what was just checked stood against earlier heads only.
+  await keepHead(databases().app, viewer.userId, circle, bundle, "verify");
+  const { keptHeads: kept } = report;
   const counts: Record<CheckRow["id"], string> = {
     chain: format.count(bundle.entries.length),
-    head: format.count(bundle.entries.length),
+    head: format.count(kept.count),
     ledger: format.count(bundle.entries.length),
     settlement: format.count(bundle.settlements.length),
     wording: format.count(bundle.wording.length),
   };
-  const rows = report.checks.map((check): CheckRow => ({ id: check.id, ok: check.ok, count: counts[check.id] }));
+  const rows = report.checks.map((check): CheckRow => ({ id: check.id, ok: check.ok, count: counts[check.id], alone: check.id === "head" && kept.count === 0 }));
   const failed = rows.filter((row) => !row.ok).length;
 
   const review = await auditorReview(reviewItems(report, circle, dictionary, format), LANGUAGE_NAMES[locale], {
@@ -93,8 +98,9 @@ export default async function VerifyPage({ params, searchParams }: PageProps<"/[
         <StatTile label={copy.head} value={`${report.head.slice(0, 12)}…`} note={copy.headNote} icon={HashIcon} />
       </dl>
       <div className="grid gap-6 lg:grid-cols-2">
-        <Panel title={copy.checksTitle}>
+        <Panel title={copy.checksTitle} description={kept.oldest === null ? copy.keptNone : fill(copy.kept, { count: format.count(kept.count), day: format.longDay(new Date(kept.oldest)) })}>
           <CheckList copy={copy.checks} rows={rows} />
+          <p className="mt-4 text-sm text-pretty text-muted-foreground">{copy.keptLimit}</p>
         </Panel>
         <Panel title={copy.offlineTitle} description={copy.offlineText} aside={<ClipboardCheckIcon aria-hidden="true" className="size-5 text-muted-foreground" />}>
           <p dir="ltr" className="rounded-xl bg-muted p-3 font-mono text-sm break-all whitespace-pre-wrap">

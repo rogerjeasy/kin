@@ -8,6 +8,7 @@ export function renderVerdict(report: VerificationReport): string {
     `Kin record verification: ${report.ok ? "PASS" : "FAIL"}`,
     `Circle ${report.circleId} - ${report.entryCount} entries - pool ${decimalAmount({ cents: report.poolCents, currency: report.currency })} ${report.currency}`,
     `Chain head ${report.head}`,
+    report.keptHeads.count === 0 ? "No earlier heads were kept with this export" : `Checked against ${report.keptHeads.count} head(s) Kin kept earlier, the oldest on ${report.keptHeads.oldest?.slice(0, 10) ?? "unknown"}`,
     "",
     ...report.checks.map((check) => `${check.ok ? "ok  " : "FAIL"} ${check.id.padEnd(10)} ${check.detail}`),
   ];

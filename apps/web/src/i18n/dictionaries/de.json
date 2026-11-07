@@ -2298,18 +2298,22 @@
       "entries": "Einträge",
       "pool": "Im Topf",
       "head": "Kettenkopf",
-      "headNote": "Notieren Sie ihn. Jeder spätere Export muss ihn noch enthalten.",
+      "headNote": "Notieren Sie ihn oder speichern Sie ihn dort, wohin Kin nicht reicht. Jeder spätere Export muss ihn noch enthalten.",
+      "kept": "Geprüft gegen {count} Kopfwerte, die Kin früher aufgezeichnet hat, der älteste vom {day}.",
+      "keptNone": "Kin hat noch keinen früheren Kopfwert zum Vergleichen, daher zeigt diese Prüfung nur, dass die Aufzeichnung in sich stimmig ist. Kin zeichnet den Kopfwert jetzt jedes Mal auf, wenn diese Seite geöffnet oder ein Export heruntergeladen wird.",
+      "keptLimit": "Kin bewahrt diese Kopfwerte in seiner eigenen Datenbank auf. Sie decken jeden seither geänderten oder entfernten Eintrag auf, aber wer Administratorrechte auf diese Datenbank hat, könnte Aufzeichnung und Kopfwerte zugleich umschreiben. Für volle Sicherheit speichern Sie den Kopfwert unten von Zeit zu Zeit an einem Ort, den Kin nicht erreicht, etwa in einer E-Mail an sich selbst.",
       "checksTitle": "Was geprüft wurde",
       "checks": {
         "chain": {
           "label": "Fingerabdrücke",
-          "ok": "Alle {count} Einträge passen zu ihrem Fingerabdruck und zum vorherigen. Das zeigt, dass die Aufzeichnung in sich stimmig ist; um zu belegen, dass seit einem früheren Export nichts geändert wurde, vergleichen Sie sie mit einem damals notierten Kopfwert.",
+          "ok": "Alle {count} Einträge passen zu ihrem Fingerabdruck und zum vorherigen. Für sich allein zeigt das, dass die Aufzeichnung in sich stimmig ist; die Prüfung des Kopfes vergleicht sie mit dem, was Kin früher aufgezeichnet hat.",
           "bad": "Ein Eintrag passt nicht mehr zu seinem Fingerabdruck: Die Aufzeichnung wurde nach dem Schreiben geändert."
         },
         "head": {
           "label": "Kopf der Kette",
-          "ok": "Der Kopf ist der Kopf dieser Einträge.",
-          "bad": "Der Kopf passt nicht zu diesen Einträgen."
+          "ok": "Der Kopf ist der Kopf dieser Einträge, und jeder der {count} früher von Kin aufgezeichneten Kopfwerte ist noch das, was die Einträge an dieser Stelle ergeben: Nichts Aufgezeichnetes wurde geändert oder entfernt.",
+          "okAlone": "Der Kopf ist der Kopf dieser Einträge. Es gibt noch keinen früheren Kopfwert zum Vergleichen.",
+          "bad": "Der Kopf passt nicht zu diesen Einträgen, oder ein Eintrag wurde geändert oder entfernt, seit Kin einen früheren Kopfwert aufgezeichnet hat."
         },
         "ledger": {
           "label": "Regeln des Hauptbuchs",
@@ -2345,7 +2349,7 @@
       },
       "findings": {
         "chain": "Ein Eintrag passt nicht mehr zu seinem Fingerabdruck, die Aufzeichnung wurde also nach dem Schreiben geändert.",
-        "head": "Der angegebene Kettenkopf ist nicht der Kopf seiner Einträge, oder ein früherer Kopf fehlt.",
+        "head": "Der angegebene Kettenkopf ist nicht der Kopf seiner Einträge, oder ein früher von Kin aufgezeichneter Kopfwert passt nicht mehr dazu.",
         "ledger": "Einige Einträge verletzen eine Regel des Hauptbuchs.",
         "settlement": "Eine neu berechnete Abrechnung stimmt nicht mit der im Export überein.",
         "wording": "Ein Satz, der Menschen gezeigt wird, nennt eine Zahl, die nicht in der Aufzeichnung steht."
