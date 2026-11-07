@@ -6,4 +6,5 @@ export * from "./ledger.ts";
 export * from "./care.ts";
 export * from "./records.ts";
 export * from "./approvals.ts";
+export * from "./shares.ts";
 export * from "./system.ts";

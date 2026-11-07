@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { caregiverAccess } from "@kin/auth";
 import { CaregiverRates } from "@/components/dashboard/caregiver-billing/caregiver-rates";
 
+import { MonthlySharePanel } from "@/components/dashboard/monthly-shares/monthly-share-panel";
 import { MemberList } from "@/components/dashboard/circle/member-list";
 import { ParentPanel } from "@/components/dashboard/circle/parent-panel";
 import { PayeeList } from "@/components/dashboard/circle/payee-list";
@@ -26,8 +27,10 @@ export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/circ
   return dashboardMetadata(params, "circle");
 }
 
-export default async function CirclePage({ params }: PageProps<"/[locale]/dashboard/circle">) {
+export default async function CirclePage({ params, searchParams }: PageProps<"/[locale]/dashboard/circle">) {
   const { locale, dictionary, circle, viewer } = await dashboardContext(params, "circle");
+  // PayPal returns a member here after they approve a monthly share.
+  const backFromPayPal = (await searchParams)["monthly"] === "back";
   const { circle: copy, common, empty } = dictionary.dashboard;
   const format = circleFormatters(locale, circle);
   const names = circleNames(circle, dictionary);
@@ -86,6 +89,7 @@ export default async function CirclePage({ params }: PageProps<"/[locale]/dashbo
           />
         </Panel>
       </div>
+      <MonthlySharePanel locale={locale} dictionary={dictionary} circle={circle} checkOnLoad={backFromPayPal} />
       {circle.invitations.length > 0 ? (
         <Panel title={copy.invitations.title} flush>
           <InvitationList

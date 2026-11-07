@@ -1,6 +1,7 @@
 import {
   CIRCLE_ROLES,
   DIRECTIONS,
+  MONTHLY_SHARE_STATES,
   ENTRY_KINDS,
   ENTRY_SOURCE_TYPES,
   MEMBER_STATUSES,
@@ -45,6 +46,7 @@ export const executionState = pgEnum("execution_state", statesOf(EXECUTION_TRANS
 export const entryKind = pgEnum("entry_kind", ENTRY_KINDS);
 export const entrySourceType = pgEnum("entry_source_type", ENTRY_SOURCE_TYPES);
 export const direction = pgEnum("direction", DIRECTIONS);
+export const monthlyShareState = pgEnum("monthly_share_state", MONTHLY_SHARE_STATES);
 
 export const userKind = pgEnum("user_kind", USER_KINDS);
 export const circleStatus = pgEnum("circle_status", CIRCLE_STATUSES);

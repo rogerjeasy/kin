@@ -1,12 +1,15 @@
 import { ContributionMismatchError, asService, settlePayPalEvent, storePayPalEvent, type Database } from "@kin/db";
-import { CAPTURE_COMPLETED, captureRequestId, parseWebhookEnvelope, type InboxMessage, type PayPalPool, type WebhookDelivery } from "@kin/paypal";
+import { CAPTURE_COMPLETED, SUBSCRIPTION_EVENTS, captureRequestId, parseWebhookEnvelope, type InboxMessage, type PayPalPool, type WebhookDelivery } from "@kin/paypal";
 
 import { applyCapture, type CaptureOutcome } from "./apply-capture.ts";
+import { syncShare, type ShareOutcome } from "./apply-share.ts";
 
 export type InboxDeps = {
   /** Connected as `kin_service`. Every transaction names the one circle it acts for. */
   readonly db: Database;
   readonly pool: PayPalPool;
+  /** The clock, for the window of charges a monthly share is read back over. */
+  readonly now?: () => Date;
 };
 
 /**
@@ -18,12 +21,15 @@ export type InboxOutcome =
   /** PayPal did not vouch for it. Logged with its IDs for inspection, and stored nowhere. */
   | { readonly result: "rejected"; readonly eventId: string; readonly transmissionId: string }
   | { readonly result: "applied"; readonly circleId: string; readonly captures: readonly CaptureOutcome[] }
-  | { readonly result: "failed"; readonly circleId: string; readonly reason: string };
+  | { readonly result: "failed"; readonly circleId: string; readonly reason: string }
+  | ShareOutcome;
 
 const FOREIGN_KEY_VIOLATION = "23503";
 
 export async function handleInboxMessage(deps: InboxDeps, message: InboxMessage): Promise<InboxOutcome> {
-  return message.kind === "webhook" ? handleWebhook(deps, message.delivery) : handleCapturedOrder(deps, message.circleId, message.orderId);
+  if (message.kind === "webhook") return handleWebhook(deps, message.delivery);
+  if (message.kind === "subscription_checked") return syncShare(deps, message.circleId, { id: message.subscriptionId }, (deps.now ?? (() => new Date()))());
+  return handleCapturedOrder(deps, message.circleId, message.orderId);
 }
 
 /**
@@ -34,7 +40,8 @@ export async function handleInboxMessage(deps: InboxDeps, message: InboxMessage)
  * circle and make the genuine event look like a repeat. The delivery was
  * already held durably by the queue before PayPal heard 200.
  */
-async function handleWebhook({ db, pool }: InboxDeps, delivery: WebhookDelivery): Promise<InboxOutcome> {
+async function handleWebhook(deps: InboxDeps, delivery: WebhookDelivery): Promise<InboxOutcome> {
+  const { db, pool } = deps;
   let envelope;
   try {
     envelope = parseWebhookEnvelope(delivery.body);
@@ -46,7 +53,8 @@ async function handleWebhook({ db, pool }: InboxDeps, delivery: WebhookDelivery)
   }
   // PayPal signed the body, so the circle it names is the one Kin's server
   // put on the order. The capture is still read back before any money moves.
-  const circleId = envelope.reference?.circleId;
+  // A subscription's charge names only the subscription; PayPal says whose it is.
+  const circleId = envelope.reference?.circleId ?? (envelope.subscriptionId === null ? undefined : (await pool.getSubscription(envelope.subscriptionId)).reference?.circleId);
   if (circleId === undefined) return { result: "unplaced" };
 
   let stored;
@@ -64,6 +72,9 @@ async function handleWebhook({ db, pool }: InboxDeps, delivery: WebhookDelivery)
 
   await asService(db, circleId, (tx) => settlePayPalEvent(tx, stored.id, "verified"));
 
+  if (envelope.subscriptionId !== null && (SUBSCRIPTION_EVENTS as readonly string[]).includes(envelope.eventType)) {
+    return settleShareEvent(deps, circleId, stored.id, envelope.subscriptionId);
+  }
   if (envelope.eventType !== CAPTURE_COMPLETED || envelope.captureId === null) {
     await asService(db, circleId, (tx) => settlePayPalEvent(tx, stored.id, "processed"));
     return { result: "ignored" };
@@ -78,6 +89,17 @@ async function handleWebhook({ db, pool }: InboxDeps, delivery: WebhookDelivery)
     return outcome === "other_circle" ? { result: "failed", circleId, reason: "other_circle" } : { result: "applied", circleId, captures: [outcome] };
   } catch (error) {
     return failed(db, circleId, stored.id, error);
+  }
+}
+
+/** A verified subscription event: the share is read back from PayPal, never taken from the event's own body. */
+async function settleShareEvent(deps: InboxDeps, circleId: string, eventId: string, subscriptionId: string): Promise<InboxOutcome> {
+  try {
+    const outcome = await syncShare(deps, circleId, { paypalSubscriptionId: subscriptionId }, (deps.now ?? (() => new Date()))());
+    await asService(deps.db, circleId, (tx) => settlePayPalEvent(tx, eventId, outcome.result === "failed" ? "failed" : "processed"));
+    return outcome;
+  } catch (error) {
+    return failed(deps.db, circleId, eventId, error);
   }
 }
 

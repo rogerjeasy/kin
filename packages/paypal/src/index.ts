@@ -18,5 +18,7 @@ export type { NewPayout, PayoutBatch, PayoutItem, PayoutItemStatus, PayoutOutcom
 export { isPayPalId, paypalPool } from "./pool.ts";
 export type { PayPalPool } from "./pool.ts";
 export { poolFor } from "./pool-from-config.ts";
-export { CAPTURE_COMPLETED, WEBHOOK_EVENT_TYPES, WEBHOOK_HEADERS, parseWebhookEnvelope, verificationBody, webhookHeaders } from "./webhook.ts";
+export { CAPTURE_COMPLETED, SUBSCRIPTION_EVENTS, WEBHOOK_EVENT_TYPES, WEBHOOK_HEADERS, parseWebhookEnvelope, verificationBody, webhookHeaders } from "./webhook.ts";
 export type { WebhookDelivery, WebhookEnvelope, WebhookHeaders } from "./webhook.ts";
+export { SUBSCRIPTION_ACTIONS, isSubscriptionId, shareStateOf } from "./subscription.ts";
+export type { NewSubscription, Subscription, SubscriptionAction, SubscriptionPayment, SubscriptionStatus } from "./subscription.ts";

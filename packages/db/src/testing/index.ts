@@ -2,7 +2,7 @@ import type { CircleSnapshot } from "../circle-snapshot.ts";
 import { readCircle } from "../read-circle.ts";
 import { eq, sql, type SQL } from "drizzle-orm";
 
-import { paypalEvents } from "../schema/index.ts";
+import { monthlyShares, paypalEvents } from "../schema/index.ts";
 import { asPerson, asService } from "../scope.ts";
 import type { TestDatabases } from "./databases.ts";
 
@@ -41,3 +41,28 @@ export async function personQuery(db: TestDatabases, userId: string, text: strin
   return asPerson(db.app, userId, (tx) => tx.execute(sql.raw(text)));
 }
 
+
+/**
+ * Writes a monthly share as the service, in any state. A person may start only
+ * a simulated share in a demo circle, so a test that needs a share with PayPal
+ * behind it, or one that has already moved on, writes it here.
+ */
+export async function insertShare(
+  db: TestDatabases,
+  circleId: string,
+  share: { id: string; memberId: string; cents: number; state?: "approval_pending" | "active" | "paused" | "cancelled"; paypalSubscriptionId?: string },
+): Promise<void> {
+  await asService(db.service, circleId, (tx) =>
+    tx.insert(monthlyShares).values({
+      id: share.id,
+      circleId,
+      memberId: share.memberId,
+      amountCents: share.cents,
+      currency: "USD",
+      state: share.state ?? (share.paypalSubscriptionId === undefined ? "active" : "approval_pending"),
+      simulated: share.paypalSubscriptionId === undefined,
+      paypalSubscriptionId: share.paypalSubscriptionId ?? null,
+      approvalUrl: share.paypalSubscriptionId === undefined ? null : "https://www.sandbox.paypal.com/approve",
+    }),
+  );
+}

@@ -13,6 +13,10 @@ export type ConfirmedCapture = {
   readonly gross: Money;
   readonly fee: Money;
   readonly capturedAt: Date;
+  /** What the ledger line says. A top-up unless a monthly share says otherwise. */
+  readonly description?: string;
+  /** True only for a demo circle's own money. Anything PayPal confirmed is real, even in a demo circle. */
+  readonly simulated?: boolean;
 };
 
 export type ContributionOutcome = "recorded" | "already_recorded";
@@ -46,11 +50,11 @@ export async function recordContribution(tx: Transaction, circleId: string, capt
       id: randomUUID(),
       circleId,
       ...calendarDay(capture.capturedAt, circle.timezone),
-      description: "Top-up through PayPal",
+      description: capture.description ?? "Top-up through PayPal",
       source: { type: "paypal_event", id: capture.captureId },
       currency: circle.currency,
       // A real PayPal sandbox transaction stands behind it, even in a demo circle.
-      simulated: false,
+      simulated: capture.simulated ?? false,
     },
     { memberId: capture.memberId, grossCents: capture.gross.cents, feeCents: capture.fee.cents },
   );
