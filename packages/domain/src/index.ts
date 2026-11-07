@@ -154,6 +154,8 @@ export type { Receipt, ReceiptCategory } from "./receipt.ts";
 export { SETTLEMENT_PURPOSE, SettlementProposalError, planSettlementPayouts } from "./settlement-proposals.ts";
 export type { SettlementPayout, SettlementPayoutRequest } from "./settlement-proposals.ts";
 export { settlePeriod } from "./settle-period.ts";
+export { simulateScenario } from "./simulate.ts";
+export type { BillRehearsal, Scenario, ScenarioQuery, ScenarioResult } from "./simulate.ts";
 export { MONTHLY_SHARE_STATES, MONTHLY_SHARE_TRANSITIONS, checkMonthlyShare, monthlyShareIsLive, monthlyShareMayMove } from "./monthly-share.ts";
 export type { MonthlyShareState } from "./monthly-share.ts";
 export { TOP_UP_LIMITS, checkTopUp } from "./top-up.ts";

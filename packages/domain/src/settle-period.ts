@@ -8,7 +8,14 @@ import {
   type SettlementPlan,
 } from "./settlement.ts";
 
-export type SettlementQuery = PeriodQuery & Pick<PayoutFunds, "payoutFee">;
+export type SettlementQuery = PeriodQuery &
+  Pick<PayoutFunds, "payoutFee"> & {
+    /**
+     * Cash to keep back from payouts, for a bill the pool is about to pay. A
+     * real close never sets it; a rehearsal does, to see what an expense leaves.
+     */
+    readonly heldBackCents?: number;
+  };
 
 /**
  * A period's settlement, with the inputs it was calculated from. Storing the
@@ -37,7 +44,7 @@ export function settlePeriod(query: SettlementQuery): Settlement {
     inputs,
     fairness,
     plan: planSettlement(fairness, {
-      availableCents: cashAvailableForPayouts(query.ledger),
+      availableCents: Math.max(0, cashAvailableForPayouts(query.ledger) - (query.heldBackCents ?? 0)),
       payoutFee: query.payoutFee,
     }),
   };

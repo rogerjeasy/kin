@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { MemberCard } from "@/components/dashboard/fairness/member-card";
 import { SettlementPanel } from "@/components/dashboard/fairness/settlement-panel";
 import { SettlementSections } from "@/components/dashboard/settlement/settlement-sections";
+import { Button } from "@/components/ui/button";
 import { GivenBars } from "@/components/dashboard/ui/given-bars";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
@@ -10,7 +12,7 @@ import { Panel } from "@/components/dashboard/ui/panel";
 import { givenRows, positionStatus } from "@/components/dashboard/words/given-rows";
 import { ShareBar } from "@/components/shared/share-bar";
 import { ShareLegend } from "@/components/shared/share-legend";
-import { dashboardRoutes } from "@/content/dashboard-routes";
+import { agreementRoute, dashboardRoutes } from "@/content/dashboard-routes";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
@@ -51,7 +53,15 @@ export default async function FairnessPage({ params }: PageProps<"/[locale]/dash
 
   return (
     <>
-      <PageHeader title={fairness.title} lede={fairness.lede} />
+      <PageHeader
+        title={fairness.title}
+        lede={fairness.lede}
+        actions={
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href={localizedPath(locale, `${agreementRoute}/simulate`)}>{dictionary.dashboard.simulator.link}</Link>
+          </Button>
+        }
+      />
       <div className="grid gap-6 lg:grid-cols-3">
         <Panel title={fairness.agreement.title}>
           <ShareBar label={fairness.agreement.title} shares={shares} />
