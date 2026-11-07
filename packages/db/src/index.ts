@@ -4,6 +4,9 @@ export type { CaregiverBillingReason } from "./caregiver-billing.ts";
 export { declineCaregiverBill, sendCaregiverBill } from "./caregiver-review.ts";
 export { LetterError, addLetter, recordClaimCheck } from "./letters.ts";
 export type { ClaimCheckInput, LetterInput, LetterReason, LetterRecorded } from "./letters.ts";
+export { RECEIPT_TOPIC, creditReceipt, decideReceipt, submitReceipt } from "./receipts.ts";
+export type { CreditOutcome } from "./receipts.ts";
+export { NothingToSettleError, SettlementExistsError, proposeSettlement, setOwnSettlementReceiver } from "./settlement-proposals.ts";
 export { AgreementError, acceptAgreement, proposeAgreement, readAgreementVersions } from "./agreements.ts";
 export type { AgreementReason } from "./agreements.ts";
 export {
@@ -21,7 +24,7 @@ export {
   recordUnknown,
   retryMessageLater,
 } from "./payouts.ts";
-export type { BeginOutcome, ClaimedMessage, PayoutJob } from "./payouts.ts";
+export type { BeginOutcome, ClaimedMessage, PayoutJob, PayoutKind } from "./payouts.ts";
 export {
   DELIVERY_TOPIC,
   PURCHASE_TOPIC,

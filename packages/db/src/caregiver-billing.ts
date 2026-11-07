@@ -72,6 +72,7 @@ export async function operation<T>(work: () => Promise<T>): Promise<T> {
   }
 }
 
+/** The code and detail of the PostgreSQL error behind a driver error, if there is one. */
 export function postgresError(error: unknown): { code: string; detail: unknown } | null {
   if (error === null || typeof error !== "object") return null;
   if ("code" in error && typeof error.code === "string") return { code: error.code, detail: "detail" in error ? error.detail : null };

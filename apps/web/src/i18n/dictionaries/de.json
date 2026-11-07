@@ -958,7 +958,11 @@
         "care": "Pflege",
         "pharmacy": "Apotheke",
         "repairs": "Reparaturen",
-        "other": "Sonstiges"
+        "other": "Sonstiges",
+        "groceries": "Lebensmittel",
+        "medical": "Medizinische Pflege",
+        "household": "Haushalt",
+        "transport": "Transport"
       },
       "entryKinds": {
         "contribution": "Beitrag",
@@ -1275,6 +1279,73 @@
         "status": "Wartet auf Freigabe",
         "link": "Zu den Freigaben",
         "core": "Berechnet vom Rechenkern von Kin, nicht von der KI. Dieselben Aufzeichnungen ergeben immer dasselbe Ergebnis."
+      },
+      "receipts": {
+        "title": "Belege",
+        "text": "Geld, das ein Mitglied aus eigener Tasche für das Elternteil ausgegeben hat. Ein anderes Mitglied genehmigt jeden Beleg, und Kin rechnet ihn dann auf den Anteil dieses Mitglieds an.",
+        "empty": "Es wurden noch keine Belege eingereicht.",
+        "fileTitle": "Beleg einreichen",
+        "amount": "Betrag",
+        "amountHint": "Was Sie bezahlt haben, zum Beispiel 42,00.",
+        "category": "Wofür",
+        "description": "Was und wo",
+        "descriptionHint": "Zum Beispiel: Apotheke am Ulmenweg, Verbandsmaterial.",
+        "date": "Tag der Zahlung",
+        "submit": "Beleg einreichen",
+        "submitting": "Wird eingereicht…",
+        "filed": "Beleg eingereicht. Ein anderes Mitglied muss ihn genehmigen.",
+        "line": "{name} · {category} · {date}",
+        "states": {
+          "submitted": "Wartet auf ein anderes Mitglied",
+          "approved": "Genehmigt · wird angerechnet",
+          "rejected": "Nicht genehmigt",
+          "credited": "Auf den Anteil von {name} angerechnet"
+        },
+        "approve": "Genehmigen",
+        "decline": "Ablehnen",
+        "working": "Wird bearbeitet…",
+        "own": "Über Ihren Beleg entscheidet ein anderes Mitglied."
+      },
+      "settlementRun": {
+        "title": "Den Ausgleich auszahlen",
+        "text": "Kin hat berechnet, was jedem Mitglied zusteht. Schicken Sie ihn der Familie zur Genehmigung, und jede genehmigte Zahlung wird über PayPal ausgezahlt.",
+        "send": "Zur Genehmigung senden",
+        "sending": "Wird gesendet…",
+        "sent": "Gesendet. Die Familie kann nun jede Zahlung unter Genehmigungen freigeben.",
+        "progressTitle": "Zahlungen aus diesem Ausgleich",
+        "states": {
+          "proposed": "Vorgeschlagen",
+          "pending_approval": "Wartet auf Genehmigung",
+          "approved": "Genehmigt · die Zahlung folgt",
+          "executing": "Wird über PayPal bezahlt",
+          "settled": "Bezahlt",
+          "failed": "Zahlung fehlgeschlagen",
+          "rejected": "Abgelehnt",
+          "expired": "Ohne Genehmigung abgelaufen",
+          "cancelled": "Abgebrochen"
+        },
+        "receiverTitle": "Wohin Ihr Ausgleich geht",
+        "receiverText": "Geben Sie an, an welche PayPal-Adresse Ihre Auszahlung gehen soll. Sie kann sich nicht ändern, solange eine Zahlung an Sie wartet oder läuft. Demo-Geld ist simuliert und braucht keine.",
+        "receiver": "Ihre PayPal-Adresse",
+        "receiverNone": "Noch keine hinterlegt.",
+        "receiverRecorded": "Ihre Auszahlung geht an {address}.",
+        "receiverPlaceholder": "name@example.com",
+        "receiverSave": "Adresse speichern",
+        "receiverSaving": "Wird gespeichert…",
+        "receiverSaved": "Gespeichert."
+      },
+      "errors": {
+        "refused": "Ihre Rolle erlaubt das nicht, oder es ist in diesem Kreis nicht verfügbar.",
+        "invalid": "Prüfen Sie Betrag, Tag und Beschreibung und versuchen Sie es erneut.",
+        "not_waiting": "Über diesen Beleg wurde bereits entschieden.",
+        "paused": "Der Kreis ist pausiert, daher kann nichts zur Genehmigung gesendet werden.",
+        "above_ceiling": "Eine Auszahlung liegt über dem Limit der Familienvereinbarung.",
+        "no_agreement": "Die Familie hat noch keine gültige Vereinbarung.",
+        "receiver": "Das ist keine gültige PayPal-Adresse.",
+        "payment_in_progress": "Eine Zahlung an Sie wartet oder läuft, daher kann die Adresse jetzt nicht geändert werden.",
+        "settlement_exists": "Der Ausgleich dieses Monats wurde bereits gesendet.",
+        "nothing_to_settle": "Es kann noch nichts ausgezahlt werden: Alle sind ausgeglichen, oder der Topf hat nichts freizugeben.",
+        "unavailable": "Kin konnte das gerade nicht tun. Versuchen Sie es gleich noch einmal."
       }
     },
     "record": {

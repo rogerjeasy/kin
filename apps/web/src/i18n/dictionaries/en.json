@@ -958,7 +958,11 @@
         "care": "Care",
         "pharmacy": "Pharmacy",
         "repairs": "Repairs",
-        "other": "Other"
+        "other": "Other",
+        "groceries": "Groceries",
+        "medical": "Medical care",
+        "household": "Household",
+        "transport": "Transport"
       },
       "entryKinds": {
         "contribution": "Contribution",
@@ -1275,6 +1279,73 @@
         "status": "Waiting for approval",
         "link": "Go to approvals",
         "core": "Calculated by Kin’s money core, not by the AI. The same record always gives the same answer."
+      },
+      "receipts": {
+        "title": "Receipts",
+        "text": "Money a member spent from their own pocket for the parent. Another member approves each receipt, and Kin then counts it toward that member’s share.",
+        "empty": "No receipts have been filed yet.",
+        "fileTitle": "File a receipt",
+        "amount": "Amount",
+        "amountHint": "What you paid, for example 42.00.",
+        "category": "What it was for",
+        "description": "What and where",
+        "descriptionHint": "For example: Elm Street Pharmacy, dressings.",
+        "date": "Day you paid",
+        "submit": "File receipt",
+        "submitting": "Filing…",
+        "filed": "Receipt filed. Another member needs to approve it.",
+        "line": "{name} · {category} · {date}",
+        "states": {
+          "submitted": "Waiting for another member",
+          "approved": "Approved · being counted",
+          "rejected": "Not approved",
+          "credited": "Counted toward {name}’s share"
+        },
+        "approve": "Approve",
+        "decline": "Decline",
+        "working": "Working…",
+        "own": "Another member decides on yours."
+      },
+      "settlementRun": {
+        "title": "Pay out the settlement",
+        "text": "Kin has worked out what each member is owed. Send it to the family for approval, and each approved payment is paid through PayPal.",
+        "send": "Send for approval",
+        "sending": "Sending…",
+        "sent": "Sent. The family can now approve each payment in Approvals.",
+        "progressTitle": "Payments from this settlement",
+        "states": {
+          "proposed": "Proposed",
+          "pending_approval": "Waiting for approval",
+          "approved": "Approved · payment comes next",
+          "executing": "Being paid through PayPal",
+          "settled": "Paid",
+          "failed": "Payment failed",
+          "rejected": "Declined",
+          "expired": "Expired without approval",
+          "cancelled": "Cancelled"
+        },
+        "receiverTitle": "Where your settlement goes",
+        "receiverText": "Say which PayPal email your payout should go to. It cannot change while a payment to you is waiting or under way. Demo money is simulated and needs none.",
+        "receiver": "Your PayPal email",
+        "receiverNone": "None on record yet.",
+        "receiverRecorded": "Your payout goes to {address}.",
+        "receiverPlaceholder": "name@example.com",
+        "receiverSave": "Save address",
+        "receiverSaving": "Saving…",
+        "receiverSaved": "Saved."
+      },
+      "errors": {
+        "refused": "Your role cannot do this, or it is not available in this circle.",
+        "invalid": "Check the amount, the day and the description, then try again.",
+        "not_waiting": "That receipt has already been decided.",
+        "paused": "The circle is paused, so nothing can be sent for approval.",
+        "above_ceiling": "A payout is above the limit in the family agreement.",
+        "no_agreement": "The family has no agreement in force yet.",
+        "receiver": "That is not a valid PayPal email.",
+        "payment_in_progress": "A payment to you is waiting or under way, so the address cannot change now.",
+        "settlement_exists": "This month’s settlement has already been sent.",
+        "nothing_to_settle": "Nothing can be paid out yet: everyone is level, or the pool holds nothing to release.",
+        "unavailable": "Kin could not do that just now. Try again in a moment."
       }
     },
     "record": {

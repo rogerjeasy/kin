@@ -133,6 +133,10 @@ export {
 } from "./postings.ts";
 export { CIRCLE_ROLES, MEMBER_STATUSES, PARENT_LEVELS } from "./roles.ts";
 export type { CircleRole, MemberStatus, ParentLevel } from "./roles.ts";
+export { MAX_RECEIPT_CENTS, MAX_RECEIPT_DESCRIPTION, RECEIPT_CATEGORIES, ReceiptError, checkReceipt } from "./receipt.ts";
+export type { Receipt, ReceiptCategory } from "./receipt.ts";
+export { SETTLEMENT_PURPOSE, SettlementProposalError, planSettlementPayouts } from "./settlement-proposals.ts";
+export type { SettlementPayout, SettlementPayoutRequest } from "./settlement-proposals.ts";
 export { settlePeriod } from "./settle-period.ts";
 export { MONTHLY_SHARE_STATES, MONTHLY_SHARE_TRANSITIONS, checkMonthlyShare, monthlyShareIsLive, monthlyShareMayMove } from "./monthly-share.ts";
 export type { MonthlyShareState } from "./monthly-share.ts";

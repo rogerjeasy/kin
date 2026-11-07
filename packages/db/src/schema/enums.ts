@@ -24,6 +24,7 @@ import {
   NARRATION_STATES,
   PAYEE_STATUSES,
   PAYPAL_EVENT_STATES,
+  RECEIPT_STATES,
   SETTLEMENT_STATES,
   USER_KINDS,
   VOTE_DECISIONS,
@@ -58,7 +59,8 @@ export const payeeStatus = pgEnum("payee_status", PAYEE_STATUSES);
 export const voteDecision = pgEnum("vote_decision", VOTE_DECISIONS);
 export const approvalMethod = pgEnum("approval_method", APPROVAL_METHODS);
 export const documentKind = pgEnum("document_kind", DOCUMENT_KINDS);
-export const settlementState = pgEnum("settlement_state", SETTLEMENT_STATES);
+export const receiptState = pgEnum("receipt_state", RECEIPT_STATES);
+export const settlementState =pgEnum("settlement_state", SETTLEMENT_STATES);
 export const claimVerdict = pgEnum("claim_verdict", CLAIM_VERDICTS);
 export const narrationState = pgEnum("narration_state", NARRATION_STATES);
 export const paypalEventState = pgEnum("paypal_event_state", PAYPAL_EVENT_STATES);

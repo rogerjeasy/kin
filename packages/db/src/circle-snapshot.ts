@@ -12,10 +12,11 @@ import type {
   Payee,
   ProposalKind,
   ProposalState,
+  ReceiptCategory,
   VersionStatus,
 } from "@kin/domain";
 
-import type { ApprovalMethod, ClaimVerdict, DocumentKind, InvitationStatus, NarrationState, SettlementState } from "./values.ts";
+import type { ApprovalMethod, ClaimVerdict, DocumentKind, InvitationStatus, NarrationState, ReceiptState, SettlementState } from "./values.ts";
 
 /**
  * Everything a circle's screens show, read in one transaction as the person
@@ -38,6 +39,10 @@ export type CircleSnapshot = {
   readonly expectedBills: readonly ExpectedBillRecord[];
   readonly careEntries: readonly CareRecord[];
   readonly settlements: readonly SettlementRecord[];
+  /** Receipts members filed, oldest first. A member reads their own; everyone who sees the money reads all. */
+  readonly receipts: readonly ReceiptRecord[];
+  /** The members who have said where their settlement payout goes, masked. Only the viewer's own is theirs to see in full. */
+  readonly settlementReceivers: readonly { readonly memberId: string; readonly receiver: string }[];
   readonly claimChecks: readonly ClaimCheckRecord[];
   readonly narrations: readonly NarrationRecord[];
   /** What the family allowed Kin to buy for the parent. Not shown to a caregiver. */
@@ -186,6 +191,19 @@ export type SettlementRecord = {
   readonly agreementVersion: number;
   readonly state: SettlementState;
   readonly calculatedAt: Date;
+};
+
+export type ReceiptRecord = {
+  readonly id: string;
+  /** The member who spent the money and is credited. */
+  readonly memberId: string;
+  readonly category: ReceiptCategory;
+  readonly cents: number;
+  readonly description: string;
+  readonly spentOn: string;
+  readonly state: ReceiptState;
+  readonly decidedBy: string | null;
+  readonly entryId: string | null;
 };
 
 export type ClaimCheckRecord = {
