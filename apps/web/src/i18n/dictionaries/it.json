@@ -1691,6 +1691,33 @@
         "not_confirmed": "Nulla è stato registrato: Kin non ha sentito un sì chiaro per confermare.",
         "unavailable": "Qualcosa è andato storto. Riprova."
       }
+    },
+    "listen": {
+      "title": "Cosa ti dice Kin",
+      "lede": "Ogni pagamento, acquisto e contributo confermato, detto in una frase calma. Scegli ogni quanto ascoltarlo.",
+      "everyLabel": "Ogni quanto",
+      "every": {
+        "now": "Appena accade",
+        "day": "Una volta al giorno",
+        "week": "Una volta a settimana"
+      },
+      "intro": {
+        "day": "Ecco cosa è successo nell’ultimo giorno.",
+        "week": "Ecco cosa è successo questa settimana."
+      },
+      "sentences": {
+        "contribution": "{name} ha versato {amount} nel fondo della famiglia.",
+        "payout": "{payee} ha ricevuto {amount} dal fondo della famiglia.",
+        "purchase": "Il tuo ordine ({category}) è pagato. è costato {amount}."
+      },
+      "simulated": "Questo è simulato.",
+      "play": "Ascolta",
+      "playing": "Kin sta parlando…",
+      "heading": "Kin dirà",
+      "empty": "Nulla è stato confermato in questo periodo. Kin te lo dirà quando accadrà.",
+      "unavailable": "Kin non può parlare ora. Le parole sono sullo schermo.",
+      "link": "Ascolta cosa ti dice Kin",
+      "kinNever": "Kin informa. Kin non chiede mai segreti."
     }
   }
 }

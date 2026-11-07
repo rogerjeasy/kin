@@ -1691,6 +1691,33 @@
         "not_confirmed": "Nothing was recorded: Kin did not hear a clear yes to confirm.",
         "unavailable": "Something went wrong. Please try again."
       }
+    },
+    "listen": {
+      "title": "What Kin tells you",
+      "lede": "Each confirmed payment, purchase and contribution, said in one calm sentence. Choose how often you hear it.",
+      "everyLabel": "How often",
+      "every": {
+        "now": "As it happens",
+        "day": "Once a day",
+        "week": "Once a week"
+      },
+      "intro": {
+        "day": "Here is what happened in the last day.",
+        "week": "Here is what happened this week."
+      },
+      "sentences": {
+        "contribution": "{name} added {amount} to the family pool.",
+        "payout": "{payee} was paid {amount} from the family pool.",
+        "purchase": "Your {category} order is paid. It cost {amount}."
+      },
+      "simulated": "This one is simulated.",
+      "play": "Hear it",
+      "playing": "Kin is speaking…",
+      "heading": "Kin will say",
+      "empty": "Nothing has been confirmed in this time. Kin will tell you when something is.",
+      "unavailable": "Kin cannot speak right now. The words are on the screen.",
+      "link": "Hear what Kin tells you",
+      "kinNever": "Kin tells. Kin never asks for secrets."
     }
   }
 }
