@@ -22,8 +22,13 @@ const MAX_WORDS_LENGTH = 400;
  */
 export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures">): boolean {
   if (words.trim() === "" || words.length > MAX_WORDS_LENGTH || /https?:|www\.|@/iu.test(words)) return false;
-  const allowed = new Set(facts.figures.flatMap(numbersIn).flat());
-  return numbersIn(words).every((values) => values.some((value) => allowed.has(value)));
+  const figures = facts.figures.flatMap(numbersIn);
+  const allowed = new Set(figures.flatMap((figure) => figure.values));
+  // A whole amount may be said without its zero cents: "1.000" for a record that holds "1.000,00".
+  const written = new Set(figures.flatMap((figure) => [figure.written, figure.written.replace(/[.,]00$/u, "")]));
+  // "64,000" is sixty-four thousand in English and sixty-four in French. A number with two readings passes only if
+  // the record wrote it that way itself or every reading is one the record holds, so a guess is never the one accepted.
+  return numbersIn(words).every((number) => number.values.every((value) => allowed.has(value)) || (number.values.length > 1 && written.has(number.written)));
 }
 
 const WORDING_SCHEMA = {

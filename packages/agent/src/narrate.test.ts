@@ -55,6 +55,14 @@ describe("the number guard across languages", () => {
     }
   });
 
+  it("refuses a number with two readings unless the record wrote it that way", () => {
+    expect(amount("Der Betrag ist $64,000.", ["$64.00"])).toBe(false);
+    expect(amount("Le montant est de 86,400 $.", ["86,40 $"])).toBe(false);
+    expect(amount("Das kostet $7,000.", ["7 nov."])).toBe(false);
+    expect(amount("It costs $1,000.", ["$1,000.00"])).toBe(true);
+    expect(amount("It costs $1,000.", ["$100.00"])).toBe(false);
+  });
+
   it("does not take '1.000' for '10.00' or '1000.00' for '100.00'", () => {
     expect(amount("Il vaut 1.000 euros.", ["10.00 €"])).toBe(false);
     expect(amount("Il vaut 10.00 euros.", ["1.000 €"])).toBe(false);

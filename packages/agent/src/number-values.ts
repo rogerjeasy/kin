@@ -51,7 +51,10 @@ function valuesOf(token: string): string[] {
   return parts[0]?.startsWith("0") === true ? [decimal] : [grouped, decimal];
 }
 
-/** Every number written in the text, each as the values it can have. */
-export function numbersIn(text: string): string[][] {
-  return [...asciiDigits(text).matchAll(NUMBER)].map((match) => valuesOf(match[0]));
+/** One number as written (digits normalised to ASCII, spacing to a plain space) and the values it can have. */
+export type WrittenNumber = { readonly written: string; readonly values: readonly string[] };
+
+/** Every number written in the text. */
+export function numbersIn(text: string): WrittenNumber[] {
+  return [...asciiDigits(text).matchAll(NUMBER)].map((match) => ({ written: match[0].replaceAll(new RegExp(`[${SPACES}]`, "gu"), " "), values: valuesOf(match[0]) }));
 }
