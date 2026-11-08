@@ -1,6 +1,7 @@
 /** The signed-in screens of a circle, as paths before any language prefix. */
 export const dashboardRoutes = {
   overview: "/dashboard",
+  shifts: "/dashboard/shifts",
   approvals: "/dashboard/approvals",
   bills: "/dashboard/bills",
   fairness: "/dashboard/fairness",
@@ -16,6 +17,12 @@ export const agreementRoute = "/dashboard/circle/agreement";
 /** The parent's standing permissions: a screen within the circle's section, like the agreement. */
 export const mandatesRoute = "/dashboard/circle/mandates";
 
+/** The parent's standing permission to pay confirmed care shifts, and the caregivers' pay rules: a screen within the circle's section, like the agreement. */
+export const shiftPermissionsRoute = "/dashboard/circle/shifts";
+
+/** The door tag: a printable card whose code opens a caregiver's own shifts. A screen of the shifts, not a section of its own. */
+export const shiftDoorRoute = "/dashboard/shifts/door";
+
 /** What Kin says aloud about confirmed money: a screen of the overview, not a section of its own. */
 export const listenRoute = "/dashboard/listen";
 
@@ -28,10 +35,10 @@ export const officeLineRoute = "/dashboard/office-line";
 export const verifyRoute = "/dashboard/record/verify";
 
 /** The sidebar, in order. */
-export const dashboardNav = ["overview", "approvals", "bills", "fairness", "record", "circle"] as const satisfies readonly DashboardSection[];
+export const dashboardNav = ["overview", "shifts", "approvals", "bills", "fairness", "record", "circle"] as const satisfies readonly DashboardSection[];
 
-/** A phone's bottom bar has room for five. The circle is in the account menu. */
-export const phoneNav = ["overview", "approvals", "bills", "fairness", "record"] as const satisfies readonly DashboardSection[];
+/** A phone's bottom bar has room for five. The circle and the record are in the account menu. */
+export const phoneNav = ["overview", "shifts", "approvals", "bills", "fairness"] as const satisfies readonly DashboardSection[];
 
 /** The section a route segment under /dashboard belongs to. */
 export function sectionOf(segment: string | null): DashboardSection {

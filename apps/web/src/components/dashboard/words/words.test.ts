@@ -57,7 +57,7 @@ describe("the words for a proposal", () => {
 
   it("fall back to who is paid for a purpose the dictionary does not know", async () => {
     const english = await getDictionary("en");
-    const [first] = circle.proposals;
+    const first = circle.proposals.find((each) => each.purpose === "stairlift");
     if (!first) throw new Error("No proposal");
     expect(proposalTitle(english, circleNames(circle, english), { ...first, purpose: "somethingNew" }, "October 2026")).toBe("Ridgeway Stairlifts");
   });

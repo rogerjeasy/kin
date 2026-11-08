@@ -65,7 +65,7 @@ export async function runMandate(context: MandateContext, input: unknown): Promi
 }
 
 /** The parent's level and the agreement's thresholds, or `null` when either is missing. */
-function parentDecision(circle: CircleSnapshot) {
+export function parentDecision(circle: CircleSnapshot) {
   const level = circle.members.find((member) => member.role === "parent" && member.status === "active")?.parentLevel;
   return level && circle.agreement ? { level, approvals: circle.agreement.approvals } : null;
 }

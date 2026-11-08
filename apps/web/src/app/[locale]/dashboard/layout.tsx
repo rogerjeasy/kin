@@ -7,6 +7,7 @@ import { NoticeBanner } from "@/components/dashboard/shell/notice-banner";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
 import { waitingProposals } from "@/content/circle/proposal-view";
+import { needsOf } from "@/content/circle/shift-views";
 import { shellCircle } from "@/content/circle/shell";
 import { circleSlots } from "@/content/circle/words";
 import { fill } from "@/i18n/template";
@@ -42,6 +43,9 @@ export default async function DashboardLayout({ children, params }: LayoutProps<
   const slots = circleSlots(circle, format);
   const waitingCount = waitingProposals(circle).length;
   const waiting = format.count(waitingCount);
+  // What waits for this viewer's tap or word on the care calendar.
+  const askedCount = needsOf(circle).length;
+  const asked = format.count(askedCount);
   const hours = { hours: format.count(PAUSE_HOURS) };
   const { now, demo, pausedUntil, pausedBy } = circle.circle;
   const me = circle.members.find((member) => member.id === circle.viewer.memberId);
@@ -73,7 +77,10 @@ export default async function DashboardLayout({ children, params }: LayoutProps<
         canPause: may(circle, "circle.pause"),
         canResume: paused && (circle.viewer.role === "organizer" || pausedBy === circle.viewer.memberId),
       }}
-      badges={waitingCount > 0 ? { approvals: { value: waiting, label: fill(shell.waiting, { count: waiting }) } } : {}}
+      badges={{
+        ...(askedCount > 0 ? { shifts: { value: asked, label: fill(shell.waiting, { count: asked }) } } : {}),
+        ...(waitingCount > 0 ? { approvals: { value: waiting, label: fill(shell.waiting, { count: waiting }) } } : {}),
+      }}
     >
       {children}
     </AppShell>

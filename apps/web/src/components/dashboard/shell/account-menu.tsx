@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, GlobeIcon, LogOutIcon, UsersIcon } from "lucide-react";
+import { ChevronDownIcon, GlobeIcon, LogOutIcon, ScrollTextIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
@@ -24,13 +24,15 @@ type AccountMenuProps = {
   copy: Dictionary["dashboard"]["shell"]["account"];
   leaveLabel: string;
   viewer: ShellContext["viewer"];
+  /** The record is on a phone's menu rather than its bottom bar; `null` when the viewer may not open it. */
+  record: { href: string; label: string } | null;
   links: { circle: string; website: string };
 };
 
 const itemClass = "min-h-11 gap-3 px-3 text-base";
 
 /** Who is looking, and the ways out: signing out, or leaving the demo. */
-export function AccountMenu({ locale, copy, leaveLabel, viewer, links }: AccountMenuProps) {
+export function AccountMenu({ locale, copy, leaveLabel, viewer, record, links }: AccountMenuProps) {
   const { name, email } = viewer;
   return (
     <DropdownMenu>
@@ -54,6 +56,14 @@ export function AccountMenu({ locale, copy, leaveLabel, viewer, links }: Account
             {copy.settings}
           </Link>
         </DropdownMenuItem>
+        {record ? (
+          <DropdownMenuItem asChild className={`${itemClass} lg:hidden`}>
+            <Link href={record.href}>
+              <ScrollTextIcon aria-hidden="true" />
+              {record.label}
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem asChild className={itemClass}>
           <Link href={links.website}>
             <GlobeIcon aria-hidden="true" />

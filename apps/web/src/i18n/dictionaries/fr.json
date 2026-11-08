@@ -1181,6 +1181,10 @@
         "title": "Aperçu · Kin",
         "description": "Votre cercle en un coup d’œil : la cagnotte, ce qui attend un oui, l’équité et ce que le parent a entendu."
       },
+      "shifts": {
+        "title": "Visites · Kin",
+        "description": "Le calendrier des soins : qui est auprès du parent et quand, et comment une visite confirmée est payée."
+      },
       "approvals": {
         "title": "Décisions · Kin",
         "description": "Chaque mouvement d’argent qui attend un oui, et qui doit le donner."
@@ -1206,6 +1210,7 @@
       "navLabel": "Cercle",
       "nav": {
         "overview": "Aperçu",
+        "shifts": "Visites",
         "approvals": "Décisions",
         "bills": "Factures",
         "fairness": "Équité",
@@ -1463,6 +1468,10 @@
         "refill": {
           "title": "Renouvellement chez {name}",
           "text": "Kin a proposé ce renouvellement à partir de la règle fixée par la famille. Il n’est acheté qu’après le oui que demande l’accord."
+        },
+        "shift": {
+          "title": "Paiement de la visite pour {name}",
+          "text": "Une visite de soins prouvée par deux clés : le pointage d’arrivée et de départ de l’aide, et la parole de la famille, qui atteste que la visite a bien eu lieu."
         }
       },
       "raisedBy": "Proposé par {name} le {date}",
@@ -2512,6 +2521,293 @@
         "tag": "Au-dessus de la limite habituelle de {parent}, jusqu’à {over}"
       }
     },
+    "shifts": {
+      "title": "Visites",
+      "lede": "Qui s’occupe de {parent}, et quand. Une visite payée est prouvée par deux clés : le pointage d’arrivée et de départ de l’aide, et la parole de la famille, qui atteste que la visite a bien eu lieu.",
+      "simulated": "Simulé : c’est la démo, les paiements sont factices et aucun argent réel ne bouge.",
+      "permissionLink": "Autorisation permanente et règles de paie",
+      "week": {
+        "thisWeek": "Cette semaine, {range}",
+        "otherWeek": "Semaine du {range}",
+        "navLabel": "Choisir une semaine",
+        "previous": "Semaine précédente",
+        "next": "Semaine suivante",
+        "back": "Revenir à cette semaine",
+        "calendarLabel": "Calendrier des soins, {range}",
+        "listLabel": "Visites, {range}",
+        "empty": "Rien n’est prévu au calendrier cette semaine."
+      },
+      "needs": {
+        "title": "On a besoin de vous",
+        "checkIn": "Pointer l’arrivée",
+        "checkOut": "Pointer le départ",
+        "checkInTitle": "Votre visite a commencé",
+        "checkOutTitle": "Vous partez ? Pointez votre départ",
+        "checkInHint": "Touchez en arrivant. Votre arrivée est la première moitié de votre clé.",
+        "checkOutHint": "Touchez en partant. Cela fait tourner votre clé.",
+        "working": "En cours…",
+        "questions": {
+          "morning": "La visite de {name} a-t-elle eu lieu ce matin ?",
+          "afternoon": "La visite de {name} a-t-elle eu lieu cet après-midi ?",
+          "evening": "La visite de {name} a-t-elle eu lieu ce soir ?"
+        },
+        "answers": {
+          "morning": "Oui, la visite de {name} a eu lieu ce matin",
+          "afternoon": "Oui, la visite de {name} a eu lieu cet après-midi",
+          "evening": "Oui, la visite de {name} a eu lieu ce soir"
+        },
+        "wordHint": "{name} a pointé son arrivée à {time}. Votre oui est la clé de la famille : ne le dites que si vous savez que la visite a eu lieu."
+      },
+      "kinds": {
+        "aide": "Visite de soins",
+        "visit": "Visite d’un proche",
+        "appointment": "Rendez-vous",
+        "drive": "Trajet"
+      },
+      "chips": {
+        "scheduled": "Prévue",
+        "checked_in": "En cours",
+        "checked_out": "Attend la parole",
+        "confirmed": "Confirmée",
+        "priced": "Chiffrée",
+        "paid": "Payée",
+        "cancelled": "Annulée",
+        "awaits_approval": "À approuver",
+        "being_paid": "En cours de paiement",
+        "declined": "Non approuvée",
+        "payment_failed": "Paiement échoué",
+        "credited": "Comptée comme temps d’aide"
+      },
+      "when": "{day}, de {start} à {end}",
+      "waiting": {
+        "check_in": "En attente que {name} pointe son arrivée",
+        "check_out": "En attente que {name} pointe son départ",
+        "family_word": "En attente de la parole de {parent}",
+        "family_word_any": "En attente de la parole de la famille",
+        "both": "Les deux clés ont tourné"
+      },
+      "keys": {
+        "caregiver": "Arrivée et départ de {name}",
+        "family": "La parole de la famille",
+        "done": "Fait",
+        "todo": "Pas encore",
+        "in": "Arrivée {start}",
+        "inOut": "Arrivée {start}, départ {end}",
+        "saidBy": "{name}, {time}"
+      },
+      "duration": {
+        "hours": "{hours} h",
+        "minutes": "{minutes} min",
+        "both": "{hours} h {minutes} min"
+      },
+      "price": "{amount} pour {duration} à {rate} de l’heure",
+      "payment": {
+        "paid": "Payé à {name} par {wallet}",
+        "sending": "Approuvé. En route vers {name} par {wallet}",
+        "waiting": "En attente de l’approbation de la famille",
+        "review": "Ouvrir les approbations",
+        "declined": "La famille n’a pas approuvé ce paiement.",
+        "failed": "Le paiement n’a pas abouti. L’organisateur en est informé.",
+        "byPermission": "Approuvé aussitôt par l’autorisation permanente de {parent}.",
+        "byFamily": "Approuvé par la famille.",
+        "simulatedTag": "Simulé",
+        "wallets": {
+          "paypal": "PayPal",
+          "venmo": "Venmo"
+        }
+      },
+      "actions": {
+        "cancel": "L’annuler",
+        "cancelAsk": "Annuler cette visite ?",
+        "cancelYes": "Oui, l’annuler",
+        "cancelKeep": "La garder",
+        "working": "En cours…",
+        "cancelled": "Annulée."
+      },
+      "outcome": {
+        "checkedIn": "Votre arrivée est pointée. Touchez « Pointer le départ » en partant.",
+        "checkedOutWaiting": "Départ pointé. Kin attend maintenant la parole de {parent}.",
+        "confirmedWaiting": "Merci. Kin attend maintenant que {name} pointe son départ.",
+        "paid": "{amount} est approuvé par l’autorisation permanente de {parent} et part vers {name} par {wallet}.",
+        "paidToYou": "{amount} est approuvé par l’autorisation permanente de {parent} et part vers vous par {wallet}.",
+        "asks": "{amount} part à la famille pour approbation, car cela sort du cadre de l’autorisation permanente.",
+        "held": "Les deux clés ont tourné, mais le paiement est suspendu. {reason}",
+        "approvals": "Ouvrir les approbations"
+      },
+      "askReasons": {
+        "none": "Aucune autorisation permanente ne couvre cette aide.",
+        "not_active": "L’autorisation permanente a pris fin.",
+        "paused": "L’autorisation permanente est en pause.",
+        "not_started": "L’autorisation permanente n’a pas encore commencé.",
+        "expired": "L’autorisation permanente a expiré.",
+        "circle_paused": "Le cercle est en pause.",
+        "other_caregiver": "L’autorisation permanente couvre une autre aide.",
+        "above_per_shift": "La visite dépasse le maximum que l’autorisation permet pour une visite.",
+        "over_daily_hours": "La visite compte plus d’heures que l’autorisation n’en permet par jour."
+      },
+      "received": {
+        "title": "Kin a envoyé {amount} sur votre {wallet}",
+        "text": "Pour {shift}, {day}.",
+        "simulated": "Simulé : aucun argent réel n’a bougé."
+      },
+      "schedule": {
+        "title": "Ajouter une visite au calendrier",
+        "text": "Les heures suivent l’horloge du cercle, {timezone}.",
+        "kind": "Quel type",
+        "person": "Qui",
+        "label": "Nom (facultatif)",
+        "date": "Jour",
+        "start": "Début",
+        "end": "Fin",
+        "submit": "Ajouter au calendrier",
+        "submitting": "Ajout…",
+        "done": "Ajouté au calendrier.",
+        "nobody": "Personne ne peut encore prendre ce genre de visite."
+      },
+      "target": {
+        "title": "Où va votre paie",
+        "text": "Choisissez le portefeuille où est envoyée la paie de vos visites. Venmo ne fonctionne qu’aux États-Unis et en dollars américains.",
+        "wallet": "Portefeuille",
+        "address": "Adresse",
+        "hintPaypal": "L’adresse e-mail de votre compte PayPal.",
+        "hintVenmo": "Votre e-mail Venmo, un numéro de téléphone américain ou votre @identifiant.",
+        "current": "Votre paie va sur {wallet}, {address}.",
+        "none": "Vous n’avez pas indiqué où va votre paie. Un paiement attend que vous le fassiez.",
+        "save": "Enregistrer",
+        "saving": "Enregistrement…",
+        "saved": "Enregistré.",
+        "venmoRefused": "L’environnement de test de PayPal refuse les paiements vers Venmo : un paiement Venmo échouerait ici. Choisissez PayPal pour tester un paiement.",
+        "venmoSimulated": "Ceci est la démo : un paiement vers Venmo est simulé et rien n’est envoyé."
+      },
+      "errors": {
+        "refused": "Vous n’avez pas le droit de faire cela.",
+        "invalid": "Cela n’a pas pu être lu.",
+        "key_reused": "Cela a déjà été enregistré autrement.",
+        "bad_member": "Cette personne ne peut pas prendre ce genre de visite.",
+        "wrong_state": "Cette visite a avancé, ce n’est donc plus possible.",
+        "visit_too_short": "Une visite de moins d’une minute n’est pas une visite.",
+        "visit_too_long": "Une visite ne peut pas durer plus de 24 heures.",
+        "own_shift": "Personne ne donne la parole de la famille pour sa propre visite.",
+        "parent_can_answer": "Le parent peut donner la parole de la famille.",
+        "not_started": "La visite n’a pas encore commencé.",
+        "not_paid_kind": "Seule une visite de soins est payée.",
+        "keys_missing": "Les deux clés doivent d’abord tourner.",
+        "missing_rate": "Cette aide n’a pas encore de tarif horaire.",
+        "above_ceiling": "C’est au-dessus du plafond de l’accord.",
+        "paused": "Le cercle est en pause, rien n’est payé pour le moment.",
+        "no_agreement": "La famille n’a pas encore d’accord en vigueur.",
+        "payment_in_progress": "Un paiement à cette aide est en cours, cela ne peut pas changer maintenant.",
+        "parent_only": "Seul le parent peut donner une autorisation permanente.",
+        "no_parent": "Le cercle n’a pas de parent pour la donner.",
+        "not_covered": "Aucune autorisation permanente ne couvre cette visite.",
+        "invalid_target": "Cette adresse ne convient pas à ce portefeuille.",
+        "not_money": "Les montants doivent être supérieurs à zéro.",
+        "bad_minutes": "Choisissez entre 1 et 24 heures par jour.",
+        "bad_dates": "La date de fin doit suivre la date de début.",
+        "too_long": "Une autorisation dure un an au plus.",
+        "amount": "Les montants n’admettent que des chiffres, comme 150,00.",
+        "bad_times": "La fin doit suivre le début, dans la même journée.",
+        "bad_date": "Choisissez un jour dans les deux dernières semaines ou l’année à venir.",
+        "bad_payee": "Choisissez une aide qui a un tarif.",
+        "unavailable": "Kin n’a pas pu le faire pour l’instant. Réessayez dans un moment.",
+        "too_many_links": "Cette visite a déjà cinq liens actifs. Attendez qu’un lien expire, ou utilisez l’un d’eux.",
+        "consent_needed": "L’appel nécessite d’abord l’accord du parent.",
+        "no_such_call": "Cet appel n’existe pas.",
+        "call_over": "Cet appel est déjà terminé.",
+        "bad_phone": "Cela ne ressemble pas à un numéro de téléphone. Indiquez l’indicatif du pays, par exemple +33612345678.",
+        "texting_off": "L’envoi de SMS n’est pas activé.",
+        "text_limit": "Vous avez envoyé plusieurs SMS récemment. Réessayez plus tard, ou copiez le lien."
+      }
+    },
+    "shiftCover": {
+      "title": "Remplacement à prévoir",
+      "lede": "{name} a annulé une visite qui n’a pas encore eu lieu : {when}. Ces personnes sont libres à ce moment-là, la plus adaptée en premier.",
+      "decides": "Rien n’est réservé tant que vous n’avez choisi personne.",
+      "candidates": "Personnes qui pourraient remplacer",
+      "visit": "Compterait comme une visite de soins",
+      "aide": "Serait une visite payée, comme toute visite d’une aide",
+      "hoursDay": "{hours} déjà ce jour-là",
+      "hoursWeek": "{hours} déjà cette semaine",
+      "ask": "Demander à {name} de remplacer",
+      "asking": "En cours…",
+      "done": "{name} est maintenant au calendrier pour cette visite.",
+      "nobody": "Personne dans le cercle n’est libre à ce moment-là. Utilisez le formulaire ci-dessous pour inscrire quelqu’un au calendrier."
+    },
+    "shiftAssistant": {
+      "experimental": "Expérimental",
+      "title": "Assistant du calendrier",
+      "note": "Posez une question sur ce que le calendrier montre déjà. Il répond et met en évidence, rien de plus : il ne réserve, ne déplace et ne paie jamais rien.",
+      "examples": "Par exemple : Qui est là jeudi après-midi ? Quelqu’un est-il libre demain matin ?",
+      "unavailable": "L’assistant n’est pas disponible pour le moment. Le calendrier fonctionne comme d’habitude.",
+      "cannot": "Je n’ai pas pu répondre à cela à partir du calendrier. Essayez une question plus simple, ou regardez le calendrier lui-même.",
+      "limit": "L’assistant a beaucoup servi cette dernière heure. Réessayez un peu plus tard."
+    },
+    "shiftPermissions": {
+      "title": "Autorisation permanente pour les visites",
+      "lede": "Ce que {parent} a autorisé Kin à payer sans demander à chaque fois. Une visite confirmée couverte par l’autorisation est approuvée tout de suite, et le registre nomme l’autorisation comme approbatrice. Tout ce qui sort de son cadre attend encore un vrai oui.",
+      "back": "Retour aux visites",
+      "simulated": "Simulé : c’est la démo, l’autorisation remplace une autorisation orale et aucun argent réel ne circule.",
+      "empty": "Pas encore d’autorisation permanente pour les visites. Chaque visite confirmée attend un oui.",
+      "readBack": "Payer {name} pour les visites confirmées, jusqu’à {hours} par jour et jusqu’à {perShift} pour une visite, du {from} au {until}.",
+      "statuses": {
+        "active": "En vigueur",
+        "paused": "En pause",
+        "revoked": "Terminée"
+      },
+      "used": "{used} sur {cap} utilisées aujourd’hui",
+      "spoke": "{parent} a dit : « {text} »",
+      "recordedBy": "Enregistrée par {name}",
+      "sealed": "Scellée : {digest}",
+      "simulatedTag": "Simulé",
+      "usesTitle": "Payé dans le cadre de cette autorisation",
+      "noUses": "Aucune visite n’a encore été payée dans le cadre de cette autorisation.",
+      "useLine": "{amount} pour {duration}, {day}",
+      "actions": {
+        "pause": "Mettre en pause",
+        "resume": "Reprendre",
+        "revoke": "Y mettre fin",
+        "working": "En cours…",
+        "paused": "En pause. Les visites confirmées demandent de nouveau un oui.",
+        "resumed": "De nouveau en vigueur.",
+        "revoked": "Terminée. Elle ne peut plus servir."
+      },
+      "form": {
+        "title": "Enregistrer une autorisation permanente",
+        "text": "Relisez-la à {parent}, puis confirmez. Kin ne paie que ce qui y correspond, et demande d’abord pour le reste.",
+        "demoNote": "Dans cette démo, vous jouez le oui oral de {parent}. Le registre indique simulé.",
+        "payee": "Aide à domicile",
+        "maxHours": "Maximum d’heures par jour",
+        "perShift": "Maximum pour une visite",
+        "amountHint": "Montant en {currency}, par exemple 150,00.",
+        "validFrom": "Début",
+        "expiresOn": "Fin",
+        "spoken": "Ce qui a été dit (facultatif)",
+        "review": "La relire",
+        "reviewing": "Vérification…",
+        "readBackTitle": "Kin relit ceci",
+        "edit": "La modifier",
+        "grant": "Confirmer : {parent} a dit oui",
+        "granting": "Enregistrement…",
+        "granted": "Enregistrée. La prochaine visite confirmée dans ce cadre est payée sans demander.",
+        "noCaregiver": "Aucune aide n’a encore de tarif horaire."
+      },
+      "aboveUsual": {
+        "notice": "{parent} dit oui d’avance à des visites au-dessus des {limit} que {parent} décide d’ordinaire en personne : jusqu’à {perShift} par visite et {hours} par jour, jusqu’au {until}.",
+        "grant": "Confirmer : {parent} a dit oui d’avance",
+        "tag": "Dépasse de {over} au plus la limite habituelle de {parent}"
+      },
+      "rules": {
+        "title": "Règles de paie",
+        "text": "Comment sont chiffrées les visites de chaque aide. Kin calcule le prix à partir des deux pointages et de ces règles, jamais à la main.",
+        "rate": "{name}, {rate} de l’heure",
+        "minimum": "Minimum payé pour une visite, en minutes",
+        "overtimeAfter": "Heures supplémentaires après ce nombre d’heures (vide pour aucune)",
+        "overtimePercent": "Les heures supplémentaires sont payées à ce pourcentage du tarif",
+        "save": "Enregistrer les règles",
+        "saving": "Enregistrement…",
+        "saved": "Enregistré."
+      }
+    },
     "officeLine": {
       "title": "La ligne du bureau",
       "lede": "Passez un appelant insistant à Kin. Kin se présente comme un assistant automatique, demande qui appelle et pourquoi, vérifie les réponses dans le registre réel et prévient la famille avant la fin de l’appel. Essayez un appel ici, sans téléphone.",
@@ -2689,6 +2985,94 @@
         "payout_above_usual": "Un paiement de {amount} le {day} dépasse nettement ce que ce bénéficiaire reçoit d’habitude.",
         "simulated_and_real": "Le registre mélange des écritures simulées et de vraies transactions du bac à sable."
       }
+    },
+    "shiftLinks": {
+      "open": "Lien d’arrivée",
+      "close": "Fermer",
+      "title": "Lien d’arrivée pour {name}",
+      "text": "{name} appuie sur ce lien en arrivant, puis en partant. Aucune connexion n’est nécessaire : ne le partagez qu’avec cette personne.",
+      "make": "Créer un lien",
+      "making": "Création…",
+      "linkLabel": "Le lien",
+      "copy": "Copier le lien",
+      "copied": "Copié.",
+      "copyFailed": "Sélectionnez le lien et copiez-le.",
+      "qrLabel": "Code QR du lien d’arrivée",
+      "qrText": "Montrez ce code. {name} peut le scanner avec l’appareil photo de son téléphone.",
+      "expires": "Valable jusqu’à {time}.",
+      "once": "Le lien n’est affiché qu’une fois. Si vous le perdez, créez-en un autre.",
+      "textTitle": "L’envoyer par SMS",
+      "phone": "Numéro de téléphone",
+      "phoneHint": "Avec l’indicatif du pays, par exemple +33612345678. Kin envoie le SMS et ne garde pas le numéro.",
+      "send": "Envoyer le SMS",
+      "sending": "Envoi…",
+      "sent": "SMS envoyé.",
+      "textFailed": "Le SMS n’a pas pu être envoyé. Copiez le lien ou montrez le code QR à la place.",
+      "textingOff": "L’envoi de SMS n’est pas activé. Copiez le lien ou montrez le code QR."
+    },
+    "shiftCalls": {
+      "states": {
+        "queued": "Kin s’apprête à appeler {parent}.",
+        "calling": "Kin appelle {parent}.",
+        "answered": "Kin est en ligne avec {parent}.",
+        "confirmed": "Kin a appelé {parent}, et la visite a été confirmée par téléphone.",
+        "declined": "Kin a appelé {parent}, qui a répondu que la visite n’a pas eu lieu. Rien n’est payé, et la famille peut examiner la situation.",
+        "no_answer": "Kin a appelé {parent} sans réponse. Kin peut réessayer une fois.",
+        "failed": "Kin n’a pas pu joindre {parent}. Kin peut réessayer une fois."
+      },
+      "credit": "Compté comme temps d’aide : {duration}, soit {amount} à valoir sur votre part.",
+      "creditFor": "Compté comme temps d’aide : {duration}, soit {amount} à valoir sur la part de {name}.",
+      "creditLink": "Voir la page d’équité",
+      "simulator": {
+        "open": "Écouter l’appel de Kin",
+        "title": "L’appel de Kin à {parent}",
+        "badge": "Appel simulé",
+        "note": "Ceci est la démo : aucun téléphone ne sonne. Kin joue ce qu’il dirait lors d’un vrai appel, et la touche sur laquelle vous appuyez enregistre la réponse, comme lors d’un vrai appel.",
+        "play": "Lancer l’appel",
+        "playing": "Lecture…",
+        "again": "Réécouter",
+        "said": "Ce que dit Kin",
+        "keypad": "Clavier",
+        "yes": "Appuyez sur 1 : oui",
+        "no": "Appuyez sur 2 : non",
+        "recording": "Enregistrement de la réponse…",
+        "listenFailed": "Kin n’a pas pu parler à l’instant. Vous pouvez lire l’appel ici.",
+        "close": "Fermer"
+      },
+      "settings": {
+        "title": "L’appel téléphonique de Kin après une visite",
+        "text": "Quand une aide termine une visite, Kin peut appeler {parent} pour demander si elle a bien eu lieu. Un oui vaut parole de la famille.",
+        "demoNote": "Ceci est la démo : vous jouez le rôle de {parent} et aucun téléphone ne sonne.",
+        "phone": "Numéro de téléphone",
+        "phoneHint": "Avec l’indicatif du pays, par exemple +33612345678. Kin ne l’affichera plus.",
+        "consent": "J’accepte que Kin, un assistant automatique, appelle ce numéro après la visite de mon aide pour demander si la visite a eu lieu. Je peux désactiver cet appel à tout moment.",
+        "quiet": "Kin n’appelle jamais de {start} à {end}, selon l’horloge du cercle, et appelle au plus deux fois par visite.",
+        "on": "L’appel est activé. Un numéro est enregistré.",
+        "off": "L’appel est désactivé.",
+        "notSet": "L’appel n’est pas encore configuré.",
+        "consented": "{name} a donné son accord le {date}.",
+        "enable": "Activer l’appel",
+        "enabling": "Enregistrement…",
+        "disable": "Désactiver l’appel",
+        "disabling": "Désactivation…",
+        "saved": "L’appel est activé.",
+        "stopped": "L’appel est désactivé.",
+        "onlyParent": "L’appel ne peut être activé que par {parent}. Vous pouvez le désactiver à tout moment."
+      }
+    },
+    "shiftDoor": {
+      "title": "Étiquette de porte",
+      "meta": "Étiquette de porte",
+      "lede": "Imprimez cette carte et posez-la près de la porte, ou écrivez l’adresse sur une étiquette NFC. Une aide la scanne, se connecte sur son propre téléphone et voit ses propres visites.",
+      "back": "Retour aux visites",
+      "link": "Imprimer une étiquette de porte",
+      "print": "Imprimer",
+      "cardTitle": "Scannez pour ouvrir vos visites",
+      "scan": "Scannez avec l’appareil photo de votre téléphone, ou approchez-le de l’étiquette.",
+      "qrLabel": "Code QR qui ouvre vos visites",
+      "addressLabel": "Ou ouvrez cette adresse",
+      "nfc": "Pour une étiquette NFC, écrivez l’adresse ci-dessus comme un enregistrement de lien web (URL).",
+      "noSecret": "Aucun secret ne figure sur l’étiquette. Chaque personne se connecte toujours pour voir ses visites."
     }
   },
   "aiProvenance": {
@@ -2771,5 +3155,37 @@
     "copyFailed": "Copie impossible. Sélectionnez l’ID pour le copier.",
     "receiverSandbox": "Dans cette démo, Kin paie {name} via la sandbox PayPal, sur le propre compte de test sandbox de Kin, jamais à une adresse saisie ici. C’est de l’argent de test.",
     "receiverSimulated": "Dans cette démo, le paiement à {name} est simulé : aucune adresse PayPal n’est nécessaire et aucun argent ne circule."
+  },
+  "checkLink": {
+    "meta": {
+      "title": "Arrivée ou départ · Kin",
+      "description": "Pointez votre arrivée ou votre départ d’une visite de soins."
+    },
+    "brand": "Kin, l’application de soins de votre famille",
+    "title": "Votre visite",
+    "lede": "Appuyez en arrivant, puis en partant. Kin prévient la famille.",
+    "checkIn": "Pointer l’arrivée",
+    "checkInHint": "Appuyez en arrivant.",
+    "checkOut": "Pointer le départ",
+    "checkOutHint": "Appuyez en partant.",
+    "working": "Un instant…",
+    "planned": "Visite prévue : de {start} à {end}.",
+    "hello": "Bonjour {name}.",
+    "done": "Cette visite est terminée. Merci, {name}.",
+    "privacy": "Ce lien est valable pour une seule visite. Merci de ne pas le partager.",
+    "results": {
+      "checkedIn": "Arrivée enregistrée à {time}. Merci, {name}.",
+      "alreadyIn": "Votre arrivée était déjà enregistrée à {time}.",
+      "checkedOut": "Départ enregistré à {time}. Merci, {name}. La famille sera prévenue.",
+      "alreadyOut": "Votre départ était déjà enregistré à {time}."
+    },
+    "problems": {
+      "link": "Ce lien n’est pas valide, ou il a expiré. Demandez-en un nouveau à la famille.",
+      "early": "C’est trop tôt. Vous pourrez pointer votre arrivée dès le début de la visite.",
+      "state": "Cela ne correspond pas à l’état de cette visite. Si vous n’avez pas encore pointé votre arrivée, commencez par là.",
+      "short": "La visite vient à peine de commencer. Patientez un instant, puis pointez votre départ.",
+      "busy": "Trop d’essais. Attendez une minute, puis appuyez de nouveau.",
+      "unavailable": "Kin n’a pas pu le faire pour l’instant. Réessayez dans un moment."
+    }
   }
 }

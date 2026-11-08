@@ -132,9 +132,11 @@ describe("one circle's Ask Kin and another's", () => {
   it("reads executions through row-level security: another circle's never come back", async () => {
     const mine = await visitorWithCircle(db);
     const theirs = await visitorWithCircle(db);
-    const [proposal] = await serviceRows(db, theirs.circleId, "select id from proposals where circle_id = $1 limit 1", [theirs.circleId]);
+    const [proposal] = await serviceRows(db, theirs.circleId, "select id from proposals where circle_id = $1 and purpose = 'stairlift' limit 1", [theirs.circleId]);
+    // Amara's two paid shifts come with their executions already.
+    const before = (await asPerson(db.app, theirs.userId, (tx) => readExecutions(tx, theirs.circleId))).length;
     await serviceRows(db, theirs.circleId, "insert into executions (id, circle_id, proposal_id, idempotency_key, state) values (gen_random_uuid(), $1, $2, $3, 'created')", [theirs.circleId, proposal?.id, `test-${theirs.circleId}`]);
-    expect(await asPerson(db.app, theirs.userId, (tx) => readExecutions(tx, theirs.circleId))).toHaveLength(1);
+    expect(await asPerson(db.app, theirs.userId, (tx) => readExecutions(tx, theirs.circleId))).toHaveLength(before + 1);
     expect(await asPerson(db.app, mine.userId, (tx) => readExecutions(tx, theirs.circleId))).toEqual([]);
   });
 });

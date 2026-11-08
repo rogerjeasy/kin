@@ -30,7 +30,8 @@ function view(proposal: ProposalRecord, snapshot: CircleSnapshot = circle) {
 describe("the proposals on the demo clock", () => {
   it("are all still pending, so the approvals screen has something to ask", () => {
     const waiting = waitingProposals(circle);
-    expect(waiting).toHaveLength(circle.proposals.length);
+    // Amara's two shifts, paid in October, are history and wait for nothing.
+    expect(waiting).toHaveLength(circle.proposals.filter((each) => each.state === "pending_approval").length);
     expect(waiting.every((each) => each.decision === "pending")).toBe(true);
   });
 
@@ -79,7 +80,7 @@ describe("the stairlift repair", () => {
     const paused = { ...circle, circle: { ...circle.circle, pausedUntil: new Date(circle.circle.now.getTime() + HOUR_MS) } };
     expect(view(byPurpose("stairlift"), paused).decision).toBe("paused");
     // Held, not closed: they stay on the screen, marked as paused.
-    expect(waitingProposals(paused).map((each) => each.decision)).toEqual(circle.proposals.map(() => "paused"));
+    expect(waitingProposals(paused).map((each) => each.decision)).toEqual(circle.proposals.filter((each) => each.state === "pending_approval").map(() => "paused"));
   });
 });
 

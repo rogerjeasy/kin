@@ -13,6 +13,7 @@ import { requireViewer, type Viewer } from "./viewer";
 /** What a role must be allowed to do to open each of the circle's screens. */
 export const SECTION_ACCESS = {
   overview: "money.view",
+  shifts: "shift.view",
   approvals: "own_payments.view",
   bills: "own_payments.view",
   fairness: "money.view",

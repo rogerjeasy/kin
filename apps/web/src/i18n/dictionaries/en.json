@@ -1181,6 +1181,10 @@
         "title": "Overview · Kin",
         "description": "Your circle at a glance: the pool, what needs a yes, fairness and what the parent heard."
       },
+      "shifts": {
+        "title": "Shifts · Kin",
+        "description": "The care calendar: who is with the parent and when, and how a confirmed shift is paid."
+      },
       "approvals": {
         "title": "Approvals · Kin",
         "description": "Every movement of money waiting for a yes, and who must give it."
@@ -1206,6 +1210,7 @@
       "navLabel": "Circle",
       "nav": {
         "overview": "Overview",
+        "shifts": "Shifts",
         "approvals": "Approvals",
         "bills": "Bills",
         "fairness": "Fairness",
@@ -1463,6 +1468,10 @@
         "refill": {
           "title": "{name} refill",
           "text": "Kin proposed this refill from the rule the family set. It is bought only after the yes the agreement asks for."
+        },
+        "shift": {
+          "title": "Shift pay for {name}",
+          "text": "A care shift proven by two keys: the caregiver’s own check-in and check-out, and the family’s word that the visit happened."
         }
       },
       "raisedBy": "Raised by {name}, {date}",
@@ -2512,6 +2521,293 @@
         "tag": "Above {parent}'s usual limit by up to {over}"
       }
     },
+    "shifts": {
+      "title": "Shifts",
+      "lede": "Who is caring for {parent}, and when. A paid visit is proven by two keys: the caregiver’s own check-in and check-out, and the family’s word that it happened.",
+      "simulated": "Simulated: this is the demo, so the payments are stand-ins and no real money moves.",
+      "permissionLink": "Standing permission and pay rules",
+      "week": {
+        "thisWeek": "This week, {range}",
+        "otherWeek": "Week of {range}",
+        "navLabel": "Choose a week",
+        "previous": "Previous week",
+        "next": "Next week",
+        "back": "Back to this week",
+        "calendarLabel": "Care calendar, {range}",
+        "listLabel": "Shifts, {range}",
+        "empty": "Nothing is on the calendar this week."
+      },
+      "needs": {
+        "title": "Needs you now",
+        "checkIn": "Check in",
+        "checkOut": "Check out",
+        "checkInTitle": "Your shift has begun",
+        "checkOutTitle": "Leaving? Check out",
+        "checkInHint": "Tap when you arrive. Your check-in is the first half of your key.",
+        "checkOutHint": "Tap when you leave. That turns your key.",
+        "working": "Working…",
+        "questions": {
+          "morning": "Was {name} here this morning?",
+          "afternoon": "Was {name} here this afternoon?",
+          "evening": "Was {name} here this evening?"
+        },
+        "answers": {
+          "morning": "Yes, {name} was here this morning",
+          "afternoon": "Yes, {name} was here this afternoon",
+          "evening": "Yes, {name} was here this evening"
+        },
+        "wordHint": "{name} checked in at {time}. Your yes is the family’s key, so say it only if you know the visit happened."
+      },
+      "kinds": {
+        "aide": "Care visit",
+        "visit": "Family visit",
+        "appointment": "Appointment",
+        "drive": "Drive"
+      },
+      "chips": {
+        "scheduled": "Planned",
+        "checked_in": "Under way",
+        "checked_out": "Waiting for the word",
+        "confirmed": "Confirmed",
+        "priced": "Priced",
+        "paid": "Paid",
+        "cancelled": "Called off",
+        "awaits_approval": "Needs approval",
+        "being_paid": "Being paid",
+        "declined": "Not approved",
+        "payment_failed": "Payment failed",
+        "credited": "Counted as care time"
+      },
+      "when": "{day}, {start} to {end}",
+      "waiting": {
+        "check_in": "Waiting for {name} to check in",
+        "check_out": "Waiting for {name} to check out",
+        "family_word": "Waiting for {parent}’s word",
+        "family_word_any": "Waiting for the family’s word",
+        "both": "Both keys have turned"
+      },
+      "keys": {
+        "caregiver": "{name}’s check-in and check-out",
+        "family": "The family’s word",
+        "done": "Done",
+        "todo": "Not yet",
+        "in": "In {start}",
+        "inOut": "In {start}, out {end}",
+        "saidBy": "{name}, {time}"
+      },
+      "duration": {
+        "hours": "{hours} h",
+        "minutes": "{minutes} min",
+        "both": "{hours} h {minutes} min"
+      },
+      "price": "{amount} for {duration} at {rate} an hour",
+      "payment": {
+        "paid": "Paid to {name} by {wallet}",
+        "sending": "Approved. On its way to {name} by {wallet}",
+        "waiting": "Waiting for the family’s approval",
+        "review": "Open the approvals",
+        "declined": "The family did not approve this payment.",
+        "failed": "The payment did not go through. The organizer is told.",
+        "byPermission": "Approved at once by {parent}’s standing permission.",
+        "byFamily": "Approved by the family.",
+        "simulatedTag": "Simulated",
+        "wallets": {
+          "paypal": "PayPal",
+          "venmo": "Venmo"
+        }
+      },
+      "actions": {
+        "cancel": "Call it off",
+        "cancelAsk": "Call this shift off?",
+        "cancelYes": "Yes, call it off",
+        "cancelKeep": "Keep it",
+        "working": "Working…",
+        "cancelled": "Called off."
+      },
+      "outcome": {
+        "checkedIn": "You are checked in. Tap Check out when you leave.",
+        "checkedOutWaiting": "Checked out. Now Kin waits for {parent}’s word.",
+        "confirmedWaiting": "Thank you. Now Kin waits for {name} to check out.",
+        "paid": "{amount} is approved by {parent}’s standing permission and is on its way to {name} by {wallet}.",
+        "paidToYou": "{amount} is approved by {parent}’s standing permission and is on its way to you by {wallet}.",
+        "asks": "{amount} goes to the family for approval, because it is outside the standing permission.",
+        "held": "Both keys are in, but the payment is on hold. {reason}",
+        "approvals": "Open the approvals"
+      },
+      "askReasons": {
+        "none": "No standing permission covers this caregiver.",
+        "not_active": "The standing permission has ended.",
+        "paused": "The standing permission is paused.",
+        "not_started": "The standing permission has not started yet.",
+        "expired": "The standing permission has expired.",
+        "circle_paused": "The circle is paused.",
+        "other_caregiver": "The standing permission covers another caregiver.",
+        "above_per_shift": "The shift is above the most the permission allows for one shift.",
+        "over_daily_hours": "The shift is more hours than the permission allows in a day."
+      },
+      "received": {
+        "title": "{amount} sent to your {wallet}",
+        "text": "For {shift}, {day}.",
+        "simulated": "Simulated: no real money moved."
+      },
+      "schedule": {
+        "title": "Put a shift on the calendar",
+        "text": "Times are on the circle’s own clock, {timezone}.",
+        "kind": "What kind",
+        "person": "Who",
+        "label": "Name (optional)",
+        "date": "Day",
+        "start": "Starts",
+        "end": "Ends",
+        "submit": "Add to the calendar",
+        "submitting": "Adding…",
+        "done": "Added to the calendar.",
+        "nobody": "Nobody can take this kind of shift yet."
+      },
+      "target": {
+        "title": "Where your pay goes",
+        "text": "Choose the wallet your shift pay is sent to. Venmo works in the United States and in US dollars only.",
+        "wallet": "Wallet",
+        "address": "Address",
+        "hintPaypal": "The email address of your PayPal account.",
+        "hintVenmo": "Your Venmo email, a US phone number or your @handle.",
+        "current": "Your pay goes to {wallet}, {address}.",
+        "none": "You have not said where your pay goes. A payment waits until you do.",
+        "save": "Save",
+        "saving": "Saving…",
+        "saved": "Saved.",
+        "venmoRefused": "PayPal’s test environment refuses payments to Venmo, so a Venmo payout would fail here. Choose PayPal to test a payout.",
+        "venmoSimulated": "This is the demo, so a payment to Venmo is simulated and nothing is sent."
+      },
+      "errors": {
+        "refused": "You may not do that.",
+        "invalid": "That could not be read.",
+        "key_reused": "That was already recorded differently.",
+        "bad_member": "That person cannot take this kind of shift.",
+        "wrong_state": "That shift has moved on, so this is no longer possible.",
+        "visit_too_short": "A visit under a minute is not a visit.",
+        "visit_too_long": "A visit cannot last more than 24 hours.",
+        "own_shift": "Nobody gives the family’s word for their own shift.",
+        "parent_can_answer": "The parent can give the family’s word.",
+        "not_started": "The visit has not begun yet.",
+        "not_paid_kind": "Only a care visit is paid.",
+        "keys_missing": "Both keys must turn first.",
+        "missing_rate": "This caregiver has no hourly rate yet.",
+        "above_ceiling": "That is above the agreement’s ceiling.",
+        "paused": "The circle is paused, so nothing is paid now.",
+        "no_agreement": "The family has no agreement in force yet.",
+        "payment_in_progress": "A payment to this caregiver is under way, so this cannot change now.",
+        "parent_only": "Only the parent can give a standing permission.",
+        "no_parent": "The circle has no parent to give it.",
+        "not_covered": "No standing permission covers this shift.",
+        "invalid_target": "That address does not fit this wallet.",
+        "not_money": "Amounts must be above zero.",
+        "bad_minutes": "Choose between 1 and 24 hours a day.",
+        "bad_dates": "The end date must come after the start date.",
+        "too_long": "A permission lasts a year at most.",
+        "amount": "Amounts need digits only, such as 150.00.",
+        "bad_times": "The end must be after the start, within one day.",
+        "bad_date": "Choose a day within the last two weeks or the next year.",
+        "bad_payee": "Choose a caregiver who has a rate.",
+        "unavailable": "Kin could not do that now. Try again in a moment.",
+        "too_many_links": "This shift already has five live links. Wait for one to expire, or use one of them.",
+        "consent_needed": "The call needs the parent’s agreement first.",
+        "no_such_call": "There is no such call.",
+        "call_over": "That call is already over.",
+        "bad_phone": "That does not look like a phone number. Include the country code, such as +14155550123.",
+        "texting_off": "Texting is not switched on.",
+        "text_limit": "You have sent several texts lately. Try again later, or copy the link instead."
+      }
+    },
+    "shiftCover": {
+      "title": "Cover needed",
+      "lede": "{name} called off a shift that has not happened yet: {when}. These people are free then, best first.",
+      "decides": "Nothing is booked until you choose someone.",
+      "candidates": "People who could cover",
+      "visit": "Would count as a care visit",
+      "aide": "Would be a paid shift, like any aide shift",
+      "hoursDay": "{hours} already that day",
+      "hoursWeek": "{hours} already this week",
+      "ask": "Ask {name} to cover",
+      "asking": "Working…",
+      "done": "{name} is now on the calendar for this shift.",
+      "nobody": "Nobody in the circle is free then. Use the schedule form below to put someone on the calendar."
+    },
+    "shiftAssistant": {
+      "experimental": "Experimental",
+      "title": "Calendar assistant",
+      "note": "Ask about what the calendar already shows. It only answers and highlights: it never books, moves or pays anything.",
+      "examples": "For example: Who is on Thursday afternoon? Is anyone free tomorrow morning?",
+      "unavailable": "The assistant is not available right now. The calendar itself works as always.",
+      "cannot": "I could not answer that from the calendar. Try a smaller question, or look at the calendar itself.",
+      "limit": "The assistant has been used a lot in the last hour. Please try again a little later."
+    },
+    "shiftPermissions": {
+      "title": "Standing permission for shifts",
+      "lede": "What {parent} allowed Kin to pay without asking each time. A confirmed shift inside the permission is approved at once, and the record names the permission as the approver. Anything outside it waits for a live yes.",
+      "back": "Back to the shifts",
+      "simulated": "Simulated: this is the demo, so the permission is a stand-in for a spoken one and no real money moves.",
+      "empty": "No standing permission for shifts yet. Every confirmed shift waits for a yes.",
+      "readBack": "Pay {name} for confirmed shifts, up to {hours} a day and up to {perShift} for one shift, from {from} until {until}.",
+      "statuses": {
+        "active": "In force",
+        "paused": "Paused",
+        "revoked": "Ended"
+      },
+      "used": "{used} of {cap} used today",
+      "spoke": "{parent} said: “{text}”",
+      "recordedBy": "Recorded by {name}",
+      "sealed": "Sealed: {digest}",
+      "simulatedTag": "Simulated",
+      "usesTitle": "Paid under it",
+      "noUses": "No shift has been paid under it yet.",
+      "useLine": "{amount} for {duration}, {day}",
+      "actions": {
+        "pause": "Pause",
+        "resume": "Resume",
+        "revoke": "End it",
+        "working": "Working…",
+        "paused": "Paused. Confirmed shifts ask for a yes again.",
+        "resumed": "In force again.",
+        "revoked": "Ended. It cannot be used again."
+      },
+      "form": {
+        "title": "Record a standing permission",
+        "text": "Read it back to {parent}, then confirm. Kin only pays what fits it, and anything else asks first.",
+        "demoNote": "In this demo you play {parent}’s spoken yes. The record says simulated.",
+        "payee": "Caregiver",
+        "maxHours": "Most hours in a day",
+        "perShift": "Most for one shift",
+        "amountHint": "Amount in {currency}, such as 150.00.",
+        "validFrom": "Starts",
+        "expiresOn": "Ends",
+        "spoken": "What was said (optional)",
+        "review": "Read it back",
+        "reviewing": "Checking…",
+        "readBackTitle": "Kin reads this back",
+        "edit": "Change it",
+        "grant": "Confirm: {parent} said yes",
+        "granting": "Recording…",
+        "granted": "Recorded. The next confirmed shift inside it is paid without asking.",
+        "noCaregiver": "No caregiver has an hourly rate yet."
+      },
+      "aboveUsual": {
+        "notice": "{parent} is saying yes ahead of time to shifts above the {limit} {parent} usually decides personally: up to {perShift} a shift and {hours} a day, until {until}.",
+        "grant": "Confirm: {parent} said yes ahead of time",
+        "tag": "Above {parent}’s usual limit by up to {over}"
+      },
+      "rules": {
+        "title": "Pay rules",
+        "text": "How each caregiver’s shifts are priced. Kin works the price out from the two taps and these rules, never by hand.",
+        "rate": "{name}, {rate} an hour",
+        "minimum": "Least a visit is paid for, in minutes",
+        "overtimeAfter": "Overtime after this many hours (empty for none)",
+        "overtimePercent": "Overtime pays this percent of the rate",
+        "save": "Save the rules",
+        "saving": "Saving…",
+        "saved": "Saved."
+      }
+    },
     "officeLine": {
       "title": "The office line",
       "lede": "Hand a demanding caller to Kin. Kin says it is an automated assistant, asks who is calling and what for, checks the answers against the real record, and tells the family before the call ends. Try a call here with no phone.",
@@ -2689,6 +2985,94 @@
         "payout_above_usual": "A payment of {amount} on {day} is well above what this payee usually receives.",
         "simulated_and_real": "The record mixes simulated entries with real sandbox transactions."
       }
+    },
+    "shiftLinks": {
+      "open": "Check-in link",
+      "close": "Close",
+      "title": "Check-in link for {name}",
+      "text": "{name} taps this link when they arrive and again when they leave. No sign-in is needed, so share it only with them.",
+      "make": "Make a link",
+      "making": "Making…",
+      "linkLabel": "The link",
+      "copy": "Copy link",
+      "copied": "Copied.",
+      "copyFailed": "Select the link and copy it.",
+      "qrLabel": "QR code for the check-in link",
+      "qrText": "Show this code. {name} can scan it with their phone’s camera.",
+      "expires": "Works until {time}.",
+      "once": "The link is shown once. If you lose it, make another.",
+      "textTitle": "Text it",
+      "phone": "Phone number",
+      "phoneHint": "With the country code, such as +14155550123. Kin sends the text and does not keep the number.",
+      "send": "Send text",
+      "sending": "Sending…",
+      "sent": "Text sent.",
+      "textFailed": "The text could not be sent. Copy the link or show the QR code instead.",
+      "textingOff": "Texting is not switched on. Copy the link or show the QR code."
+    },
+    "shiftCalls": {
+      "states": {
+        "queued": "Kin is about to call {parent}.",
+        "calling": "Kin is calling {parent}.",
+        "answered": "Kin is talking with {parent}.",
+        "confirmed": "Kin called {parent}, and the visit was confirmed by phone.",
+        "declined": "Kin called {parent}, and {parent} said the visit did not happen. Nothing is paid, and the family can look into it.",
+        "no_answer": "Kin called {parent} and got no answer. Kin may try once more.",
+        "failed": "Kin could not reach {parent}. Kin may try once more."
+      },
+      "credit": "Counted as care time: {duration}, worth {amount} toward your share.",
+      "creditFor": "Counted as care time: {duration}, worth {amount} toward the share of {name}.",
+      "creditLink": "See the fairness page",
+      "simulator": {
+        "open": "Hear Kin’s call",
+        "title": "Kin’s call to {parent}",
+        "badge": "Simulated call",
+        "note": "This is the demo, so no phone rings. Kin plays what it would say on a real call, and the key you press records the answer as if it had been pressed on a real call.",
+        "play": "Play the call",
+        "playing": "Playing…",
+        "again": "Play again",
+        "said": "What Kin says",
+        "keypad": "Keypad",
+        "yes": "Press 1: yes",
+        "no": "Press 2: no",
+        "recording": "Recording the answer…",
+        "listenFailed": "Kin could not speak just now. You can read the call here instead.",
+        "close": "Close"
+      },
+      "settings": {
+        "title": "Kin’s phone call after a visit",
+        "text": "After a caregiver ends a visit, Kin can phone {parent} to ask whether it happened. A yes counts as the family’s word.",
+        "demoNote": "This is the demo, so you play {parent}’s part and no phone rings.",
+        "phone": "Phone number",
+        "phoneHint": "With the country code, such as +14155550123. Kin does not show it again.",
+        "consent": "I agree that Kin, an automated assistant, may phone this number after my caregiver’s visit to ask whether the visit happened. I can switch this off at any time.",
+        "quiet": "Kin never calls from {start} to {end} on the circle’s clock, and calls at most twice for each visit.",
+        "on": "The call is on. A number is saved.",
+        "off": "The call is off.",
+        "notSet": "The call is not set up yet.",
+        "consented": "{name} agreed on {date}.",
+        "enable": "Switch on the call",
+        "enabling": "Saving…",
+        "disable": "Switch off the call",
+        "disabling": "Switching off…",
+        "saved": "The call is on.",
+        "stopped": "The call is off.",
+        "onlyParent": "Only {parent} can switch the call on. You can switch it off at any time."
+      }
+    },
+    "shiftDoor": {
+      "title": "Door tag",
+      "meta": "Door tag",
+      "lede": "Print this card and put it by the door, or write the address onto an NFC tag. A caregiver scans it, signs in on their own phone and sees their own shifts.",
+      "back": "Back to shifts",
+      "link": "Print a door tag",
+      "print": "Print",
+      "cardTitle": "Scan to open your shifts",
+      "scan": "Scan with your phone’s camera, or hold your phone to the tag.",
+      "qrLabel": "QR code that opens your shifts",
+      "addressLabel": "Or open this address",
+      "nfc": "For an NFC tag, write the address above as a web link (URL) record.",
+      "noSecret": "Nothing secret is on the tag. Each person still signs in to see their shifts."
     }
   },
   "aiProvenance": {
@@ -2771,5 +3155,37 @@
     "copyFailed": "Could not copy. Select the ID to copy it.",
     "receiverSandbox": "In this demo, Kin pays {name} through PayPal’s sandbox into Kin’s own sandbox test account, never to an address typed here. It is test money.",
     "receiverSimulated": "In this demo, the payment to {name} is simulated: no PayPal address is needed and no money moves."
+  },
+  "checkLink": {
+    "meta": {
+      "title": "Check in or out · Kin",
+      "description": "Check in to a care visit or check out of it."
+    },
+    "brand": "Kin, your family’s care app",
+    "title": "Your visit",
+    "lede": "Tap Check in when you arrive and Check out when you leave. Kin tells the family.",
+    "checkIn": "Check in",
+    "checkInHint": "Tap when you arrive.",
+    "checkOut": "Check out",
+    "checkOutHint": "Tap when you leave.",
+    "working": "One moment…",
+    "planned": "Planned visit: {start} to {end}.",
+    "hello": "Hello, {name}.",
+    "done": "This visit is finished. Thank you, {name}.",
+    "privacy": "This link is for one visit. Please do not share it.",
+    "results": {
+      "checkedIn": "Checked in at {time}. Thank you, {name}.",
+      "alreadyIn": "You were already checked in at {time}.",
+      "checkedOut": "Checked out at {time}. Thank you, {name}. The family will be told.",
+      "alreadyOut": "You were already checked out at {time}."
+    },
+    "problems": {
+      "link": "This link is not valid, or it has expired. Ask the family for a new one.",
+      "early": "It is too early. You can check in once the visit begins.",
+      "state": "That does not fit where this visit is now. If you have not checked in yet, check in first.",
+      "short": "The visit has only just begun. Wait a moment, then check out.",
+      "busy": "Too many tries. Wait a minute, then tap again.",
+      "unavailable": "Kin could not do that now. Try again in a moment."
+    }
   }
 }

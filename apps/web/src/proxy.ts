@@ -1,7 +1,7 @@
 import { readDemoSession } from "@kin/auth";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { routeLocale } from "./i18n/routing";
+import { pagePath, routeLocale } from "./i18n/routing";
 import { sessionVerifier } from "./server/auth/config";
 import { COOKIES } from "./server/auth/cookies";
 import { DEMO_COOKIE } from "./server/auth/demo-cookie";
@@ -22,13 +22,22 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   const decision = routeLocale(pathname);
   if (decision.kind === "pass") {
-    return NextResponse.next();
+    return keepSecret(NextResponse.next(), pathname);
   }
   const url = request.nextUrl.clone();
   url.pathname = decision.pathname;
-  return decision.kind === "rewrite"
-    ? NextResponse.rewrite(url)
-    : NextResponse.redirect(url, PERMANENT_REDIRECT);
+  return keepSecret(decision.kind === "rewrite" ? NextResponse.rewrite(url) : NextResponse.redirect(url, PERMANENT_REDIRECT), pathname);
+}
+
+// A check-in link's address holds a secret, and the page is public: the
+// caregiver taps it with nobody signed in. It is never stored by a cache or a
+// browser history that shares, never sent on as a referrer, never indexed.
+function keepSecret(response: NextResponse, pathname: string): NextResponse {
+  if (!pagePath(pathname).startsWith("/c/")) return response;
+  response.headers.set("Cache-Control", "no-store");
+  response.headers.set("Referrer-Policy", "no-referrer");
+  response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  return response;
 }
 
 // The first gate in front of a circle's screens. Each page checks again on

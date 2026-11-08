@@ -153,14 +153,17 @@ test.describe("every role of the demo", () => {
   test("Amara, the caregiver, sees only her own pay and the screens it is on", async ({ page }) => {
     await startDemo(page);
     await seatAs(page, "Amara");
-    await expect(page).toHaveURL(/\/dashboard\/approvals\?notice=roleChanged$/);
+    // Her shifts come first: she lands on the calendar she works from.
+    await expect(page).toHaveURL(/\/dashboard\/shifts\?notice=roleChanged$/);
     const sidebar = page.getByRole("complementary").getByRole("navigation", { name: dashboard.shell.navLabel });
     // A link carries its waiting count after its name.
-    await expect(sidebar.getByRole("link")).toHaveText([new RegExp(`^${dashboard.shell.nav.approvals}`), dashboard.shell.nav.bills, dashboard.shell.nav.circle]);
+    await expect(sidebar.getByRole("link")).toHaveText([new RegExp(`^${dashboard.shell.nav.shifts}`), new RegExp(`^${dashboard.shell.nav.approvals}`), dashboard.shell.nav.bills, dashboard.shell.nav.circle]);
+    await page.goto("/dashboard/approvals");
     await expect(page.getByRole("article")).toHaveCount(1);
     await expect(page.getByRole("article")).toContainText(dashboard.approvals.purposes.caregiverWeek.title);
     await page.goto("/dashboard/record");
-    await expect(page).toHaveURL("/dashboard/approvals");
+    // Refused the record, she is sent to the first screen she may open: her shifts.
+    await expect(page).toHaveURL("/dashboard/shifts");
   });
 
   test("Daniel, the observer, reads everything and can neither answer nor pause", async ({ page }) => {

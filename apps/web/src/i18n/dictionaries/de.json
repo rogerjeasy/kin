@@ -1181,6 +1181,10 @@
         "title": "Übersicht · Kin",
         "description": "Ihr Kreis auf einen Blick: der Topf, was auf ein Ja wartet, Fairness und was der Elternteil gehört hat."
       },
+      "shifts": {
+        "title": "Einsätze · Kin",
+        "description": "Der Pflegekalender: wer wann bei der Mutter oder dem Vater ist und wie ein bestätigter Einsatz bezahlt wird."
+      },
       "approvals": {
         "title": "Freigaben · Kin",
         "description": "Jede Geldbewegung, die auf ein Ja wartet, und wer es geben muss."
@@ -1206,6 +1210,7 @@
       "navLabel": "Kreis",
       "nav": {
         "overview": "Übersicht",
+        "shifts": "Einsätze",
         "approvals": "Freigaben",
         "bills": "Rechnungen",
         "fairness": "Fairness",
@@ -1463,6 +1468,10 @@
         "refill": {
           "title": "Nachbestellung bei {name}",
           "text": "Kin hat diese Nachbestellung nach der Regel der Familie vorgeschlagen. Gekauft wird erst nach dem Ja, das der Familienvertrag verlangt."
+        },
+        "shift": {
+          "title": "Lohn für den Einsatz von {name}",
+          "text": "Ein Pflegeeinsatz, belegt durch zwei Schlüssel: das eigene Ein- und Ausstempeln der Pflegekraft und das Wort der Familie, dass der Besuch stattgefunden hat."
         }
       },
       "raisedBy": "Eingereicht von {name}, {date}",
@@ -2512,6 +2521,293 @@
         "tag": "Über der üblichen Grenze von {parent}, um bis zu {over}"
       }
     },
+    "shifts": {
+      "title": "Einsätze",
+      "lede": "Wer sich wann um {parent} kümmert. Ein bezahlter Einsatz wird durch zwei Schlüssel belegt: das eigene Ein- und Ausstempeln der Pflegekraft und das Wort der Familie, dass er stattgefunden hat.",
+      "simulated": "Simuliert: Das ist die Demo, die Zahlungen sind Platzhalter und es fließt kein echtes Geld.",
+      "permissionLink": "Dauerhafte Erlaubnis und Lohnregeln",
+      "week": {
+        "thisWeek": "Diese Woche, {range}",
+        "otherWeek": "Woche vom {range}",
+        "navLabel": "Woche wählen",
+        "previous": "Vorherige Woche",
+        "next": "Nächste Woche",
+        "back": "Zurück zu dieser Woche",
+        "calendarLabel": "Pflegekalender, {range}",
+        "listLabel": "Einsätze, {range}",
+        "empty": "In dieser Woche steht nichts im Kalender."
+      },
+      "needs": {
+        "title": "Sie werden jetzt gebraucht",
+        "checkIn": "Einstempeln",
+        "checkOut": "Ausstempeln",
+        "checkInTitle": "Ihr Einsatz hat begonnen",
+        "checkOutTitle": "Sie gehen? Stempeln Sie sich aus",
+        "checkInHint": "Tippen Sie, wenn Sie ankommen. Das Einstempeln ist die erste Hälfte Ihres Schlüssels.",
+        "checkOutHint": "Tippen Sie, wenn Sie gehen. Damit drehen Sie Ihren Schlüssel.",
+        "working": "Wird bearbeitet …",
+        "questions": {
+          "morning": "War {name} heute Morgen da?",
+          "afternoon": "War {name} heute Nachmittag da?",
+          "evening": "War {name} heute Abend da?"
+        },
+        "answers": {
+          "morning": "Ja, {name} war heute Morgen da",
+          "afternoon": "Ja, {name} war heute Nachmittag da",
+          "evening": "Ja, {name} war heute Abend da"
+        },
+        "wordHint": "{name} hat sich um {time} eingestempelt. Ihr Ja ist der Schlüssel der Familie. Sagen Sie es nur, wenn Sie wissen, dass der Besuch stattgefunden hat."
+      },
+      "kinds": {
+        "aide": "Pflegebesuch",
+        "visit": "Familienbesuch",
+        "appointment": "Termin",
+        "drive": "Fahrt"
+      },
+      "chips": {
+        "scheduled": "Geplant",
+        "checked_in": "Läuft",
+        "checked_out": "Wartet auf das Wort",
+        "confirmed": "Bestätigt",
+        "priced": "Berechnet",
+        "paid": "Bezahlt",
+        "cancelled": "Abgesagt",
+        "awaits_approval": "Braucht Freigabe",
+        "being_paid": "Wird bezahlt",
+        "declined": "Nicht freigegeben",
+        "payment_failed": "Zahlung fehlgeschlagen",
+        "credited": "Als Pflegezeit angerechnet"
+      },
+      "when": "{day}, {start} bis {end}",
+      "waiting": {
+        "check_in": "Wartet darauf, dass {name} sich einstempelt",
+        "check_out": "Wartet darauf, dass {name} sich ausstempelt",
+        "family_word": "Wartet auf das Wort von {parent}",
+        "family_word_any": "Wartet auf das Wort der Familie",
+        "both": "Beide Schlüssel sind gedreht"
+      },
+      "keys": {
+        "caregiver": "Ein- und Ausstempeln von {name}",
+        "family": "Das Wort der Familie",
+        "done": "Erledigt",
+        "todo": "Noch nicht",
+        "in": "Eingestempelt {start}",
+        "inOut": "Eingestempelt {start}, ausgestempelt {end}",
+        "saidBy": "{name}, {time}"
+      },
+      "duration": {
+        "hours": "{hours} Std.",
+        "minutes": "{minutes} Min.",
+        "both": "{hours} Std. {minutes} Min."
+      },
+      "price": "{amount} für {duration} zu {rate} pro Stunde",
+      "payment": {
+        "paid": "An {name} bezahlt über {wallet}",
+        "sending": "Freigegeben. Unterwegs zu {name} über {wallet}",
+        "waiting": "Wartet auf die Freigabe der Familie",
+        "review": "Freigaben öffnen",
+        "declined": "Die Familie hat diese Zahlung nicht freigegeben.",
+        "failed": "Die Zahlung ist nicht durchgegangen. Die Kreisleitung wird informiert.",
+        "byPermission": "Sofort freigegeben durch die dauerhafte Erlaubnis von {parent}.",
+        "byFamily": "Von der Familie freigegeben.",
+        "simulatedTag": "Simuliert",
+        "wallets": {
+          "paypal": "PayPal",
+          "venmo": "Venmo"
+        }
+      },
+      "actions": {
+        "cancel": "Absagen",
+        "cancelAsk": "Diesen Einsatz absagen?",
+        "cancelYes": "Ja, absagen",
+        "cancelKeep": "Behalten",
+        "working": "Wird bearbeitet …",
+        "cancelled": "Abgesagt."
+      },
+      "outcome": {
+        "checkedIn": "Sie sind eingestempelt. Tippen Sie auf Ausstempeln, wenn Sie gehen.",
+        "checkedOutWaiting": "Ausgestempelt. Kin wartet jetzt auf das Wort von {parent}.",
+        "confirmedWaiting": "Danke. Kin wartet jetzt darauf, dass {name} sich ausstempelt.",
+        "paid": "{amount} sind durch die dauerhafte Erlaubnis von {parent} freigegeben und unterwegs zu {name} über {wallet}.",
+        "paidToYou": "{amount} sind durch die dauerhafte Erlaubnis von {parent} freigegeben und unterwegs zu Ihnen über {wallet}.",
+        "asks": "{amount} gehen zur Freigabe an die Familie, weil sie außerhalb der dauerhaften Erlaubnis liegen.",
+        "held": "Beide Schlüssel sind gedreht, aber die Zahlung ist angehalten. {reason}",
+        "approvals": "Freigaben öffnen"
+      },
+      "askReasons": {
+        "none": "Keine dauerhafte Erlaubnis gilt für diese Pflegekraft.",
+        "not_active": "Die dauerhafte Erlaubnis ist beendet.",
+        "paused": "Die dauerhafte Erlaubnis ist pausiert.",
+        "not_started": "Die dauerhafte Erlaubnis hat noch nicht begonnen.",
+        "expired": "Die dauerhafte Erlaubnis ist abgelaufen.",
+        "circle_paused": "Der Kreis ist pausiert.",
+        "other_caregiver": "Die dauerhafte Erlaubnis gilt für eine andere Pflegekraft.",
+        "above_per_shift": "Der Einsatz liegt über dem Höchstbetrag, den die Erlaubnis für einen Einsatz zulässt.",
+        "over_daily_hours": "Der Einsatz hat mehr Stunden, als die Erlaubnis pro Tag zulässt."
+      },
+      "received": {
+        "title": "{amount} an Ihr {wallet}-Konto gesendet",
+        "text": "Einsatz: {shift}, {day}.",
+        "simulated": "Simuliert: Es ist kein echtes Geld geflossen."
+      },
+      "schedule": {
+        "title": "Einen Einsatz in den Kalender eintragen",
+        "text": "Die Zeiten gelten nach der Uhr des Kreises, {timezone}.",
+        "kind": "Art",
+        "person": "Wer",
+        "label": "Name (optional)",
+        "date": "Tag",
+        "start": "Beginn",
+        "end": "Ende",
+        "submit": "In den Kalender eintragen",
+        "submitting": "Wird eingetragen…",
+        "done": "In den Kalender eingetragen.",
+        "nobody": "Diese Art von Einsatz kann noch niemand übernehmen."
+      },
+      "target": {
+        "title": "Wohin Ihr Lohn geht",
+        "text": "Wählen Sie das Konto, auf das Ihr Lohn für Einsätze gesendet wird. Venmo funktioniert nur in den USA und nur in US-Dollar.",
+        "wallet": "Konto",
+        "address": "Adresse",
+        "hintPaypal": "Die E-Mail-Adresse Ihres PayPal-Kontos.",
+        "hintVenmo": "Ihre Venmo-E-Mail, eine US-Telefonnummer oder Ihr @Benutzername.",
+        "current": "Ihr Lohn geht an {wallet}, {address}.",
+        "none": "Sie haben noch nicht angegeben, wohin Ihr Lohn geht. Eine Zahlung wartet, bis Sie es tun.",
+        "save": "Speichern",
+        "saving": "Wird gespeichert…",
+        "saved": "Gespeichert.",
+        "venmoRefused": "Die Testumgebung von PayPal lehnt Zahlungen an Venmo ab, eine Venmo-Auszahlung würde hier also scheitern. Wählen Sie PayPal, um eine Auszahlung zu testen.",
+        "venmoSimulated": "Das ist die Demo, eine Zahlung an Venmo wird also simuliert und nichts wird gesendet."
+      },
+      "errors": {
+        "refused": "Das dürfen Sie nicht.",
+        "invalid": "Das konnte nicht gelesen werden.",
+        "key_reused": "Das wurde schon anders erfasst.",
+        "bad_member": "Diese Person kann diese Art von Einsatz nicht übernehmen.",
+        "wrong_state": "Dieser Einsatz ist schon weiter. Das ist nicht mehr möglich.",
+        "visit_too_short": "Ein Besuch unter einer Minute ist kein Besuch.",
+        "visit_too_long": "Ein Besuch kann nicht länger als 24 Stunden dauern.",
+        "own_shift": "Niemand gibt das Wort der Familie für den eigenen Einsatz.",
+        "parent_can_answer": "Die Mutter oder der Vater kann das Wort der Familie geben.",
+        "not_started": "Der Besuch hat noch nicht begonnen.",
+        "not_paid_kind": "Nur ein Pflegebesuch wird bezahlt.",
+        "keys_missing": "Zuerst müssen beide Schlüssel gedreht sein.",
+        "missing_rate": "Diese Pflegekraft hat noch keinen Stundensatz.",
+        "above_ceiling": "Das liegt über der Obergrenze der Vereinbarung.",
+        "paused": "Der Kreis ist pausiert, deshalb wird jetzt nichts bezahlt.",
+        "no_agreement": "Die Familie hat noch keine gültige Vereinbarung.",
+        "payment_in_progress": "Eine Zahlung an diese Pflegekraft ist unterwegs. Das kann sich jetzt nicht ändern.",
+        "parent_only": "Nur das Elternteil kann eine dauerhafte Erlaubnis erteilen.",
+        "no_parent": "Der Kreis hat kein Elternteil, das sie erteilen könnte.",
+        "not_covered": "Keine dauerhafte Erlaubnis deckt diesen Einsatz.",
+        "invalid_target": "Diese Adresse passt nicht zu diesem Konto.",
+        "not_money": "Beträge müssen über null liegen.",
+        "bad_minutes": "Wählen Sie zwischen 1 und 24 Stunden pro Tag.",
+        "bad_dates": "Das Ende muss nach dem Beginn liegen.",
+        "too_long": "Eine Erlaubnis gilt höchstens ein Jahr.",
+        "amount": "Beträge bestehen nur aus Ziffern, zum Beispiel 150,00.",
+        "bad_times": "Das Ende muss nach dem Beginn liegen, am selben Tag.",
+        "bad_date": "Wählen Sie einen Tag in den letzten zwei Wochen oder im nächsten Jahr.",
+        "bad_payee": "Wählen Sie eine Pflegekraft mit Stundensatz.",
+        "unavailable": "Kin konnte das gerade nicht tun. Versuchen Sie es gleich noch einmal.",
+        "too_many_links": "Dieser Einsatz hat schon fünf aktive Links. Warten Sie, bis einer abläuft, oder nutzen Sie einen davon.",
+        "consent_needed": "Der Anruf braucht zuerst die Zustimmung des Elternteils.",
+        "no_such_call": "Diesen Anruf gibt es nicht.",
+        "call_over": "Dieser Anruf ist schon beendet.",
+        "bad_phone": "Das sieht nicht wie eine Telefonnummer aus. Geben Sie die Ländervorwahl an, zum Beispiel +4915112345678.",
+        "texting_off": "SMS-Versand ist nicht eingeschaltet.",
+        "text_limit": "Sie haben in letzter Zeit mehrere SMS gesendet. Versuchen Sie es später noch einmal, oder kopieren Sie den Link."
+      }
+    },
+    "shiftCover": {
+      "title": "Vertretung gesucht",
+      "lede": "{name} hat einen Einsatz abgesagt, der noch nicht stattgefunden hat: {when}. Diese Personen haben dann Zeit, die passendste zuerst.",
+      "decides": "Nichts wird gebucht, bevor Sie jemanden auswählen.",
+      "candidates": "Personen, die einspringen könnten",
+      "visit": "Würde als Pflegebesuch zählen",
+      "aide": "Wäre ein bezahlter Einsatz, wie jeder Einsatz einer Pflegekraft",
+      "hoursDay": "{hours} schon an diesem Tag",
+      "hoursWeek": "{hours} schon diese Woche",
+      "ask": "{name} um Vertretung bitten",
+      "asking": "Wird bearbeitet …",
+      "done": "{name} steht jetzt für diesen Einsatz im Kalender.",
+      "nobody": "Niemand im Kreis hat dann Zeit. Tragen Sie mit dem Formular unten jemanden in den Kalender ein."
+    },
+    "shiftAssistant": {
+      "experimental": "Experimentell",
+      "title": "Kalender-Assistent",
+      "note": "Fragen Sie nach dem, was der Kalender schon zeigt. Er antwortet und hebt hervor, mehr nicht: Er bucht, verschiebt oder bezahlt nie etwas.",
+      "examples": "Zum Beispiel: Wer ist am Donnerstagnachmittag da? Hat morgen früh jemand Zeit?",
+      "unavailable": "Der Assistent ist gerade nicht verfügbar. Der Kalender selbst funktioniert wie immer.",
+      "cannot": "Das konnte ich aus dem Kalender nicht beantworten. Stellen Sie eine kleinere Frage oder schauen Sie direkt in den Kalender.",
+      "limit": "Der Assistent wurde in der letzten Stunde sehr oft genutzt. Bitte versuchen Sie es etwas später noch einmal."
+    },
+    "shiftPermissions": {
+      "title": "Dauerhafte Erlaubnis für Einsätze",
+      "lede": "Was {parent} Kin zu bezahlen erlaubt hat, ohne jedes Mal zu fragen. Ein bestätigter Einsatz innerhalb der Erlaubnis wird sofort freigegeben, und das Protokoll nennt die Erlaubnis als Freigebende. Alles außerhalb wartet auf ein Ja.",
+      "back": "Zurück zu den Einsätzen",
+      "simulated": "Simuliert: Das ist die Demo, die Erlaubnis ersetzt eine gesprochene, und es fließt kein echtes Geld.",
+      "empty": "Noch keine dauerhafte Erlaubnis für Einsätze. Jeder bestätigte Einsatz wartet auf ein Ja.",
+      "readBack": "Kin darf {name} für bestätigte Einsätze bezahlen, bis zu {hours} pro Tag und bis zu {perShift} für einen Einsatz, von {from} bis {until}.",
+      "statuses": {
+        "active": "Gültig",
+        "paused": "Pausiert",
+        "revoked": "Beendet"
+      },
+      "used": "Heute {used} von {cap} genutzt",
+      "spoke": "{parent} sagte: „{text}“",
+      "recordedBy": "Erfasst von {name}",
+      "sealed": "Versiegelt: {digest}",
+      "simulatedTag": "Simuliert",
+      "usesTitle": "Dadurch bezahlt",
+      "noUses": "Unter dieser Erlaubnis wurde noch kein Einsatz bezahlt.",
+      "useLine": "{amount} für {duration}, {day}",
+      "actions": {
+        "pause": "Pausieren",
+        "resume": "Fortsetzen",
+        "revoke": "Beenden",
+        "working": "Wird bearbeitet …",
+        "paused": "Pausiert. Bestätigte Einsätze fragen wieder nach einem Ja.",
+        "resumed": "Wieder gültig.",
+        "revoked": "Beendet. Sie kann nicht mehr genutzt werden."
+      },
+      "form": {
+        "title": "Eine dauerhafte Erlaubnis erfassen",
+        "text": "Lesen Sie sie {parent} vor und bestätigen Sie dann. Kin zahlt nur, was dazu passt, und fragt bei allem anderen zuerst.",
+        "demoNote": "In dieser Demo spielen Sie das gesprochene Ja von {parent}. Das Protokoll vermerkt simuliert.",
+        "payee": "Pflegekraft",
+        "maxHours": "Höchstens so viele Stunden pro Tag",
+        "perShift": "Höchstbetrag pro Einsatz",
+        "amountHint": "Betrag in {currency}, zum Beispiel 150,00.",
+        "validFrom": "Beginn",
+        "expiresOn": "Ende",
+        "spoken": "Was gesagt wurde (optional)",
+        "review": "Vorlesen lassen",
+        "reviewing": "Wird geprüft…",
+        "readBackTitle": "Kin liest Folgendes vor",
+        "edit": "Ändern",
+        "grant": "Bestätigen: {parent} hat Ja gesagt",
+        "granting": "Wird erfasst…",
+        "granted": "Erfasst. Der nächste bestätigte Einsatz innerhalb davon wird ohne Nachfrage bezahlt.",
+        "noCaregiver": "Noch keine Pflegekraft hat einen Stundensatz."
+      },
+      "aboveUsual": {
+        "notice": "{parent} sagt im Voraus Ja zu Einsätzen über {limit}, die {parent} sonst selbst entscheidet: bis zu {perShift} pro Einsatz und {hours} pro Tag, bis zum {until}.",
+        "grant": "Bestätigen: {parent} hat im Voraus Ja gesagt",
+        "tag": "Über der üblichen Grenze von {parent} um bis zu {over}"
+      },
+      "rules": {
+        "title": "Lohnregeln",
+        "text": "Wie die Einsätze jeder Pflegekraft berechnet werden. Kin rechnet den Preis aus den beiden Stempelungen und diesen Regeln aus, nie von Hand.",
+        "rate": "{name}, {rate} pro Stunde",
+        "minimum": "Mindestens bezahlte Minuten pro Besuch",
+        "overtimeAfter": "Überstunden nach so vielen Stunden (leer lassen für keine)",
+        "overtimePercent": "Überstunden werden mit diesem Prozentsatz des Stundensatzes bezahlt",
+        "save": "Regeln speichern",
+        "saving": "Wird gespeichert…",
+        "saved": "Gespeichert."
+      }
+    },
     "officeLine": {
       "title": "Die Bürolinie",
       "lede": "Geben Sie einen drängenden Anrufer an Kin weiter. Kin sagt, dass es ein automatischer Assistent ist, fragt, wer anruft und wofür, prüft die Antworten anhand der echten Aufzeichnungen und informiert die Familie, bevor das Gespräch endet. Probieren Sie hier einen Anruf ohne Telefon aus.",
@@ -2689,6 +2985,94 @@
         "payout_above_usual": "Eine Zahlung von {amount} am {day} liegt deutlich über dem, was dieser Empfänger üblicherweise erhält.",
         "simulated_and_real": "Die Aufzeichnung mischt simulierte Einträge mit echten Sandbox-Transaktionen."
       }
+    },
+    "shiftLinks": {
+      "open": "Einstempel-Link",
+      "close": "Schließen",
+      "title": "Einstempel-Link für {name}",
+      "text": "{name} tippt auf diesen Link bei der Ankunft und noch einmal beim Gehen. Eine Anmeldung ist nicht nötig, geben Sie ihn also nur an diese Person weiter.",
+      "make": "Link erstellen",
+      "making": "Wird erstellt…",
+      "linkLabel": "Der Link",
+      "copy": "Link kopieren",
+      "copied": "Kopiert.",
+      "copyFailed": "Markieren Sie den Link und kopieren Sie ihn.",
+      "qrLabel": "QR-Code für den Einstempel-Link",
+      "qrText": "Zeigen Sie diesen Code. {name} kann ihn mit der Handykamera scannen.",
+      "expires": "Gültig bis {time}.",
+      "once": "Der Link wird nur einmal angezeigt. Wenn Sie ihn verlieren, erstellen Sie einen neuen.",
+      "textTitle": "Per SMS senden",
+      "phone": "Telefonnummer",
+      "phoneHint": "Mit Ländervorwahl, zum Beispiel +4915112345678. Kin sendet die SMS und speichert die Nummer nicht.",
+      "send": "SMS senden",
+      "sending": "Wird gesendet…",
+      "sent": "SMS gesendet.",
+      "textFailed": "Die SMS konnte nicht gesendet werden. Kopieren Sie stattdessen den Link oder zeigen Sie den QR-Code.",
+      "textingOff": "SMS-Versand ist nicht eingeschaltet. Kopieren Sie den Link oder zeigen Sie den QR-Code."
+    },
+    "shiftCalls": {
+      "states": {
+        "queued": "Kin ruft gleich {parent} an.",
+        "calling": "Kin ruft {parent} an.",
+        "answered": "Kin spricht mit {parent}.",
+        "confirmed": "Kin hat {parent} angerufen, und der Besuch wurde telefonisch bestätigt.",
+        "declined": "Kin hat {parent} angerufen, und {parent} sagte, der Besuch habe nicht stattgefunden. Es wird nichts bezahlt, und die Familie kann der Sache nachgehen.",
+        "no_answer": "Kin hat {parent} angerufen, aber niemand hat abgenommen. Kin versucht es eventuell noch einmal.",
+        "failed": "Kin hat {parent} nicht erreicht. Kin versucht es eventuell noch einmal."
+      },
+      "credit": "Als Pflegezeit angerechnet: {duration}, das sind {amount} zugunsten Ihres Anteils.",
+      "creditFor": "Als Pflegezeit angerechnet: {duration}, das sind {amount} zugunsten des Anteils von {name}.",
+      "creditLink": "Zur Fairness-Seite",
+      "simulator": {
+        "open": "Kins Anruf anhören",
+        "title": "Kins Anruf bei {parent}",
+        "badge": "Simulierter Anruf",
+        "note": "Das ist die Demo, es klingelt also kein Telefon. Kin spielt ab, was es bei einem echten Anruf sagen würde. Die Taste, die Sie drücken, hält die Antwort fest, genau wie bei einem echten Anruf.",
+        "play": "Anruf abspielen",
+        "playing": "Wird abgespielt…",
+        "again": "Noch einmal abspielen",
+        "said": "Was Kin sagt",
+        "keypad": "Tastenfeld",
+        "yes": "Drücken Sie 1: ja",
+        "no": "Drücken Sie 2: nein",
+        "recording": "Antwort wird festgehalten…",
+        "listenFailed": "Kin konnte gerade nicht sprechen. Sie können den Anruf stattdessen hier lesen.",
+        "close": "Schließen"
+      },
+      "settings": {
+        "title": "Kins Anruf nach einem Einsatz",
+        "text": "Nachdem eine Pflegekraft einen Besuch beendet hat, kann Kin {parent} anrufen und fragen, ob er stattgefunden hat. Ein Ja gilt als Wort der Familie.",
+        "demoNote": "Das ist die Demo, Sie spielen also die Rolle von {parent}, und es klingelt kein Telefon.",
+        "phone": "Telefonnummer",
+        "phoneHint": "Mit Ländervorwahl, zum Beispiel +4915112345678. Kin zeigt sie nicht noch einmal an.",
+        "consent": "Ich bin einverstanden, dass Kin, ein automatischer Assistent, diese Nummer nach dem Besuch meiner Pflegekraft anrufen darf, um zu fragen, ob der Besuch stattgefunden hat. Ich kann das jederzeit ausschalten.",
+        "quiet": "Kin ruft nie von {start} bis {end} an (nach der Uhr des Kreises) und höchstens zweimal pro Besuch.",
+        "on": "Der Anruf ist eingeschaltet. Eine Nummer ist gespeichert.",
+        "off": "Der Anruf ist ausgeschaltet.",
+        "notSet": "Der Anruf ist noch nicht eingerichtet.",
+        "consented": "{name} hat am {date} zugestimmt.",
+        "enable": "Anruf einschalten",
+        "enabling": "Wird gespeichert…",
+        "disable": "Anruf ausschalten",
+        "disabling": "Wird ausgeschaltet…",
+        "saved": "Der Anruf ist eingeschaltet.",
+        "stopped": "Der Anruf ist ausgeschaltet.",
+        "onlyParent": "Nur {parent} kann den Anruf einschalten. Sie können ihn jederzeit ausschalten."
+      }
+    },
+    "shiftDoor": {
+      "title": "Türschild",
+      "meta": "Türschild",
+      "lede": "Drucken Sie diese Karte aus und hängen Sie sie an die Tür, oder schreiben Sie die Adresse auf einen NFC-Tag. Eine Pflegekraft scannt sie, meldet sich mit dem eigenen Handy an und sieht die eigenen Einsätze.",
+      "back": "Zurück zu den Einsätzen",
+      "link": "Türschild drucken",
+      "print": "Drucken",
+      "cardTitle": "Scannen Sie, um Ihre Einsätze zu öffnen",
+      "scan": "Scannen Sie mit der Handykamera, oder halten Sie Ihr Handy an den NFC-Tag.",
+      "qrLabel": "QR-Code, der Ihre Einsätze öffnet",
+      "addressLabel": "Oder diese Adresse öffnen",
+      "nfc": "Für einen NFC-Tag schreiben Sie die Adresse oben als Weblink-Eintrag (URL).",
+      "noSecret": "Auf dem Schild steht nichts Geheimes. Jede Person meldet sich weiterhin an, um ihre Einsätze zu sehen."
     }
   },
   "aiProvenance": {
@@ -2771,5 +3155,37 @@
     "copyFailed": "Kopieren nicht möglich. Markieren Sie die ID, um sie zu kopieren.",
     "receiverSandbox": "In dieser Demo zahlt Kin {name} über die PayPal-Sandbox auf Kins eigenes Sandbox-Testkonto, nie an eine hier eingegebene Adresse. Es ist Testgeld.",
     "receiverSimulated": "In dieser Demo ist die Zahlung an {name} simuliert: Es wird keine PayPal-Adresse gebraucht, und es fließt kein Geld."
+  },
+  "checkLink": {
+    "meta": {
+      "title": "Ein- oder ausstempeln · Kin",
+      "description": "Bei einem Pflegebesuch ein- oder ausstempeln."
+    },
+    "brand": "Kin, die Pflege-App Ihrer Familie",
+    "title": "Ihr Einsatz",
+    "lede": "Tippen Sie bei der Ankunft auf Einstempeln und beim Gehen auf Ausstempeln. Kin sagt der Familie Bescheid.",
+    "checkIn": "Einstempeln",
+    "checkInHint": "Tippen Sie, wenn Sie ankommen.",
+    "checkOut": "Ausstempeln",
+    "checkOutHint": "Tippen Sie, wenn Sie gehen.",
+    "working": "Einen Moment…",
+    "planned": "Geplanter Einsatz: {start} bis {end}.",
+    "hello": "Hallo {name}.",
+    "done": "Dieser Einsatz ist abgeschlossen. Danke, {name}.",
+    "privacy": "Dieser Link gilt für einen Einsatz. Bitte geben Sie ihn nicht weiter.",
+    "results": {
+      "checkedIn": "Um {time} eingestempelt. Danke, {name}.",
+      "alreadyIn": "Sie waren schon um {time} eingestempelt.",
+      "checkedOut": "Um {time} ausgestempelt. Danke, {name}. Die Familie wird informiert.",
+      "alreadyOut": "Sie waren schon um {time} ausgestempelt."
+    },
+    "problems": {
+      "link": "Dieser Link ist ungültig oder abgelaufen. Bitten Sie die Familie um einen neuen.",
+      "early": "Es ist noch zu früh. Sie können sich einstempeln, sobald der Einsatz beginnt.",
+      "state": "Das passt nicht zum aktuellen Stand dieses Einsatzes. Wenn Sie sich noch nicht eingestempelt haben, tun Sie das zuerst.",
+      "short": "Der Einsatz hat gerade erst begonnen. Warten Sie einen Moment und stempeln Sie sich dann aus.",
+      "busy": "Zu viele Versuche. Warten Sie eine Minute und tippen Sie dann erneut.",
+      "unavailable": "Kin konnte das gerade nicht tun. Versuchen Sie es gleich noch einmal."
+    }
   }
 }

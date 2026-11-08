@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { clearDemoCaregiverRates } from "./support/clear-caregiver-rates";
 import { startDemo, seatAs } from "./support/demo";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
 import { viewports } from "./support/viewports";
@@ -194,16 +195,31 @@ test("keeps the service year visible, supports keyboard confirmation and reflows
   await expectNoHorizontalOverflow(page);
 });
 
-test("shows a missing rate and gives an observer no billing controls", async ({ page }) => {
+test("shows Amara her bill form now that the demo records her rate, and gives an observer no billing controls", async ({ page }) => {
   await startDemo(page);
   await seatAs(page, "Amara");
   await page.goto("/dashboard/bills");
-  await expect(page.getByText("Ask the organizer to record your hourly rate before you bill.")).toBeVisible();
+  // The demo circle records Amara's agreed rate for her shifts, so the bill form is there from the start.
+  await expect(page.getByRole("region", { name: "Bill for your visits" })).toBeVisible();
   await seatAs(page, "Daniel");
   await page.goto("/dashboard/circle");
   await expect(page.getByRole("button", { name: "Save rate" })).toHaveCount(0);
   await page.goto("/dashboard/bills");
   await expect(page.getByRole("button", { name: "Review bill" })).toHaveCount(0);
+});
+
+test("tells a caregiver whose hourly rate is missing to ask the organizer, and offers no bill form", async ({ page }) => {
+  await startDemo(page);
+  // The demo seed records Amara's rate, so it is taken away for this visitor's circle only.
+  expect(await clearDemoCaregiverRates(page)).toBeGreaterThan(0);
+  await seatAs(page, "Amara");
+  await page.goto("/dashboard/bills");
+  // The notice takes the form's place inside the same section: nothing to fill in, nothing to submit.
+  const section = page.getByRole("region", { name: "Bill for your visits" });
+  await expect(section.getByText("Ask the organizer to record your hourly rate before you bill.")).toBeVisible();
+  await expect(section.getByLabel("Service date")).toHaveCount(0);
+  await expect(section.getByRole("button", { name: "Review bill" })).toHaveCount(0);
+  await expectNoHorizontalOverflow(page);
 });
 
 test("refuses unauthenticated and foreign-origin billing requests", async ({ request, baseURL }) => {

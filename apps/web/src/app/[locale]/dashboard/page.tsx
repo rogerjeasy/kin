@@ -14,6 +14,9 @@ import { SafetyPanel } from "@/components/dashboard/overview/safety-panel";
 import { SpendingPanel } from "@/components/dashboard/overview/spending-panel";
 import { TopUpAction } from "@/components/dashboard/top-up/top-up-action";
 import { StatRow } from "@/components/dashboard/overview/stat-row";
+import { LiveRefresh } from "@/components/dashboard/shifts/live-refresh";
+import { NeedsCards } from "@/components/dashboard/shifts/needs-cards";
+import { wordNeedItems } from "@/components/dashboard/shifts/worded-needs";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { activityItems } from "@/components/dashboard/words/activity-items";
@@ -30,6 +33,8 @@ import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
 import { waitingProposals } from "@/content/circle/proposal-view";
 import { monthTotals, recordEntries, spendingByCategory } from "@/content/circle/record";
+import { needItems } from "@/content/circle/shift-needs";
+import { anythingMoving, needsOf } from "@/content/circle/shift-views";
 import { latestClaimCheck, parentHeard } from "@/content/circle/safety";
 import { upcomingBills } from "@/content/circle/upcoming";
 import { circleSlots } from "@/content/circle/words";
@@ -87,6 +92,17 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
             </Button>
           </>
         }
+      />
+      <LiveRefresh active={anythingMoving(circle)} />
+      <NeedsCards
+        items={await wordNeedItems(needItems(circle, needsOf(circle), dictionary.dashboard.shifts, format, names), needsOf(circle), { circle, locale, dictionary, viewer, names, format })}
+        copy={dictionary.dashboard.shifts}
+        calls={dictionary.dashboard.shiftCalls}
+        locale={locale}
+        currency={circle.circle.currency}
+        timezone={circle.circle.timezone}
+        parent={slots.parent}
+        approvalsHref={path(dashboardRoutes.approvals)}
       />
       <StatRow
         label={fill(overview.stats.label, slots)}

@@ -25,8 +25,8 @@ async function circleRequest(request: Request): Promise<CircleRequest | Response
 }
 
 /** A refusal is 403, any other problem 400; success revalidates the circle's screens. */
-function answer(result: CircleResult): Response {
-  if (result.ok) revalidatePath("/[locale]/dashboard", "layout");
+function answer(result: CircleResult, revalidate = true): Response {
+  if (result.ok && revalidate) revalidatePath("/[locale]/dashboard", "layout");
   return json(result, result.ok ? 200 : result.reason === "refused" ? 403 : 400);
 }
 
@@ -52,14 +52,14 @@ async function readJson(request: Request, maxBytes: number): Promise<unknown> {
  * from a verified viewer, with a capped body. Whatever `run` decides is
  * returned as is; a fault is 503 with nothing about it but its name in the log.
  */
-export async function circleJsonRoute<R extends CircleResult>(request: Request, options: { readonly maxBytes: number; readonly label: string }, run: (context: CircleRequest, input: unknown) => Promise<R>): Promise<Response> {
+export async function circleJsonRoute<R extends CircleResult>(request: Request, options: { readonly maxBytes: number; readonly label: string; /** Whether a success makes the circle's screens read again. A route that changes nothing says no. */ readonly revalidate?: boolean }, run: (context: CircleRequest, input: unknown) => Promise<R>): Promise<Response> {
   const context = await circleRequest(request);
   if (context instanceof Response) return context;
   const input = await readJson(request, options.maxBytes);
   if (input instanceof Response) return input;
   if (input === NOT_JSON) return json({ ok: false, reason: "invalid" }, 400);
   try {
-    return answer(await run(context, input));
+    return answer(await run(context, input), options.revalidate);
   } catch (error) {
     return unavailable(options.label, error);
   }

@@ -40,6 +40,9 @@ export function formatters(locale: Locale, currency: string, timeZone = "UTC") {
   const longCalendarDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
   const month = new Intl.DateTimeFormat(intlLocale, { month: "long", year: "numeric", timeZone: "UTC" });
   const dayAndTime = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone });
+  const clock = new Intl.DateTimeFormat(intlLocale, { hour: "numeric", minute: "2-digit", timeZone });
+  const weekdayDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", timeZone });
+  const dayRange = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
   const relative = new Intl.RelativeTimeFormat(intlLocale, { numeric: "auto" });
   const list = new Intl.ListFormat(intlLocale, { style: "long", type: "disjunction" });
   const allOf = new Intl.ListFormat(intlLocale, { style: "long", type: "conjunction" });
@@ -56,6 +59,12 @@ export function formatters(locale: Locale, currency: string, timeZone = "UTC") {
     longDay: (date: Date) => longDay.format(date),
     /** The same, for a day already written as YYYY-MM-DD. */
     longCalendarDay: (isoDay: string) => longCalendarDay.format(calendarDay(isoDay)),
+    /** "9:00 AM": the time of day an instant has on the circle's clock. */
+    time: (date: Date) => clock.format(date),
+    /** "Friday, 30 October": the day an instant falls on in the circle's time zone, without the year. */
+    weekdayDay: (date: Date) => weekdayDay.format(date),
+    /** "Oct 26 – Nov 1, 2026", from two calendar days already written as YYYY-MM-DD. */
+    dayRange: (firstDay: string, lastDay: string) => dayRange.formatRange(calendarDay(firstDay), calendarDay(lastDay)),
     month: (period: string) => month.format(calendarDay(`${period}-01`)),
     dateTime: (date: Date) => dayAndTime.format(date),
     /** "in 47 hours", from now until `then`. */

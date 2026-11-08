@@ -1,5 +1,6 @@
 import { ClockIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { AnsweredList } from "@/components/dashboard/approvals/answered-list";
 import { AnswerButtons } from "@/components/dashboard/approvals/answer-buttons";
@@ -25,7 +26,7 @@ import { refillViews } from "@/content/circle/refills";
 import { monthTotals, recordEntries } from "@/content/circle/record";
 import { voteLine } from "@/content/circle/vote-words";
 import { circleSlots } from "@/content/circle/words";
-import { mandatesRoute } from "@/content/dashboard-routes";
+import { mandatesRoute, shiftPermissionsRoute } from "@/content/dashboard-routes";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
@@ -71,7 +72,17 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
 
   return (
     <>
-      <PageHeader title={approvals.title} lede={approvals.lede} />
+      <PageHeader
+        title={approvals.title}
+        lede={approvals.lede}
+        actions={
+          may(circle, "money.view") ? (
+            <Link href={localizedPath(locale, shiftPermissionsRoute)} className="inline-flex min-h-11 items-center text-sm font-semibold underline-offset-4 hover:underline">
+              {dictionary.dashboard.shifts.permissionLink}
+            </Link>
+          ) : null
+        }
+      />
       <section aria-labelledby="waiting-heading" className="space-y-4">
         <h2 id="waiting-heading" className="flex items-center gap-2.5 text-lg font-semibold">
           {approvals.waitingTitle}

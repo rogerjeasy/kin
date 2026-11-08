@@ -1181,6 +1181,10 @@
         "title": "Panoramica · Kin",
         "description": "La tua cerchia a colpo d’occhio: il fondo, cosa aspetta un sì, l’equità e cosa ha sentito il genitore."
       },
+      "shifts": {
+        "title": "Turni · Kin",
+        "description": "Il calendario delle cure: chi sta con il genitore e quando, e come viene pagato un turno confermato."
+      },
       "approvals": {
         "title": "Decisioni · Kin",
         "description": "Ogni movimento di denaro in attesa di un sì, e chi deve darlo."
@@ -1206,6 +1210,7 @@
       "navLabel": "Cerchia",
       "nav": {
         "overview": "Panoramica",
+        "shifts": "Turni",
         "approvals": "Decisioni",
         "bills": "Bollette",
         "fairness": "Equità",
@@ -1463,6 +1468,10 @@
         "refill": {
           "title": "Rinnovo presso {name}",
           "text": "Kin ha proposto questo rinnovo in base alla regola della famiglia. Si acquista solo dopo il sì richiesto dall’accordo."
+        },
+        "shift": {
+          "title": "Pagamento del turno di {name}",
+          "text": "Un turno di assistenza provato con due chiavi: la registrazione di entrata e di uscita di chi assiste e la parola della famiglia sul fatto che la visita c’è stata."
         }
       },
       "raisedBy": "Proposto da {name}, {date}",
@@ -2512,6 +2521,293 @@
         "tag": "Oltre il limite abituale di {parent}, fino a {over}"
       }
     },
+    "shifts": {
+      "title": "Turni",
+      "lede": "Chi si prende cura di {parent} e quando. Un turno pagato è provato da due chiavi: la registrazione di entrata e di uscita di chi assiste e la parola della famiglia sul fatto che la visita c’è stata.",
+      "simulated": "Simulato: questa è la demo, quindi i pagamenti sono fittizi e non si muove denaro reale.",
+      "permissionLink": "Permesso permanente e regole di paga",
+      "week": {
+        "thisWeek": "Questa settimana, {range}",
+        "otherWeek": "Settimana del {range}",
+        "navLabel": "Scegli una settimana",
+        "previous": "Settimana precedente",
+        "next": "Settimana successiva",
+        "back": "Torna a questa settimana",
+        "calendarLabel": "Calendario delle cure, {range}",
+        "listLabel": "Turni, {range}",
+        "empty": "Questa settimana non c’è nulla in calendario."
+      },
+      "needs": {
+        "title": "Serve il tuo intervento",
+        "checkIn": "Registra l’entrata",
+        "checkOut": "Registra l’uscita",
+        "checkInTitle": "Il tuo turno è iniziato",
+        "checkOutTitle": "Stai andando via? Registra l’uscita",
+        "checkInHint": "Tocca quando arrivi. L’entrata è la prima metà della tua chiave.",
+        "checkOutHint": "Tocca quando te ne vai. Così giri la tua chiave.",
+        "working": "In corso…",
+        "questions": {
+          "morning": "La visita di {name} c’è stata stamattina?",
+          "afternoon": "La visita di {name} c’è stata oggi pomeriggio?",
+          "evening": "La visita di {name} c’è stata stasera?"
+        },
+        "answers": {
+          "morning": "Sì, la visita di {name} c’è stata stamattina",
+          "afternoon": "Sì, la visita di {name} c’è stata oggi pomeriggio",
+          "evening": "Sì, la visita di {name} c’è stata stasera"
+        },
+        "wordHint": "{name} ha registrato l’entrata alle {time}. Il tuo sì è la chiave della famiglia: dillo solo se sai che la visita c’è stata."
+      },
+      "kinds": {
+        "aide": "Visita di assistenza",
+        "visit": "Visita di un familiare",
+        "appointment": "Appuntamento",
+        "drive": "Accompagnamento"
+      },
+      "chips": {
+        "scheduled": "Prevista",
+        "checked_in": "In corso",
+        "checked_out": "Attende la parola",
+        "confirmed": "Confermata",
+        "priced": "Calcolata",
+        "paid": "Pagata",
+        "cancelled": "Annullata",
+        "awaits_approval": "Da approvare",
+        "being_paid": "In pagamento",
+        "declined": "Non approvata",
+        "payment_failed": "Pagamento non riuscito",
+        "credited": "Conteggiata come tempo di cura"
+      },
+      "when": "{day}, dalle {start} alle {end}",
+      "waiting": {
+        "check_in": "In attesa che {name} registri l’entrata",
+        "check_out": "In attesa che {name} registri l’uscita",
+        "family_word": "In attesa della parola di {parent}",
+        "family_word_any": "In attesa della parola della famiglia",
+        "both": "Entrambe le chiavi hanno girato"
+      },
+      "keys": {
+        "caregiver": "Entrata e uscita di {name}",
+        "family": "La parola della famiglia",
+        "done": "Fatto",
+        "todo": "Non ancora",
+        "in": "Entrata {start}",
+        "inOut": "Entrata {start}, uscita {end}",
+        "saidBy": "{name}, {time}"
+      },
+      "duration": {
+        "hours": "{hours} h",
+        "minutes": "{minutes} min",
+        "both": "{hours} h {minutes} min"
+      },
+      "price": "{amount} per {duration} a {rate} all’ora",
+      "payment": {
+        "paid": "Pagato a {name} con {wallet}",
+        "sending": "Approvato. In arrivo a {name} con {wallet}",
+        "waiting": "In attesa dell’approvazione della famiglia",
+        "review": "Apri le approvazioni",
+        "declined": "La famiglia non ha approvato questo pagamento.",
+        "failed": "Il pagamento non è andato a buon fine. L’organizzatore viene avvisato.",
+        "byPermission": "Approvato subito dal permesso permanente di {parent}.",
+        "byFamily": "Approvato dalla famiglia.",
+        "simulatedTag": "Simulato",
+        "wallets": {
+          "paypal": "PayPal",
+          "venmo": "Venmo"
+        }
+      },
+      "actions": {
+        "cancel": "Annulla il turno",
+        "cancelAsk": "Annullare questo turno?",
+        "cancelYes": "Sì, annulla",
+        "cancelKeep": "Tienilo",
+        "working": "In corso…",
+        "cancelled": "Annullato."
+      },
+      "outcome": {
+        "checkedIn": "Hai registrato l’entrata. Tocca «Registra l’uscita» quando te ne vai.",
+        "checkedOutWaiting": "Uscita registrata. Ora Kin attende la parola di {parent}.",
+        "confirmedWaiting": "Grazie. Ora Kin attende che {name} registri l’uscita.",
+        "paid": "{amount} sono approvati dal permesso permanente di {parent} e stanno arrivando a {name} con {wallet}.",
+        "paidToYou": "{amount} sono approvati dal permesso permanente di {parent} e stanno arrivando a te con {wallet}.",
+        "asks": "{amount} vanno alla famiglia per l’approvazione, perché sono fuori dal permesso permanente.",
+        "held": "Le due chiavi hanno girato, ma il pagamento è sospeso. {reason}",
+        "approvals": "Apri le approvazioni"
+      },
+      "askReasons": {
+        "none": "Nessun permesso permanente copre questa persona.",
+        "not_active": "Il permesso permanente è terminato.",
+        "paused": "Il permesso permanente è in pausa.",
+        "not_started": "Il permesso permanente non è ancora iniziato.",
+        "expired": "Il permesso permanente è scaduto.",
+        "circle_paused": "Il cerchio è in pausa.",
+        "other_caregiver": "Il permesso permanente copre un’altra persona.",
+        "above_per_shift": "Il turno supera il massimo che il permesso consente per un turno.",
+        "over_daily_hours": "Il turno ha più ore di quelle che il permesso consente in un giorno."
+      },
+      "received": {
+        "title": "{amount} inviati al tuo {wallet}",
+        "text": "Per {shift}, {day}.",
+        "simulated": "Simulato: nessun denaro reale si è mosso."
+      },
+      "schedule": {
+        "title": "Metti un turno in calendario",
+        "text": "Gli orari seguono l’orologio del cerchio, {timezone}.",
+        "kind": "Di che tipo",
+        "person": "Chi",
+        "label": "Nome (facoltativo)",
+        "date": "Giorno",
+        "start": "Inizio",
+        "end": "Fine",
+        "submit": "Aggiungi al calendario",
+        "submitting": "Aggiunta…",
+        "done": "Aggiunto al calendario.",
+        "nobody": "Per ora nessuno può fare questo tipo di turno."
+      },
+      "target": {
+        "title": "Dove va la tua paga",
+        "text": "Scegli il portafoglio a cui viene inviata la paga dei tuoi turni. Venmo funziona solo negli Stati Uniti e in dollari statunitensi.",
+        "wallet": "Portafoglio",
+        "address": "Indirizzo",
+        "hintPaypal": "L’indirizzo e-mail del tuo conto PayPal.",
+        "hintVenmo": "La tua e-mail Venmo, un numero di telefono statunitense o il tuo @nome.",
+        "current": "La tua paga va su {wallet}, {address}.",
+        "none": "Non hai ancora indicato dove va la tua paga. Un pagamento aspetta finché non lo fai.",
+        "save": "Salva",
+        "saving": "Salvataggio…",
+        "saved": "Salvato.",
+        "venmoRefused": "L’ambiente di prova di PayPal rifiuta i pagamenti verso Venmo, quindi un pagamento su Venmo qui fallirebbe. Scegli PayPal per provare un pagamento.",
+        "venmoSimulated": "Questa è la demo, quindi un pagamento su Venmo è simulato e non viene inviato nulla."
+      },
+      "errors": {
+        "refused": "Non puoi farlo.",
+        "invalid": "Non è stato possibile leggerlo.",
+        "key_reused": "Era già stato registrato in modo diverso.",
+        "bad_member": "Questa persona non può fare questo tipo di turno.",
+        "wrong_state": "Quel turno è andato avanti, quindi non è più possibile.",
+        "visit_too_short": "Una visita di meno di un minuto non è una visita.",
+        "visit_too_long": "Una visita non può durare più di 24 ore.",
+        "own_shift": "Nessuno dà la parola della famiglia per il proprio turno.",
+        "parent_can_answer": "Il genitore può dare la parola della famiglia.",
+        "not_started": "La visita non è ancora iniziata.",
+        "not_paid_kind": "Solo una visita di assistenza viene pagata.",
+        "keys_missing": "Prima devono girare entrambe le chiavi.",
+        "missing_rate": "Questa persona non ha ancora una tariffa oraria.",
+        "above_ceiling": "È sopra il tetto dell’accordo.",
+        "paused": "Il cerchio è in pausa, quindi ora non si paga nulla.",
+        "no_agreement": "La famiglia non ha ancora un accordo in vigore.",
+        "payment_in_progress": "Un pagamento a questa persona è in corso, quindi ora non si può cambiare.",
+        "parent_only": "Solo il genitore può dare un permesso permanente.",
+        "no_parent": "Il cerchio non ha un genitore che possa darlo.",
+        "not_covered": "Nessun permesso permanente copre questo turno.",
+        "invalid_target": "Quell’indirizzo non va bene per questo portafoglio.",
+        "not_money": "Gli importi devono essere superiori a zero.",
+        "bad_minutes": "Scegli tra 1 e 24 ore al giorno.",
+        "bad_dates": "La data di fine deve essere dopo quella di inizio.",
+        "too_long": "Un permesso dura al massimo un anno.",
+        "amount": "Negli importi servono solo cifre, per esempio 150,00.",
+        "bad_times": "La fine deve essere dopo l’inizio, nello stesso giorno.",
+        "bad_date": "Scegli un giorno nelle ultime due settimane o nel prossimo anno.",
+        "bad_payee": "Scegli una persona che ha una tariffa.",
+        "unavailable": "Kin non è riuscito a farlo ora. Riprova tra un momento.",
+        "too_many_links": "Questo turno ha già cinque link attivi. Aspetta che uno scada, oppure usane uno.",
+        "consent_needed": "La chiamata richiede prima il consenso del genitore.",
+        "no_such_call": "Questa chiamata non esiste.",
+        "call_over": "Questa chiamata è già conclusa.",
+        "bad_phone": "Non sembra un numero di telefono. Includi il prefisso internazionale, per esempio +393123456789.",
+        "texting_off": "L’invio di SMS non è attivo.",
+        "text_limit": "Hai inviato diversi SMS di recente. Riprova più tardi, oppure copia il link."
+      }
+    },
+    "shiftCover": {
+      "title": "Serve una sostituzione",
+      "lede": "{name} ha annullato un turno che non c’è ancora stato: {when}. Queste persone sono libere in quel momento, la più adatta per prima.",
+      "decides": "Non viene prenotato nulla finché non scegli qualcuno.",
+      "candidates": "Persone che potrebbero sostituire",
+      "visit": "Conterebbe come visita di assistenza",
+      "aide": "Sarebbe un turno retribuito, come ogni turno di assistenza",
+      "hoursDay": "{hours} già quel giorno",
+      "hoursWeek": "{hours} già questa settimana",
+      "ask": "Chiedi a {name} di sostituire",
+      "asking": "In corso…",
+      "done": "{name} è ora nel calendario per questo turno.",
+      "nobody": "Nessuno nel cerchio è libero in quel momento. Usa il modulo qui sotto per mettere qualcuno in calendario."
+    },
+    "shiftAssistant": {
+      "experimental": "Sperimentale",
+      "title": "Assistente del calendario",
+      "note": "Chiedi qualcosa su ciò che il calendario mostra già. Risponde ed evidenzia, nient’altro: non prenota, non sposta e non paga mai nulla.",
+      "examples": "Per esempio: Chi c’è giovedì pomeriggio? Qualcuno è libero domani mattina?",
+      "unavailable": "L’assistente non è disponibile in questo momento. Il calendario funziona come sempre.",
+      "cannot": "Non sono riuscito a rispondere dal calendario. Prova una domanda più semplice, oppure guarda il calendario stesso.",
+      "limit": "L’assistente è stato usato molto nell’ultima ora. Riprova tra poco."
+    },
+    "shiftPermissions": {
+      "title": "Permesso permanente per i turni",
+      "lede": "Ciò che {parent} ha permesso a Kin di pagare senza chiedere ogni volta. Un turno confermato che rientra in un permesso viene approvato subito, e il registro indica il permesso come approvatore. Tutto ciò che non vi rientra attende ancora un sì dal vivo.",
+      "back": "Torna ai turni",
+      "simulated": "Simulato: questa è la demo, quindi il permesso sostituisce uno parlato e non si muove denaro reale.",
+      "empty": "Ancora nessun permesso permanente per i turni. Ogni turno confermato aspetta un sì.",
+      "readBack": "Paga {name} per i turni confermati, fino a {hours} al giorno e fino a {perShift} per un turno, dal {from} al {until}.",
+      "statuses": {
+        "active": "In vigore",
+        "paused": "In pausa",
+        "revoked": "Terminato"
+      },
+      "used": "{used} di {cap} usate oggi",
+      "spoke": "{parent} ha detto: «{text}»",
+      "recordedBy": "Registrato da {name}",
+      "sealed": "Sigillato: {digest}",
+      "simulatedTag": "Simulato",
+      "usesTitle": "Pagato con questo permesso",
+      "noUses": "Con questo permesso non è stato ancora pagato nessun turno.",
+      "useLine": "{amount} per {duration}, {day}",
+      "actions": {
+        "pause": "Metti in pausa",
+        "resume": "Riprendi",
+        "revoke": "Termina",
+        "working": "In corso…",
+        "paused": "In pausa. I turni confermati chiedono di nuovo un sì.",
+        "resumed": "Di nuovo in vigore.",
+        "revoked": "Terminato. Non si può più usare."
+      },
+      "form": {
+        "title": "Registra un permesso permanente",
+        "text": "Rileggilo a {parent}, poi conferma. Kin paga solo ciò che rientra nel permesso e per il resto chiede prima.",
+        "demoNote": "In questa demo interpreti il sì parlato di {parent}. Il registro indica simulato.",
+        "payee": "Persona che assiste",
+        "maxHours": "Massimo di ore al giorno",
+        "perShift": "Massimo per un turno",
+        "amountHint": "Importo in {currency}, per esempio 150,00.",
+        "validFrom": "Inizio",
+        "expiresOn": "Fine",
+        "spoken": "Che cosa è stato detto (facoltativo)",
+        "review": "Rileggilo",
+        "reviewing": "Controllo…",
+        "readBackTitle": "Kin lo rilegge",
+        "edit": "Modificalo",
+        "grant": "Conferma: {parent} ha detto sì",
+        "granting": "Registrazione…",
+        "granted": "Registrato. Il prossimo turno confermato che rientra nel permesso viene pagato senza chiedere.",
+        "noCaregiver": "Nessuna persona ha ancora una tariffa oraria."
+      },
+      "aboveUsual": {
+        "notice": "{parent} dice sì in anticipo a turni sopra i {limit} che {parent} di solito decide di persona: fino a {perShift} a turno e {hours} al giorno, fino al {until}.",
+        "grant": "Conferma: {parent} ha detto sì in anticipo",
+        "tag": "Sopra il limite abituale di {parent} fino a {over}"
+      },
+      "rules": {
+        "title": "Regole di paga",
+        "text": "Come vengono calcolati i turni di ogni persona. Kin ricava il prezzo dalle due registrazioni e da queste regole, mai a mano.",
+        "rate": "{name}, {rate} all’ora",
+        "minimum": "Minimo pagato per una visita, in minuti",
+        "overtimeAfter": "Straordinario dopo questo numero di ore (vuoto se non c’è)",
+        "overtimePercent": "Lo straordinario è pagato a questa percentuale della tariffa",
+        "save": "Salva le regole",
+        "saving": "Salvataggio…",
+        "saved": "Salvato."
+      }
+    },
     "officeLine": {
       "title": "La linea dell’ufficio",
       "lede": "Passa a Kin un chiamante insistente. Kin dice di essere un assistente automatico, chiede chi chiama e perché, controlla le risposte sul registro reale e avvisa la famiglia prima che la chiamata finisca. Prova qui una chiamata senza telefono.",
@@ -2689,6 +2985,94 @@
         "payout_above_usual": "Un pagamento di {amount} il {day} supera nettamente ciò che questo beneficiario riceve di solito.",
         "simulated_and_real": "Il registro mescola registrazioni simulate e vere transazioni sandbox."
       }
+    },
+    "shiftLinks": {
+      "open": "Link per l’entrata",
+      "close": "Chiudi",
+      "title": "Link per l’entrata di {name}",
+      "text": "{name} tocca questo link quando arriva e di nuovo quando se ne va. Non serve accedere, quindi condividilo solo con questa persona.",
+      "make": "Crea un link",
+      "making": "Creazione…",
+      "linkLabel": "Il link",
+      "copy": "Copia il link",
+      "copied": "Copiato.",
+      "copyFailed": "Seleziona il link e copialo.",
+      "qrLabel": "Codice QR del link per l’entrata",
+      "qrText": "Mostra questo codice. {name} può inquadrarlo con la fotocamera del telefono.",
+      "expires": "Valido fino alle {time}.",
+      "once": "Il link viene mostrato una sola volta. Se lo perdi, creane un altro.",
+      "textTitle": "Invia per SMS",
+      "phone": "Numero di telefono",
+      "phoneHint": "Con il prefisso internazionale, per esempio +393123456789. Kin invia l’SMS e non conserva il numero.",
+      "send": "Invia l’SMS",
+      "sending": "Invio…",
+      "sent": "SMS inviato.",
+      "textFailed": "Non è stato possibile inviare l’SMS. Copia il link o mostra il codice QR.",
+      "textingOff": "L’invio di SMS non è attivo. Copia il link o mostra il codice QR."
+    },
+    "shiftCalls": {
+      "states": {
+        "queued": "Kin sta per chiamare {parent}.",
+        "calling": "Kin sta chiamando {parent}.",
+        "answered": "Kin sta parlando con {parent}.",
+        "confirmed": "Kin ha chiamato {parent} e la visita è stata confermata per telefono.",
+        "declined": "Kin ha chiamato {parent}, che ha detto che la visita non c’è stata. Non viene pagato nulla e la famiglia può verificare.",
+        "no_answer": "Kin ha chiamato {parent} senza risposta. Kin potrebbe riprovare una volta.",
+        "failed": "Kin non è riuscito a raggiungere {parent}. Kin potrebbe riprovare una volta."
+      },
+      "credit": "Conteggiato come tempo di cura: {duration}, pari a {amount} a favore della tua quota.",
+      "creditFor": "Conteggiato come tempo di cura: {duration}, pari a {amount} a favore della quota di {name}.",
+      "creditLink": "Vai alla pagina dell’equità",
+      "simulator": {
+        "open": "Ascolta la chiamata di Kin",
+        "title": "La chiamata di Kin a {parent}",
+        "badge": "Chiamata simulata",
+        "note": "Questa è la demo, quindi nessun telefono squilla. Kin riproduce ciò che direbbe in una chiamata vera, e il tasto che premi registra la risposta come in una chiamata vera.",
+        "play": "Riproduci la chiamata",
+        "playing": "Riproduzione…",
+        "again": "Riproduci di nuovo",
+        "said": "Che cosa dice Kin",
+        "keypad": "Tastierino",
+        "yes": "Premi 1: sì",
+        "no": "Premi 2: no",
+        "recording": "Registrazione della risposta…",
+        "listenFailed": "Kin non è riuscito a parlare ora. Puoi leggere la chiamata qui.",
+        "close": "Chiudi"
+      },
+      "settings": {
+        "title": "La telefonata di Kin dopo una visita",
+        "text": "Dopo la fine di una visita, Kin può telefonare a {parent} per chiedere se c’è stata. Un sì vale come parola della famiglia.",
+        "demoNote": "Questa è la demo, quindi interpreti la parte di {parent} e nessun telefono squilla.",
+        "phone": "Numero di telefono",
+        "phoneHint": "Con il prefisso internazionale, per esempio +393123456789. Kin non lo mostra più.",
+        "consent": "Acconsento che Kin, un assistente automatico, chiami questo numero dopo la visita di chi mi assiste per chiedere se la visita c’è stata. Posso disattivare la chiamata in qualsiasi momento.",
+        "quiet": "Kin non chiama mai dalle {start} alle {end} secondo l’orologio del cerchio e chiama al massimo due volte per visita.",
+        "on": "La chiamata è attiva. Un numero è salvato.",
+        "off": "La chiamata è disattivata.",
+        "notSet": "La chiamata non è ancora configurata.",
+        "consented": "{name} ha dato il consenso il {date}.",
+        "enable": "Attiva la chiamata",
+        "enabling": "Salvataggio…",
+        "disable": "Disattiva la chiamata",
+        "disabling": "Disattivazione…",
+        "saved": "La chiamata è attiva.",
+        "stopped": "La chiamata è disattivata.",
+        "onlyParent": "Solo {parent} può attivare la chiamata. Puoi disattivarla in qualsiasi momento."
+      }
+    },
+    "shiftDoor": {
+      "title": "Cartellino per la porta",
+      "meta": "Cartellino per la porta",
+      "lede": "Stampa questa scheda e mettila vicino alla porta, oppure scrivi l’indirizzo su un tag NFC. Chi presta assistenza la inquadra, accede dal proprio telefono e vede i propri turni.",
+      "back": "Torna ai turni",
+      "link": "Stampa un cartellino per la porta",
+      "print": "Stampa",
+      "cardTitle": "Inquadra per aprire i tuoi turni",
+      "scan": "Inquadra con la fotocamera del telefono, oppure avvicina il telefono al tag.",
+      "qrLabel": "Codice QR che apre i tuoi turni",
+      "addressLabel": "Oppure apri questo indirizzo",
+      "nfc": "Per un tag NFC, scrivi l’indirizzo qui sopra come record di collegamento web (URL).",
+      "noSecret": "Sul cartellino non c’è nulla di segreto. Ognuno accede comunque per vedere i propri turni."
     }
   },
   "aiProvenance": {
@@ -2771,5 +3155,37 @@
     "copyFailed": "Impossibile copiare. Seleziona l’ID per copiarlo.",
     "receiverSandbox": "In questa demo, Kin paga {name} tramite la sandbox PayPal sul conto di prova sandbox di Kin, mai a un indirizzo scritto qui. È denaro di prova.",
     "receiverSimulated": "In questa demo, il pagamento a {name} è simulato: non serve un indirizzo PayPal e non si muove denaro."
+  },
+  "checkLink": {
+    "meta": {
+      "title": "Entrata o uscita · Kin",
+      "description": "Registra l’entrata o l’uscita di una visita di assistenza."
+    },
+    "brand": "Kin, l’app di assistenza della tua famiglia",
+    "title": "La tua visita",
+    "lede": "Tocca il pulsante quando arrivi e di nuovo quando te ne vai. Kin avvisa la famiglia.",
+    "checkIn": "Registra l’entrata",
+    "checkInHint": "Tocca quando arrivi.",
+    "checkOut": "Registra l’uscita",
+    "checkOutHint": "Tocca quando te ne vai.",
+    "working": "Un momento…",
+    "planned": "Visita prevista: dalle {start} alle {end}.",
+    "hello": "Ciao {name}.",
+    "done": "Questa visita è finita. Grazie, {name}.",
+    "privacy": "Questo link vale per una sola visita. Per favore non condividerlo.",
+    "results": {
+      "checkedIn": "Entrata registrata alle {time}. Grazie, {name}.",
+      "alreadyIn": "La tua entrata era già registrata alle {time}.",
+      "checkedOut": "Uscita registrata alle {time}. Grazie, {name}. La famiglia sarà avvisata.",
+      "alreadyOut": "La tua uscita era già registrata alle {time}."
+    },
+    "problems": {
+      "link": "Questo link non è valido oppure è scaduto. Chiedi alla famiglia di mandartene uno nuovo.",
+      "early": "È troppo presto. Potrai registrare l’entrata quando la visita inizia.",
+      "state": "Questo non corrisponde allo stato attuale della visita. Se non hai ancora registrato l’entrata, comincia da lì.",
+      "short": "La visita è appena iniziata. Aspetta un momento, poi registra l’uscita.",
+      "busy": "Troppi tentativi. Aspetta un minuto, poi tocca di nuovo.",
+      "unavailable": "Kin non è riuscito a farlo ora. Riprova tra un momento."
+    }
   }
 }
