@@ -135,6 +135,26 @@ describe("the number guard and numbers written in words", () => {
     expect(words("They want 64 dollars on 7 Nov.", "$64.00", "7 Nov.")).toBe(true);
   });
 
+  it("reads the listener's language, so ordinary words of it are not taken for numbers", () => {
+    const language = (text: string, lang: string, ...figures: string[]) => passesNumberGuard(text, { figures, language: lang });
+    expect(language("This is a bill from Greenway Power for $86.40. It is due on Nov 20. I have added it to the family's list.", "English", "$86.40", "86.40", "Nov 20")).toBe(true);
+    expect(language("The bill of $86.40 is due on Nov 20.", "English", "$86.40", "86.40", "Nov 20")).toBe(true);
+    expect(language("Your pharmacy order is paid. It cost $64.00. This one is simulated.", "English", "$64.00", "64.00", "64", "Nov 7")).toBe(true);
+    expect(language("Elena approved it once the pool had enough, on Nov 7.", "English", "Nov 7")).toBe(true);
+    expect(language("Das ist eine Rechnung über 86,40 $US, fällig am 20. Nov.", "German", "86,40 $US", "20. Nov")).toBe(true);
+    expect(language("Questa è una bolletta di 86,40 $, scade il 20 nov. Sei al sicuro.", "Italian", "86,40 $", "20 nov")).toBe(true);
+    expect(language("Esta es una factura de 86,40 $ con vencimiento el 20 nov.", "Spanish", "86,40 $", "20 nov")).toBe(true);
+    expect(language("Cette facture de 86,40 $ est due le 20 nov. Un membre l\u2019a vue.", "French", "86,40 $", "20 nov")).toBe(true);
+    // 10 and 3 are not in the record.
+    expect(language("Ten days ago a payment of $64.00 was made, then another of $64.00.", "English", "$64.00", "64.00", "64")).toBe(false);
+    expect(language("Three members have said yes. The bill is $86.40.", "English", "$86.40", "86.40")).toBe(false);
+    // Without the language, today's merged reading stays.
+    expect(passesNumberGuard("The bill of $86.40 is due on Nov 20.", { figures: ["$86.40", "Nov 20"] })).toBe(false);
+    // The words of other languages are still caught.
+    expect(language("It is due on sixty-five dollars.", "English", "$64.00")).toBe(false);
+    expect(language("It is due: soixante-cinq dollars.", "English", "$64.00")).toBe(false);
+  });
+
   it("refuses wording with an invisible character, a digit beside cents, or a join between a digit and a number word", () => {
     for (const text of ["They want six\u200bty-four dollars.", "They want 64\u200d thousand dollars.", "They want sixty\u00ad-four dollars.", "They want 64\u2060 thousand.", "They want six\u200fty-four.", "They want 64 cents.", "They want 64 and sixty.", "Ils veulent 64 et soixante.", "Sie wollen 64 und sechzig.", "يريدون 64 وستون.", "הם רוצים 64 ושישים."]) {
       expect(words(text, "$64.00", "$0.64"), text).toBe(false);

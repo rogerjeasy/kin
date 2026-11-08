@@ -25,17 +25,17 @@ const MAX_WORDS_LENGTH = 400;
  * are valued the same way and held to the same rule, and words that cannot be
  * valued are refused.
  */
-export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures">): boolean {
+export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures"> & { readonly language?: string }): boolean {
   if (words.trim() === "" || words.length > MAX_WORDS_LENGTH || hasHiddenCharacters(words) || /https?:|www\.|@/iu.test(words)) return false;
   const figures = facts.figures.flatMap(numbersIn);
   // A figure may itself contain a number in words, such as a payee called "Seven Oaks".
-  const allowed = new Set([...figures.flatMap((figure) => figure.values), ...facts.figures.flatMap(spokenNumbers).flatMap((number) => number.readings)]);
+  const allowed = new Set([...figures.flatMap((figure) => figure.values), ...facts.figures.flatMap((figure) => spokenNumbers(figure, facts.language)).flatMap((number) => number.readings)]);
   // A whole amount may be said without its zero cents: "1.000" for a record that holds "1.000,00".
   const written = new Set(figures.flatMap((figure) => [figure.written, figure.written.replace(/[.,]00$/u, "")]));
   // "64,000" is sixty-four thousand in English and sixty-four in French. A number with two readings passes only if
   // the record wrote it that way itself or every reading is one the record holds, so a guess is never the one accepted.
   const digitsAllowed = numbersIn(words).every((number) => number.values.every((value) => allowed.has(value)) || (number.values.length > 1 && written.has(number.written)));
-  return digitsAllowed && spokenNumbersAreAllowed(words, (value) => allowed.has(value));
+  return digitsAllowed && spokenNumbersAreAllowed(words, (value) => allowed.has(value), facts.language);
 }
 
 const WORDING_SCHEMA = {

@@ -68,7 +68,7 @@ export async function reviewFindings(model: StructuredModel | null, items: reado
     }
     return items.map((item) => {
       const words = wording.get(item.id);
-      return words !== undefined && passesNumberGuard(words, item) ? { ...item, text: words.trim(), source: "model" } : { ...item, text: item.template, source: "template" };
+      return words !== undefined && passesNumberGuard(words, { ...item, language }) ? { ...item, text: words.trim(), source: "model" } : { ...item, text: item.template, source: "template" };
     });
   } catch {
     return fallback();

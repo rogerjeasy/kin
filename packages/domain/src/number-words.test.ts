@@ -229,7 +229,83 @@ describe("a digit beside cent(s), a join or a hidden character cannot split a nu
     expect(hasHiddenCharacters("\u2068$64.00\u2069 \u200f\u200e \u061c")).toBe(false);
     expect(allows("\u2068أربعة وستون\u2069", "64")).toBe(true);
     expect(allows("64\u2069 thousand", "64", "1000")).toBe(false);
-    expect(allows("64\u2069thousand", "64", "1000")).toBe(false);
+    expect(hasHiddenCharacters("64\u2069thousand")).toBe(true);
     expect(hasHiddenCharacters("six\u200fty")).toBe(true);
+  });
+});
+
+describe("the guard knows the language, so ordinary words are not numbers there", () => {
+  const ok = (text: string, language: string | undefined, ...held: string[]) => spokenNumbersAreAllowed(text, (value) => held.includes(value), language);
+
+  it("reads English due and once, French due and once, and German sei as ordinary words", () => {
+    expect(ok("It is due on Nov 20.", "English")).toBe(true);
+    expect(ok("Elena approved it once the pool had enough.", "en")).toBe(true);
+    expect(ok("Cette facture est due le 20 nov.", "French")).toBe(true);
+    expect(ok("Es sei denn, Sie zahlen.", "German")).toBe(true);
+    expect(ok("Sei al sicuro, la bolletta scade il 20 nov.", "Italian")).toBe(true);
+  });
+
+  it("still reads them as numbers when the language is unknown, or in the language that owns them", () => {
+    expect(ok("It is due on Nov 20.", undefined)).toBe(false);
+    expect(ok("due euro", "Italian", "2")).toBe(true);
+    expect(ok("due euro", "Italian")).toBe(false);
+    expect(ok("once euros", "Spanish", "11")).toBe(true);
+    expect(ok("once euros", "Spanish")).toBe(false);
+    expect(ok("sei euro", "Italian")).toBe(false);
+    expect(ok("sei euro", "Italian", "6")).toBe(true);
+  });
+
+  it("keeps catching number words of the other languages and the language's own", () => {
+    expect(ok("It is due on sixty-five.", "English", "64")).toBe(false);
+    expect(ok("Cette facture est soixante-cinq.", "French", "64")).toBe(false);
+    expect(ok("Es kostet fünfundsechzig.", "German", "64")).toBe(false);
+    expect(ok("Sie zahlen sessantacinque.", "German", "64")).toBe(false);
+    expect(ok("Ten days ago", "English")).toBe(false);
+    expect(ok("Three members", "en")).toBe(false);
+  });
+
+  const CORPUS: Record<string, string[]> = {
+    English: ["This bill is due on Nov 20.", "Elena approved it once the pool had enough.", "The one from Greenway Power is paid.", "A member has seen it.", "Your pharmacy order is on its way.", "Rose said yes to the refill.", "Once paid, it moves to the done list.", "It was due last week and is now settled."],
+    French: ["Cette facture est due le 20 nov.", "Un membre l'a vue.", "Une facture de la pharmacie attend.", "Une fois payée, elle passe dans la liste.", "La commande est arrivée à la maison.", "Elena a approuvé la commande.", "Le paiement est dû demain.", "Cela fait une semaine."],
+    German: ["Das ist eine Rechnung, fällig am 20. Nov.", "Ein Mitglied hat sie gesehen.", "Es sei denn, jemand widerspricht.", "Die Bestellung der Apotheke ist unterwegs.", "Elena hat die Zahlung freigegeben.", "Eine neue Rechnung wartet.", "Sie sei bezahlt worden.", "Einmal bezahlt, ist sie erledigt."],
+    Italian: ["Questa bolletta scade il 20 nov.", "Sei al sicuro, non serve pagare.", "Un membro l'ha vista.", "Una fattura della farmacia è in attesa.", "L'ordine è arrivato a casa.", "Elena ha approvato il pagamento.", "Sei in regola con il pagamento.", "Uno dei familiari ha risposto."],
+    Spanish: ["Esta factura vence el 20 nov.", "Un miembro la ha visto.", "Una factura de la farmacia espera.", "El pedido llegó a casa.", "Elena aprobó el pago.", "Ten cuidado con este cobro.", "Una vez pagada, pasa a la lista.", "No pague nada todavía."],
+  };
+  for (const [language, sentences] of Object.entries(CORPUS)) {
+    it(`${language}: ordinary sentences are not refused`, () => {
+      for (const sentence of sentences) expect(ok(sentence, language), sentence).toBe(true);
+    });
+  }
+});
+
+describe("marks and invisible characters touching digits or letters", () => {
+  it("hides a direction mark between digits or against letters, but not around a whole amount", () => {
+    expect(hasHiddenCharacters("6‎4")).toBe(true);
+    expect(hasHiddenCharacters("64‏6")).toBe(true);
+    expect(hasHiddenCharacters("6⁨ 4")).toBe(false);
+    expect(hasHiddenCharacters("⁨$64.00⁩")).toBe(false);
+    expect(hasHiddenCharacters("amount ⁨$64.00⁩.")).toBe(false);
+  });
+
+  it.each(["͏", "ᅟ", "ᅠ", "ㅤ", "ﾠ", "᠎", "​"])("hides a default-ignorable character inside a word (%#)", (mark) => {
+    expect(hasHiddenCharacters(`six${mark}ty`)).toBe(true);
+  });
+
+  it("hides a combining mark with no precomposed Latin letter, which would turn sixty into an unknown word", () => {
+    expect(hasHiddenCharacters("sixty\u0361")).toBe(true);
+    expect(hasHiddenCharacters("très, café, أربعة وستون")).toBe(false);
+  });
+});
+
+describe("a join between a digit and a lone one-word still ties them together", () => {
+  const joined = ["5 und ein", "5 and one", "5 et un", "5 e uno", "5 y una", "5 و واحد", "5 ו אחד", "ein und 5", "one and 5"];
+  it.each(joined)("refuses %s", (text) => {
+    expect(allows(text, "5", "1")).toBe(false);
+    expect(values(text).flat()).toEqual([]);
+    expect(values(text).length).toBeGreaterThan(0);
+  });
+
+  it("leaves a one-word beside a digit with no join as a plain article", () => {
+    for (const text of ["5 un jour", "a 5 un", "5 ein Tag", "5 one"]) expect(values(text), text).toEqual([]);
   });
 });

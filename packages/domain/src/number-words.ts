@@ -275,9 +275,35 @@ function split(word: string, lexicon: Lexicon): Split | null {
   return from(0);
 }
 
+/** The languages whose ordinary words are told apart from number words. */
+const LANGUAGE_CODES: Readonly<Record<string, string>> = {
+  en: "en", english: "en", fr: "fr", french: "fr", de: "de", german: "de", it: "it", italian: "it", es: "es", spanish: "es", ar: "ar", arabic: "ar", he: "he", hebrew: "he",
+};
+
+/** The code of a language given as an ISO code or its English name, or undefined when it is unknown. */
+export function languageCode(language: string | undefined): string | undefined {
+  return language === undefined ? undefined : LANGUAGE_CODES[language.trim().toLowerCase()];
+}
+
+// Words that spell a number in one of the other lexicons but are ordinary words of the language: "due" (English,
+// French) is Italian two, "once" (English, French) is Spanish eleven, "sei" (German) is Italian six. Each language
+// drops only those; its own numbers and every other language's number words are still read, so a model that
+// switches language mid-sentence is caught. Arabic and Hebrew have none: an unsure word stays a number.
+const ORDINARY: Readonly<Record<string, ReadonlySet<string>>> = {
+  en: new Set(["due", "once", "dos", "sei", "elf", "null", "otto", "tre", "mil"]),
+  fr: new Set(["due", "once", "dos", "sei", "elf", "null", "otto", "tre", "mil"]),
+  de: new Set(["sei", "dos", "once", "due", "otto", "tre", "mil"]),
+  it: new Set(["once", "dos", "elf", "null", "mil"]),
+  es: new Set(["ten", "due", "elf", "null"]),
+};
+
+// Italian "sei" is six and "you are": it is the verb before these words.
+const SEI_VERB_NEXT = new Set(["al", "alla", "a", "in", "qui", "un", "una", "uno", "il", "la", "lo", "nel", "nella", "stato", "stata", "sempre", "pronto", "pronta", "sicuro", "sicura", "già", "gia", "tu", "così", "cosi", "ancora", "solo", "sola", "libero", "libera"]);
+
 type Resolved = { readonly atoms: readonly Atom[]; readonly joins: readonly string[] } | { readonly join: string } | { readonly tooLong: true } | null;
 
-function resolve(word: string): Resolved {
+function resolve(word: string, language: string | undefined): Resolved {
+  if (language !== undefined && ORDINARY[language]?.has(word)) return null;
   const direct = DIRECT.get(word);
   if (direct !== undefined) return { atoms: [direct], joins: [""] };
   if (JOINS.has(word)) return { join: word };
@@ -380,8 +406,11 @@ type Token = { readonly word: string } | "digit" | "break";
 // Kin itself writes around an amount in right-to-left text are skipped like a space; every other one is a break.
 const TRANSPARENT = "\\u061C\\u200E\\u200F\\u2068\\u2069";
 const VARIATION = "\\uFE00-\\uFE0F\\u180B-\\u180D\\u{E0100}-\\u{E01EF}";
-// The directional marks stand beside an amount, never between two letters, where they would cut a word in two.
-const HIDDEN_SOURCE = `(?![${TRANSPARENT}])[\\p{Cf}${VARIATION}]|(?<=[\\p{L}\\p{M}])[${TRANSPARENT}](?=[\\p{L}\\p{M}])`;
+// The directional marks stand around a whole amount, never between two letters or digits, where they would cut a
+// word or a number in two. Every other default-ignorable character (joiners, fillers, tags) is hidden, and so is a
+// combining mark on a Latin letter: text is NFC first, so what remains is a mark with no precomposed letter, which
+// would make "sixty" read as an unknown word.
+const HIDDEN_SOURCE = `(?![${TRANSPARENT}])[\\p{Cf}\\p{Default_Ignorable_Code_Point}${VARIATION}]|(?<=[\\p{L}\\p{M}\\p{N}])[${TRANSPARENT}](?=[\\p{L}\\p{M}\\p{N}])|(?<=\\p{Script=Latin})\\p{M}`;
 const HIDDEN = new RegExp(HIDDEN_SOURCE, "u");
 const HIDDEN_ALL = new RegExp(HIDDEN_SOURCE, "gu");
 const TOKEN = new RegExp(`(?:(?![${VARIATION}])[\\p{L}\\p{M}])+|\\p{N}+|[^\\p{L}\\p{M}\\p{N}\\s\\-\\u2010\\u2011\\u2012\\u2013\\u2014\\u05BE'\\u2019${TRANSPARENT}]`, "gu");
@@ -392,7 +421,7 @@ const TOKEN = new RegExp(`(?:(?![${VARIATION}])[\\p{L}\\p{M}])+|\\p{N}+|[^\\p{L}
  * directional marks Kin writes around amounts. Wording that has one is refused.
  */
 export function hasHiddenCharacters(text: string): boolean {
-  return HIDDEN.test(text);
+  return HIDDEN.test(text.normalize("NFC"));
 }
 
 function tokens(text: string): Token[] {
@@ -406,7 +435,8 @@ function tokens(text: string): Token[] {
  * "cent" and "cents" are a hundred in French and a coin in English: a run
  * ending in them reads both ways.
  */
-export function spokenNumbers(text: string): SpokenNumber[] {
+export function spokenNumbers(text: string, language?: string): SpokenNumber[] {
+  const code = languageCode(language);
   if (text.length > MAX_TEXT_LENGTH) return [{ words: "", readings: [] }];
   const all = tokens(text);
   if (all.length > MAX_TOKENS) return [{ words: "", readings: [] }];
@@ -477,23 +507,29 @@ export function spokenNumbers(text: string): SpokenNumber[] {
   // the digit guard cannot see. "64 cents" is a coin in English and 64 hundred in French. The whole run is unreadable.
   let sinceDigit = false;
   let afterCent = false;
-  for (const token of all) {
+  // A join between a digit and a number word, even a lone "one", ties them together ("5 and one").
+  let joinedToDigit = false;
+  for (const [at, token] of all.entries()) {
     if (token === "break") {
       flush();
       sinceDigit = false;
       afterCent = false;
+      joinedToDigit = false;
       continue;
     }
     if (token === "digit") {
-      if (!poisoned && (afterCent || (state.atoms > 0 && !state.onlyArticles))) {
+      if (!poisoned && (afterCent || (state.atoms > 0 && (!state.onlyArticles || pending !== "")))) {
         poisoned = true;
         articlesOnly = false;
       } else if (!poisoned) flush();
       sinceDigit = true;
       afterCent = false;
+      joinedToDigit = false;
       continue;
     }
-    const resolved = resolve(token.word);
+    const next = all[at + 1];
+    const verb = code === "it" && token.word === "sei" && typeof next === "object" && SEI_VERB_NEXT.has(next.word);
+    const resolved = verb ? null : resolve(token.word, code);
     if (resolved === null) {
       flush();
     } else if ("tooLong" in resolved) {
@@ -501,14 +537,16 @@ export function spokenNumbers(text: string): SpokenNumber[] {
       found.push({ words: token.word.slice(0, MAX_WORD_LENGTH), readings: [] });
     } else if ("join" in resolved) {
       if (state.atoms > 0 && !poisoned) pending = resolved.join;
+      if (sinceDigit) joinedToDigit = true;
       continue;
     } else if (poisoned || sinceDigit) {
       if (!poisoned) {
         flush();
         poisoned = true;
-        articlesOnly = true;
+        articlesOnly = !joinedToDigit;
       }
       articlesOnly = articlesOnly && resolved.atoms.every((atom) => atom.one === true);
+      joinedToDigit = false;
       words.push(token.word);
       afterCent = resolved.atoms.at(-1)?.cent === true;
       sinceDigit = false;
@@ -526,6 +564,7 @@ export function spokenNumbers(text: string): SpokenNumber[] {
     }
     sinceDigit = false;
     afterCent = false;
+    joinedToDigit = false;
   }
   flush();
   return found;
@@ -538,6 +577,6 @@ export function spokenNumbers(text: string): SpokenNumber[] {
  * `isAllowed` takes a plain integer string ("64"), the same form
  * the digits are compared in.
  */
-export function spokenNumbersAreAllowed(text: string, isAllowed: (value: string) => boolean): boolean {
-  return spokenNumbers(text).every((number) => number.readings.length > 0 && number.readings.every(isAllowed));
+export function spokenNumbersAreAllowed(text: string, isAllowed: (value: string) => boolean, language?: string): boolean {
+  return spokenNumbers(text, language).every((number) => number.readings.length > 0 && number.readings.every(isAllowed));
 }
