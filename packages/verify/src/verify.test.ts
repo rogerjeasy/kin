@@ -162,6 +162,11 @@ describe("wordingMatchesEntry", () => {
     expect(entry !== undefined && wordingMatchesEntry(`Paid ${"achtzehn".repeat(48)}.`, entry)).toBe(false);
   });
 
+  it("refuses wording with an invisible character", () => {
+    expect(entry !== undefined && wordingMatchesEntry(`Paid ${hold}\u200b.`, entry)).toBe(false);
+    expect(entry !== undefined && wordingMatchesEntry(`Paid ${hold}\u00ad thousand.`, entry)).toBe(false);
+  });
+
   it("accepts a number in words that is one of the entry's own whole figures", () => {
     const whole = entry === undefined ? [] : entryFigures(entry).filter((figure) => /^\d{1,4}$/u.test(figure) && Number(figure) > 1);
     expect(whole.length).toBeGreaterThan(0);

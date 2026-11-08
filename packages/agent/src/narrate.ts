@@ -1,4 +1,4 @@
-import { spokenNumbers, spokenNumbersAreAllowed } from "@kin/domain";
+import { hasHiddenCharacters, spokenNumbers, spokenNumbersAreAllowed } from "@kin/domain";
 
 import { numbersIn } from "./number-values.ts";
 import type { StructuredModel } from "./structured-model.ts";
@@ -26,7 +26,7 @@ const MAX_WORDS_LENGTH = 400;
  * valued are refused.
  */
 export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures">): boolean {
-  if (words.trim() === "" || words.length > MAX_WORDS_LENGTH || /https?:|www\.|@/iu.test(words)) return false;
+  if (words.trim() === "" || words.length > MAX_WORDS_LENGTH || hasHiddenCharacters(words) || /https?:|www\.|@/iu.test(words)) return false;
   const figures = facts.figures.flatMap(numbersIn);
   // A figure may itself contain a number in words, such as a payee called "Seven Oaks".
   const allowed = new Set([...figures.flatMap((figure) => figure.values), ...facts.figures.flatMap(spokenNumbers).flatMap((number) => number.readings)]);

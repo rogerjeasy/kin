@@ -375,15 +375,29 @@ export type SpokenNumber = {
 
 type Token = { readonly word: string } | "digit" | "break";
 
-function tokens(text: string): Token[] {
-  const found = text.normalize("NFC").toLowerCase().matchAll(/[\p{L}\p{M}]+|\p{N}+|[^\p{L}\p{M}\p{N}\s\-‐‑‒–—־'’­]/gu);
-  return [...found].map((match): Token => (/^[\p{L}\p{M}]/u.test(match[0]) ? { word: normalise(match[0]) } : /^\p{N}/u.test(match[0]) ? "digit" : "break"));
+// Format characters (zero-width spaces and joiners, bidi controls, soft hyphen, tags) and variation selectors are
+// invisible: they could split a number word or hide a magnitude word from the reader of this code. The few marks
+// Kin itself writes around an amount in right-to-left text are skipped like a space; every other one is a break.
+const TRANSPARENT = "\\u061C\\u200E\\u200F\\u2068\\u2069";
+const VARIATION = "\\uFE00-\\uFE0F\\u180B-\\u180D\\u{E0100}-\\u{E01EF}";
+// The directional marks stand beside an amount, never between two letters, where they would cut a word in two.
+const HIDDEN_SOURCE = `(?![${TRANSPARENT}])[\\p{Cf}${VARIATION}]|(?<=[\\p{L}\\p{M}])[${TRANSPARENT}](?=[\\p{L}\\p{M}])`;
+const HIDDEN = new RegExp(HIDDEN_SOURCE, "u");
+const HIDDEN_ALL = new RegExp(HIDDEN_SOURCE, "gu");
+const TOKEN = new RegExp(`(?:(?![${VARIATION}])[\\p{L}\\p{M}])+|\\p{N}+|[^\\p{L}\\p{M}\\p{N}\\s\\-\\u2010\\u2011\\u2012\\u2013\\u2014\\u05BE'\\u2019${TRANSPARENT}]`, "gu");
+
+/**
+ * Whether the text holds an invisible character that could hide or split a
+ * number word: any format character or variation selector other than the
+ * directional marks Kin writes around amounts. Wording that has one is refused.
+ */
+export function hasHiddenCharacters(text: string): boolean {
+  return HIDDEN.test(text);
 }
 
-/** "thousand", "hundred", "million" and their kin multiply what stands before them; "cent(s)" is also a coin. */
-function startsWithMagnitude(atoms: readonly Atom[]): boolean {
-  const first = atoms[0];
-  return first !== undefined && first.cent !== true && (first.kind === "scale" || first.kind === "hundred" || first.kind === "hundreds");
+function tokens(text: string): Token[] {
+  const found = text.normalize("NFC").toLowerCase().replaceAll(HIDDEN_ALL, " | ").matchAll(TOKEN);
+  return [...found].map((match): Token => (/^[\p{L}\p{M}]/u.test(match[0]) ? { word: normalise(match[0]) } : /^\p{N}/u.test(match[0]) ? "digit" : "break"));
 }
 
 /**
@@ -400,12 +414,13 @@ export function spokenNumbers(text: string): SpokenNumber[] {
   let state = EMPTY;
   let words: string[] = [];
   let pending = "";
-  // A run that digits touch ("64 thousand", "twenty 5") has a value the digit guard cannot see: the whole run is unreadable.
   let poisoned = false;
+  // "5 un": an article beside a digit is not a number, unless a number word follows it.
+  let articlesOnly = true;
 
   const flush = (): void => {
     if (poisoned) {
-      found.push({ words: words.join(" "), readings: [] });
+      if (!articlesOnly) found.push({ words: words.join(" "), readings: [] });
       poisoned = false;
     } else if (state.atoms > 0) {
       const own = String(valueOf(state));
@@ -458,17 +473,24 @@ export function spokenNumbers(text: string): SpokenNumber[] {
     add(atom, "", word);
   };
 
-  let afterDigit = false;
+  // A digit touching a number word on either side (joins like "and" between them do not part them) has a value
+  // the digit guard cannot see. "64 cents" is a coin in English and 64 hundred in French. The whole run is unreadable.
+  let sinceDigit = false;
+  let afterCent = false;
   for (const token of all) {
-    const touchesDigit = afterDigit;
-    afterDigit = token === "digit";
     if (token === "break") {
       flush();
+      sinceDigit = false;
+      afterCent = false;
       continue;
     }
     if (token === "digit") {
-      if (!poisoned && state.atoms > 0 && !state.onlyArticles) poisoned = true;
-      else if (!poisoned) flush();
+      if (!poisoned && (afterCent || (state.atoms > 0 && !state.onlyArticles))) {
+        poisoned = true;
+        articlesOnly = false;
+      } else if (!poisoned) flush();
+      sinceDigit = true;
+      afterCent = false;
       continue;
     }
     const resolved = resolve(token.word);
@@ -479,10 +501,18 @@ export function spokenNumbers(text: string): SpokenNumber[] {
       found.push({ words: token.word.slice(0, MAX_WORD_LENGTH), readings: [] });
     } else if ("join" in resolved) {
       if (state.atoms > 0 && !poisoned) pending = resolved.join;
-    } else if (poisoned || (touchesDigit && startsWithMagnitude(resolved.atoms))) {
-      if (!poisoned) flush();
-      poisoned = true;
+      continue;
+    } else if (poisoned || sinceDigit) {
+      if (!poisoned) {
+        flush();
+        poisoned = true;
+        articlesOnly = true;
+      }
+      articlesOnly = articlesOnly && resolved.atoms.every((atom) => atom.one === true);
       words.push(token.word);
+      afterCent = resolved.atoms.at(-1)?.cent === true;
+      sinceDigit = false;
+      continue;
     } else {
       resolved.atoms.forEach((atom, index) => {
         const inner = resolved.joins[index] ?? "";
@@ -490,7 +520,12 @@ export function spokenNumbers(text: string): SpokenNumber[] {
         add(atom, join, token.word);
         pending = "";
       });
+      afterCent = resolved.atoms.at(-1)?.cent === true;
+      sinceDigit = false;
+      continue;
     }
+    sinceDigit = false;
+    afterCent = false;
   }
   flush();
   return found;

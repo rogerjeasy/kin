@@ -1,4 +1,4 @@
-import { auditLedger, decimalAmount, entryHeadline, spokenNumbers, spokenNumbersAreAllowed, type LedgerEntry, type LedgerProblemCode } from "@kin/domain";
+import { auditLedger, decimalAmount, entryHeadline, hasHiddenCharacters, spokenNumbers, spokenNumbersAreAllowed, type LedgerEntry, type LedgerProblemCode } from "@kin/domain";
 
 import type { AuditBundle, SettlementClaim } from "./bundle.ts";
 import { canonicalJson, chainHashes, genesisHash } from "./chain.ts";
@@ -153,7 +153,7 @@ function valueOf(token: string): string {
  * Numbers written in words are valued and held to the same rule.
  */
 export function wordingMatchesEntry(text: string, entry: LedgerEntry): boolean {
-  if (text.trim() === "" || text.length > MAX_WORDS_LENGTH || /https?:|www\.|@/iu.test(text)) return false;
+  if (text.trim() === "" || text.length > MAX_WORDS_LENGTH || hasHiddenCharacters(text) || /https?:|www\.|@/iu.test(text)) return false;
   const dates = [entry.occurredOn, entry.period];
   if ([...text.matchAll(ISO_DATE)].some((match) => !dates.includes(match[0]))) return false;
   const amounts = new Set(entryCents(entry).map((cents) => valueOf(decimalAmount({ cents, currency: entry.currency }))));

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { spokenNumbers, spokenNumbersAreAllowed } from "./number-words.ts";
+import { hasHiddenCharacters, spokenNumbers, spokenNumbersAreAllowed } from "./number-words.ts";
 import { SPELLERS } from "./testing/spell-out.ts";
 
 const values = (text: string) => spokenNumbers(text).map((number) => number.readings);
@@ -171,10 +171,65 @@ describe("digits joined to number words are a value the digit guard cannot see",
   it("leaves a digit beside an ordinary word alone, and a number in words beside digits after a break", () => {
     expect(values("64 dollars")).toEqual([]);
     expect(values("7 nov")).toEqual([]);
-    expect(values("64 cents")).toEqual([]);
     expect(values("64 dollars, sixty-four")).toEqual([["64"]]);
     expect(allows("64 dollars, sixty-four", "64")).toBe(true);
     expect(allows("64 dollars (sixty-four)", "64")).toBe(true);
     expect(allows("a 5 un", "5")).toBe(true);
+  });
+});
+
+describe("a digit beside cent(s), a join or a hidden character cannot split a number from its check", () => {
+  const held = ["64", "5", "3", "60", "4", "1000", "100", "0"];
+  const refusedAll = (texts: readonly string[]) => {
+    for (const text of texts) {
+      expect(allows(text, ...held), text).toBe(false);
+      expect(values(text).length, text).toBeGreaterThan(0);
+      expect(values(text).flat(), text).toEqual([]);
+    }
+  };
+
+  it("refuses 64 cents either way round: a coin in English, 64 hundred in French", () => {
+    refusedAll(["64 cents", "64 cent", "cents 64", "cent 64", "3 cents", "5 cent"]);
+    expect(allows("$0.64", "64")).toBe(true);
+    expect(allows("sixty-four cents", "64")).toBe(true);
+  });
+
+  it("refuses a number word that a digit touches through a join, in every language", () => {
+    refusedAll([
+      "64 and sixty", "64 and sixty-four", "64 et soixante", "64 und sechzig", "64 undsechzig", "64 e sessanta", "64 y sesenta", "64 و ستون", "64 وستون", "64 ו שישים", "64 ושישים", "sixty and 4", "soixante et 4", "sechzig und 4", "sessanta e 4", "sesenta y 4", "ستون و 4", "שישים ו 4",
+      "64 sixty", "64 five hundred", "5 un million", "sixty-4", "4 sechzig",
+    ]);
+  });
+
+  it("keeps a real break apart: a comma or an ordinary word parts a digit from a number in words", () => {
+    expect(values("64, sixty-four")).toEqual([["64"]]);
+    expect(values("64 dollars and sixty-four")).toEqual([["64"]]);
+    expect(values("7 nov")).toEqual([]);
+    expect(values("64 dollars, sixty-four")).toEqual([["64"]]);
+    expect(values("5 un jour")).toEqual([]);
+  });
+
+  const HIDDEN = ["\u200b", "\u200c", "\u200d", "\u2060", "\u00ad", "\ufeff", "\u202e", "\u2066", "\ufe0f", "\u{e0020}"];
+  it("detects each invisible character and never joins or hides words across it", () => {
+    for (const mark of HIDDEN) {
+      const label = `U+${(mark.codePointAt(0) ?? 0).toString(16)}`;
+    expect(hasHiddenCharacters(`six${mark}ty-four`), label).toBe(true);
+    expect(hasHiddenCharacters(`64${mark} thousand`), label).toBe(true);
+    for (const [word, held64] of [["sixty-four", "six%sty-four"], ["soixante-quatre", "soix%sante-quatre"], ["vierundsechzig", "vierund%ssechzig"], ["sessantaquattro", "sessanta%squattro"], ["أربعة وستون", "أربعة و%sستون"], ["שישים וארבע", "שישים ו%sארבע"]] as const) {
+      const text = held64.replace("%s", mark);
+      // Whatever it reads as, it must not read as a bare 64.
+      expect(allows(`It cost ${text}.`, "64"), `${word} with ${label}`).toBe(false);
+    }
+    expect(allows(`64${mark} thousand`, "64"), label).toBe(false);
+    expect(allows(`64${mark}thousand`, "64"), label).toBe(false);
+    }
+  });
+
+  it("lets the isolates and direction marks Kin writes around an amount stand, as a space, never inside a word", () => {
+    expect(hasHiddenCharacters("\u2068$64.00\u2069 \u200f\u200e \u061c")).toBe(false);
+    expect(allows("\u2068أربعة وستون\u2069", "64")).toBe(true);
+    expect(allows("64\u2069 thousand", "64", "1000")).toBe(false);
+    expect(allows("64\u2069thousand", "64", "1000")).toBe(false);
+    expect(hasHiddenCharacters("six\u200fty")).toBe(true);
   });
 });

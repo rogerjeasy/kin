@@ -135,6 +135,13 @@ describe("the number guard and numbers written in words", () => {
     expect(words("They want 64 dollars on 7 Nov.", "$64.00", "7 Nov.")).toBe(true);
   });
 
+  it("refuses wording with an invisible character, a digit beside cents, or a join between a digit and a number word", () => {
+    for (const text of ["They want six\u200bty-four dollars.", "They want 64\u200d thousand dollars.", "They want sixty\u00ad-four dollars.", "They want 64\u2060 thousand.", "They want six\u200fty-four.", "They want 64 cents.", "They want 64 and sixty.", "Ils veulent 64 et soixante.", "Sie wollen 64 und sechzig.", "يريدون 64 وستون.", "הם רוצים 64 ושישים."]) {
+      expect(words(text, "$64.00", "$0.64"), text).toBe(false);
+    }
+    expect(words("\u2068$64.00\u2069 is owed.", "$64.00")).toBe(true);
+  });
+
   it("refuses a run with two readings unless the record holds both", () => {
     expect(words("Il y a deux cents euros.", "200 euros")).toBe(false);
     expect(words("Il y a deux cents euros.", "2 euros", "200 euros")).toBe(true);
