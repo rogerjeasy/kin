@@ -13,26 +13,42 @@ import type { CallState } from "@kin/telephony";
  * so one abandoned mid-question during a restart is not recorded, and a retry
  * straight after a restart could record a finished call twice. A call that
  * finishes is recorded in its last turn, before any hang-up, so a finished
- * call is never lost. The database holds nothing more because a call needs no
- * identity column to be recorded, and adding one is a schema change for a
- * window of seconds.
+ * call is never lost. A retry after a restart, or one answered by another
+ * instance, cannot record a call twice: the database keys each call by its
+ * Twilio id and returns the call already recorded.
  */
 export type OpenCall = { readonly state: CallState; readonly recorded: boolean; readonly expiresAt: number };
 
 export type CallBook = {
   get(sid: string): OpenCall | undefined;
   set(sid: string, state: CallState, recorded: boolean): void;
+  /**
+   * Runs `task` for a call unless one is already running for it in this
+   * process, in which case it waits for that one and shares its outcome.
+   * Twilio can deliver the last turn and the status report at the same moment;
+   * the database refuses a second record of one call (office_calls.call_sid),
+   * and this keeps the two from even racing there on one instance.
+   */
+  once(sid: string, task: () => Promise<void>): Promise<void>;
 };
 
 const MAX_OPEN_CALLS = 10_000;
 
 export function callBook(now: () => number, ttlMs: number): CallBook {
   const calls = new Map<string, OpenCall>();
+  const running = new Map<string, Promise<void>>();
   const purge = (): void => {
     const at = now();
     for (const [sid, call] of calls) if (call.expiresAt <= at) calls.delete(sid);
   };
   return {
+    once(sid, task) {
+      const inFlight = running.get(sid);
+      if (inFlight !== undefined) return inFlight;
+      const started = task().finally(() => running.delete(sid));
+      running.set(sid, started);
+      return started;
+    },
     get(sid) {
       const call = calls.get(sid);
       return call !== undefined && call.expiresAt > now() ? call : undefined;

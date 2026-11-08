@@ -1,0 +1,2 @@
+ALTER TABLE "office_calls" ADD COLUMN "call_sid" text;--> statement-breakpoint
+CREATE UNIQUE INDEX "office_calls_circle_call_sid" ON "office_calls" USING btree ("circle_id","call_sid") WHERE "office_calls"."call_sid" is not null;

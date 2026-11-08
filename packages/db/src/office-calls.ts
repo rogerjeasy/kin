@@ -105,19 +105,24 @@ export async function readOfficeCalls(tx: Transaction, circleId: string, limit =
 }
 
 /** A call that came in over the telephone: the same facts as a simulated one, but never labelled simulated. */
-export type LineCallInput = Omit<OfficeCallInput, "simulated">;
+export type LineCallInput = Omit<OfficeCallInput, "simulated"> & {
+  /** Twilio's id for the call: recording the same one again returns the call already recorded. */
+  readonly callSid: string;
+};
 
 /**
  * Records a call that came in over the telephone, the claim check it produced
  * and the alert to the family, as Kin's service identity. Run inside
  * `asService` for the circle the dialled number belongs to: the database
- * operation refuses any other circle.
+ * operation refuses any other circle. It records a call once: a second delivery
+ * for the same call id, even at the same moment, gets the first one's ids and
+ * changes nothing, so "already recorded" is a success here.
  */
 export async function recordLineCall(tx: Transaction, input: LineCallInput): Promise<{ callId: string; claimCheckId: string }> {
   try {
     const signals = `{${input.pressureSignals.join(",")}}`;
     const result = await tx.execute<{ recorded: { callId: string; claimCheckId: string } }>(
-      sql`select kin_private.record_office_line_call(${input.circleId}::uuid, ${input.callerNumber}, ${input.callerName}, ${input.organization}, ${input.claimedCents}::bigint, ${input.purpose}, ${input.reference}, ${JSON.stringify(input.transcript)}::jsonb, ${signals}::text[], ${input.payeeId}::uuid, ${input.foundEntryId}::uuid, ${input.verdict}::public.claim_verdict, ${input.topic}, ${input.spoken}, ${input.claim}) as recorded`,
+      sql`select kin_private.record_office_line_call(${input.circleId}::uuid, ${input.callSid}, ${input.callerNumber}, ${input.callerName}, ${input.organization}, ${input.claimedCents}::bigint, ${input.purpose}, ${input.reference}, ${JSON.stringify(input.transcript)}::jsonb, ${signals}::text[], ${input.payeeId}::uuid, ${input.foundEntryId}::uuid, ${input.verdict}::public.claim_verdict, ${input.topic}, ${input.spoken}, ${input.claim}) as recorded`,
     );
     const recorded = result.rows[0]?.recorded;
     if (!recorded) throw new Error("The office line operation returned nothing");
