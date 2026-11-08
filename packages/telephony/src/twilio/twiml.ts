@@ -28,7 +28,8 @@ export const TWILIO_VOICES: Readonly<Record<OfficeLocale, TwilioVoice>> = {
 
 const XML_HEAD = '<?xml version="1.0" encoding="UTF-8"?>';
 
-function say(locale: OfficeLocale, sentence: string): string {
+/** One sentence in the voice and language of a locale. */
+export function sayElement(locale: OfficeLocale, sentence: string): string {
   const { voice, say: language } = TWILIO_VOICES[locale];
   const voiceAttribute = voice === null ? "" : ` voice="${escapeXml(voice)}"`;
   return `<Say${voiceAttribute} language="${escapeXml(language)}">${escapeXml(sentence)}</Say>`;
@@ -43,12 +44,12 @@ function say(locale: OfficeLocale, sentence: string): string {
 export function sayAndListen(locale: OfficeLocale, sentences: readonly string[], actionUrl: string): string {
   const url = escapeXml(actionUrl);
   const gather = `<Gather input="speech" language="${escapeXml(TWILIO_VOICES[locale].listen)}" speechTimeout="auto" timeout="6" method="POST" actionOnEmptyResult="true" action="${url}"/>`;
-  return `${XML_HEAD}<Response>${sentences.map((each) => say(locale, each)).join("")}${gather}<Redirect method="POST">${url}</Redirect></Response>`;
+  return `${XML_HEAD}<Response>${sentences.map((each) => sayElement(locale, each)).join("")}${gather}<Redirect method="POST">${url}</Redirect></Response>`;
 }
 
 /** Kin says its last sentences and ends the call. */
 export function sayAndHangUp(locale: OfficeLocale, sentences: readonly string[]): string {
-  return `${XML_HEAD}<Response>${sentences.map((each) => say(locale, each)).join("")}<Hangup/></Response>`;
+  return `${XML_HEAD}<Response>${sentences.map((each) => sayElement(locale, each)).join("")}<Hangup/></Response>`;
 }
 
 /** An empty answer, for a request that needs none (a status report). */

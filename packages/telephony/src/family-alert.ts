@@ -1,5 +1,6 @@
 import { formatMoney, type Answers, type CallVerdict, type ClaimReason } from "@kin/domain";
 
+import { fillTemplate as fill } from "./fill-template.ts";
 import { OFFICE_WORDS, type AlertWords, type OfficeLocale } from "./office-words.ts";
 
 const MAX_ALERT_CHARS = 600;
@@ -12,13 +13,6 @@ const TEMPLATE = {
   amount_differs: "amountDiffers",
   no_amount: "noAmount",
 } as const satisfies Record<ClaimReason, keyof AlertWords>;
-
-const fill = (template: string, values: Readonly<Record<string, string>>): string =>
-  template.replace(/\{(\w+)\}/g, (_, name: string) => {
-    const value = values[name];
-    if (value === undefined) throw new Error(`No value for {${name}} in "${template}"`);
-    return value;
-  });
 
 const RIGHT_TO_LEFT: ReadonlySet<OfficeLocale> = new Set(["ar", "he"]);
 

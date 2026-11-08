@@ -17,3 +17,29 @@ export type { TwilioVoice } from "./twilio/twiml.ts";
 export { MAX_FORM_BYTES, parseVoiceRequest } from "./twilio/voice-request.ts";
 export type { VoiceRequest } from "./twilio/voice-request.ts";
 export { escapeXml } from "./twilio/xml.ts";
+export { fillTemplate } from "./fill-template.ts";
+export { E164, maskNumber } from "./outbound/mask-number.ts";
+export { CALL_STATUSES, OutboundCallError } from "./outbound/outbound-caller.ts";
+export type { CallStatus, OutboundCaller, OutboundCallFailure, PlaceCallRequest, PlacedCall } from "./outbound/outbound-caller.ts";
+export { createTwilioOutboundCaller } from "./outbound/twilio-outbound-caller.ts";
+export type { TwilioCallerConfig } from "./outbound/twilio-outbound-caller.ts";
+export { fakeOutboundCaller } from "./outbound/fake-outbound-caller.ts";
+export type { FakeOutboundCaller } from "./outbound/fake-outbound-caller.ts";
+export { SHIFT_CALL_WORDS, ShiftCallWordsError, shiftCallSentences, speakableName } from "./shift-call/shift-call-words.ts";
+export type { ShiftCallDayPart, ShiftCallFacts, ShiftCallSentences, ShiftCallWords } from "./shift-call/shift-call-words.ts";
+export { understandAnswer } from "./shift-call/understand-answer.ts";
+export type { HeardAnswer } from "./shift-call/understand-answer.ts";
+export { endShiftCall, openShiftCall, reaskShiftCall } from "./shift-call/shift-call-twiml.ts";
+export {
+  MAX_SHIFT_REASKS,
+  SHIFT_CALL_ROUTES,
+  SHIFT_CALL_TOKEN_TTL_MS,
+  openShiftCallToken,
+  sealShiftCallToken,
+  shiftCallUrl,
+} from "./shift-call/shift-call-token.ts";
+export type { ShiftCallToken } from "./shift-call/shift-call-token.ts";
+export { callEnd, isPerson, parseShiftCallRequest } from "./shift-call/shift-call-request.ts";
+export type { AnsweredBy, CallEnd, ShiftCallRequest } from "./shift-call/shift-call-request.ts";
+export { continueShiftCall, startShiftCall } from "./shift-call/shift-call-step.ts";
+export type { ShiftCallOutcome, ShiftCallRecordFacts, ShiftCallSigning, ShiftCallTurn } from "./shift-call/shift-call-step.ts";
