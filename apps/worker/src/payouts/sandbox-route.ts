@@ -50,6 +50,8 @@ export async function routedJob(tx: Transaction, job: PayoutJob): Promise<Sandbo
  */
 export async function routeReadiedDemoPayout(tx: Transaction, job: PayoutJob, sandbox: SandboxPayouts, now: Date): Promise<SandboxJob> {
   if (sandbox === null) return { ...job, sandbox: false };
+  // Kin's sandbox account is a PayPal wallet: a Venmo payout cannot go there, so it stays simulated and says so.
+  if (job.wallet === "venmo") return { ...job, sandbox: false };
   const day = now.toISOString().slice(0, 10);
   const facts = await readSandboxFacts(tx, job);
   const route = routeDemoPayout({

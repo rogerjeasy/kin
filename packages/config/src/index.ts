@@ -14,5 +14,7 @@ export { BEDROCK_DEFAULT_MODEL, BEDROCK_INVOKE_DEFAULT_MODEL, MODEL_ENV, readMod
 export type { ModelConfig } from "./model-config.ts";
 export { SANDBOX_PAYOUTS_PER_DAY_DEFAULT, SANDBOX_PAYOUT_ENV, readSandboxPayoutConfig } from "./sandbox-payout-config.ts";
 export type { SandboxPayoutConfig } from "./sandbox-payout-config.ts";
+export { SHIFT_CALL_ENV, readShiftCallConfig } from "./shift-call-config.ts";
+export type { ShiftCallConfig } from "./shift-call-config.ts";
 export { SPEECH_ENV, readSpeechConfig } from "./speech-config.ts";
 export type { SpeechConfig } from "./speech-config.ts";

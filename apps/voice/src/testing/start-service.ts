@@ -5,6 +5,7 @@ import { CALL_STATE_TTL_MS } from "@kin/telephony";
 import { callBook } from "../call-book.ts";
 import type { LineTarget } from "../config.ts";
 import type { LineStore, VoiceLog } from "../office-line-service.ts";
+import type { ShiftCallStore } from "../shift/shift-call-store.ts";
 import { voiceServer } from "../server.ts";
 
 export const TEST_AUTH_TOKEN = "test-auth-token-0123456789abcdef";
@@ -28,7 +29,7 @@ export type RunningService = { readonly baseUrl: string; readonly now: { at: num
  * called, so the service is told the address it is reached at; `now` is a clock
  * the caller can move.
  */
-export async function startService(options: { numbers: ReadonlyMap<string, LineTarget>; store: LineStore; log?: VoiceLog; authToken?: string; stateKey?: string }): Promise<RunningService> {
+export async function startService(options: { numbers: ReadonlyMap<string, LineTarget>; store: LineStore; shiftCalls?: ShiftCallStore; log?: VoiceLog; authToken?: string; stateKey?: string }): Promise<RunningService> {
   const port = await freePort();
   const baseUrl = `http://127.0.0.1:${port}`;
   const now = { at: Date.now() };
@@ -36,6 +37,7 @@ export async function startService(options: { numbers: ReadonlyMap<string, LineT
   const server = voiceServer({
     config: { numbers: options.numbers, authToken: options.authToken ?? TEST_AUTH_TOKEN, stateKey: options.stateKey ?? TEST_STATE_KEY, publicUrl: baseUrl },
     store: options.store,
+    ...(options.shiftCalls === undefined ? {} : { shiftCalls: options.shiftCalls }),
     calls: callBook(clock, CALL_STATE_TTL_MS),
     now: clock,
     log: options.log ?? (() => undefined),

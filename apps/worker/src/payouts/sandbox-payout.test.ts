@@ -23,7 +23,7 @@ const sandboxOf = (dailyLimit = 25): SandboxPayouts => ({ payeeEmail: KIN_SANDBO
  * (264.00), Elena sends the bill and Rose approves it through the approval
  * engine. `receiver` is the address the visitor typed for Amara.
  */
-async function demoPayout(options: { sandbox?: SandboxPayouts; receiver?: string | null; pool?: FakePool; rateCentsPerHour?: number; minutes?: number; approve?: boolean } = {}): Promise<DemoPayout> {
+async function demoPayout(options: { sandbox?: SandboxPayouts; receiver?: string | null; pool?: FakePool; rateCentsPerHour?: number; minutes?: number; approve?: boolean; wallet?: "venmo" } = {}): Promise<DemoPayout> {
   const circle = await visitorWithCircle(db);
   const caregiver = await seatPerson(db, circle.circleId, circle.members.amara);
   const rate = options.rateCentsPerHour ?? 2200;
@@ -32,6 +32,7 @@ async function demoPayout(options: { sandbox?: SandboxPayouts; receiver?: string
   const billId = await asPerson(db.app, caregiver, (tx) => submitCaregiverBill(tx, { circleId: circle.circleId, details: { version: 1, currency: "USD", rateCentsPerHour: rate, visits }, submissionKey: randomUUID() }));
   const proposalId = await asPerson(db.app, circle.userId, (tx) => sendCaregiverBill(tx, { circleId: circle.circleId, billId, now: CLOCK }));
   if (options.receiver) await serviceRows(db, circle.circleId, "update payees set paypal_receiver = $1 where id = $2", [options.receiver, circle.payees.amara]);
+  if (options.wallet) await serviceRows(db, circle.circleId, "update payees set payout_wallet = $1 where id = $2", [options.wallet, circle.payees.amara]);
   if (options.approve === false) {
     // Past the approval engine, as only a broken service could: no member ever said yes.
     await serviceRows(db, circle.circleId, "update proposals set state = 'approved' where id = $1", [proposalId]);
@@ -82,6 +83,24 @@ describe("a demo caregiver payout with Kin's sandbox account configured", () => 
     expect(await execution(payout)).toMatchObject({ state: "confirmed", paypal_batch_id: made?.batch.batchId, paypal_item_id: itemId });
     expect(await payoutEntries(payout)).toEqual([["bill_approved", true, payout.proposalId], ["payout_confirmed", false, itemId]]);
     expect(await auditOf(payout, "payout.sandbox")).toEqual([{ details: { receiver: KIN_SANDBOX } }]);
+  });
+
+  it("stays simulated, labelled so, when the caregiver is paid to Venmo: Kin's sandbox account is a PayPal wallet, so nothing goes there", async () => {
+    const payout = await demoPayout({ sandbox: sandboxOf(), receiver: "+15555550123", wallet: "venmo" });
+    expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
+    expect(payout.pool.payouts.size).toBe(0);
+    expect(payout.pool.requestIds).toEqual([]);
+    expect(await execution(payout)).toMatchObject({ state: "confirmed", paypal_batch_id: null, paypal_item_id: `simulated-payout-${payout.executionId}` });
+    expect(await auditOf(payout, "payout.sandbox")).toEqual([]);
+    expect((await payoutEntries(payout)).map(([kind, simulated]) => [kind, simulated])).toEqual([["bill_approved", true], ["payout_confirmed", true]]);
+  });
+
+  it("does not count a Venmo payout against the day's sandbox budget", async () => {
+    const sandbox = sandboxOf(1);
+    await step(await demoPayout({ sandbox, receiver: "+15555550123", wallet: "venmo" }));
+    const payout = await demoPayout({ sandbox });
+    await step(payout);
+    expect(payout.pool.payouts.size).toBe(1);
   });
 
   it("fixes Kin's address on an execution that had none", async () => {

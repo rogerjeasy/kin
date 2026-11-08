@@ -4,6 +4,7 @@ import {
   EMPTY_RESPONSE,
   MAX_FORM_BYTES,
   OFFICE_WORDS,
+  SHIFT_CALL_ROUTES,
   cleanSpeech,
   familyAlert,
   openCallState,
@@ -21,6 +22,8 @@ import {
 
 import type { CallBook } from "./call-book.ts";
 import type { LineTarget, VoiceConfig } from "./config.ts";
+import { handleShiftCallRoute, type ShiftCallRoute } from "./shift/shift-call-service.ts";
+import type { ShiftCallStore } from "./shift/shift-call-store.ts";
 
 /** What the service needs from outside itself. The database sits behind `store`; tests and the demo script supply their own. */
 export type LineStore = {
@@ -35,6 +38,8 @@ export type VoiceDeps = {
   readonly config: Pick<VoiceConfig, "numbers" | "authToken" | "stateKey" | "publicUrl">;
   readonly store: LineStore;
   readonly calls: CallBook;
+  /** What the shift call's webhooks need from the database. Without it those routes are not served (404), and the office line is unchanged. */
+  readonly shiftCalls?: ShiftCallStore;
   readonly now: () => number;
   readonly log: VoiceLog;
 };
@@ -70,7 +75,8 @@ export async function handleVoice(request: VoiceHttpRequest, deps: VoiceDeps): P
   const url = new URL(request.target, "http://placeholder.invalid");
   if (url.pathname === "/health") return { status: 200, type: "text", body: "ok" };
   const route = ROUTES[url.pathname];
-  if (route === undefined) return refuse(404, "Not found");
+  const shiftRoute = deps.shiftCalls === undefined ? undefined : SHIFT_ROUTES.get(url.pathname);
+  if (route === undefined && shiftRoute === undefined) return refuse(404, "Not found");
   if (request.method !== "POST") return refuse(405, "Method not allowed");
   if (request.body.length > MAX_FORM_BYTES) return refuse(413, "Too large");
 
@@ -80,12 +86,14 @@ export async function handleVoice(request: VoiceHttpRequest, deps: VoiceDeps): P
     deps.log({ level: "warn", message: "voice.unsigned_request", path: url.pathname });
     return refuse(403, "Forbidden");
   }
-  const call = parseVoiceRequest(params);
-  if (call === null) {
-    deps.log({ level: "warn", message: "voice.malformed_request", path: url.pathname });
-    return refuse(400, "Bad request");
-  }
   try {
+    // A shift call is not the office line: it reads its own fields and takes its circle from a sealed token, never from a number.
+    if (shiftRoute !== undefined && deps.shiftCalls !== undefined) return await handleShiftCallRoute(shiftRoute, params, url, deps, deps.shiftCalls);
+    const call = parseVoiceRequest(params);
+    if (call === null || route === undefined) {
+      deps.log({ level: "warn", message: "voice.malformed_request", path: url.pathname });
+      return refuse(400, "Bad request");
+    }
     return await route(call, url, deps);
   } catch (error) {
     // Never the message: it can carry SQL or a caller's words.
@@ -96,6 +104,7 @@ export async function handleVoice(request: VoiceHttpRequest, deps: VoiceDeps): P
 
 type Route = (call: VoiceRequest, url: URL, deps: VoiceDeps) => Promise<VoiceHttpReply>;
 const ROUTES: Readonly<Record<string, Route>> = { "/voice/incoming": incoming, "/voice/turn": turn, "/voice/status": status };
+const SHIFT_ROUTES: ReadonlyMap<string, ShiftCallRoute> = new Map(Object.entries(SHIFT_CALL_ROUTES).map(([name, path]) => [path, name as ShiftCallRoute]));
 
 /** The address Twilio posts the caller's next answer to: the next state, sealed. */
 const turnUrl = (state: CallState, deps: VoiceDeps): string => `${deps.config.publicUrl}/voice/turn?s=${sealCallState(state, deps.config.stateKey, deps.now())}`;

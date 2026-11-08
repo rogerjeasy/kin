@@ -14,7 +14,7 @@ import {
   type PayoutJob,
   type Transaction,
 } from "@kin/db";
-import { PayPalError, payoutOutcome, type PayPalPool, type PayoutBatch } from "@kin/paypal";
+import { PayPalError, PayoutNotSendableError, payoutOutcome, type PayPalPool, type PayoutBatch, type PayoutWallet } from "@kin/paypal";
 
 import { routeReadiedDemoPayout, routedJob, type SandboxJob, type SandboxPayouts } from "./sandbox-route.ts";
 
@@ -102,27 +102,39 @@ async function askPayPal(deps: PayoutDeps, job: SandboxJob): Promise<string | "f
   if (receiver === null) throw new Error("A payout reached PayPal without a receiver");
   try {
     const { batchId } = await deps.pool.createPayout(
-      { senderBatchId: job.idempotencyKey, receiver, amount: { cents: job.cents, currency: job.currency }, note: job.kind === "member_payout" ? "Your share of the family's care costs, settled and approved in Kin" : "Payment for your care visits, approved by the family in Kin" },
+      {
+        senderBatchId: job.idempotencyKey,
+        receiver,
+        amount: { cents: job.cents, currency: job.currency },
+        note: job.kind === "member_payout" ? "Your share of the family's care costs, settled and approved in Kin" : "Payment for your care visits, approved by the family in Kin",
+        // A PayPal wallet is the adapter's default, so only a Venmo payout says where it goes.
+        ...(walletOf(job) === "VENMO" ? { wallet: "VENMO" as const } : {}),
+      },
       job.idempotencyKey,
     );
     if (job.state === "created") await asService(deps.db, job.circleId, (tx) => recordSubmitted(tx, job, batchId, deps.now()));
     return batchId;
   } catch (error) {
-    if (!(error instanceof PayPalError)) throw error;
+    // A payout Kin will not send (a Venmo payout outside USD, an address it cannot read) went nowhere: it fails
+    // for good, as PayPal's own refusal would, and is never retried. The reason names no receiver.
+    const refusal = error instanceof PayoutNotSendableError ? { outcome: "rejected" as const, issue: null, reason: `not_sent_${error.reason}` } : error instanceof PayPalError ? { outcome: error.outcome, issue: error.issue, reason: `paypal_${error.status ?? "refused"}` } : null;
+    if (refusal === null) throw error;
     await asService(deps.db, job.circleId, async (tx) => {
       const locked = await readPayoutJob(tx, job.executionId, deps.now());
       if (locked === null) return;
       if (locked.state === "created") await recordSubmitted(tx, locked, null, deps.now());
       const submitted = { ...locked, state: locked.state === "created" ? ("submitted" as const) : locked.state };
-      const reason = `paypal_${error.status ?? "refused"}`;
-      if (error.outcome === "rejected" && job.sandbox) await fallBackToSimulated(tx, submitted, deps, error.issue === null ? reason : `${reason}_${error.issue.toLowerCase()}`);
-      else if (error.outcome === "rejected") await failPayout(tx, submitted, reason);
+      if (refusal.outcome === "rejected" && job.sandbox) await fallBackToSimulated(tx, submitted, deps, refusal.issue === null ? refusal.reason : `${refusal.reason}_${refusal.issue.toLowerCase()}`);
+      else if (refusal.outcome === "rejected") await failPayout(tx, submitted, refusal.reason);
       else if (submitted.state === "submitted") await recordUnknown(tx, submitted);
     });
-    if (error.outcome === "rejected") return job.sandbox ? "simulated" : "failed";
+    if (refusal.outcome === "rejected") return job.sandbox ? "simulated" : "failed";
     return "unknown";
   }
 }
+
+/** Which wallet the family approved the payout for, fixed when it was queued. */
+const walletOf = (job: PayoutJob): PayoutWallet => (job.wallet === "venmo" ? "VENMO" : "PAYPAL");
 
 /** Reads the batch back from PayPal: the record that decides what happened. */
 async function readBack(deps: PayoutDeps, job: SandboxJob, batchId: string): Promise<PayoutStep> {
@@ -135,7 +147,8 @@ async function readBack(deps: PayoutDeps, job: SandboxJob, batchId: string): Pro
   }
   const item = batch.items[0];
   // A batch that is not this execution's would be someone else's money: stop.
-  if (batch.senderBatchId !== job.idempotencyKey || item === undefined || item.amount.cents !== job.cents || item.amount.currency !== job.currency) {
+  // PayPal names the wallet an item went to in its read-back; when it does, it must be the one approved.
+  if (batch.senderBatchId !== job.idempotencyKey || item === undefined || item.amount.cents !== job.cents || item.amount.currency !== job.currency || (item.wallet !== null && item.wallet !== walletOf(job))) {
     throw new Error(`Payout batch ${batchId} does not match execution ${job.executionId}`);
   }
   return asService(deps.db, job.circleId, async (tx) => {

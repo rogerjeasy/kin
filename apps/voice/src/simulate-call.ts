@@ -3,17 +3,19 @@ import { randomUUID } from "node:crypto";
 import type { LineCallInput, LineRecord } from "@kin/db";
 
 import type { LineStore } from "./office-line-service.ts";
+import { simulateShiftCalls } from "./simulate-shift-call.ts";
 import { TEST_AUTH_TOKEN, startService } from "./testing/start-service.ts";
 import { playCall, spokenIn, twilioCaller } from "./testing/twilio-caller.ts";
 
 /**
- * `pnpm --filter @kin/voice run simulate-call [scam|paid|bill|all]`
+ * `pnpm --filter @kin/voice run simulate-call [scam|paid|bill|shift|all]`
  *
  * Starts the phone service on a free local port with a made-up circle and plays
  * a call against it as Twilio would: every request is signed with a demo auth
  * token and the service checks it. It prints each TwiML answer and, at the end,
  * what the service recorded and what the family is told. It needs no Twilio
- * account, no database and no network.
+ * account, no database and no network. `shift` plays Kin's call to a parent about a
+ * shift instead (`simulate-shift-call.ts`).
  */
 
 const NUMBER = "+15555550100";
@@ -81,8 +83,9 @@ async function simulate(scenario: Scenario): Promise<void> {
 }
 
 const wanted = process.argv[2] ?? "scam";
-const names = wanted === "all" ? (Object.keys(SCENARIOS) as Scenario[]) : [wanted];
+const names = wanted === "all" ? (Object.keys(SCENARIOS) as Scenario[]) : wanted === "shift" ? [] : [wanted];
 for (const name of names) {
-  if (!(name in SCENARIOS)) throw new Error(`Unknown scenario "${name}". Use scam, paid, bill or all.`);
+  if (!(name in SCENARIOS)) throw new Error(`Unknown scenario "${name}". Use scam, paid, bill, shift or all.`);
   await simulate(name as Scenario);
 }
+if (wanted === "shift" || wanted === "all") await simulateShiftCalls();

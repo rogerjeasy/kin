@@ -36,7 +36,7 @@ type Payout = { circle: VisitorCircle; pool: FakePool; deps: PayoutDeps; proposa
  * real circle's agreement yet), so its yes carries step-up evidence and the
  * payout goes to the PayPal fake instead of being simulated.
  */
-async function approvedPayout(options: { real?: boolean; receiver?: string | null; rateCentsPerHour?: number; minutes?: number } = {}): Promise<Payout> {
+async function approvedPayout(options: { real?: boolean; receiver?: string | null; rateCentsPerHour?: number; minutes?: number; wallet?: "venmo" } = {}): Promise<Payout> {
   const circle = await visitorWithCircle(db);
   const caregiver = await seatPerson(db, circle.circleId, circle.members.amara);
   const rate = options.rateCentsPerHour ?? 2200;
@@ -48,6 +48,7 @@ async function approvedPayout(options: { real?: boolean; receiver?: string | nul
   // Rose's seat is taken while the circle is still a demo, where seats can change hands.
   await asPerson(db.app, circle.userId, (tx) => takeDemoSeat(tx, circle.circleId, circle.members.rose));
   if (receiver !== null) await serviceRows(db, circle.circleId, "update payees set paypal_receiver = $1 where id = $2", [receiver, circle.payees.amara]);
+  if (options.wallet) await serviceRows(db, circle.circleId, "update payees set payout_wallet = $1 where id = $2", [options.wallet, circle.payees.amara]);
   if (options.real) await serviceRows(db, circle.circleId, "update circles set demo = false, clock_at = null where id = $1", [circle.circleId]);
   const decision = await asPerson(db.app, circle.userId, (tx) =>
     answerProposal(tx, { circleId: circle.circleId, memberId: circle.members.rose, role: "parent" }, {
@@ -228,6 +229,127 @@ describe("an approved caregiver payout", () => {
     stored.batch = { ...stored.batch, senderBatchId: "someone-else" };
     await expect(step(payout)).rejects.toThrow(/does not match/);
     expect((await states(payout)).execution).toBe("pending_at_paypal");
+  });
+});
+
+const VENMO_PHONE = "+15555550123";
+
+describe("an approved caregiver payout to Venmo", () => {
+  const venmoPayout = (options: { receiver?: string; real?: boolean } = {}) => approvedPayout({ real: options.real ?? true, wallet: "venmo", receiver: options.receiver ?? VENMO_PHONE });
+  const walletOfExecution = async (payout: Payout) => (await row(payout.circle.circleId, "select wallet from executions where id = $1", payout.executionId))?.wallet;
+
+  it("is pinned to Venmo when queued, sent to PayPal as a Venmo payout, and paid only once PayPal's record says SUCCESS", async () => {
+    const payout = await venmoPayout();
+    expect(await walletOfExecution(payout)).toBe("venmo");
+    const before = await ledgerOf(payout.circle.circleId);
+    expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
+
+    const [made] = [...payout.pool.payouts.values()];
+    expect(made?.request).toEqual({ senderBatchId: `kin-payout-${payout.proposalId}`, receiver: VENMO_PHONE, amount: { cents: 26_400, currency: "USD" }, note: expect.any(String), wallet: "VENMO" });
+    expect(made?.batch.items[0]?.wallet).toBe("VENMO");
+    expect(await states(payout)).toEqual({ execution: "confirmed", proposal: "settled", bill: "paid" });
+    const after = await ledgerOf(payout.circle.circleId);
+    expect(accountBalance(after, "pool_cash") - accountBalance(before, "pool_cash")).toBe(-(26_400 + 25));
+    expect((await entriesFor(payout)).map((entry) => [entry.kind, entry.simulated])).toEqual([["bill_approved", false], ["payout_confirmed", false]]);
+  });
+
+  it("also pays a Venmo handle", async () => {
+    const payout = await venmoPayout({ receiver: "@amara-k" });
+    expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
+    expect([...payout.pool.payouts.values()].map((made) => made.request.receiver)).toEqual(["@amara-k"]);
+  });
+
+  it("waits while the Venmo item is unclaimed, writes nothing to the ledger, and checks again until PayPal says SUCCESS", async () => {
+    const payout = await venmoPayout();
+    payout.pool.payoutStatus = "UNCLAIMED";
+    expect(await step(payout)).toMatchObject({ next: "later", result: "pending" });
+    expect(await step(payout)).toMatchObject({ next: "later", result: "pending" });
+    expect(await states(payout)).toEqual({ execution: "pending_at_paypal", proposal: "executing", bill: "proposed" });
+    expect((await entriesFor(payout)).map((entry) => entry.kind)).toEqual(["bill_approved"]);
+    expect(payout.pool.payouts.size).toBe(1);
+
+    const [batchId] = [...payout.pool.payouts.keys()];
+    if (!batchId) throw new Error("No payout was made");
+    payout.pool.settlePayout(batchId, "SUCCESS");
+    expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
+    expect((await entriesFor(payout)).map((entry) => entry.kind)).toEqual(["bill_approved", "payout_confirmed"]);
+  });
+
+  it("fails a returned or failed Venmo item, leaving the caregiver owed and no payout in the ledger", async () => {
+    for (const status of ["RETURNED", "FAILED"] as const) {
+      const payout = await venmoPayout();
+      payout.pool.payoutStatus = status;
+      expect(await step(payout)).toEqual({ next: "done", result: "failed" });
+      expect(await states(payout)).toEqual({ execution: "failed", proposal: "failed", bill: "proposed" });
+      expect(accountBalance(await ledgerOf(payout.circle.circleId), payableAccount(payout.circle.payees.amara))).toBe(26_400);
+      expect((await entriesFor(payout)).map((entry) => entry.kind)).toEqual(["bill_approved"]);
+      expect(await row(payout.circle.circleId, "select last_error from executions where id = $1", payout.executionId)).toEqual({ last_error: `paypal_${status.toLowerCase()}` });
+    }
+  });
+
+  it("fails when PayPal refuses it", async () => {
+    const payout = await venmoPayout();
+    payout.pool.refuseNextPayout = "RECEIVER_UNREGISTERED";
+    expect(await step(payout)).toEqual({ next: "done", result: "failed" });
+    expect(await states(payout)).toEqual({ execution: "failed", proposal: "failed", bill: "proposed" });
+  });
+
+  it("is never sent in another currency than USD: it fails with a reason, and nothing reaches PayPal", async () => {
+    const payout = await venmoPayout();
+    // The fixtures' circles are all in USD, so the pool is asked for the same payout in euros: the adapter's refusal is what the worker must handle.
+    const inEuros: PayoutDeps = { ...payout.deps, pool: { ...payout.pool, createPayout: (request, key) => payout.pool.createPayout({ ...request, amount: { ...request.amount, currency: "EUR" } }, key) } };
+    expect(await executePayout(inEuros, payout.circle.circleId, payout.executionId)).toEqual({ next: "done", result: "failed" });
+    expect(payout.pool.payouts.size).toBe(0);
+    expect(payout.pool.requestIds).toEqual([]);
+    expect(await states(payout)).toEqual({ execution: "failed", proposal: "failed", bill: "proposed" });
+    expect(await row(payout.circle.circleId, "select last_error from executions where id = $1", payout.executionId)).toEqual({ last_error: "not_sent_venmo_usd_only" });
+  });
+
+  it("is never sent to an address Venmo cannot take: it fails with a reason, and the reason names no address", async () => {
+    const payout = await venmoPayout({ receiver: "not-a-venmo-address" });
+    expect(await step(payout)).toEqual({ next: "done", result: "failed" });
+    expect(payout.pool.requestIds).toEqual([]);
+    const failure = await row(payout.circle.circleId, "select last_error from executions where id = $1", payout.executionId);
+    expect(failure).toEqual({ last_error: "not_sent_invalid_receiver" });
+  });
+
+  it("sends nothing twice when a step is repeated after a lost answer or an outage, and always with the same key", async () => {
+    const lost = await venmoPayout();
+    lost.pool.loseNextReply = "createPayout";
+    expect(await step(lost)).toMatchObject({ next: "later", result: "unknown" });
+    expect(await step(lost)).toEqual({ next: "done", result: "confirmed" });
+    expect(lost.pool.payouts.size).toBe(1);
+    expect(new Set(lost.pool.requestIds)).toEqual(new Set([`kin-payout-${lost.proposalId}`]));
+    expect([...lost.pool.payouts.values()].map((made) => made.request.wallet)).toEqual(["VENMO"]);
+
+    const outage = await venmoPayout();
+    outage.pool.failNext = "createPayout";
+    expect(await step(outage)).toMatchObject({ result: "unknown" });
+    expect(await step(outage)).toEqual({ next: "done", result: "confirmed" });
+    expect(outage.pool.payouts.size).toBe(1);
+    // A step after the end repeats nothing.
+    expect(await step(outage)).toEqual({ next: "done", result: "gone" });
+    expect(outage.pool.payouts.size).toBe(1);
+    expect((await entriesFor(outage)).map((entry) => entry.kind)).toEqual(["bill_approved", "payout_confirmed"]);
+  });
+
+  it("refuses a read-back that says the item went to another wallet", async () => {
+    const payout = await venmoPayout();
+    payout.pool.payoutStatus = "PENDING";
+    await step(payout);
+    const [stored] = [...payout.pool.payouts.values()];
+    const item = stored?.batch.items[0];
+    if (!stored || !item) throw new Error("No payout was made");
+    stored.batch = { ...stored.batch, items: [{ ...item, wallet: "PAYPAL" }] };
+    await expect(step(payout)).rejects.toThrow(/does not match/);
+    expect((await states(payout)).execution).toBe("pending_at_paypal");
+  });
+
+  it("pays a PayPal wallet payout exactly as before: the request names no wallet", async () => {
+    const payout = await approvedPayout({ real: true });
+    expect(await walletOfExecution(payout)).toBe("paypal");
+    await step(payout);
+    expect([...payout.pool.payouts.values()].map((made) => "wallet" in made.request)).toEqual([false]);
   });
 });
 

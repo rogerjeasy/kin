@@ -6,11 +6,14 @@ import { callBook } from "./call-book.ts";
 import { readVoiceConfig } from "./config.ts";
 import { type VoiceLog } from "./office-line-service.ts";
 import { voiceServer } from "./server.ts";
+import { shiftCallStoreOn } from "./shift/shift-call-store.ts";
 
 /**
  * Kin's phone service: Twilio's Programmable Voice webhook for the family
- * office line. It holds the service role, limited to the one circle the dialled
- * number belongs to in each transaction; the web app never does (decision 38).
+ * office line, and for Kin's own call to a parent about a shift. It holds the
+ * service role, limited in each transaction to one circle: the one the dialled
+ * number belongs to, or the one a verified, sealed token names; the web app
+ * never holds it (decision 38).
  */
 
 // Aurora pauses when idle and took 74 seconds to resume (decision 43).
@@ -28,6 +31,8 @@ const server = voiceServer({
     record: (input) => asService(db, input.circleId, (tx) => recordLineCall(tx, input)),
   },
   calls: callBook(Date.now, CALL_STATE_TTL_MS),
+  // Kin's call to a parent about a shift: the circle comes from a sealed token, so one service answers for many circles.
+  shiftCalls: shiftCallStoreOn(db),
   now: Date.now,
   log,
 });
