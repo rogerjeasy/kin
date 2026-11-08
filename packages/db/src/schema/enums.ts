@@ -6,6 +6,8 @@ import {
   MONTHLY_SHARE_STATES,
   ENTRY_KINDS,
   ENTRY_SOURCE_TYPES,
+  INVOICE_PURPOSES,
+  INVOICE_REQUEST_TRANSITIONS,
   MEMBER_STATUSES,
   PARENT_LEVELS,
   PROPOSAL_KINDS,
@@ -51,6 +53,8 @@ export const entryKind =pgEnum("entry_kind", ENTRY_KINDS);
 export const entrySourceType = pgEnum("entry_source_type", ENTRY_SOURCE_TYPES);
 export const direction = pgEnum("direction", DIRECTIONS);
 export const monthlyShareState = pgEnum("monthly_share_state", MONTHLY_SHARE_STATES);
+export const invoiceRequestState = pgEnum("invoice_request_state", statesOf(INVOICE_REQUEST_TRANSITIONS));
+export const invoicePurpose = pgEnum("invoice_purpose", INVOICE_PURPOSES);
 
 export const userKind = pgEnum("user_kind", USER_KINDS);
 export const circleStatus = pgEnum("circle_status", CIRCLE_STATUSES);

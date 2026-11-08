@@ -4,6 +4,7 @@ import { and, asc, desc, eq, ne } from "drizzle-orm";
 import type {
   CircleRecord,
   CircleSnapshot,
+  InvoiceRequestRecord,
   MemberRecord,
   MonthlyShareRecord,
   PayeeRecord,
@@ -25,6 +26,7 @@ import {
   documents,
   expectedBills,
   invitations,
+  invoiceRequests,
   members,
   monthlyShares,
   narrations,
@@ -95,6 +97,7 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     documents: await readDocuments(tx, circle.id),
     invitations: await readInvitations(tx, circle.id),
     monthlyShares: await readMonthlyShares(tx, circle.id, viewerRow.id),
+    invoiceRequests: await readInvoiceRequests(tx, circle.id, viewerRow),
   };
 }
 
@@ -319,5 +322,26 @@ async function readMonthlyShares(tx: Transaction, circleId: string, viewerId: st
     failedPayments: row.failedPayments,
     nextBillingAt: row.nextBillingAt,
     createdAt: row.createdAt,
+  }));
+}
+
+/** Every request for money by invoice, newest first. PayPal's page to pay one is given only to the member asked and to organizers. */
+async function readInvoiceRequests(tx: Transaction, circleId: string, viewer: { readonly id: string; readonly role: CircleRole }): Promise<InvoiceRequestRecord[]> {
+  const rows = await tx.select().from(invoiceRequests).where(eq(invoiceRequests.circleId, circleId)).orderBy(desc(invoiceRequests.createdAt), asc(invoiceRequests.id));
+  return rows.map((row) => ({
+    id: row.id,
+    memberId: row.memberId,
+    requestedBy: row.requestedBy,
+    purpose: row.purpose,
+    period: row.period,
+    cents: row.amountCents,
+    state: row.state,
+    simulated: row.simulated,
+    recipient: maskEmail(row.recipient),
+    paypalInvoiceId: row.paypalInvoiceId,
+    invoiceNumber: row.invoiceNumber,
+    payerUrl: row.memberId === viewer.id || viewer.role === "organizer" ? row.payerUrl : null,
+    createdAt: row.createdAt,
+    paidAt: row.paidAt,
   }));
 }

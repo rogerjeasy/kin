@@ -5,6 +5,8 @@ import type {
   BillState,
   CircleRole,
   CaregiverBillDetails,
+  InvoicePurpose,
+  InvoiceRequestState,
   Ledger,
   MandateCadence,
   MandateStatus,
@@ -57,6 +59,29 @@ export type CircleSnapshot = {
   readonly invitations: readonly InvitationRecord[];
   /** Every member's monthly share, for roles that see the circle's money. */
   readonly monthlyShares: readonly MonthlyShareRecord[];
+  /** Requests for money by PayPal invoice, newest first, for roles that see the circle's money. */
+  readonly invoiceRequests: readonly InvoiceRequestRecord[];
+};
+
+export type InvoiceRequestRecord = {
+  readonly id: string;
+  /** The member asked to pay. */
+  readonly memberId: string;
+  readonly requestedBy: string;
+  readonly purpose: InvoicePurpose;
+  readonly period: string | null;
+  readonly cents: number;
+  readonly state: InvoiceRequestState;
+  /** A demo circle's request with no PayPal invoice behind it. */
+  readonly simulated: boolean;
+  /** Where PayPal emailed it, masked. */
+  readonly recipient: string | null;
+  readonly paypalInvoiceId: string | null;
+  readonly invoiceNumber: string | null;
+  /** PayPal's page for paying it. Only the member asked and the organizers are given it. */
+  readonly payerUrl: string | null;
+  readonly createdAt: Date;
+  readonly paidAt: Date | null;
 };
 
 export type MonthlyShareRecord = {

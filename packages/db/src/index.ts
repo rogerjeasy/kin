@@ -31,6 +31,9 @@ export {
   retryMessageLater,
 } from "./payouts.ts";
 export type { BeginOutcome, ClaimedMessage, PayoutJob, PayoutKind } from "./payouts.ts";
+export { readExecutions } from "./execution-records.ts";
+export type { ExecutionRecord } from "./execution-records.ts";
+export { SANDBOX_ROUTED, markSandboxPayout, readSandboxFacts, readSandboxRoute, recordSandboxFallback, recordSandboxSkipped } from "./sandbox-payouts.ts";
 export {
   DELIVERY_TOPIC,
   PURCHASE_TOPIC,
@@ -55,6 +58,17 @@ export { ContributionMismatchError, contributionRecorded, recordContribution } f
 export type { ConfirmedCapture, ContributionOutcome } from "./contributions.ts";
 export { MonthlyShareError, followPayPal, moveMonthlyShare, readShare, recordShareCharge, recordSimulatedMonth, startMonthlyShare } from "./monthly-shares.ts";
 export type { MonthlyShareReason, ShareKey, ShareRow } from "./monthly-shares.ts";
+export {
+  InvoiceRequestError,
+  closeInvoiceRequest,
+  followInvoiceCancelled,
+  markInvoiceSent,
+  readInvoiceRequest,
+  recordInvoicePayment,
+  recordSimulatedInvoicePayment,
+  requestInvoice,
+} from "./invoice-requests.ts";
+export type { InvoicePaymentRecord, InvoiceRequestKey, InvoiceRequestReason, InvoiceRequestRow, NewInvoiceRequest } from "./invoice-requests.ts";
 export { settlePayPalEvent, storePayPalEvent } from "./paypal-events.ts";
 export type { PayPalEventState, StoredEvent } from "./paypal-events.ts";
 export { StoredPlanError, parseApprovalPlan } from "./plan-json.ts";

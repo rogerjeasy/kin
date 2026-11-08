@@ -8,6 +8,7 @@ export * from "./records.ts";
 export * from "./receipts.ts";
 export * from "./approvals.ts";
 export * from "./shares.ts";
+export * from "./invoices.ts";
 export * from "./purchases.ts";
 export * from "./mandates.ts";
 export * from "./audit-heads.ts";

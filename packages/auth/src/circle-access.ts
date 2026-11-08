@@ -59,6 +59,11 @@ export const CIRCLE_ACTIONS = {
   "receipt.decide": ["organizer", "contributor"],
   /** Put the month's settlement to the family for approval. */
   "settlement.propose": ["organizer"],
+  /**
+   * Ask a member who shares the cost for money by PayPal invoice: what the
+   * settlement collects from them, or a top-up. Withdraw a request that waits.
+   */
+  "invoice.request": ["organizer"],
   /** Say where one's own settlement payout goes. Nobody else may, so nobody can redirect it. */
   "settlement_receiver.set": ["organizer", "contributor", "parent"],
 } as const satisfies Record<string, readonly CircleRole[]>;

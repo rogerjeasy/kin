@@ -1,4 +1,4 @@
-import { rosesMonth, type CircleRole, type ParentLevel, type ProposalKind } from "@kin/domain";
+import { REFILL_PRICE_CENTS, rosesMonth, type CircleRole, type ParentLevel, type ProposalKind } from "@kin/domain";
 
 import type { ApprovalMethod, ClaimVerdict, DocumentKind } from "../values.ts";
 
@@ -172,7 +172,7 @@ export type DemoPurchaseRule = {
  * ($50), so the refill waits for her spoken yes.
  */
 export const PURCHASE_RULES: readonly DemoPurchaseRule[] = [
-  { seller: "pharmacy", item: "Monthly prescription refill (30 days)", category: "pharmacy", priceCents: 6400, limitCents: 7500, monthlyBudgetCents: 15000 },
+  { seller: "pharmacy", item: "Monthly prescription refill (30 days)", category: "pharmacy", priceCents: REFILL_PRICE_CENTS, limitCents: 7500, monthlyBudgetCents: 15000 },
 ];
 
 export type DemoMandate = {
@@ -212,7 +212,7 @@ export const EXPECTED_BILLS: readonly { payee: PayeeKey; kind: ProposalKind; cen
   { payee: "gas", kind: "bill_payment", cents: 5700, dueOn: "2026-11-02" },
   { payee: "electricity", kind: "bill_payment", cents: 8400, dueOn: "2026-11-03" },
   { payee: "amara", kind: "caregiver_payout", cents: 26400, dueOn: "2026-11-06" },
-  { payee: "pharmacy", kind: "purchase", cents: 4200, dueOn: "2026-11-09" },
+  { payee: "pharmacy", kind: "purchase", cents: REFILL_PRICE_CENTS, dueOn: "2026-11-09" },
 ];
 
 /** The false demand of day 15: a caller claimed 300.00 for the gas company. */

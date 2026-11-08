@@ -34,6 +34,14 @@ describe("what a member may do in a circle", () => {
     }
   });
 
+  it("lets only an organizer ask a member for money by PayPal invoice, least privileged first", () => {
+    for (const role of ["observer", "caregiver", "parent", "contributor"] as const) {
+      expect(authorize(active(role), "invoice.request")).toEqual({ allowed: false, reason: "role" });
+    }
+    expect(authorize(active("organizer"), "invoice.request")).toEqual({ allowed: true });
+    expect(authorize({ role: "organizer", status: "left" }, "invoice.request")).toEqual({ allowed: false, reason: "not_a_member" });
+  });
+
   it("lets only caregivers bill for their own work, only organizers set rates, and the cost-sharers review bills", () => {
     for (const role of CIRCLE_ROLES) {
       expect(authorize(active(role), "caregiver_bill.submit").allowed).toBe(role === "caregiver");
