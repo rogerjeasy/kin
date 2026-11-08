@@ -1,3 +1,4 @@
+import { numbersIn } from "./number-values.ts";
 import type { StructuredModel } from "./structured-model.ts";
 
 /** The words and numbers a sentence may use: all of them come from the record. */
@@ -11,18 +12,18 @@ export type NarrationFacts = {
 };
 
 const MAX_WORDS_LENGTH = 400;
-const NUMBER = /\d[\d.,\p{Zs}]*\d|\d/gu;
-const digitsOf = (text: string) => text.replace(/\D/gu, "");
 
 /**
  * The number guard (docs/architecture.md section 9.6): wording the model
  * wrote reaches a person only if every number in it is one the record
  * supplied, it is short, and it has no link. Anything else is refused.
+ * Numbers are compared by value, so "86,40 $", "86.40" and Arabic-Indic
+ * digits for the same amount agree, while "860.40" and a changed digit do not.
  */
 export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures">): boolean {
   if (words.trim() === "" || words.length > MAX_WORDS_LENGTH || /https?:|www\.|@/iu.test(words)) return false;
-  const allowed = new Set(facts.figures.flatMap((figure) => [...figure.matchAll(NUMBER)].map((match) => digitsOf(match[0]))));
-  return [...words.matchAll(NUMBER)].every((match) => allowed.has(digitsOf(match[0])));
+  const allowed = new Set(facts.figures.flatMap(numbersIn).flat());
+  return numbersIn(words).every((values) => values.some((value) => allowed.has(value)));
 }
 
 const WORDING_SCHEMA = {

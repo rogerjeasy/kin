@@ -24,6 +24,52 @@ describe("the number guard", () => {
   });
 });
 
+describe("the number guard across languages", () => {
+  const amount = (text: string, figures: string[]) => passesNumberGuard(text, { figures });
+
+  it("reads the same amount written in each language's format", () => {
+    for (const [figure, words] of [
+      ["86,40 $US", "Les 86,40 $ ont été payés."],
+      ["86,40 $US", "Les 86.40 dollars ont été payés."],
+      ["$1,234.50", "Es sind 1.234,50 Dollar."],
+      ["$1,234.50", "Ça fait 1 234,50 $."],
+      ["$1,234.50", "Ça fait 1 234,50 $."],
+      ["$1,234.50", "That is 1234.50 in all."],
+      ["US$ 86.40", "٨٦٫٤٠ دولار"],
+      ["⁨‏64.00 ‏$⁩", "בסכום של 64 דולר"],
+      ["$64.00", "It cost 64 dollars."],
+    ] as const) expect(amount(words, [figure]), `${figure} / ${words}`).toBe(true);
+  });
+
+  it("reads a day or an ordinal as the same number, in any script", () => {
+    expect(amount("Le 1er novembre.", ["1 nov."])).toBe(true);
+    expect(amount("On the 1st of November.", ["Nov 1"])).toBe(true);
+    expect(amount("Am 7. November bezahlt.", ["7. Nov."])).toBe(true);
+    expect(amount("في ٧ نوفمبر", ["7 نوفمبر"])).toBe(true);
+    expect(amount("Payé le 7, 86,40 $.", ["86,40 $", "7 nov."])).toBe(true);
+  });
+
+  it("still refuses a wrong amount, a changed digit, a moved decimal point or an invented number", () => {
+    for (const words of ["Les 86,41 $ ont été payés.", "Les 68,40 $ ont été payés.", "Les 864,0 $ ont été payés.", "Les 860,40 $.", "Les 8 640 $.", "Les 8.640 $.", "Le 8 novembre.", "En 2026.", "٨٦٫٤١ دولار", "Les 86,40 $ et 12 jours."]) {
+      expect(amount(words, ["86,40 $", "7 nov."]), words).toBe(false);
+    }
+  });
+
+  it("does not take '1.000' for '10.00' or '1000.00' for '100.00'", () => {
+    expect(amount("Il vaut 1.000 euros.", ["10.00 €"])).toBe(false);
+    expect(amount("Il vaut 10.00 euros.", ["1.000 €"])).toBe(false);
+    expect(amount("Es kostet 1.000 Euro.", ["1.000,00 €"])).toBe(true);
+    expect(amount("Es kostet 1000 Euro.", ["10.00 €"])).toBe(false);
+    expect(amount("It costs 100.00.", ["1000.00"])).toBe(false);
+    expect(amount("It costs 0,500.", ["500"])).toBe(false);
+  });
+
+  it("does not let two numbers run together into the one the record holds", () => {
+    expect(amount("Le 8, 64 $.", ["864 $"])).toBe(false);
+    expect(amount("Le 8 64 $.", ["864 $"])).toBe(false);
+  });
+});
+
 describe("wording a verdict", () => {
   it("uses the fixed template with no model", async () => {
     expect(await narrate(null, facts, template)).toEqual({ text: template, source: "template" });
