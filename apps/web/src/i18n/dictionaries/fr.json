@@ -1702,14 +1702,14 @@
       "link": "Essayer un « et si »",
       "back": "Retour à l’accord",
       "formTitle": "Et si…",
-      "formText": "Modifiez les chiffres à tester. Tout le reste reste comme aujourd’hui.",
+      "formText": "Modifiez les chiffres à tester. Tout le reste demeure comme aujourd’hui.",
       "shareLegend": "Parts",
       "shareHint": "Les parts doivent totaliser 100 %. Laissez un champ tel quel pour garder cette part.",
       "shareLabel": "Part de {name} (%)",
       "leavingLabel": "Un membre cesse de partager les frais",
       "leavingNone": "Personne",
       "billLabel": "Une facture de",
-      "billHint": "{currency}, payée par la cagnotte",
+      "billHint": "{currency}, payée avec la cagnotte",
       "run": "Lancer la simulation",
       "reset": "Recommencer",
       "changesTitle": "Ce qui change dans l’accord",
@@ -1995,13 +1995,13 @@
         "unavailable": "Kin n’a pas pu le faire maintenant. Réessayez dans un instant."
       },
       "mandatesLink": "Autorisations permanentes",
-      "underMandate": "Acheté sous l'autorisation permanente. Personne n'a eu à être sollicité.",
-      "outsideMandate": "Hors de l'autorisation permanente ({why}). Le réapprovisionnement attend un oui.",
-      "viaMandate": "Sous une autorisation permanente",
+      "underMandate": "Acheté dans le cadre de l’autorisation permanente. Personne n’a eu à être sollicité.",
+      "outsideMandate": "Hors de l’autorisation permanente ({why}). Le réapprovisionnement attend un oui.",
+      "viaMandate": "Dans le cadre d’une autorisation permanente",
       "mandateWhy": {
         "not_active": "elle est terminée",
         "paused": "elle est en pause",
-        "not_started": "elle n'a pas commencé",
+        "not_started": "elle n’a pas commencé",
         "expired": "elle a expiré",
         "circle_paused": "les paiements sont en pause",
         "out_of_scope": "elle ne couvre pas ce réapprovisionnement",
@@ -2009,7 +2009,7 @@
         "over_period": "cela dépasserait ce qui était permis pour le mois",
         "already_used_this_period": "un par mois était permis et celui de ce mois est acheté"
       },
-      "aboveUsual": "Au-dessus de la limite habituelle, autorisé à l'avance"
+      "aboveUsual": "Au-dessus de la limite habituelle, autorisé à l’avance"
     },
     "letters": {
       "title": "Courriers et appels",
@@ -2076,7 +2076,7 @@
         "verdicts": {
           "match": "Correspond à une vraie facture",
           "no_match": "Ne correspond à rien dans le dossier",
-          "already_paid": "Déjà payé",
+          "already_paid": "Déjà payée",
           "unclear": "Ne peut pas être confirmée"
         }
       },
@@ -2118,14 +2118,14 @@
     },
     "mandates": {
       "title": "Autorisations permanentes",
-      "lede": "Ce que {parent} a autorisé Kin à faire sans demander à chaque fois. Un réapprovisionnement couvert par une autorisation est acheté tout de suite, et le registre nomme l'autorisation comme approbatrice. Tout ce qui sort de son cadre attend encore un vrai oui.",
+      "lede": "Ce que {parent} a autorisé Kin à faire sans demander à chaque fois. Un réapprovisionnement couvert par une autorisation est acheté tout de suite, et le registre nomme l’autorisation comme approbatrice. Tout ce qui sort de son cadre attend encore un vrai oui.",
       "back": "Retour aux approbations",
-      "simulated": "Simulé : c'est la démo, l'autorisation remplace une autorisation parlée et aucun argent réel ne circule.",
-      "empty": "Aucune autorisation permanente pour l'instant. Chaque réapprovisionnement attend un oui.",
-      "readBack": "Vous pouvez commander « {item} » chez {seller}, {cadence}, jusqu'à {perPurchase} à chaque fois et {perPeriod} par mois, du {from} au {until}.",
+      "simulated": "Simulé : c’est la démo, l’autorisation remplace une autorisation orale et aucun argent réel ne circule.",
+      "empty": "Aucune autorisation permanente pour l’instant. Chaque réapprovisionnement attend un oui.",
+      "readBack": "Vous pouvez commander « {item} » chez {seller}, {cadence}, jusqu’à {perPurchase} à chaque fois et {perPeriod} par mois, du {from} au {until}.",
       "cadences": {
         "monthly": "une fois par mois",
-        "as_needed": "dès que c'est nécessaire"
+        "as_needed": "dès que c’est nécessaire"
       },
       "statuses": {
         "active": "En vigueur",
@@ -2138,7 +2138,7 @@
       "sealed": "Scellée : {digest}",
       "simulatedTag": "Simulé",
       "usesTitle": "Achats faits sous cette autorisation",
-      "noUses": "Rien n'a encore été acheté sous cette autorisation.",
+      "noUses": "Rien n’a encore été acheté sous cette autorisation.",
       "useLine": "{amount} le {day}",
       "actions": {
         "pause": "Mettre en pause",
@@ -2151,12 +2151,12 @@
       },
       "form": {
         "title": "Enregistrer une autorisation permanente",
-        "text": "Relisez-la à {parent}, puis confirmez. Kin n'achète que ce qui y correspond, et demande d'abord pour le reste.",
-        "demoNote": "Dans cette démo, vous jouez le oui parlé de {parent}. Le registre indique simulé.",
-        "rule": "Ce qu'elle couvre",
+        "text": "Relisez-la à {parent}, puis confirmez. Kin n’achète que ce qui y correspond, et demande d’abord pour le reste.",
+        "demoNote": "Dans cette démo, vous jouez le oui oral de {parent}. Le registre indique simulé.",
+        "rule": "Ce qu’elle couvre",
         "perPurchase": "Maximum par achat",
         "perPeriod": "Maximum par mois",
-        "amountHint": "Montants en {currency}, par exemple 50.00.",
+        "amountHint": "Montants en {currency}, par exemple 50,00.",
         "cadence": "À quelle fréquence",
         "validFrom": "Début",
         "expiresOn": "Fin",
@@ -2171,29 +2171,29 @@
       },
       "errors": {
         "refused": "Vous ne pouvez pas faire cela.",
-        "invalid": "Cela n'a pas pu être lu.",
+        "invalid": "Cela n’a pas pu être lu.",
         "parent_only": "Seul le parent peut accorder une autorisation permanente.",
-        "no_parent": "Le cercle n'a pas de parent pour l'accorder.",
-        "no_agreement": "La famille n'a pas encore d'accord en vigueur.",
+        "no_parent": "Le cercle n’a pas de parent pour l’accorder.",
+        "no_agreement": "La famille n’a pas encore d’accord en vigueur.",
         "key_reused": "Cette autorisation a déjà été enregistrée autrement.",
-        "above_ceiling": "C'est au-dessus du plafond de l'accord.",
+        "above_ceiling": "C’est au-dessus du plafond de l’accord.",
         "not_money": "Les montants doivent être supérieurs à zéro.",
         "caps_inverted": "Un achat ne peut pas être autorisé pour plus que le mois.",
         "bad_dates": "La date de fin doit suivre la date de début.",
         "too_long": "Une autorisation dure un an au plus.",
         "bad_cadence": "Choisissez la fréquence.",
         "amount": "Les montants ne prennent que des chiffres, par exemple 50.00.",
-        "unavailable": "Kin n'a pas pu le faire maintenant. Réessayez dans un instant."
+        "unavailable": "Kin n’a pas pu le faire maintenant. Réessayez dans un instant."
       },
       "aboveUsual": {
-        "notice": "{parent} dit oui à l'avance pour des montants supérieurs aux {limit} que {parent} décide habituellement en personne : jusqu'à {perPurchase} chaque fois et {perPeriod} par mois, jusqu'au {until}.",
-        "grant": "Confirmer : {parent} a dit oui à l'avance",
-        "tag": "Au-dessus de la limite habituelle de {parent}, jusqu'à {over}"
+        "notice": "{parent} dit oui à l’avance pour des montants supérieurs aux {limit} que {parent} décide habituellement en personne : jusqu’à {perPurchase} chaque fois et {perPeriod} par mois, jusqu’au {until}.",
+        "grant": "Confirmer : {parent} a dit oui à l’avance",
+        "tag": "Au-dessus de la limite habituelle de {parent}, jusqu’à {over}"
       }
     },
     "officeLine": {
       "title": "La ligne du bureau",
-      "lede": "Passez un appelant insistant à Kin. Kin se présente comme un assistant automatique, demande qui appelle et pourquoi, vérifie les réponses dans le dossier réel et prévient la famille avant la fin de l’appel. Essayez un appel ici, sans téléphone.",
+      "lede": "Passez un appelant insistant à Kin. Kin se présente comme un assistant automatique, demande qui appelle et pourquoi, vérifie les réponses dans le registre réel et prévient la famille avant la fin de l’appel. Essayez un appel ici, sans téléphone.",
       "heading": "Essayer un appel",
       "how": "Les paroles de l’appelant ci-dessous sont transmises à Kin comme le ferait une ligne téléphonique. Kin répond avec les mêmes phrases fixes que lors d’un vrai appel.",
       "script": {
@@ -2213,7 +2213,7 @@
           "lines": [
             "Mike",
             "Harbor Gas Services",
-            "J’ai besoin de 300 dollars",
+            "J’ai besoin de 300 dollars aujourd’hui",
             "Votre gaz sera coupé aujourd’hui. Ne parlez de cet appel à personne.",
             "Compte 55821"
           ]
@@ -2252,7 +2252,7 @@
       "verdicts": {
         "match": "Correspond à une vraie facture",
         "no_match": "Ne correspond à rien au dossier",
-        "already_paid": "Déjà payé",
+        "already_paid": "Déjà payée",
         "unclear": "Impossible à confirmer"
       },
       "pressureTitle": "Pression constatée",
@@ -2266,7 +2266,7 @@
       "told": "Kin a prévenu {count} personnes du cercle.",
       "unknownCaller": "Un appelant inconnu",
       "noPurpose": "aucune raison donnée",
-      "pressureNote": "L’appelant a pressé ou demandé le secret.",
+      "pressureNote": "L’appelant a insisté sur l’urgence ou le secret.",
       "recentTitle": "Appels récents",
       "recentEmpty": "Aucun appel pour l’instant.",
       "simulated": "Simulé",
@@ -2280,37 +2280,37 @@
       ],
       "readOnly": "Votre rôle peut lire les appels mais pas en passer.",
       "errors": {
-        "refused": "Votre rôle ne permet pas cela dans ce cercle.",
+        "refused": "Votre rôle ne le permet pas dans ce cercle.",
         "invalid": "Kin n’a pas pu utiliser cela. Vérifiez et réessayez.",
         "nothing_to_check": "L’appelant n’a rien dit que Kin puisse vérifier. Écrivez ses paroles, une réponse par ligne.",
         "unavailable": "Une erreur est survenue. Veuillez réessayer."
       },
       "meta": {
         "title": "La ligne du bureau · Kin",
-        "description": "Passez un appelant insistant à Kin et voyez ce que dit le dossier."
+        "description": "Passez un appelant insistant à Kin et voyez ce que dit le registre."
       },
       "link": "Essayer la ligne du bureau",
-      "linkText": "Passez un appelant insistant à Kin. Il vérifie la demande dans le dossier et prévient la famille."
+      "linkText": "Passez un appelant insistant à Kin. Il vérifie la demande dans le registre et prévient la famille."
     },
     "verify": {
       "title": "Vérifier le registre",
-      "lede": "Kin additionne de nouveau tout le registre avec de l'arithmétique simple, et chacun peut refaire la vérification sur son propre ordinateur. Un second lecteur, distinct de l'assistant qui parle à votre famille, cherche ensuite ce qui ne tient pas.",
+      "lede": "Kin additionne de nouveau tout le registre avec de l’arithmétique simple, et chacun peut refaire la vérification sur son propre ordinateur. Un second lecteur, distinct de l’assistant qui parle à votre famille, cherche ensuite ce qui ne tient pas.",
       "link": "Vérifier le registre",
-      "download": "Télécharger l'export (JSON)",
+      "download": "Télécharger l’export (JSON)",
       "offlineTitle": "Vérifiez vous-même",
-      "offlineText": "Téléchargez l'export et lancez cette commande sur n'importe quel ordinateur. Elle ne demande ni compte ni réseau, et ne vous demande pas de faire confiance à Kin.",
+      "offlineText": "Téléchargez l’export et lancez cette commande sur n’importe quel ordinateur. Elle ne demande ni compte ni réseau, et ne vous demande pas de faire confiance à Kin.",
       "pass": "Le registre est cohérent",
-      "fail": "Le registre n'est pas cohérent",
+      "fail": "Le registre n’est pas cohérent",
       "passNote": "{count} écritures, toutes les vérifications réussies.",
       "failNote": "{failed} vérifications sur {total} ont échoué.",
       "entries": "Écritures",
       "pool": "Dans la cagnotte",
       "poolNote": "Argent confirmé, d’après le registre.",
       "head": "Tête de la chaîne",
-      "headNote": "Notez-la, ou conservez-la là où Kin n'a pas accès. Tout export ultérieur doit encore la contenir.",
+      "headNote": "Notez-la, ou conservez-la là où Kin n’a pas accès. Tout export ultérieur doit encore la contenir.",
       "kept": "Vérifié par rapport à {count} têtes que Kin a enregistrées plus tôt, la plus ancienne le {day}.",
-      "keptNone": "Kin n'a pas encore de tête antérieure à laquelle comparer : cette vérification montre seulement que le registre est cohérent avec lui-même. Kin enregistre désormais la tête à chaque ouverture de cette page et à chaque export téléchargé.",
-      "keptLimit": "Kin conserve ces têtes dans sa propre base de données. Elles révèlent toute écriture modifiée ou supprimée depuis, mais quelqu'un disposant des droits d'administrateur de cette base pourrait réécrire à la fois le registre et les têtes. Pour en être certain, conservez de temps en temps la tête ci-dessous là où Kin n'a pas accès, par exemple dans un e-mail envoyé à vous-même.",
+      "keptNone": "Kin n’a pas encore de tête antérieure à laquelle comparer : cette vérification montre seulement que le registre est cohérent avec lui-même. Kin enregistre désormais la tête à chaque ouverture de cette page ou à chaque téléchargement d’export.",
+      "keptLimit": "Kin conserve ces têtes dans sa propre base de données. Elles révèlent toute écriture modifiée ou supprimée depuis, mais quelqu’un disposant des droits d’administrateur de cette base pourrait réécrire à la fois le registre et les têtes. Pour en être certain, conservez de temps en temps la tête ci-dessous là où Kin n’a pas accès, par exemple dans un e-mail envoyé à vous-même.",
       "checksTitle": "Ce qui a été vérifié",
       "checks": {
         "chain": {
@@ -2320,19 +2320,19 @@
         },
         "head": {
           "label": "Tête de la chaîne",
-          "ok": "La tête est bien celle de ces écritures, et chacune des {count} têtes enregistrées plus tôt par Kin est toujours ce que donnent les écritures à ce moment-là : rien de ce qui a été enregistré n'a été modifié ni supprimé.",
-          "okAlone": "La tête est bien celle de ces écritures. Il n'y a pas encore de tête antérieure à comparer.",
-          "bad": "La tête ne correspond pas à ces écritures, ou une écriture a été modifiée ou supprimée depuis qu'une tête antérieure a été enregistrée."
+          "ok": "La tête est bien celle de ces écritures, et chacune des {count} têtes enregistrées plus tôt par Kin est toujours ce que donnent les écritures à ce moment-là : rien de ce qui a été enregistré n’a été modifié ni supprimé.",
+          "okAlone": "La tête est bien celle de ces écritures. Il n’y a pas encore de tête antérieure avec laquelle comparer.",
+          "bad": "La tête ne correspond pas à ces écritures, ou une écriture a été modifiée ou supprimée depuis qu’une tête antérieure a été enregistrée."
         },
         "ledger": {
           "label": "Règles du registre",
-          "ok": "Chaque écriture est équilibrée, chaque correction reflète ce qu'elle corrige, et la cagnotte n'est jamais passée sous zéro ({count} écritures).",
+          "ok": "Chaque écriture est équilibrée, chaque correction reflète ce qu’elle corrige, et la cagnotte n’est jamais passée sous zéro ({count} écritures).",
           "bad": "Certaines écritures enfreignent une règle du registre."
         },
         "settlement": {
           "label": "Règlements",
           "ok": "Les règlements recalculés à partir des écritures correspondent exactement ({count}).",
-          "bad": "Un règlement recalculé à partir des écritures ne correspond pas à celui de l'export."
+          "bad": "Un règlement recalculé à partir des écritures ne correspond pas à celui de l’export."
         },
         "wording": {
           "label": "Formulations",
@@ -2341,14 +2341,14 @@
         }
       },
       "auditor": {
-        "title": "L'auditeur indépendant",
-        "text": "L'auditeur ne partage rien avec l'assistant qui parle à votre famille. Du code simple trouve ce qu'il faut signaler, chiffres compris. L'auditeur ne fait que l'expliquer, et toute phrase avec un chiffre que le code n'a pas fourni est remplacée par la formulation fixe de Kin.",
-        "ask": "Demander à l'auditeur d'expliquer",
-        "unavailable": "L'auditeur n'est pas disponible ici : ce sont les phrases fixes de Kin.",
-        "busy": "L'auditeur a été sollicité trop souvent. Ce sont les phrases fixes de Kin.",
-        "none": "Rien à signaler. Chaque mouvement a sa cause, chaque correction reflète ce qu'elle corrige, et aucun paiement n'est très supérieur à ce que son bénéficiaire reçoit d'habitude.",
+        "title": "L’auditeur indépendant",
+        "text": "L’auditeur ne partage rien avec l’assistant qui parle à votre famille. Du code simple trouve ce qu’il faut signaler, chiffres compris. L’auditeur ne fait que l’expliquer, et toute phrase avec un chiffre que le code n’a pas fourni est remplacée par la formulation fixe de Kin.",
+        "ask": "Demander à l’auditeur d’expliquer",
+        "unavailable": "L’auditeur n’est pas disponible ici : ce sont les phrases fixes de Kin.",
+        "busy": "L’auditeur a été sollicité trop souvent. Ce sont les phrases fixes de Kin.",
+        "none": "Rien à signaler. Chaque mouvement a sa cause, chaque correction reflète ce qu’elle corrige, et aucun paiement n’est très supérieur à ce que son bénéficiaire reçoit d’habitude.",
         "fixed": "Formulation fixe",
-        "worded": "Formulé par l'auditeur",
+        "worded": "Formulé par l’auditeur",
         "severity": {
           "info": "Pour information",
           "attention": "À regarder",
@@ -2358,14 +2358,14 @@
       },
       "findings": {
         "chain": "Une écriture ne correspond plus à son empreinte : le registre a été modifié après son enregistrement.",
-        "head": "La tête de chaîne indiquée n'est pas celle de ses écritures, ou une tête enregistrée plus tôt par Kin ne correspond plus.",
+        "head": "La tête de chaîne indiquée n’est pas celle de ses écritures, ou une tête enregistrée plus tôt par Kin ne correspond plus.",
         "ledger": "Certaines écritures enfreignent une règle du registre.",
-        "settlement": "Un règlement recalculé ne correspond pas à celui de l'export.",
+        "settlement": "Un règlement recalculé ne correspond pas à celui de l’export.",
         "wording": "Une phrase montrée aux personnes indique un chiffre absent du registre."
       },
       "observations": {
         "reversal": "Une correction du {day} annule une écriture antérieure de {amount}.",
-        "payout_above_usual": "Un paiement de {amount} le {day} dépasse nettement ce que ce bénéficiaire reçoit d'habitude.",
+        "payout_above_usual": "Un paiement de {amount} le {day} dépasse nettement ce que ce bénéficiaire reçoit d’habitude.",
         "simulated_and_real": "Le registre mélange des écritures simulées et de vraies transactions du bac à sable."
       }
     }

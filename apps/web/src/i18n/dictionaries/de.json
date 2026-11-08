@@ -1693,7 +1693,7 @@
       "errors": {
         "shares": "Die Anteile müssen zusammen 100 Prozent ergeben.",
         "amount": "Geben Sie die Rechnung als Betrag ein, zum Beispiel 900,00.",
-        "leaving": "Dieses Mitglied kann sich nicht zurückziehen: Jemand muss die Kosten weiter teilen."
+        "leaving": "Dieses Mitglied kann sich nicht zurückziehen: Jemand muss übrig bleiben, um die Kosten zu teilen."
       },
       "title": "Was-wäre-wenn ausprobieren",
       "lede": "Sehen Sie, was eine Änderung bewirken würde, bevor jemand zustimmt: ein anderer Anteil, ein Mitglied, das sich zurückzieht, eine große Rechnung.",
@@ -1717,7 +1717,7 @@
       "membersTitle": "Jedes Mitglied, heute und in der Simulation",
       "share": "Anteil",
       "target": "Vereinbarter Anteil am Monat",
-      "now": "Heute",
+      "now": "Jetzt",
       "simulated": "Simulation",
       "billTitle": "Eine Rechnung über {amount}",
       "billPool": "Der Topf kann jetzt {amount} ausgeben.",
@@ -2007,7 +2007,7 @@
         "out_of_scope": "sie deckt diesen Nachkauf nicht ab",
         "above_per_purchase": "der Preis liegt über dem für einen Kauf Erlaubten",
         "over_period": "es würde das für den Monat Erlaubte überschreiten",
-        "already_used_this_period": "einer pro Monat war erlaubt und der dieses Monats ist gekauft"
+        "already_used_this_period": "einer pro Monat war erlaubt, und der dieses Monats wurde bereits gekauft"
       },
       "aboveUsual": "Über der üblichen Grenze, im Voraus erlaubt"
     },
@@ -2120,7 +2120,7 @@
       "title": "Dauerhafte Erlaubnisse",
       "lede": "Was {parent} Kin erlaubt hat, ohne jedes Mal zu fragen. Ein Nachkauf innerhalb einer Erlaubnis wird sofort gekauft, und das Protokoll nennt die Erlaubnis als Genehmigende. Alles außerhalb wartet weiter auf ein echtes Ja.",
       "back": "Zurück zu den Freigaben",
-      "simulated": "Simuliert: Das ist die Demo, die Erlaubnis ersetzt eine gesprochene, und es bewegt sich kein echtes Geld.",
+      "simulated": "Simuliert: Das ist die Demo, die Erlaubnis ersetzt eine gesprochene, und es fließt kein echtes Geld.",
       "empty": "Noch keine dauerhafte Erlaubnis. Jeder Nachkauf wartet auf ein Ja.",
       "readBack": "Sie dürfen „{item}“ bei {seller} bestellen, {cadence}, bis zu {perPurchase} pro Bestellung und {perPeriod} im Monat, von {from} bis {until}.",
       "cadences": {
@@ -2178,7 +2178,7 @@
         "key_reused": "Diese Erlaubnis wurde schon anders erfasst.",
         "above_ceiling": "Das liegt über der Obergrenze der Vereinbarung.",
         "not_money": "Beträge müssen über null liegen.",
-        "caps_inverted": "Ein Kauf darf nicht mehr erlaubt sein als der Monat.",
+        "caps_inverted": "Ein einzelner Kauf darf nicht höher sein als das Limit für den Monat.",
         "bad_dates": "Das Ende muss nach dem Beginn liegen.",
         "too_long": "Eine Erlaubnis gilt höchstens ein Jahr.",
         "bad_cadence": "Wählen Sie, wie oft.",
@@ -2186,16 +2186,16 @@
         "unavailable": "Kin konnte das gerade nicht tun. Versuchen Sie es gleich noch einmal."
       },
       "aboveUsual": {
-        "notice": "{parent} sagt im Voraus Ja zu Beträgen über den {limit}, über die {parent} sonst selbst entscheidet: bis zu {perPurchase} je Kauf und {perPeriod} im Monat, bis zum {until}.",
+        "notice": "{parent} sagt im Voraus Ja zu Beträgen über {limit}, über die {parent} sonst selbst entscheidet: bis zu {perPurchase} je Kauf und {perPeriod} im Monat, bis zum {until}.",
         "grant": "Bestätigen: {parent} hat im Voraus Ja gesagt",
         "tag": "Über der üblichen Grenze von {parent}, um bis zu {over}"
       }
     },
     "officeLine": {
       "title": "Die Bürolinie",
-      "lede": "Geben Sie einen drängenden Anrufer an Kin weiter. Kin sagt, dass es ein automatischer Assistent ist, fragt, wer anruft und wofür, prüft die Antworten an den echten Unterlagen und informiert die Familie, bevor das Gespräch endet. Probieren Sie hier einen Anruf ohne Telefon.",
+      "lede": "Geben Sie einen drängenden Anrufer an Kin weiter. Kin sagt, dass es ein automatischer Assistent ist, fragt, wer anruft und wofür, prüft die Antworten anhand der echten Aufzeichnungen und informiert die Familie, bevor das Gespräch endet. Probieren Sie hier einen Anruf ohne Telefon aus.",
       "heading": "Einen Anruf ausprobieren",
-      "how": "Die Wörter des Anrufers unten werden Kin so zugespielt, wie eine Telefonleitung sie trägt. Kin antwortet mit denselben festen Sätzen wie bei einem echten Anruf.",
+      "how": "Die Worte des Anrufers unten werden Kin so zugespielt, wie eine Telefonleitung sie übertragen würde. Kin antwortet mit denselben festen Sätzen wie bei einem echten Anruf.",
       "script": {
         "disclosure": "Guten Tag. Ich bin Kin, ein automatischer Assistent dieser Familie. Dieses Gespräch wird als schriftliches Protokoll festgehalten. Ich stelle Ihnen einige Fragen.",
         "ask_caller": "Wer spricht, bitte?",
@@ -2209,11 +2209,11 @@
       "scenariosLabel": "Mit einem Beispiel beginnen",
       "scenarios": {
         "scam": {
-          "label": "Ein Betrug: unbekannte Gasfirma, heute 300",
+          "label": "Ein Betrug: unbekannte Gasfirma, 300 heute",
           "lines": [
             "Mike",
             "Harbor Gas Services",
-            "Ich brauche 300 Dollar",
+            "Ich brauche heute 300 Dollar",
             "Ihr Gas wird heute abgestellt. Sagen Sie niemandem etwas von diesem Anruf.",
             "Konto 55821"
           ]
@@ -2242,7 +2242,7 @@
       "callerLinesLabel": "Was der Anrufer sagt",
       "callerLinesHint": "Eine Antwort pro Zeile, in der Reihenfolge von Kins Fragen: wer anruft, welche Organisation, wie viel, wofür und eine Referenz.",
       "numberLabel": "Nummer, von der der Anruf kommt",
-      "numberHint": "Freiwillig.",
+      "numberHint": "Optional.",
       "submit": "Anruf starten",
       "calling": "In der Leitung…",
       "transcriptTitle": "Der Anruf",
@@ -2280,17 +2280,17 @@
       ],
       "readOnly": "Ihre Rolle darf Anrufe lesen, aber keinen auslösen.",
       "errors": {
-        "refused": "Ihre Rolle darf das in diesem Kreis nicht.",
+        "refused": "Ihre Rolle erlaubt das in diesem Kreis nicht.",
         "invalid": "Kin konnte das nicht verwenden. Bitte prüfen Sie es und versuchen Sie es erneut.",
         "nothing_to_check": "Der Anrufer sagte nichts, das Kin prüfen konnte. Schreiben Sie auf, was er sagt, eine Antwort pro Zeile.",
         "unavailable": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
       },
       "meta": {
         "title": "Die Bürolinie · Kin",
-        "description": "Geben Sie einen drängenden Anrufer an Kin weiter und sehen Sie, was die Unterlagen sagen."
+        "description": "Geben Sie einen drängenden Anrufer an Kin weiter und sehen Sie, was die Aufzeichnungen sagen."
       },
       "link": "Die Bürolinie ausprobieren",
-      "linkText": "Geben Sie einen drängenden Anrufer an Kin weiter. Es prüft die Forderung an den Unterlagen und informiert die Familie."
+      "linkText": "Geben Sie einen drängenden Anrufer an Kin weiter. Es prüft die Forderung anhand der Aufzeichnungen und informiert die Familie."
     },
     "verify": {
       "title": "Aufzeichnung prüfen",
@@ -2310,7 +2310,7 @@
       "headNote": "Notieren Sie ihn oder speichern Sie ihn dort, wohin Kin nicht reicht. Jeder spätere Export muss ihn noch enthalten.",
       "kept": "Geprüft gegen {count} Kopfwerte, die Kin früher aufgezeichnet hat, der älteste vom {day}.",
       "keptNone": "Kin hat noch keinen früheren Kopfwert zum Vergleichen, daher zeigt diese Prüfung nur, dass die Aufzeichnung in sich stimmig ist. Kin zeichnet den Kopfwert jetzt jedes Mal auf, wenn diese Seite geöffnet oder ein Export heruntergeladen wird.",
-      "keptLimit": "Kin bewahrt diese Kopfwerte in seiner eigenen Datenbank auf. Sie decken jeden seither geänderten oder entfernten Eintrag auf, aber wer Administratorrechte auf diese Datenbank hat, könnte Aufzeichnung und Kopfwerte zugleich umschreiben. Für volle Sicherheit speichern Sie den Kopfwert unten von Zeit zu Zeit an einem Ort, den Kin nicht erreicht, etwa in einer E-Mail an sich selbst.",
+      "keptLimit": "Kin bewahrt diese Kopfwerte in seiner eigenen Datenbank auf. Sie decken jeden seither geänderten oder entfernten Eintrag auf, aber jemand mit Administratorzugang zu dieser Datenbank könnte Aufzeichnung und Kopfwerte zugleich umschreiben. Für volle Sicherheit speichern Sie den Kopfwert unten von Zeit zu Zeit an einem Ort, den Kin nicht erreicht, etwa in einer E-Mail an sich selbst.",
       "checksTitle": "Was geprüft wurde",
       "checks": {
         "chain": {
