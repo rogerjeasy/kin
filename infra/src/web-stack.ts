@@ -7,7 +7,7 @@ import type { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
 import type { InfraConfig } from "./config.ts";
-import { DATABASE_SETTINGS, PAYPAL_SETTINGS, TWILIO_SETTINGS } from "./database-settings.ts";
+import { DATABASE_SETTINGS, PAYPAL_SETTINGS, SHARED_CONNECTOR, TWILIO_SETTINGS } from "./database-settings.ts";
 import { WEB_SETTINGS } from "./web-settings.ts";
 
 /** Claude Opus 4.6 as a US cross-region inference profile, and the foundation model it routes to. Matches `BEDROCK_INVOKE_DEFAULT_MODEL` in `@kin/config`. */
@@ -178,6 +178,9 @@ export class WebStack extends Stack {
       subnets: ssm.StringListParameter.valueForTypedListParameter(this, DATABASE_SETTINGS.servicesSubnets),
       securityGroups: [setting(DATABASE_SETTINGS.servicesSecurityGroup)],
     });
+
+    // App Runner allows one connector per network and security group, so the phone service uses this one.
+    new ssm.StringParameter(this, "ConnectorArn", { parameterName: SHARED_CONNECTOR.arn, stringValue: connector.attrVpcConnectorArn });
 
     const service = new apprunner.CfnService(this, "Service", {
       serviceName: "kin-web",

@@ -869,12 +869,17 @@ describe("Kin's phone service", () => {
     voice.hasOutput("Url", { Value: Match.anyValue() });
   });
 
-  it("reaches the database through Kin's services subnets, like the web app", () => {
-    voice.hasResourceProperties("AWS::AppRunner::VpcConnector", {
-      VpcConnectorName: "kin-voice",
-      Subnets: { Ref: Match.stringLikeRegexp("SsmParameterValuekinservicessubnets") },
-      SecurityGroups: [{ Ref: Match.stringLikeRegexp("SsmParameterValuekinservicessecuritygroup") }],
+  it("reaches the database through the web app's connector, because App Runner allows one for a network", () => {
+    // A second connector for the same security group is refused, so it makes none and reads the web app's.
+    voice.resourceCountIs("AWS::AppRunner::VpcConnector", 0);
+    voice.hasResourceProperties("AWS::AppRunner::Service", {
+      NetworkConfiguration: { EgressConfiguration: { EgressType: "VPC", VpcConnectorArn: { Ref: Match.stringLikeRegexp("SsmParameterValuekinwebvpcconnectorarn") } } },
     });
+  });
+
+  it("is deployed after the web app, which makes the connector and publishes it", () => {
+    expect(voiceStacks.voice?.dependencies).toContain(voiceStacks.web);
+    Template.fromStack(voiceStacks.web).hasResourceProperties("AWS::SSM::Parameter", { Name: "kin-web-vpc-connector-arn", Value: Match.anyValue() });
   });
 
   it("is told a placeholder address until the real one is configured, then the real one", () => {

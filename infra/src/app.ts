@@ -67,6 +67,8 @@ export function buildKin(app: App, config: InfraConfig): KinStacks {
   const voice = config.voice ? new VoiceStack(app, "KinVoice", config, { env }) : null;
   // It reads the database and Twilio settings KinData publishes.
   voice?.addDependency(data);
+  // It uses the connector the web app made.
+  voice?.addDependency(web);
 
   // Every role these stacks create carries the boundary, so no role made
   // during a deployment can do more than the deployment itself.

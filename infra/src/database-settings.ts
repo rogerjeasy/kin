@@ -41,6 +41,12 @@ export const TWILIO_SETTINGS = {
   stateKeySecretArn: "kin-voice-state-key-arn",
 } as const;
 
+/**
+ * App Runner allows one VPC connector for a given network and security group, so the phone service
+ * shares the web app's: KinWeb publishes it here and KinVoice reads it, and so deploys after it.
+ */
+export const SHARED_CONNECTOR = { arn: "kin-web-vpc-connector-arn" } as const;
+
 /** The roles Kin connects as (packages/db/migrations/0001_security.sql). */
 export const DATABASE_ROLES = ["app", "service", "provisioner"] as const;
 

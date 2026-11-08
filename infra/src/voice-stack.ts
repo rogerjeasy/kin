@@ -7,7 +7,7 @@ import type { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
 import type { InfraConfig } from "./config.ts";
-import { DATABASE_SETTINGS, TWILIO_SETTINGS } from "./database-settings.ts";
+import { DATABASE_SETTINGS, SHARED_CONNECTOR, TWILIO_SETTINGS } from "./database-settings.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -99,12 +99,9 @@ export class VoiceStack extends Stack {
       { name: "KIN_VOICE_STATE_KEY", value: stateKeySecret },
     ];
 
-    // Out through Kin's own network, where the database admits Kin's services.
-    const connector = new apprunner.CfnVpcConnector(this, "Network", {
-      vpcConnectorName: "kin-voice",
-      subnets: ssm.StringListParameter.valueForTypedListParameter(this, DATABASE_SETTINGS.servicesSubnets),
-      securityGroups: [setting(DATABASE_SETTINGS.servicesSecurityGroup)],
-    });
+    // Out through the web app's connector: Kin's own network, where the database admits Kin's services.
+    // App Runner refuses a second connector for the same security group, so it is shared (KinWeb publishes it).
+    const connectorArn = setting(SHARED_CONNECTOR.arn);
 
     const service = new apprunner.CfnService(this, "Service", {
       serviceName: "kin-voice",
@@ -120,7 +117,7 @@ export class VoiceStack extends Stack {
       // The smallest size App Runner offers: the service only answers webhooks.
       instanceConfiguration: { cpu: "0.25 vCPU", memory: "0.5 GB", instanceRoleArn: instance.roleArn },
       networkConfiguration: {
-        egressConfiguration: { egressType: "VPC", vpcConnectorArn: connector.attrVpcConnectorArn },
+        egressConfiguration: { egressType: "VPC", vpcConnectorArn: connectorArn },
         ingressConfiguration: { isPubliclyAccessible: true },
       },
       healthCheckConfiguration: { protocol: "HTTP", path: "/health", interval: 10, timeout: 5, healthyThreshold: 1, unhealthyThreshold: 5 },
