@@ -1,4 +1,4 @@
-import { auditLedger, decimalAmount, entryHeadline, type LedgerEntry, type LedgerProblemCode } from "@kin/domain";
+import { auditLedger, decimalAmount, entryHeadline, spokenNumbers, spokenNumbersAreAllowed, type LedgerEntry, type LedgerProblemCode } from "@kin/domain";
 
 import type { AuditBundle, SettlementClaim } from "./bundle.ts";
 import { canonicalJson, chainHashes, genesisHash } from "./chain.ts";
@@ -150,6 +150,7 @@ function valueOf(token: string): string {
  * compared by its value to the entry's own cents; a date only as the entry's
  * whole date or period, or as one of their parts when it stands alone as a
  * whole number. A date part can never stand in for an amount with cents.
+ * Numbers written in words are valued and held to the same rule.
  */
 export function wordingMatchesEntry(text: string, entry: LedgerEntry): boolean {
   if (text.trim() === "" || text.length > MAX_WORDS_LENGTH || /https?:|www\.|@/iu.test(text)) return false;
@@ -157,10 +158,10 @@ export function wordingMatchesEntry(text: string, entry: LedgerEntry): boolean {
   if ([...text.matchAll(ISO_DATE)].some((match) => !dates.includes(match[0]))) return false;
   const amounts = new Set(entryCents(entry).map((cents) => valueOf(decimalAmount({ cents, currency: entry.currency }))));
   const dateParts = new Set(dates.flatMap((date) => date.split("-").map((part) => String(Number(part)))));
-  return [...text.replace(ISO_DATE, " ").matchAll(NUMBER)].every((match) => {
-    const value = valueOf(match[0]);
-    return amounts.has(value) || (!value.includes(".") && dateParts.has(value));
-  });
+  // The entry's own description may say a number in words ("Amara's twelve hours"), and a sentence may repeat it.
+  const described = new Set(spokenNumbers(entry.description).flatMap((number) => number.readings));
+  const held = (value: string) => amounts.has(value) || (!value.includes(".") && dateParts.has(value));
+  return [...text.replace(ISO_DATE, " ").matchAll(NUMBER)].every((match) => held(valueOf(match[0]))) && spokenNumbersAreAllowed(text, (value) => held(value) || described.has(value));
 }
 
 function checkWording(bundle: AuditBundle): Check {

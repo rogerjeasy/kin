@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "1.1.0",
-    "@kin/config": "workspace:*"
+    "@kin/config": "workspace:*",
+    "@kin/domain": "workspace:*"
   }
 }

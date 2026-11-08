@@ -196,3 +196,5 @@ export { CAREGIVER_CATEGORY, monthlyStatement, yearInReview } from "./statement.
 export type { PeriodFigures, StatementAmount, StatementQuery, YearInReview, YearMonth } from "./statement.ts";
 export { LEDGER_PROBLEMS, auditLedger } from "./verify-ledger.ts";
 export type { LedgerAudit, LedgerProblem, LedgerProblemCode } from "./verify-ledger.ts";
+export { spokenNumbers, spokenNumbersAreAllowed } from "./number-words.ts";
+export type { SpokenNumber } from "./number-words.ts";

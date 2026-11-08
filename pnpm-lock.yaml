@@ -357,6 +357,9 @@ importers:
       '@kin/config':
         specifier: workspace:*
         version: link:../config
+      '@kin/domain':
+        specifier: workspace:*
+        version: link:../domain
 
   packages/auth:
     dependencies:

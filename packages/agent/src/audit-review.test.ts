@@ -24,6 +24,13 @@ describe("the independent auditor", () => {
     expect(Object.keys(model.requests[0] ?? {}).toSorted()).toEqual(["schema", "system", "user"]);
   });
 
+  it("refuses a sentence that spells out a number the finding does not hold, and asks for digits", async () => {
+    const model = fakeModel(said({ id: "a", text: "A payment of eighty-six dollars was larger than usual." }, { id: "b", text: "Simulated and sandbox entries are mixed." }));
+    const reviewed = await reviewFindings(model, items, "English");
+    expect(reviewed.map((item) => item.source)).toEqual(["template", "model"]);
+    expect(model.requests[0]?.system).toContain("as digits, never in words");
+  });
+
   it("keeps every finding once and in order when the model omits one, invents one or fails", async () => {
     const partial = await reviewFindings(fakeModel(said({ id: "zzz", text: "Invented." })), items, "English");
     expect(partial.map((item) => item.id)).toEqual(["a", "b"]);
