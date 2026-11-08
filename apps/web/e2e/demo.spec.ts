@@ -72,6 +72,22 @@ test.describe("the demo banner on a phone", () => {
     await startDemo(page);
     await seatAs(page, "Marcus");
   });
+
+  // The label and the role switcher share the first line. A long label (French, German) or a wider font once pushed the
+  // switcher past the edge on a Linux runner while fitting on a Mac, so the text is widened here and the switcher must
+  // wrap onto its own line instead of overflowing, whatever the platform's fonts.
+  for (const locale of ["fr", "de", "it"] as const) {
+    test(`keeps the role switcher inside the screen when the text is wider, in ${locale}`, async ({ page }) => {
+      await startDemo(page);
+      await page.goto(`/${locale}/dashboard`);
+      await page.addStyleTag({ content: "html { font-size: 125% !important; }" });
+      const banner = page.getByRole("note");
+      await expect(banner).toBeVisible();
+      const box = await banner.boundingBox();
+      expect((box?.x ?? 0) + (box?.width ?? Number.POSITIVE_INFINITY)).toBeLessThanOrEqual(phone.width);
+      await expectNoHorizontalOverflow(page);
+    });
+  }
 });
 
 test.describe("the Demo button", () => {

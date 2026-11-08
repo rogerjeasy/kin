@@ -40,7 +40,8 @@ export function DemoBannerFrame({ label, switcher, explanation, actions }: DemoB
         <FlaskConicalIcon aria-hidden="true" className="size-4 shrink-0 text-highlight" />
         {label}
       </strong>
-      <div className="order-2 min-w-0 flex-1 sm:flex-none">{switcher}</div>
+      {/* A flex-1 item with a zero basis never wraps, so a long label (French) pushed the switcher past the edge. A real basis wraps it onto its own line when it cannot fit, whatever the font. */}
+      <div className="order-2 min-w-0 flex-1 basis-28 sm:flex-none sm:basis-auto">{switcher}</div>
       <div id={detailsId} className="order-3 contents">
         <p className={cn("order-4 basis-full py-1 text-muted-foreground sm:order-5", open ? "block" : "hidden sm:block")}>{explanation}</p>
         <div className={cn("order-5 flex-wrap items-center gap-2 sm:order-3", shown)}>{actions}</div>
