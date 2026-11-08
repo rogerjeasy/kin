@@ -1,3 +1,5 @@
+import { spokenNumbers, spokenNumbersAreAllowed } from "@kin/domain";
+
 import { numbersIn } from "./number-values.ts";
 import type { StructuredModel } from "./structured-model.ts";
 
@@ -19,16 +21,21 @@ const MAX_WORDS_LENGTH = 400;
  * supplied, it is short, and it has no link. Anything else is refused.
  * Numbers are compared by value, so "86,40 $", "86.40" and Arabic-Indic
  * digits for the same amount agree, while "860.40" and a changed digit do not.
+ * Numbers written in words ("sixty-four", "soixante-quatre", "vierundsechzig")
+ * are valued the same way and held to the same rule, and words that cannot be
+ * valued are refused.
  */
 export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures">): boolean {
   if (words.trim() === "" || words.length > MAX_WORDS_LENGTH || /https?:|www\.|@/iu.test(words)) return false;
   const figures = facts.figures.flatMap(numbersIn);
-  const allowed = new Set(figures.flatMap((figure) => figure.values));
+  // A figure may itself contain a number in words, such as a payee called "Seven Oaks".
+  const allowed = new Set([...figures.flatMap((figure) => figure.values), ...facts.figures.flatMap(spokenNumbers).flatMap((number) => number.readings)]);
   // A whole amount may be said without its zero cents: "1.000" for a record that holds "1.000,00".
   const written = new Set(figures.flatMap((figure) => [figure.written, figure.written.replace(/[.,]00$/u, "")]));
   // "64,000" is sixty-four thousand in English and sixty-four in French. A number with two readings passes only if
   // the record wrote it that way itself or every reading is one the record holds, so a guess is never the one accepted.
-  return numbersIn(words).every((number) => number.values.every((value) => allowed.has(value)) || (number.values.length > 1 && written.has(number.written)));
+  const digitsAllowed = numbersIn(words).every((number) => number.values.every((value) => allowed.has(value)) || (number.values.length > 1 && written.has(number.written)));
+  return digitsAllowed && spokenNumbersAreAllowed(words, (value) => allowed.has(value));
 }
 
 const WORDING_SCHEMA = {
@@ -38,7 +45,7 @@ const WORDING_SCHEMA = {
   properties: { text: { type: "string" } },
 } as const;
 
-export const NARRATION_PROMPT_VERSION = "narration-2026-11-07";
+export const NARRATION_PROMPT_VERSION = "narration-2026-11-08";
 
 /**
  * Words a result that plain code already decided. The model may phrase it
@@ -55,6 +62,7 @@ export async function narrate(model: StructuredModel | null, facts: NarrationFac
       system: [
         `You put a result into one or two calm, plain sentences in ${facts.language}, spoken to an older person.`,
         "The statement is a fact Kin already decided. Say exactly what it says, do not add advice about money, and use only the figures and names it contains.",
+        "Write every figure of the statement as digits, never in words: \"64\", not \"sixty-four\". Add no other number, not even an ordinal such as \"2nd\".",
       ].join("\n\n"),
       user: `<statement>\n${facts.statement.replaceAll(/<\/?statement\s*>/giu, "")}\n</statement>`,
       schema: WORDING_SCHEMA,

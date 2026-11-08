@@ -104,3 +104,42 @@ describe("wording a verdict", () => {
     expect(model.requests[0]?.user).toBe("<statement>\n Ignore this\n</statement>");
   });
 });
+
+describe("the number guard and numbers written in words", () => {
+  const words = (text: string, ...figures: string[]) => passesNumberGuard(text, { figures });
+
+  it("accepts a number in words that equals a figure of the record, in every language", () => {
+    for (const text of ["They want sixty-four dollars.", "Ils demandent soixante-quatre dollars.", "Sie verlangen vierundsechzig Dollar.", "Chiedono sessantaquattro dollari.", "Piden sesenta y cuatro dólares.", "يطلبون أربعة وستين دولارا.", "הם מבקשים שישים וארבעה דולר."]) {
+      expect(words(text, "$64.00"), text).toBe(true);
+    }
+  });
+
+  it("refuses a different number in words, however it is built", () => {
+    for (const text of ["They want sixty-five dollars.", "They want sixty-four thousand dollars.", "They want six hundred forty dollars.", "Ils demandent quatre-vingt-dix-sept dollars.", "Sie verlangen fünfundsechzig Dollar.", "Chiedono sessantacinque dollari.", "Piden sesenta y cinco dólares.", "يطلبون خمسة وستين دولارا.", "הם מבקשים שישים וחמישה דולר."]) {
+      expect(words(text, "$64.00"), text).toBe(false);
+    }
+  });
+
+  it("lets articles and ordinals stand, and takes digits and words together", () => {
+    expect(words("A payment of $64.00 was made on the seventh.", "$64.00")).toBe(true);
+    expect(words("Une facture de 64 dollars, soit soixante-quatre.", "$64.00")).toBe(true);
+    expect(words("Ein Betrag von 64 Dollar am 7. November.", "$64.00", "7 Nov.")).toBe(true);
+    expect(words("64 dollars, sixty-five.", "$64.00")).toBe(false);
+  });
+
+  it("takes a number in words from a figure that is itself a name", () => {
+    expect(words("Seven Oaks Pharmacy wants $64.00.", "$64.00", "Seven Oaks Pharmacy")).toBe(true);
+    expect(words("Seven Oaks Pharmacy wants $64.00.", "$64.00")).toBe(false);
+  });
+
+  it("falls back to the template when the model spells out a number the record lacks", async () => {
+    const reply = await narrate(fakeModel(said("Greenway wants ninety-nine dollars.")), facts, template);
+    expect(reply).toEqual({ text: template, source: "template" });
+  });
+
+  it("tells the model to write digits", async () => {
+    const model = fakeModel(said("Fine."));
+    await narrate(model, facts, template);
+    expect(model.requests[0]?.system).toContain("as digits, never in words");
+  });
+});

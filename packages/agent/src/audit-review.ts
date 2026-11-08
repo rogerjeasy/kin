@@ -1,7 +1,7 @@
 import { passesNumberGuard } from "./narrate.ts";
 import type { StructuredModel } from "./structured-model.ts";
 
-export const AUDITOR_PROMPT_VERSION = "auditor-2026-11-07";
+export const AUDITOR_PROMPT_VERSION = "auditor-2026-11-08";
 
 export const SEVERITIES = ["info", "attention", "critical"] as const;
 export type Severity = (typeof SEVERITIES)[number];
@@ -54,7 +54,7 @@ export async function reviewFindings(model: StructuredModel | null, items: reado
     const reply = await model({
       system: [
         `You are an independent auditor reading findings that deterministic checks produced about a family's shared money record. You did not take part in the family's conversations and you have no tools.`,
-        `For each finding, write one calm, factual sentence in ${language} that a lawyer could read. Say only what the finding says. Use only the figures it lists. Do not accuse anyone, speculate, advise on money or add facts.`,
+        `For each finding, write one calm, factual sentence in ${language} that a lawyer could read. Say only what the finding says. Use only the figures it lists, and write each as digits, never in words ("64", not "sixty-four"). Add no other number, not even an ordinal such as "2nd". Do not accuse anyone, speculate, advise on money or add facts.`,
         `Answer with every finding's id exactly as given.`,
       ].join("\n\n"),
       user: items.map((item) => `<finding id="${item.id}" severity="${item.severity}">\n${item.template.replaceAll(/<\/?finding[^>]*>/giu, "")}\n</finding>`).join("\n"),

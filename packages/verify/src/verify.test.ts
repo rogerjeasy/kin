@@ -1,4 +1,5 @@
 import { rosesMonth, type LedgerEntry } from "@kin/domain";
+import { spellEnglish, spellGerman } from "@kin/domain/testing";
 import { describe, expect, it } from "vitest";
 
 import { buildBundle, claimSettlement, parseBundle, type AuditBundle, type StoredHead } from "./bundle.ts";
@@ -147,5 +148,21 @@ describe("wordingMatchesEntry", () => {
 
   it("refuses a date that is not the entry's own", () => {
     expect(entry !== undefined && wordingMatchesEntry("Paid on 1999-01-01.", entry)).toBe(false);
+  });
+
+  it("holds a number written in words to the entry's own figures", () => {
+    // 99 is no figure of this entry, in any language it could be spelled in.
+    for (const words of ["ninety-nine", "quatre-vingt-dix-neuf", "neunundneunzig", "novantanove", "noventa y nueve", "تسعة وتسعون", "תשעים ותשעה"]) {
+      expect(entry !== undefined && wordingMatchesEntry(`Paid ${words} dollars.`, entry), words).toBe(false);
+    }
+  });
+
+  it("accepts a number in words that is one of the entry's own whole figures", () => {
+    const whole = entry === undefined ? [] : entryFigures(entry).filter((figure) => /^\d{1,4}$/u.test(figure) && Number(figure) > 1);
+    expect(whole.length).toBeGreaterThan(0);
+    for (const figure of whole) {
+      expect(entry !== undefined && wordingMatchesEntry(`Paid ${spellEnglish(Number(figure))} dollars.`, entry), figure).toBe(true);
+      expect(entry !== undefined && wordingMatchesEntry(`Bezahlt ${spellGerman(Number(figure))} Dollar.`, entry), figure).toBe(true);
+    }
   });
 });
