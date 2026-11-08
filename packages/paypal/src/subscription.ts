@@ -130,7 +130,7 @@ export function parseSubscriptionCreated(value: unknown): { readonly subscriptio
 }
 
 /** The address only if it is a PayPal page over HTTPS: a link the browser will be sent to. */
-function paypalPage(href: string): string | null {
+export function paypalPage(href: string): string | null {
   try {
     const url = new URL(href);
     const host = url.hostname;

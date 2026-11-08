@@ -38,6 +38,7 @@ describe("a top-up order", () => {
         status: "COMPLETED",
         orderId: "1SN482215K962041J",
         reference,
+        invoiceId: null,
         gross: { cents: 10000, currency: "USD" },
         fee: { cents: 398, currency: "USD" },
         createdAt: new Date("2026-10-16T10:03:15Z"),

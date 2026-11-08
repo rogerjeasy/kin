@@ -13,6 +13,8 @@ export type Capture = {
   /** The order it captured, when PayPal names it. */
   readonly orderId: string | null;
   readonly reference: ContributionReference | null;
+  /** The PayPal invoice it paid, when the payer paid one of Kin's invoices. */
+  readonly invoiceId: string | null;
   /** What the payer paid. */
   readonly gross: Money;
   /** PayPal's fee, or zero while PayPal has not charged one. */
@@ -43,6 +45,7 @@ export function parseCapture(value: unknown, orderId: string | null = null, fall
     status: STATUSES.find((each) => each === status) ?? "OTHER",
     orderId: optionalText(related, "order_id") ?? orderId,
     reference: parseContributionReference(optionalText(record, "custom_id") ?? fallbackCustomId),
+    invoiceId: optionalText(record, "invoice_id"),
     gross,
     fee,
     createdAt,

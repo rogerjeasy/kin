@@ -111,7 +111,7 @@ describe("subscription events and messages", () => {
   const activated = JSON.stringify({ id: "WH-8", event_type: "BILLING.SUBSCRIPTION.ACTIVATED", resource_type: "subscription", resource: { id: "I-BW452GLLEP1G", custom_id: `kin1:${reference.circleId}:${reference.memberId}` } });
 
   it("name the subscription whose charge or state they report; a sale names no circle", () => {
-    expect(parseWebhookEnvelope(sale)).toEqual({ eventId: "WH-9", eventType: "PAYMENT.SALE.COMPLETED", captureId: null, subscriptionId: "I-BW452GLLEP1G", reference: null });
+    expect(parseWebhookEnvelope(sale)).toEqual({ eventId: "WH-9", eventType: "PAYMENT.SALE.COMPLETED", captureId: null, subscriptionId: "I-BW452GLLEP1G", invoiceId: null, reference: null });
     expect(parseWebhookEnvelope(activated)).toMatchObject({ subscriptionId: "I-BW452GLLEP1G", reference });
   });
 

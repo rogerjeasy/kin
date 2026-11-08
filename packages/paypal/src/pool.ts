@@ -1,6 +1,7 @@
 import { parseCapture, type Capture } from "./capture.ts";
 import type { PayPalClient } from "./client.ts";
 import { contributionOrderBody, parseOrder, type NewContributionOrder, type Order } from "./order.ts";
+import { cancelBody, invoiceBody, isInvoiceId, numberSearchBody, parseInvoice, parseInvoiceCreated, parseNumberSearch, SEND_BODY, type Invoice, type NewInvoice } from "./invoice.ts";
 import { requiredText, asRecord } from "./json.ts";
 import { PayPalError } from "./paypal-error.ts";
 import { parsePayoutBatch, parsePayoutCreated, payoutBody, type NewPayout, type PayoutBatch } from "./payout.ts";
@@ -54,6 +55,18 @@ export type PayPalPool = {
   readonly listSubscriptionPayments: (subscriptionId: string, from: Date, until: Date) => Promise<readonly SubscriptionPayment[]>;
   /** Pauses, resumes or ends a subscription, with the same request ID never twice. */
   readonly changeSubscription: (subscriptionId: string, action: SubscriptionAction, reason: string, requestId: string) => Promise<void>;
+  /**
+   * Makes a draft invoice from the pool to a member. It asks nothing of
+   * anyone until it is sent. The invoice's number is its idempotency key: a
+   * repeat finds the draft the first call made, never a second one.
+   */
+  readonly createInvoice: (invoice: NewInvoice, requestId: string) => Promise<{ readonly invoiceId: string }>;
+  /** Has PayPal email a draft to its recipient. Its answer says nothing about payment: read the invoice. */
+  readonly sendInvoice: (invoiceId: string, requestId: string) => Promise<void>;
+  /** The invoice as PayPal holds it now, with every payment listed on it. */
+  readonly getInvoice: (invoiceId: string) => Promise<Invoice>;
+  /** Withdraws a sent invoice; PayPal tells the recipient. */
+  readonly cancelInvoice: (invoiceId: string, note: string, requestId: string) => Promise<void>;
 };
 
 const ORDER_ID = /^[A-Z0-9]{5,36}$/;
@@ -114,6 +127,26 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
     async changeSubscription(subscriptionId, action, reason, requestId) {
       await client.send({ method: "POST", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}/${action}`, body: actionBody(reason), requestId, operation: `subscriptions.${action}` });
     },
+    async createInvoice(invoice, requestId) {
+      try {
+        return { invoiceId: parseInvoiceCreated(await client.send({ method: "POST", path: "/v2/invoicing/invoices", body: invoiceBody(invoice), requestId, operation: "invoices.create" })) };
+      } catch (error) {
+        // PayPal holds an invoice with this number already: the one an earlier,
+        // unanswered call made. It is found by its number, not made again.
+        if (!(error instanceof PayPalError) || error.outcome !== "rejected" || error.issue !== "DUPLICATE_INVOICE_NUMBER") throw error;
+        const found = await client.send({ method: "POST", path: "/v2/invoicing/search-invoices?page=1&page_size=2", body: numberSearchBody(invoice.number), operation: "invoices.search" });
+        return { invoiceId: parseNumberSearch(found, invoice.number) };
+      }
+    },
+    async sendInvoice(invoiceId, requestId) {
+      await client.send({ method: "POST", path: `/v2/invoicing/invoices/${invoicePathId(invoiceId)}/send`, body: SEND_BODY, requestId, operation: "invoices.send" });
+    },
+    async getInvoice(invoiceId) {
+      return parseInvoice(await client.send({ method: "GET", path: `/v2/invoicing/invoices/${invoicePathId(invoiceId)}`, operation: "invoices.get" }));
+    },
+    async cancelInvoice(invoiceId, note, requestId) {
+      await client.send({ method: "POST", path: `/v2/invoicing/invoices/${invoicePathId(invoiceId)}/cancel`, body: cancelBody(note), requestId, operation: "invoices.cancel" });
+    },
     async verifyWebhook(delivery) {
       try {
         const json = await client.send({ method: "POST", path: "/v1/notifications/verify-webhook-signature", body: verificationBody(delivery, webhookId), operation: "webhooks.verify" });
@@ -138,6 +171,11 @@ function existingBatch(error: PayPalError): string | null {
 /** Whether `id` has the shape of a PayPal order or capture ID. */
 export function isPayPalId(id: string): boolean {
   return ORDER_ID.test(id);
+}
+
+function invoicePathId(id: string): string {
+  if (!isInvoiceId(id)) throw new Error("Not a PayPal invoice ID");
+  return id;
 }
 
 function subscriptionPathId(id: string): string {

@@ -1,4 +1,5 @@
 import { parseContributionReference, type ContributionReference } from "./contribution-reference.ts";
+import { isInvoiceId } from "./invoice.ts";
 import { isSubscriptionId } from "./subscription.ts";
 import { asRecord, optionalRecord, optionalText, parseJson, requiredText } from "./json.ts";
 
@@ -22,8 +23,11 @@ export const SUBSCRIPTION_EVENTS = [
   "PAYMENT.SALE.COMPLETED",
 ] as const;
 
+/** PayPal's events about an invoice Kin sent a member: paid, or withdrawn. */
+export const INVOICE_EVENTS = ["INVOICING.INVOICE.PAID", "INVOICING.INVOICE.CANCELLED"] as const;
+
 /** The event types Kin subscribes the pool's webhook to. */
-export const WEBHOOK_EVENT_TYPES = [CAPTURE_COMPLETED, ...SUBSCRIPTION_EVENTS] as const;
+export const WEBHOOK_EVENT_TYPES = [CAPTURE_COMPLETED, ...SUBSCRIPTION_EVENTS, ...INVOICE_EVENTS] as const;
 
 /**
  * What Kin reads from an event's envelope before it is verified: enough to
@@ -37,6 +41,8 @@ export type WebhookEnvelope = {
   readonly captureId: string | null;
   /** The subscription a subscription event is about, or whose charge a sale event reports. */
   readonly subscriptionId: string | null;
+  /** The invoice an invoicing event is about, or the one a capture paid. Whose it is, PayPal says when it is read back. */
+  readonly invoiceId: string | null;
   readonly reference: ContributionReference | null;
 };
 
@@ -47,11 +53,19 @@ export function parseWebhookEnvelope(body: string): WebhookEnvelope {
   const isCapture = optionalText(record, "resource_type") === "capture";
   const subscriptionId =
     eventType === "PAYMENT.SALE.COMPLETED" ? optionalText(resource, "billing_agreement_id") : eventType.startsWith("BILLING.SUBSCRIPTION.") ? optionalText(resource, "id") : null;
+  // PayPal's simulator sends the invoice as the resource itself; Invoicing v2 deliveries wrap it in `invoice`.
+  // A capture that paid an invoice names it too (seen on the capture read back in the sandbox, 8 November 2026).
+  const invoiceId = eventType.startsWith("INVOICING.INVOICE.")
+    ? (optionalText(optionalRecord(resource?.["invoice"]), "id") ?? optionalText(resource, "id"))
+    : isCapture
+      ? optionalText(resource, "invoice_id")
+      : null;
   return {
     eventId: requiredText(record, "id"),
     eventType,
     captureId: isCapture ? optionalText(resource, "id") : null,
     subscriptionId: subscriptionId !== null && isSubscriptionId(subscriptionId) ? subscriptionId : null,
+    invoiceId: invoiceId !== null && isInvoiceId(invoiceId) ? invoiceId : null,
     reference: parseContributionReference(optionalText(resource, "custom_id")),
   };
 }

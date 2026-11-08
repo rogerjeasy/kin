@@ -1,0 +1,479 @@
+{
+  "created": {
+    "rel": "self",
+    "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B",
+    "method": "GET"
+  },
+  "duplicateNumber": {
+    "name": "UNPROCESSABLE_ENTITY",
+    "message": "The requested action could not be performed, semantically incorrect, or failed business validation.",
+    "debug_id": "f352048e59ad3",
+    "details": [
+      {
+        "field": "/detail/invoice_number",
+        "value": "KIN-1A0AD39A2FB9439FA9709",
+        "location": "body",
+        "issue": "DUPLICATE_INVOICE_NUMBER",
+        "description": "Invoice number is duplicate."
+      }
+    ],
+    "links": [
+      {
+        "href": "https://developer.paypal.com/docs/api/invoicing/#errors",
+        "method": "GET"
+      }
+    ]
+  },
+  "search": {
+    "total_pages": 1,
+    "total_items": 1,
+    "items": [
+      {
+        "id": "INV2-YB8W-YH4M-95PN-B53B",
+        "status": "DRAFT",
+        "detail": {
+          "currency_code": "USD",
+          "invoice_number": "KIN-1A0AD39A2FB9439FA9709",
+          "memo": "kin-invoice1:39bf803c-b946-440a-a9cc-083b1f616dae:1a0ad39a-2fb9-439f-a970-981c9d91533b"
+        },
+        "amount": {
+          "breakdown": {
+            "item_total": {
+              "currency_code": "USD",
+              "value": "166.00"
+            },
+            "discount": {
+              "invoice_discount": {
+                "amount": {
+                  "currency_code": "USD",
+                  "value": "0.00"
+                }
+              },
+              "item_discount": {
+                "currency_code": "USD",
+                "value": "0.00"
+              }
+            },
+            "tax_total": {
+              "currency_code": "USD",
+              "value": "0.00"
+            }
+          },
+          "currency_code": "USD",
+          "value": "166.00"
+        }
+      }
+    ]
+  },
+  "draft": {
+    "id": "INV2-YB8W-YH4M-95PN-B53B",
+    "status": "DRAFT",
+    "detail": {
+      "currency_code": "USD",
+      "note": "Kin sandbox check: test money only.",
+      "memo": "kin-invoice1:39bf803c-b946-440a-a9cc-083b1f616dae:1a0ad39a-2fb9-439f-a970-981c9d91533b",
+      "category_code": "SHIPPABLE",
+      "invoice_number": "KIN-1A0AD39A2FB9439FA9709",
+      "invoice_date": "2026-11-08",
+      "payment_term": {
+        "term_type": "DUE_ON_RECEIPT"
+      },
+      "viewed_by_recipient": false,
+      "group_draft": false,
+      "metadata": {
+        "create_time": "2026-11-08T09:06:02Z",
+        "last_update_time": "2026-11-08T09:06:02Z",
+        "created_by_flow": "REGULAR_SINGLE",
+        "recipient_view_url": "https://www.sandbox.paypal.com/invoice/p/#YB8WYH4M95PNB53B",
+        "invoicer_view_url": "https://www.sandbox.paypal.com/invoice/details/INV2-YB8W-YH4M-95PN-B53B",
+        "caller_type": "API_V2_INVOICE",
+        "spam_info": {}
+      },
+      "archived": false
+    },
+    "invoicer": {},
+    "primary_recipients": [
+      {
+        "billing_info": {
+          "email_address": "member@personal.example.com"
+        }
+      }
+    ],
+    "items": [
+      {
+        "id": "ITEM-7S674816HS820345H",
+        "name": "Share of care costs (Kin sandbox check)",
+        "quantity": "1",
+        "unit_amount": {
+          "currency_code": "USD",
+          "value": "166.00"
+        }
+      }
+    ],
+    "configuration": {
+      "tax_calculated_after_discount": false,
+      "tax_inclusive": false,
+      "allow_tip": false,
+      "allow_only_pay_by_bank": false,
+      "allow_vba_payments": false,
+      "save_item_for_future": true,
+      "template_id": "TEMP-86S0797430046244U"
+    },
+    "amount": {
+      "breakdown": {
+        "item_total": {
+          "currency_code": "USD",
+          "value": "166.00"
+        },
+        "discount": {
+          "invoice_discount": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "0.00"
+            }
+          },
+          "item_discount": {
+            "currency_code": "USD",
+            "value": "0.00"
+          }
+        },
+        "tax_total": {
+          "currency_code": "USD",
+          "value": "0.00"
+        }
+      },
+      "currency_code": "USD",
+      "value": "166.00"
+    },
+    "due_amount": {
+      "currency_code": "USD",
+      "value": "166.00"
+    },
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B/send",
+        "rel": "send",
+        "method": "POST"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B",
+        "rel": "replace",
+        "method": "PUT"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B",
+        "rel": "delete",
+        "method": "DELETE"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B/payments",
+        "rel": "record-payment",
+        "method": "POST"
+      }
+    ],
+    "unilateral": false,
+    "settings": {}
+  },
+  "sent": {
+    "id": "INV2-YB8W-YH4M-95PN-B53B",
+    "status": "SENT",
+    "detail": {
+      "currency_code": "USD",
+      "note": "Kin sandbox check: test money only.",
+      "memo": "kin-invoice1:39bf803c-b946-440a-a9cc-083b1f616dae:1a0ad39a-2fb9-439f-a970-981c9d91533b",
+      "category_code": "SHIPPABLE",
+      "invoice_number": "KIN-1A0AD39A2FB9439FA9709",
+      "invoice_date": "2026-11-08",
+      "payment_term": {
+        "term_type": "DUE_ON_RECEIPT"
+      },
+      "viewed_by_recipient": false,
+      "group_draft": false,
+      "metadata": {
+        "create_time": "2026-11-08T09:06:02Z",
+        "last_update_time": "2026-11-08T09:06:02Z",
+        "first_sent_time": "2026-11-08T09:06:06Z",
+        "last_sent_time": "2026-11-08T09:06:06Z",
+        "created_by_flow": "REGULAR_SINGLE",
+        "recipient_view_url": "https://www.sandbox.paypal.com/invoice/p/#YB8WYH4M95PNB53B",
+        "invoicer_view_url": "https://www.sandbox.paypal.com/invoice/details/INV2-YB8W-YH4M-95PN-B53B",
+        "caller_type": "API_V2_INVOICE",
+        "spam_info": {}
+      },
+      "archived": false
+    },
+    "invoicer": {},
+    "primary_recipients": [
+      {
+        "billing_info": {
+          "email_address": "member@personal.example.com"
+        }
+      }
+    ],
+    "items": [
+      {
+        "id": "ITEM-7S674816HS820345H",
+        "name": "Share of care costs (Kin sandbox check)",
+        "quantity": "1",
+        "unit_amount": {
+          "currency_code": "USD",
+          "value": "166.00"
+        }
+      }
+    ],
+    "configuration": {
+      "tax_calculated_after_discount": false,
+      "tax_inclusive": false,
+      "allow_tip": false,
+      "allow_only_pay_by_bank": false,
+      "allow_vba_payments": false,
+      "save_item_for_future": true,
+      "template_id": "TEMP-86S0797430046244U"
+    },
+    "amount": {
+      "breakdown": {
+        "item_total": {
+          "currency_code": "USD",
+          "value": "166.00"
+        },
+        "discount": {
+          "invoice_discount": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "0.00"
+            }
+          },
+          "item_discount": {
+            "currency_code": "USD",
+            "value": "0.00"
+          }
+        },
+        "tax_total": {
+          "currency_code": "USD",
+          "value": "0.00"
+        }
+      },
+      "currency_code": "USD",
+      "value": "166.00"
+    },
+    "due_amount": {
+      "currency_code": "USD",
+      "value": "166.00"
+    },
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B",
+        "rel": "replace",
+        "method": "PUT"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B/cancel",
+        "rel": "cancel",
+        "method": "POST"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B/remind",
+        "rel": "remind",
+        "method": "POST"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B/payments",
+        "rel": "record-payment",
+        "method": "POST"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B/generate-qr-code",
+        "rel": "qr-code",
+        "method": "GET"
+      }
+    ],
+    "unilateral": false,
+    "settings": {}
+  },
+  "paid": {
+    "id": "INV2-YB8W-YH4M-95PN-B53B",
+    "status": "PAID",
+    "detail": {
+      "currency_code": "USD",
+      "note": "Kin sandbox check: test money only.",
+      "memo": "kin-invoice1:39bf803c-b946-440a-a9cc-083b1f616dae:1a0ad39a-2fb9-439f-a970-981c9d91533b",
+      "category_code": "SHIPPABLE",
+      "invoice_number": "KIN-1A0AD39A2FB9439FA9709",
+      "invoice_date": "2026-11-08",
+      "payment_term": {
+        "term_type": "DUE_ON_RECEIPT"
+      },
+      "viewed_by_recipient": false,
+      "group_draft": false,
+      "metadata": {
+        "create_time": "2026-11-08T09:06:02Z",
+        "last_update_time": "2026-11-08T09:06:48Z",
+        "first_sent_time": "2026-11-08T09:06:06Z",
+        "last_sent_time": "2026-11-08T09:06:06Z",
+        "created_by_flow": "REGULAR_SINGLE",
+        "recipient_view_url": "https://www.sandbox.paypal.com/invoice/p/#YB8WYH4M95PNB53B",
+        "invoicer_view_url": "https://www.sandbox.paypal.com/invoice/details/INV2-YB8W-YH4M-95PN-B53B",
+        "caller_type": "API_V2_INVOICE",
+        "spam_info": {}
+      },
+      "archived": false
+    },
+    "invoicer": {},
+    "primary_recipients": [
+      {
+        "billing_info": {
+          "email_address": "member@personal.example.com"
+        }
+      }
+    ],
+    "items": [
+      {
+        "id": "ITEM-7S674816HS820345H",
+        "name": "Share of care costs (Kin sandbox check)",
+        "quantity": "1",
+        "unit_amount": {
+          "currency_code": "USD",
+          "value": "166.00"
+        }
+      }
+    ],
+    "configuration": {
+      "tax_calculated_after_discount": false,
+      "tax_inclusive": false,
+      "allow_tip": false,
+      "allow_only_pay_by_bank": false,
+      "allow_vba_payments": false,
+      "save_item_for_future": true,
+      "template_id": "TEMP-86S0797430046244U"
+    },
+    "amount": {
+      "breakdown": {
+        "item_total": {
+          "currency_code": "USD",
+          "value": "166.00"
+        },
+        "discount": {
+          "invoice_discount": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "0.00"
+            }
+          },
+          "item_discount": {
+            "currency_code": "USD",
+            "value": "0.00"
+          }
+        },
+        "tax_total": {
+          "currency_code": "USD",
+          "value": "0.00"
+        }
+      },
+      "currency_code": "USD",
+      "value": "166.00"
+    },
+    "due_amount": {
+      "currency_code": "USD",
+      "value": "0.00"
+    },
+    "payments": {
+      "paid_amount": {
+        "currency_code": "USD",
+        "value": "166.00"
+      },
+      "transactions": [
+        {
+          "type": "PAYPAL",
+          "payment_id": "7YJ40056GS034901G",
+          "transaction_type": "SALE",
+          "payment_date": "2026-11-08",
+          "payment_date_time": "2026-11-08T01:06:48Z",
+          "method": "PAYPAL",
+          "amount": {
+            "currency_code": "USD",
+            "value": "166.00"
+          },
+          "transaction_status": "SUCCESS"
+        }
+      ]
+    },
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-YB8W-YH4M-95PN-B53B",
+        "rel": "self",
+        "method": "GET"
+      }
+    ],
+    "unilateral": false,
+    "settings": {}
+  },
+  "capture": {
+    "id": "7YJ40056GS034901G",
+    "amount": {
+      "currency_code": "USD",
+      "value": "166.00"
+    },
+    "final_capture": true,
+    "seller_protection": {
+      "status": "ELIGIBLE",
+      "dispute_categories": [
+        "ITEM_NOT_RECEIVED",
+        "UNAUTHORIZED_TRANSACTION"
+      ]
+    },
+    "seller_receivable_breakdown": {
+      "gross_amount": {
+        "currency_code": "USD",
+        "value": "166.00"
+      },
+      "paypal_fee": {
+        "currency_code": "USD",
+        "value": "6.28"
+      },
+      "net_amount": {
+        "currency_code": "USD",
+        "value": "159.72"
+      }
+    },
+    "invoice_id": "INV2-YB8W-YH4M-95PN-B53B",
+    "status": "COMPLETED",
+    "supplementary_data": {
+      "related_ids": {
+        "order_id": "8TT64935VG937980W"
+      }
+    },
+    "payee": {
+      "email_address": "pool@business.example.com",
+      "merchant_id": "POOLMERCHANTID"
+    },
+    "create_time": "2026-11-08T09:06:46Z",
+    "update_time": "2026-11-08T09:06:46Z",
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/payments/captures/7YJ40056GS034901G",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/payments/captures/7YJ40056GS034901G/refund",
+        "rel": "refund",
+        "method": "POST"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/8TT64935VG937980W",
+        "rel": "up",
+        "method": "GET"
+      }
+    ]
+  }
+}

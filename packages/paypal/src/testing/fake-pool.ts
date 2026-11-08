@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 
 import type { Capture, CaptureStatus } from "../capture.ts";
 import { encodeContributionReference, type ContributionReference } from "../contribution-reference.ts";
+import type { Invoice, InvoicePayment, InvoiceStatus, NewInvoice } from "../invoice.ts";
 import type { Order } from "../order.ts";
 import { PayPalError } from "../paypal-error.ts";
 import type { PayPalPool } from "../pool.ts";
@@ -12,6 +13,7 @@ import type { WebhookDelivery } from "../webhook.ts";
 
 type StoredOrder = { id: string; status: string; reference: ContributionReference; amount: Money; captures: Capture[]; requestIds: Set<string> };
 type StoredPayout = { batch: PayoutBatch; request: NewPayout };
+type StoredInvoice = { id: string; number: string; status: InvoiceStatus; request: NewInvoice; payments: InvoicePayment[]; requestIds: Set<string> };
 type StoredSubscription = { id: string; key: string; status: SubscriptionStatus; reference: ContributionReference; amount: Money; payments: SubscriptionPayment[]; failedPayments: number; requestIds: Set<string> };
 
 export type FakePool = PayPalPool & {
@@ -54,6 +56,14 @@ export type FakePool = PayPalPool & {
   readonly saleEvent: (subscriptionId: string, paymentId: string, eventId?: string) => WebhookDelivery;
   /** A delivery of a BILLING.SUBSCRIPTION.* event for a subscription. */
   readonly subscriptionEvent: (subscriptionId: string, eventType: string, eventId?: string) => WebhookDelivery;
+  /** Every invoice PayPal holds, by ID. */
+  readonly invoices: Map<string, StoredInvoice>;
+  /** PayPal refuses the next invoice with this issue, such as `INVALID_EMAIL`, and makes nothing. */
+  refuseNextInvoice: string | null;
+  /** The member pays a sent invoice on PayPal's page: PayPal captures it, with its fee, and lists the capture on the invoice. */
+  readonly payInvoice: (invoiceId: string) => Capture;
+  /** A delivery of an INVOICING.INVOICE.* event, as Invoicing v2 sends it: the invoice wrapped in `resource.invoice`. */
+  readonly invoiceEvent: (invoiceId: string, eventType: string, eventId?: string) => WebhookDelivery;
 };
 
 /**
@@ -77,6 +87,21 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
   };
 
   const payouts = new Map<string, StoredPayout>();
+  const invoices = new Map<string, StoredInvoice>();
+  const findInvoice = (invoiceId: string): StoredInvoice => {
+    const stored = invoices.get(invoiceId);
+    if (!stored) throw new PayPalError({ outcome: "rejected", status: 404, issue: "RESOURCE_NOT_FOUND", debugId: "fake", operation: "invoices" });
+    return stored;
+  };
+  const invoiceView = (stored: StoredInvoice): Invoice => ({
+    id: stored.id,
+    number: stored.number,
+    status: stored.status,
+    reference: stored.request.reference,
+    amount: stored.request.amount,
+    payerUrl: `https://www.sandbox.paypal.com/invoice/p/#${stored.id}`,
+    payments: [...stored.payments],
+  });
   const subscriptions = new Map<string, StoredSubscription>();
   const payoutBatch = (batchId: string, request: NewPayout, status: PayoutItemStatus, itemId: string): PayoutBatch => ({
     batchId,
@@ -132,6 +157,7 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
         status: pool.captureStatus,
         orderId,
         reference: order.reference,
+        invoiceId: null,
         gross: order.amount,
         fee: { cents: pool.captureStatus === "COMPLETED" ? pool.feeCents : 0, currency: order.amount.currency },
         createdAt: now(),
@@ -233,6 +259,69 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
       const stored = findSubscription(subscriptionId);
       return delivery(eventId, { id: eventId, event_type: eventType, resource_type: "subscription", resource: { id: subscriptionId, status: stored.status, custom_id: encodeContributionReference(stored.reference) } });
     },
+    invoices,
+    refuseNextInvoice: null,
+    async createInvoice(request, requestId) {
+      fail("createInvoice");
+      pool.requestIds.push(requestId);
+      // The adapter finds an invoice PayPal already holds by its number (pool.ts), so a repeat makes nothing.
+      const repeated = [...invoices.values()].find((each) => each.request.number === request.number);
+      if (repeated) return lost("createInvoice", { invoiceId: repeated.id });
+      if (pool.refuseNextInvoice !== null) {
+        const issue = pool.refuseNextInvoice;
+        pool.refuseNextInvoice = null;
+        throw new PayPalError({ outcome: "rejected", status: 422, issue, debugId: "fake", operation: "invoices.create" });
+      }
+      const serial = String((sequence += 1)).padStart(8, "0");
+      const id = `INV2-${instance.slice(0, 4)}-${instance.slice(4, 8)}-${serial.slice(0, 4)}-${serial.slice(4)}`;
+      invoices.set(id, { id, number: request.number, status: "DRAFT", request, payments: [], requestIds: new Set([requestId]) });
+      return lost("createInvoice", { invoiceId: id });
+    },
+    async sendInvoice(invoiceId, requestId) {
+      fail("sendInvoice");
+      pool.requestIds.push(requestId);
+      const stored = findInvoice(invoiceId);
+      if (stored.requestIds.has(requestId)) return lost("sendInvoice", undefined);
+      if (stored.status !== "DRAFT") throw new PayPalError({ outcome: "rejected", status: 422, issue: "INVALID_INVOICE_STATUS", debugId: "fake", operation: "invoices.send" });
+      stored.status = "SENT";
+      stored.requestIds.add(requestId);
+      return lost("sendInvoice", undefined);
+    },
+    async getInvoice(invoiceId) {
+      fail("getInvoice");
+      return invoiceView(findInvoice(invoiceId));
+    },
+    async cancelInvoice(invoiceId, _note, requestId) {
+      fail("cancelInvoice");
+      pool.requestIds.push(requestId);
+      const stored = findInvoice(invoiceId);
+      if (stored.requestIds.has(requestId)) return;
+      if (stored.status !== "SENT" && stored.status !== "UNPAID") throw new PayPalError({ outcome: "rejected", status: 422, issue: "INVALID_INVOICE_STATUS", debugId: "fake", operation: "invoices.cancel" });
+      stored.status = "CANCELLED";
+      stored.requestIds.add(requestId);
+    },
+    payInvoice(invoiceId) {
+      const stored = findInvoice(invoiceId);
+      if (stored.status !== "SENT") throw new Error(`Invoice ${invoiceId} is not waiting for payment`);
+      const capture: Capture = {
+        id: nextId("CAPTURE"),
+        status: "COMPLETED",
+        orderId: nextId("ORDER"),
+        reference: null,
+        invoiceId,
+        gross: stored.request.amount,
+        fee: { cents: pool.feeCents, currency: stored.request.amount.currency },
+        createdAt: now(),
+      };
+      captures.set(capture.id, capture);
+      stored.payments.push({ paymentId: capture.id, viaPayPal: true, amount: stored.request.amount });
+      stored.status = "PAID";
+      return capture;
+    },
+    invoiceEvent(invoiceId, eventType, eventId = `WH-${eventType}-${invoiceId}`) {
+      const stored = findInvoice(invoiceId);
+      return delivery(eventId, { id: eventId, event_type: eventType, resource_type: "invoices", resource: { invoice: { id: stored.id, status: stored.status } } });
+    },
     approve(orderId) {
       const order = find(orderId);
       if (order.status === "CREATED") order.status = "APPROVED";
@@ -248,6 +337,7 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
           id: capture.id,
           status: capture.status,
           custom_id: capture.reference === null ? undefined : encodeContributionReference(capture.reference),
+          invoice_id: capture.invoiceId ?? undefined,
           amount: { currency_code: capture.gross.currency, value: "0.00" },
         },
       });

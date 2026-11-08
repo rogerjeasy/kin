@@ -20,7 +20,7 @@ const delivery: WebhookDelivery = { body, headers };
 
 describe("a webhook delivery", () => {
   it("is filed under the circle its capture names, before anything about it is trusted", () => {
-    expect(parseWebhookEnvelope(body)).toEqual({ eventId: "WH-1", eventType: "PAYMENT.CAPTURE.COMPLETED", captureId: "CAP1", subscriptionId: null, reference });
+    expect(parseWebhookEnvelope(body)).toEqual({ eventId: "WH-1", eventType: "PAYMENT.CAPTURE.COMPLETED", captureId: "CAP1", subscriptionId: null, invoiceId: null, reference });
   });
 
   it("is checked with PayPal byte for byte as it arrived, never re-encoded", () => {
