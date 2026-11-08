@@ -15,6 +15,7 @@ This document says what to build with and why. It is not a design or an implemen
 | Lint | ESLint with typescript-eslint, strict preset |
 | Web app | Next.js, React, Tailwind CSS, shadcn/ui, installable to the home screen |
 | Data grid | AG Grid Community for the family ledger and audit screens |
+| Care calendar | Bryntum Scheduler, the trial build, read-only, for the family's week of care shifts |
 | Checkout | PayPal JavaScript SDK v6 |
 | PayPal server side | Direct REST calls from `packages/paypal` (built). The PayPal Agent Toolkit and sandbox MCP server are **Planned, not built** |
 | AI model | Claude through the Anthropic TypeScript SDK on Amazon Bedrock: Opus 4.6 by InvokeModel today, Opus 5.5 when the account is granted it |
@@ -141,6 +142,8 @@ Three small services share one codebase:
 - Do not force a specific tool call. Opus 5.5 rejects forced tool choice. Use automatic tool choice with strict tool schemas.
 - Check the stop reason on every response and handle a refusal cleanly. Enable server-side fallbacks so a declined request is rerouted.
 - If spoken replies feel slow at low effort, test Claude Haiku 5.5 (`claude-haiku-5-5`) for those turns only.
+
+**Two calls that differ from the settings above.** The care calendar's assistant (architecture decision 82) sends the model its tools with thinking switched off and effort medium, because the calendar widget holds the conversation and cannot carry thinking blocks between requests; it needs a model that allows thinking off (Opus 4.6, which the hosted app runs; Opus 5.5 would need this revisited). The shift wording (decision 81) uses the one-shot structured call at low effort, with no tools.
 
 **What AI is not used for:** the ledger arithmetic, the settlement calculation and the decision that a payment happened. Those are plain deterministic code reading PayPal's records.
 
@@ -296,7 +299,8 @@ A project can win one sponsor prize, so the aim is one strong fit.
 | **Postman** | Sandbox testing, and a published collection for judges | Use |
 | **Channel3** | Product search inside the purchasing agent | Use if the purchasing agent searches real catalogs |
 | **Render** | Hosting | Not used, because hosting is on AWS |
-| **Bryntum, Elastic, KERNEL, Zapier, Astropods** | No natural role | Skip |
+| **Bryntum** | The care calendar: a week of shifts with a row for each person (`apps/web`, `components/dashboard/shifts`). The trial build, approved by the owner on 8 November 2026, is read-only and loaded only on the calendar page. Its install script is off, and a licensed build is a change of the npm alias | Use |
+| **Elastic, KERNEL, Zapier, Astropods** | No natural role | Skip |
 
 ---
 
