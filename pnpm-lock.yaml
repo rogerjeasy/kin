@@ -213,6 +213,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@bryntum/scheduler':
+        specifier: npm:@bryntum/scheduler-trial@7.3.8
+        version: '@bryntum/scheduler-trial@7.3.8'
+      '@bryntum/scheduler-react':
+        specifier: 7.3.8
+        version: 7.3.8
       '@kin/agent':
         specifier: workspace:*
         version: link:../../packages/agent
@@ -231,6 +237,9 @@ importers:
       '@kin/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@kin/notify':
+        specifier: workspace:*
+        version: link:../../packages/notify
       '@kin/paypal':
         specifier: workspace:*
         version: link:../../packages/paypal
@@ -261,6 +270,9 @@ importers:
       next:
         specifier: 16.4.1
         version: 16.4.1(@babel/core@7.29.7)(@opentelemetry/api@1.10.0)(@playwright/test@1.64.0)(@types/node@24.19.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      qrcode-generator:
+        specifier: 2.0.4
+        version: 2.0.4
       radix-ui:
         specifier: ^1.8.1
         version: 1.8.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -319,6 +331,9 @@ importers:
       '@kin/paypal':
         specifier: workspace:*
         version: link:../../packages/paypal
+      '@kin/telephony':
+        specifier: workspace:*
+        version: link:../../packages/telephony
     devDependencies:
       '@types/node':
         specifier: ^24.19.2
@@ -900,6 +915,17 @@ packages:
   '@babel/types@7.29.8':
     resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
+
+  '@bryntum/scheduler-react@7.3.8':
+    resolution: {integrity: sha512-PTzGFzsCrRoqLbbVqHlJ4sO8BSEEPzIkpVsCEwVy4Ci9hQlbVD62dTKcU35kTp81NhuDPw85l9Jj0xeQfCpZGg==}
+    engines: {node: '>=0.10.0'}
+
+  '@bryntum/scheduler-trial-lib@1.0.1':
+    resolution: {integrity: sha512-gTrNKz2O7JdNalEU9hma0fYyZ1mGhXXb6yCn/+E+SPjRyg/qFad1bQ7vfBUFitw3S3eB66IdtAZLD+QCtiIUKw==}
+
+  '@bryntum/scheduler-trial@7.3.8':
+    resolution: {integrity: sha512-VyZvV5koom8Td4DQF1aGMKpT7SKVieSMeVd0CuzEF4sctx2+bxoXXYeWxgLkWPzuKWJ9p8AxP4a06aYvxo0NvA==}
+    engines: {node: '>=0.10.0'}
 
   '@cacheable/memory@2.2.0':
     resolution: {integrity: sha512-CTLKqLItRCEixEAewD3/j9DB3/o96gpTPD4eJ1v+DGOlxZRZncRQkGYqqnAGCscYd6RNeXfGeiuCphsPtqyIfQ==}
@@ -4345,6 +4371,9 @@ packages:
     resolution: {integrity: sha512-+Owyggi9IxT1ePKGafcI87ubSmxol6smwJ+RAHDQlx9+9cPwFWDiKFFCPuWhr9ignlGpZ9vDQLw67N4dcTVFEA==}
     engines: {node: '>=20'}
 
+  qrcode-generator@2.0.4:
+    resolution: {integrity: sha512-mZSiP6RnbHl4xL2Ap5HfkjLnmxfKcPWpWe/c+5XxCuetEenqmNFf1FH/ftXPCtFG5/TDobjsjz6sSNL0Sr8Z9g==}
+
   qs@6.16.0:
     resolution: {integrity: sha512-h6fhOIaRrID2CbEY2fqs+7t+UXZo+MLAnU5gRIq85uFtdiUPCdsApMlHhXogKVM4HM2DVbIjGNTTYH2OcmP1vA==}
     engines: {node: '>=0.6'}
@@ -5728,6 +5757,14 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
+
+  '@bryntum/scheduler-react@7.3.8': {}
+
+  '@bryntum/scheduler-trial-lib@1.0.1': {}
+
+  '@bryntum/scheduler-trial@7.3.8':
+    dependencies:
+      '@bryntum/scheduler-trial-lib': 1.0.1
 
   '@cacheable/memory@2.2.0':
     dependencies:
@@ -8829,6 +8866,8 @@ snapshots:
   qified@0.10.1:
     dependencies:
       hookified: 2.2.0
+
+  qrcode-generator@2.0.4: {}
 
   qs@6.16.0:
     dependencies:

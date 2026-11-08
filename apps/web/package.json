@@ -11,16 +11,19 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "next build && node scripts/prepare-standalone.mjs && playwright test",
-    "test:e2e:key": "next build && node scripts/prepare-standalone.mjs && playwright test e2e/sign-in e2e/demo e2e/dashboard e2e/pages e2e/responsive e2e/agreement e2e/refills e2e/mandates e2e/office-line e2e/verify e2e/simulator e2e/fairness-cross-border e2e/settlement e2e/top-up e2e/caregiver-billing",
+    "test:e2e:key": "next build && node scripts/prepare-standalone.mjs && playwright test e2e/sign-in e2e/demo e2e/dashboard e2e/pages e2e/responsive e2e/agreement e2e/refills e2e/mandates e2e/office-line e2e/verify e2e/simulator e2e/fairness-cross-border e2e/settlement e2e/top-up e2e/caregiver-billing e2e/shifts e2e/shift-links e2e/shift-cover e2e/shift-assistant",
     "brand:export": "node scripts/export-sign-in-brand.ts"
   },
   "dependencies": {
+    "@bryntum/scheduler": "npm:@bryntum/scheduler-trial@7.3.8",
+    "@bryntum/scheduler-react": "7.3.8",
     "@kin/agent": "workspace:*",
     "@kin/auth": "workspace:*",
     "@kin/config": "workspace:*",
     "@kin/db": "workspace:*",
     "@kin/documents": "workspace:*",
     "@kin/domain": "workspace:*",
+    "@kin/notify": "workspace:*",
     "@kin/paypal": "workspace:*",
     "@kin/speech": "workspace:*",
     "@kin/telephony": "workspace:*",
@@ -31,6 +34,7 @@
     "cn": "^0.4.0",
     "lucide-react": "^1.55.0",
     "next": "16.4.1",
+    "qrcode-generator": "2.0.4",
     "radix-ui": "^1.8.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"

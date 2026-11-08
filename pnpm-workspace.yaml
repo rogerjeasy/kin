@@ -5,4 +5,7 @@ packages:
 # Dependency install scripts stay off. esbuild finds its binary through its
 # platform package without its own install script.
 allowBuilds:
+  # Bryntum's install script is obfuscated and rewrites every .js file under the directory it runs in, so it stays off.
+  '@bryntum/scheduler-trial': false
+  '@bryntum/scheduler-trial-lib': false
   esbuild: false
