@@ -2120,7 +2120,7 @@
       "title": "Permisos permanentes",
       "lede": "Lo que {parent} permitió a Kin hacer sin preguntar cada vez. Un reabastecimiento dentro de un permiso se compra al instante, y el registro nombra el permiso como aprobador. Todo lo que queda fuera sigue esperando un sí de verdad.",
       "back": "Volver a las aprobaciones",
-      "simulated": "Simulado: esto es la demostración, el permiso sustituye a uno hablado y no se mueve dinero real.",
+      "simulated": "Simulado: esto es la demostración, así que el permiso sustituye a uno hablado y no se mueve dinero real.",
       "empty": "Aún no hay un permiso permanente. Cada reabastecimiento espera un sí.",
       "readBack": "Puede pedir «{item}» a {seller}, {cadence}, hasta {perPurchase} cada vez y {perPeriod} al mes, desde el {from} hasta el {until}.",
       "cadences": {
@@ -2152,7 +2152,7 @@
       "form": {
         "title": "Registrar un permiso permanente",
         "text": "Léaselo a {parent} y luego confirme. Kin solo compra lo que encaja en él y pregunta antes por lo demás.",
-        "demoNote": "En esta demostración usted hace el sí hablado de {parent}. El registro indica simulado.",
+        "demoNote": "En esta demostración usted representa el sí hablado de {parent}. El registro indica simulado.",
         "rule": "Qué cubre",
         "perPurchase": "Máximo por compra",
         "perPeriod": "Máximo al mes",
@@ -2161,25 +2161,25 @@
         "validFrom": "Comienza",
         "expiresOn": "Termina",
         "spoken": "Lo que se dijo (opcional)",
-        "review": "Leerlo de vuelta",
+        "review": "Releerlo",
         "reviewing": "Comprobando…",
-        "readBackTitle": "Kin lee esto de vuelta",
+        "readBackTitle": "Kin lo relee",
         "edit": "Cambiarlo",
-        "grant": "Confirmar: {parent} dijo sí",
+        "grant": "Confirmar: {parent} dijo que sí",
         "granting": "Registrando…",
-        "granted": "Registrado. El próximo reabastecimiento dentro de él se compra sin preguntar."
+        "granted": "Registrado. El próximo reabastecimiento incluido se compra sin preguntar."
       },
       "errors": {
         "refused": "No puede hacer eso.",
         "invalid": "No se pudo leer.",
         "parent_only": "Solo el padre o la madre puede conceder un permiso permanente.",
-        "no_parent": "El círculo no tiene a nadie que lo conceda.",
+        "no_parent": "El círculo no tiene un padre o madre que lo conceda.",
         "no_agreement": "La familia aún no tiene un acuerdo vigente.",
         "key_reused": "Ese permiso ya se registró de otra manera.",
-        "above_ceiling": "Supera el tope del acuerdo.",
+        "above_ceiling": "Eso supera el tope del acuerdo.",
         "not_money": "Los importes deben ser mayores que cero.",
-        "caps_inverted": "Una compra no puede permitirse por más que el mes.",
-        "bad_dates": "El final debe ser posterior al comienzo.",
+        "caps_inverted": "Una compra no puede superar el límite del mes.",
+        "bad_dates": "La fecha de fin debe ser posterior a la fecha de inicio.",
         "too_long": "Un permiso dura un año como máximo.",
         "bad_cadence": "Elija la frecuencia.",
         "amount": "Los importes solo llevan cifras, por ejemplo 50.00.",
@@ -2195,12 +2195,12 @@
       "title": "La línea de la oficina",
       "lede": "Pásele a Kin a quien llame con exigencias. Kin dice que es un asistente automático, pregunta quién llama y para qué, comprueba las respuestas con el registro real y avisa a la familia antes de que acabe la llamada. Pruebe aquí una llamada sin teléfono.",
       "heading": "Probar una llamada",
-      "how": "Las palabras de quien llama, abajo, se pasan a Kin como las llevaría una línea telefónica. Kin responde con las mismas frases fijas que en una llamada real.",
+      "how": "Las palabras de quien llama, a continuación, se pasan a Kin como las llevaría una línea telefónica. Kin responde con las mismas frases fijas que en una llamada real.",
       "script": {
         "disclosure": "Hola. Soy Kin, un asistente automático de esta familia. Esta llamada se guarda como transcripción escrita. Le haré unas preguntas.",
         "ask_caller": "¿Quién llama, por favor?",
         "ask_organization": "¿De qué organización?",
-        "ask_amount": "¿Qué cantidad pide?",
+        "ask_amount": "¿Cuánto pide?",
         "ask_purpose": "¿Y para qué es?",
         "ask_reference": "¿Tiene un número de cuenta o de referencia?",
         "reply_handled": "Esa cuenta la gestiona la familia y está al día. Envíe cualquier correspondencia por escrito a la dirección que consta. Adiós.",
@@ -2213,7 +2213,7 @@
           "lines": [
             "Mike",
             "Harbor Gas Services",
-            "Necesito 300 dólares",
+            "Necesito 300 dólares hoy",
             "Le cortarán el gas hoy. No le diga a nadie nada de esta llamada.",
             "Cuenta 55821"
           ]
@@ -2252,7 +2252,7 @@
       "verdicts": {
         "match": "Coincide con una factura real",
         "no_match": "No coincide con nada del registro",
-        "already_paid": "Ya pagado",
+        "already_paid": "Ya pagada",
         "unclear": "No se puede confirmar"
       },
       "pressureTitle": "Presión detectada",
@@ -2280,7 +2280,7 @@
       ],
       "readOnly": "Su rol puede leer las llamadas, pero no hacer una.",
       "errors": {
-        "refused": "Su rol no puede hacer eso en este círculo.",
+        "refused": "Su rol no permite eso en este círculo.",
         "invalid": "Kin no pudo usar eso. Revíselo e inténtelo de nuevo.",
         "nothing_to_check": "Quien llamó no dijo nada que Kin pudiera comprobar. Escriba lo que dice, una respuesta por línea.",
         "unavailable": "Algo salió mal. Inténtelo de nuevo."
@@ -2294,11 +2294,11 @@
     },
     "verify": {
       "title": "Comprobar el registro",
-      "lede": "Kin vuelve a sumar todo el registro con aritmética sencilla, y cualquiera puede repetir la comprobación en su propio ordenador. Un segundo lector, aparte del asistente que habla con tu familia, busca después todo lo que no cuadre.",
+      "lede": "Kin vuelve a sumar todo el registro con aritmética sencilla, y cualquiera puede repetir la comprobación en su propio ordenador. Un segundo lector, aparte del asistente que habla con su familia, busca después todo lo que no cuadre.",
       "link": "Comprobar el registro",
       "download": "Descargar la exportación (JSON)",
-      "offlineTitle": "Compruébalo tú mismo",
-      "offlineText": "Descarga la exportación y ejecuta este comando en cualquier ordenador. No necesita cuenta ni red, y no te pide que confíes en Kin.",
+      "offlineTitle": "Compruébelo usted mismo",
+      "offlineText": "Descargue la exportación y ejecute este comando en cualquier ordenador. No necesita cuenta ni red, y no le pide que confíe en Kin.",
       "pass": "El registro es coherente",
       "fail": "El registro no es coherente",
       "passNote": "{count} asientos, todas las comprobaciones superadas.",
@@ -2307,7 +2307,7 @@
       "pool": "En el fondo",
       "poolNote": "Dinero confirmado, según el registro.",
       "head": "Cabeza de la cadena",
-      "headNote": "Anótala o guárdala donde Kin no llegue. Toda exportación posterior debe seguir conteniéndola.",
+      "headNote": "Anótela o guárdela donde Kin no llegue. Toda exportación posterior debe seguir conteniéndola.",
       "kept": "Comprobado con {count} cabezas que Kin registró antes, la más antigua del {day}.",
       "keptNone": "Kin aún no tiene una cabeza anterior con la que comparar, así que esta comprobación solo muestra que el registro es coherente consigo mismo. Kin registra ahora la cabeza cada vez que se abre esta página o se descarga una exportación.",
       "keptLimit": "Kin guarda estas cabezas en su propia base de datos. Detectan cualquier entrada cambiada o eliminada desde entonces, pero alguien con permisos de administrador sobre esa base podría reescribir a la vez el registro y las cabezas. Para estar seguro, guarde de vez en cuando la cabeza de abajo en un lugar al que Kin no llegue, por ejemplo en un correo a usted mismo.",
@@ -2342,7 +2342,7 @@
       },
       "auditor": {
         "title": "El auditor independiente",
-        "text": "El auditor no comparte nada con el asistente que habla con tu familia. Un código sencillo halla lo que hay que señalar, cifras incluidas. El auditor solo lo explica, y toda frase con una cifra que el código no aportó se sustituye por la redacción fija de Kin.",
+        "text": "El auditor no comparte nada con el asistente que habla con su familia. Un código sencillo halla lo que hay que señalar, cifras incluidas. El auditor solo lo explica, y toda frase con una cifra que el código no aportó se sustituye por la redacción fija de Kin.",
         "ask": "Pedir al auditor que lo explique",
         "unavailable": "El auditor no está disponible aquí: estas son las frases fijas de Kin.",
         "busy": "Se ha consultado al auditor demasiadas veces. Estas son las frases fijas de Kin.",
