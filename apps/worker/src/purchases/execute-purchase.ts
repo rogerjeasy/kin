@@ -12,7 +12,7 @@ import {
 } from "@kin/db";
 import { DELIVERY_SCHEDULE_SECONDS, nextDeliveryState, type DeliveryState } from "@kin/domain";
 
-import { MerchantError, type Merchant } from "./merchant.ts";
+import { MerchantError, type Charge, type Merchant } from "./merchant.ts";
 
 export type PurchaseDeps = {
   /** Connected as `kin_service`. Every transaction names the one circle it acts for. */
@@ -37,8 +37,9 @@ const SOON_SECONDS = 30;
  * the ledger takes one capture per execution. A pause or a pool that has not
  * received enough money holds it without changing anything.
  *
- * Only a demo circle's refill is carried out, with simulated money, and the
- * ledger entry says so. A real circle's would charge a saved PayPal wallet,
+ * Only a demo circle's refill is carried out. The seller says whether it
+ * charged real sandbox money or nothing, and the ledger entry says the same:
+ * simulated exactly when the seller charged nothing. A real circle's would charge a saved PayPal wallet,
  * which Kin cannot yet set up; such a purchase is stopped and marked failed,
  * with nothing taken from the pool.
  */
@@ -56,9 +57,11 @@ export async function executePurchase(deps: PurchaseDeps, circleId: string, exec
       await failPurchase(tx, job, "real_purchases_not_supported");
       return done("failed");
     }
+    let charge: Charge;
     try {
-      const { ref } = await deps.merchant.placeOrder({ key: job.idempotencyKey, item: job.item, cents: job.cents, currency: job.currency, ...(job.mandate ? { mandate: job.mandate } : {}) });
-      await recordOrderPlaced(tx, job, { ref, at: deps.now(), firstLookInSeconds: DELIVERY_SCHEDULE_SECONDS.shipped });
+      const placed = await deps.merchant.placeOrder({ key: job.idempotencyKey, item: job.item, cents: job.cents, currency: job.currency, ...(job.mandate ? { mandate: job.mandate } : {}) });
+      await recordOrderPlaced(tx, job, { ref: placed.ref, at: deps.now(), firstLookInSeconds: DELIVERY_SCHEDULE_SECONDS.shipped });
+      charge = placed.charge;
     } catch (error) {
       if (!(error instanceof MerchantError)) throw error;
       // The seller never took it: nothing left the pool, so the refill stops and the family sees it failed.
@@ -68,7 +71,10 @@ export async function executePurchase(deps: PurchaseDeps, circleId: string, exec
       }
       throw error;
     }
-    await confirmPurchase(tx, { ...job, state: "submitted" }, { itemId: `simulated-purchase-${job.executionId}`, at: job.now });
+    // The seller says how it was paid. A real sandbox charge is recorded under PayPal's capture and never as simulated;
+    // a charge the seller did not make is recorded as simulated, under a marker that cannot pass for a capture.
+    const paid = charge.kind === "paypal" ? { itemId: charge.captureId, simulated: false } : { itemId: `simulated-purchase-${job.executionId}`, simulated: true };
+    await confirmPurchase(tx, { ...job, state: "submitted", simulated: paid.simulated }, { itemId: paid.itemId, at: job.now });
     return done("confirmed");
   });
 }

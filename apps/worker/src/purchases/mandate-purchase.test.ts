@@ -94,6 +94,6 @@ describe("a refill inside Rose's spoken mandate", () => {
 
   it("has the seller refuse a charge beyond the allowance, a second check beside the first", async () => {
     await expect(simulatedMerchant.placeOrder({ key: "k", item: "x", cents: 5800, currency: "USD", mandate: { id: "m", allowanceCents: 5000 } })).rejects.toBeInstanceOf(MerchantError);
-    await expect(simulatedMerchant.placeOrder({ key: "k", item: "x", cents: 5000, currency: "USD", mandate: { id: "m", allowanceCents: 5000 } })).resolves.toEqual({ ref: "simulated-order-k" });
+    await expect(simulatedMerchant.placeOrder({ key: "k", item: "x", cents: 5000, currency: "USD", mandate: { id: "m", allowanceCents: 5000 } })).resolves.toEqual({ ref: "simulated-order-k", charge: { kind: "simulated" } });
   });
 });

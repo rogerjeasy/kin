@@ -1,11 +1,18 @@
 import { deliveryStateAfter, type DeliveryState } from "@kin/domain";
 
 import { itemOf } from "./catalog.ts";
-import { ChargeError, type WalletCharger } from "./wallet.ts";
+import { ChargeError, type Charge, type WalletCharger } from "./wallet.ts";
 
-export type OrderRequest = { readonly key: string; readonly item: string; readonly cents: number; readonly currency: string };
+export type OrderRequest = {
+  readonly key: string;
+  readonly item: string;
+  readonly cents: number;
+  readonly currency: string;
+  /** The standing permission the buyer says it acts under, with the most it allows for one purchase. The pharmacy checks it itself. */
+  readonly mandate?: { readonly id: string; readonly allowanceCents: number };
+};
 
-type Order = { readonly ref: string; readonly placedAt: Date; readonly captureId: string };
+type Order = { readonly ref: string; readonly placedAt: Date; readonly charge: Charge };
 
 /** The pharmacy does not sell what was asked at that price. Asking again cannot help. */
 export class UnknownItemError extends Error {
@@ -14,6 +21,16 @@ export class UnknownItemError extends Error {
   constructor() {
     super("The pharmacy does not sell this item at this price");
     this.name = "UnknownItemError";
+  }
+}
+
+/** The price is more than the standing permission the buyer named allows. Asking again cannot help. */
+export class AboveMandateError extends Error {
+  readonly retryable = false;
+
+  constructor() {
+    super("The price is above what the buyer's standing permission allows");
+    this.name = "AboveMandateError";
   }
 }
 
@@ -34,25 +51,27 @@ export function createOrderBook(deps: { readonly wallet: WalletCharger; readonly
   async function take(request: OrderRequest): Promise<Order> {
     const item = itemOf(request);
     if (item === null) throw new UnknownItemError();
-    const { captureId } = await deps.wallet.charge({ key: request.key, cents: item.priceCents, currency: item.currency, description: item.name });
-    const order: Order = { ref: `order-${request.key}`, placedAt: deps.now(), captureId };
+    // The seller's own check, made before any money is asked for and whatever the buyer has already checked.
+    if (request.mandate !== undefined && item.priceCents > request.mandate.allowanceCents) throw new AboveMandateError();
+    const charge = await deps.wallet.charge({ key: request.key, cents: item.priceCents, currency: item.currency, description: item.name });
+    const order: Order = { ref: `order-${request.key}`, placedAt: deps.now(), charge };
     byKey.set(request.key, order);
     byRef.set(order.ref, order);
     return order;
   }
 
   return {
-    async place(request: OrderRequest): Promise<{ readonly ref: string; readonly captureId: string }> {
+    async place(request: OrderRequest): Promise<{ readonly ref: string; readonly charge: Charge }> {
       if (!KEY.test(request.key)) throw new UnknownItemError();
       const taken = byKey.get(request.key);
-      if (taken) return { ref: taken.ref, captureId: taken.captureId };
+      if (taken) return { ref: taken.ref, charge: taken.charge };
       let pending = charging.get(request.key);
       if (pending === undefined) {
         pending = take(request).finally(() => charging.delete(request.key));
         charging.set(request.key, pending);
       }
       const order = await pending;
-      return { ref: order.ref, captureId: order.captureId };
+      return { ref: order.ref, charge: order.charge };
     },
     progress(ref: string): Exclude<DeliveryState, "awaiting"> | null {
       const order = byRef.get(ref);

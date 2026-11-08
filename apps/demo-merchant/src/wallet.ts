@@ -12,17 +12,23 @@ export class ChargeError extends Error {
 }
 
 /**
+ * What a charge was. A real one carries PayPal's capture ID and nothing else;
+ * a simulated one carries no ID at all, so it can never pass for a real one.
+ */
+export type Charge = { readonly kind: "simulated" } | { readonly kind: "paypal"; readonly captureId: string };
+
+/**
  * Takes money from the family pool's PayPal wallet, saved with this seller
  * once (docs/architecture.md section 8.6). The same `key` is one charge: a
  * repeated request must not take the money twice.
  */
 export type WalletCharger = {
-  readonly charge: (charge: { readonly key: string; readonly cents: number; readonly currency: string; readonly description: string }) => Promise<{ readonly captureId: string }>;
+  readonly charge: (charge: { readonly key: string; readonly cents: number; readonly currency: string; readonly description: string }) => Promise<Charge>;
 };
 
-/** For a sandbox without credentials: nothing is charged, and the capture's ID says so. */
+/** For a sandbox without credentials: nothing is charged, and the answer says so. */
 export const simulatedWallet: WalletCharger = {
-  charge: async ({ key }) => ({ captureId: `simulated-capture-${key}` }),
+  charge: async () => ({ kind: "simulated" }),
 };
 
 type PayPalWallet = {
@@ -75,7 +81,7 @@ export function paypalSavedWallet(wallet: PayPalWallet): WalletCharger {
       if (capture === null || capture.status !== "COMPLETED" || capture.value !== amount || capture.currency !== currency) {
         throw new ChargeError(false, "PayPal's record does not show this charge completed for this amount");
       }
-      return { captureId: capture.id };
+      return { kind: "paypal", captureId: capture.id };
     },
   };
 }

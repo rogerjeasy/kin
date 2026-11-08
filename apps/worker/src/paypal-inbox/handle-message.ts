@@ -1,7 +1,8 @@
 import { ContributionMismatchError, asService, settlePayPalEvent, storePayPalEvent, type Database } from "@kin/db";
-import { CAPTURE_COMPLETED, SUBSCRIPTION_EVENTS, captureRequestId, parseWebhookEnvelope, type InboxMessage, type PayPalPool, type WebhookDelivery } from "@kin/paypal";
+import { CAPTURE_COMPLETED, INVOICE_EVENTS, PayPalError, SUBSCRIPTION_EVENTS, captureRequestId, parseWebhookEnvelope, type InboxMessage, type PayPalPool, type WebhookDelivery } from "@kin/paypal";
 
 import { applyCapture, type CaptureOutcome } from "./apply-capture.ts";
+import { syncInvoice, type InvoiceOutcome } from "./apply-invoice.ts";
 import { syncShare, type ShareOutcome } from "./apply-share.ts";
 
 export type InboxDeps = {
@@ -22,13 +23,15 @@ export type InboxOutcome =
   | { readonly result: "rejected"; readonly eventId: string; readonly transmissionId: string }
   | { readonly result: "applied"; readonly circleId: string; readonly captures: readonly CaptureOutcome[] }
   | { readonly result: "failed"; readonly circleId: string; readonly reason: string }
-  | ShareOutcome;
+  | ShareOutcome
+  | InvoiceOutcome;
 
 const FOREIGN_KEY_VIOLATION = "23503";
 
 export async function handleInboxMessage(deps: InboxDeps, message: InboxMessage): Promise<InboxOutcome> {
   if (message.kind === "webhook") return handleWebhook(deps, message.delivery);
   if (message.kind === "subscription_checked") return syncShare(deps, message.circleId, { id: message.subscriptionId }, (deps.now ?? (() => new Date()))());
+  if (message.kind === "invoice_checked") return checkedInvoice(deps, message.circleId, message.invoiceRequestId);
   return handleCapturedOrder(deps, message.circleId, message.orderId);
 }
 
@@ -53,8 +56,9 @@ async function handleWebhook(deps: InboxDeps, delivery: WebhookDelivery): Promis
   }
   // PayPal signed the body, so the circle it names is the one Kin's server
   // put on the order. The capture is still read back before any money moves.
-  // A subscription's charge names only the subscription; PayPal says whose it is.
-  const circleId = envelope.reference?.circleId ?? (envelope.subscriptionId === null ? undefined : (await pool.getSubscription(envelope.subscriptionId)).reference?.circleId);
+  // A subscription's charge names only the subscription, and an invoice event
+  // only the invoice; PayPal says whose it is when it is read back.
+  const circleId = envelope.reference?.circleId ?? (await placeByPayPal(pool, envelope));
   if (circleId === undefined) return { result: "unplaced" };
 
   let stored;
@@ -74,6 +78,11 @@ async function handleWebhook(deps: InboxDeps, delivery: WebhookDelivery): Promis
 
   if (envelope.subscriptionId !== null && (SUBSCRIPTION_EVENTS as readonly string[]).includes(envelope.eventType)) {
     return settleShareEvent(deps, circleId, stored.id, envelope.subscriptionId);
+  }
+  // An invoice's own event, or the capture that paid one: either way the invoice is read back and its payment credited once.
+  const aboutInvoice = (INVOICE_EVENTS as readonly string[]).includes(envelope.eventType) || (envelope.eventType === CAPTURE_COMPLETED && envelope.reference === null);
+  if (envelope.invoiceId !== null && aboutInvoice) {
+    return settleInvoiceEvent(deps, circleId, stored.id, envelope.invoiceId);
   }
   if (envelope.eventType !== CAPTURE_COMPLETED || envelope.captureId === null) {
     await asService(db, circleId, (tx) => settlePayPalEvent(tx, stored.id, "processed"));
@@ -100,6 +109,40 @@ async function settleShareEvent(deps: InboxDeps, circleId: string, eventId: stri
     return outcome;
   } catch (error) {
     return failed(deps.db, circleId, eventId, error);
+  }
+}
+
+/** The circle a verified event belongs to, by asking PayPal about the subscription or invoice it names. */
+async function placeByPayPal(pool: PayPalPool, envelope: { readonly subscriptionId: string | null; readonly invoiceId: string | null }): Promise<string | undefined> {
+  if (envelope.subscriptionId !== null) return (await pool.getSubscription(envelope.subscriptionId)).reference?.circleId;
+  if (envelope.invoiceId === null) return undefined;
+  try {
+    return (await pool.getInvoice(envelope.invoiceId)).reference?.circleId;
+  } catch (error) {
+    // An invoice PayPal will not show the pool is no invoice of Kin's. Only an outage is retried.
+    if (error instanceof PayPalError && error.outcome === "rejected") return undefined;
+    throw error;
+  }
+}
+
+/** A verified invoicing event: the invoice and its payment are read back from PayPal, never taken from the event's own body. */
+async function settleInvoiceEvent(deps: InboxDeps, circleId: string, eventId: string, invoiceId: string): Promise<InboxOutcome> {
+  try {
+    const outcome = await syncInvoice(deps, circleId, { paypalInvoiceId: invoiceId });
+    await asService(deps.db, circleId, (tx) => settlePayPalEvent(tx, eventId, outcome.result === "failed" ? "failed" : "processed"));
+    return outcome;
+  } catch (error) {
+    return failed(deps.db, circleId, eventId, error);
+  }
+}
+
+/** The web app asked for a request to be read back: it was just sent, or someone asked whether it is paid. */
+async function checkedInvoice(deps: InboxDeps, circleId: string, requestId: string): Promise<InboxOutcome> {
+  try {
+    return await syncInvoice(deps, circleId, { id: requestId });
+  } catch (error) {
+    if (!(error instanceof ContributionMismatchError)) throw error;
+    return { result: "failed", circleId, reason: error.message };
   }
 }
 

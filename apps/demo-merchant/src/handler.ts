@@ -1,5 +1,5 @@
 import { CATALOG, SELLER_NAME } from "./catalog.ts";
-import { ChargeError, UnknownItemError, type OrderBook } from "./orders.ts";
+import { AboveMandateError, ChargeError, UnknownItemError, type OrderBook, type OrderRequest } from "./orders.ts";
 
 export type MerchantRequest = { readonly method: string; readonly path: string; readonly body: unknown };
 export type MerchantReply = { readonly status: number; readonly body: Record<string, unknown> };
@@ -32,20 +32,33 @@ async function placeOrder(book: OrderBook, body: unknown, standIn: Record<string
   const order = parseOrder(body);
   if (order === null) return { status: 400, body: { error: "invalid_order" } };
   try {
-    const { ref } = await book.place(order);
-    return { status: 201, body: { ...standIn, ref } };
+    const { ref, charge } = await book.place(order);
+    return { status: 201, body: { ...standIn, ref, charge } };
   } catch (error) {
     if (error instanceof UnknownItemError) return { status: 422, body: { error: "unknown_item" } };
+    if (error instanceof AboveMandateError) return { status: 403, body: { error: "above_mandate" } };
     if (error instanceof ChargeError) return { status: error.retryable ? 502 : 402, body: { error: error.retryable ? "wallet_unavailable" : "charge_refused" } };
     throw error;
   }
 }
 
-function parseOrder(body: unknown): { key: string; item: string; cents: number; currency: string } | null {
+const MANDATE_ID = /^[A-Za-z0-9_-]{1,100}$/;
+
+function parseMandate(value: unknown): NonNullable<OrderRequest["mandate"]> | null {
+  if (typeof value !== "object" || value === null) return null;
+  const { id, allowanceCents, ...extra } = value as Record<string, unknown>;
+  if (Object.keys(extra).length > 0 || typeof id !== "string" || !MANDATE_ID.test(id)) return null;
+  if (typeof allowanceCents !== "number" || !Number.isSafeInteger(allowanceCents) || allowanceCents <= 0) return null;
+  return { id, allowanceCents };
+}
+
+function parseOrder(body: unknown): OrderRequest | null {
   if (typeof body !== "object" || body === null) return null;
-  const { key, item, cents, currency, ...extra } = body as Record<string, unknown>;
+  const { key, item, cents, currency, mandate, ...extra } = body as Record<string, unknown>;
   if (Object.keys(extra).length > 0) return null;
   if (typeof key !== "string" || typeof item !== "string" || typeof currency !== "string") return null;
   if (typeof cents !== "number" || !Number.isSafeInteger(cents) || cents <= 0) return null;
-  return { key, item, cents, currency };
+  if (mandate === undefined) return { key, item, cents, currency };
+  const parsed = parseMandate(mandate);
+  return parsed === null ? null : { key, item, cents, currency, mandate: parsed };
 }

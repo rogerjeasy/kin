@@ -137,6 +137,33 @@ describe("an approved refill", () => {
     expect(await row(refill.circle.circleId, "select state, merchant_order from purchases where proposal_id = $1", refill.proposalId)).toEqual({ state: "ordered", merchant_order: `simulated-order-kin-purchase-${refill.proposalId}` });
   });
 
+  it("is recorded under PayPal's capture and not as simulated when the seller really charged the sandbox", async () => {
+    const refill = await approvedRefill();
+    const charged: Merchant = { ...simulatedMerchant, placeOrder: async ({ key }) => ({ ref: `order-${key}`, charge: { kind: "paypal", captureId: "5O190127TN364715T" } }) };
+    expect(await executePurchase(deps(charged), refill.circle.circleId, refill.executionId)).toEqual({ next: "done", result: "confirmed" });
+    // Carried out by hand, so its queued messages are marked sent to leave the shared outbox to the runner tests.
+    await serviceRows(db, refill.circle.circleId, "update outbox set sent_at = now() where circle_id = $1", [refill.circle.circleId]);
+
+    const captured = (await ledgerOf(refill.circle.circleId)).entries.filter((entry) => entry.kind === "purchase_captured" && entry.source.id === "5O190127TN364715T");
+    expect(captured.map((entry) => entry.simulated)).toEqual([false]);
+    expect(captured.map((entry) => entry.description)).toEqual(["Monthly prescription refill (30 days) bought through PayPal"]);
+    expect(await row(refill.circle.circleId, "select paypal_item_id from executions where id = $1", refill.executionId)).toEqual({ paypal_item_id: "5O190127TN364715T" });
+    const confirmed = await serviceRows(db, refill.circle.circleId, "select details from audit_log where circle_id = $1 and action = 'purchase.confirmed'", [refill.circle.circleId]);
+    expect(confirmed.at(-1)?.details).toMatchObject({ itemId: "5O190127TN364715T", simulated: false });
+  });
+
+  it("is recorded as simulated, under a marker that is no capture's ID, when the seller charged nothing", async () => {
+    const refill = await approvedRefill();
+    const free: Merchant = { ...simulatedMerchant, placeOrder: async ({ key }) => ({ ref: `order-${key}`, charge: { kind: "simulated" } }) };
+    await executePurchase(deps(free), refill.circle.circleId, refill.executionId);
+    // Carried out by hand, so its queued messages are marked sent to leave the shared outbox to the runner tests.
+    await serviceRows(db, refill.circle.circleId, "update outbox set sent_at = now() where circle_id = $1", [refill.circle.circleId]);
+
+    expect(await row(refill.circle.circleId, "select paypal_item_id from executions where id = $1", refill.executionId)).toEqual({ paypal_item_id: `simulated-purchase-${refill.executionId}` });
+    const confirmed = await serviceRows(db, refill.circle.circleId, "select details from audit_log where circle_id = $1 and action = 'purchase.confirmed'", [refill.circle.circleId]);
+    expect(confirmed.at(-1)?.details).toMatchObject({ simulated: true });
+  });
+
   it("is followed to the door on the pharmacy's schedule, one recorded step at a time, and the message leaves the outbox when delivered", async () => {
     const refill = await approvedRefill();
     await executePurchase(deps(), refill.circle.circleId, refill.executionId);
@@ -232,19 +259,61 @@ describe("what a person may read and write of purchases", () => {
 });
 
 describe("the demo pharmacy over HTTP", () => {
+  const order = { key: "k", item: "Refill", cents: 6400, currency: "USD" };
+
   it("places an order by key and reads its progress, trusting nothing it cannot parse", async () => {
     const replies: Response[] = [
-      new Response(JSON.stringify({ ref: "order-1" }), { status: 201 }),
+      new Response(JSON.stringify({ ref: "order-1", charge: { kind: "simulated" } }), { status: 201 }),
       new Response(JSON.stringify({ state: "shipped" }), { status: 200 }),
       new Response(JSON.stringify({ state: "teleported" }), { status: 200 }),
       new Response("oops", { status: 503 }),
-      new Response(JSON.stringify({ ref: "bad ref!" }), { status: 201 }),
+      new Response(JSON.stringify({ ref: "bad ref!", charge: { kind: "simulated" } }), { status: 201 }),
     ];
     const merchant = httpMerchant("http://pharmacy.test", async () => replies.shift() ?? new Response(null, { status: 500 }));
-    expect(await merchant.placeOrder({ key: "k", item: "Refill", cents: 6400, currency: "USD" })).toEqual({ ref: "order-1" });
+    expect(await merchant.placeOrder(order)).toEqual({ ref: "order-1", charge: { kind: "simulated" } });
     expect(await merchant.progressOf({ ref: "order-1", placedAt: REAL_START, now: REAL_START })).toBe("shipped");
     await expect(merchant.progressOf({ ref: "order-1", placedAt: REAL_START, now: REAL_START })).rejects.toMatchObject({ retryable: true });
     await expect(merchant.progressOf({ ref: "order-1", placedAt: REAL_START, now: REAL_START })).rejects.toMatchObject({ retryable: true });
-    await expect(merchant.placeOrder({ key: "k", item: "Refill", cents: 6400, currency: "USD" })).rejects.toMatchObject({ retryable: true });
+    await expect(merchant.placeOrder(order)).rejects.toMatchObject({ retryable: true });
+  });
+
+  it("sends the standing permission the order is bought under, so the seller can check it itself", async () => {
+    const sent: unknown[] = [];
+    const merchant = httpMerchant("http://pharmacy.test", async (_url, init) => {
+      sent.push(JSON.parse(String(init?.body)));
+      return new Response(JSON.stringify({ ref: "order-1", charge: { kind: "simulated" } }), { status: 201 });
+    });
+    await merchant.placeOrder({ ...order, mandate: { id: "mandate-1", allowanceCents: 7000 } });
+    await merchant.placeOrder(order);
+    expect(sent).toEqual([{ ...order, mandate: { id: "mandate-1", allowanceCents: 7000 } }, order]);
+  });
+
+  it("says a seller's refusal of the standing permission is final", async () => {
+    const merchant = httpMerchant("http://pharmacy.test", async () => new Response(JSON.stringify({ error: "above_mandate" }), { status: 403 }));
+    await expect(merchant.placeOrder({ ...order, mandate: { id: "mandate-1", allowanceCents: 5000 } })).rejects.toMatchObject({ retryable: false });
+  });
+
+  it("returns the seller's own account of the charge: PayPal's capture, or that nothing was charged", async () => {
+    const reply = (charge: unknown) => async () => new Response(JSON.stringify({ ref: "order-1", charge }), { status: 201 });
+    expect(await httpMerchant("http://pharmacy.test", reply({ kind: "paypal", captureId: "5O190127TN364715T" })).placeOrder(order)).toEqual({ ref: "order-1", charge: { kind: "paypal", captureId: "5O190127TN364715T" } });
+    expect(await httpMerchant("http://pharmacy.test", reply({ kind: "simulated" })).placeOrder(order)).toEqual({ ref: "order-1", charge: { kind: "simulated" } });
+  });
+
+  it("will not read an account of the charge that could let a simulated one pass for real, or the reverse", async () => {
+    const reply = (charge: unknown) => async () => new Response(JSON.stringify({ ref: "order-1", ...(charge === undefined ? {} : { charge }) }), { status: 201 });
+    for (const charge of [
+      undefined,
+      "paypal",
+      { kind: "paypal" },
+      { kind: "paypal", captureId: "" },
+      { kind: "paypal", captureId: "simulated-capture-k" },
+      { kind: "paypal", captureId: "Simulated-Purchase-1" },
+      { kind: "paypal", captureId: "has spaces" },
+      { kind: "simulated", captureId: "5O190127TN364715T" },
+      { kind: "other" },
+      { kind: "paypal", captureId: "5O190127TN364715T", extra: true },
+    ]) {
+      await expect(httpMerchant("http://pharmacy.test", reply(charge)).placeOrder(order)).rejects.toMatchObject({ retryable: true });
+    }
   });
 });

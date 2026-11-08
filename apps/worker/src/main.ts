@@ -1,9 +1,10 @@
-import { readDatabaseConfig, readInboxConfig, readPayPalConfig } from "@kin/config";
+import { readDatabaseConfig, readInboxConfig, readPayPalConfig, readSandboxPayoutConfig } from "@kin/config";
 import { connect } from "@kin/db";
 import { payoutFeeReserve, poolFor, sqsInbox } from "@kin/paypal";
 
 import { runInboxBatch, type InboxLog } from "./paypal-inbox/run-inbox.ts";
 import { runPayoutBatch } from "./payouts/run-payouts.ts";
+import { dailyBudget } from "./payouts/sandbox-route.ts";
 import { httpMerchant, simulatedMerchant } from "./purchases/merchant.ts";
 import { runDeliveryBatch, runPurchaseBatch } from "./purchases/run-purchases.ts";
 import { runReceiptBatch } from "./receipts/run-receipts.ts";
@@ -27,6 +28,8 @@ const log: InboxLog = (line) => console.log(JSON.stringify({ at: new Date().toIS
 
 const paypal = readPayPalConfig(process.env, { webhook: true });
 const inboxConfig = readInboxConfig(process.env);
+// Demo caregiver payouts paid for real through PayPal's sandbox, to Kin's own test account, when one is named.
+const sandboxPayouts = readSandboxPayoutConfig(process.env);
 if (!paypal.enabled || inboxConfig === null) throw new Error("The worker needs the PayPal settings and the inbox queue");
 
 const deps = {
@@ -61,7 +64,8 @@ async function inboxLoop(): Promise<void> {
 
 // Approved payouts, from the outbox the approval wrote in its own transaction.
 async function payoutLoop(): Promise<void> {
-  const payouts = { ...deps, now: () => new Date(), feeReserve: (currency: string) => payoutFeeReserve(currency)() };
+  const sandbox = sandboxPayouts.enabled ? { payeeEmail: sandboxPayouts.payeeEmail, dailyLimit: sandboxPayouts.dailyLimit, budget: dailyBudget() } : null;
+  const payouts = { ...deps, now: () => new Date(), feeReserve: (currency: string) => payoutFeeReserve(currency)(), sandbox };
   while (running) {
     try {
       if ((await runPayoutBatch(payouts, log)) === 0) await pause(PAYOUT_POLL_MS);

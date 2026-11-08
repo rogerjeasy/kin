@@ -8,11 +8,15 @@ import {
   recordHeld,
   recordPending,
   recordSubmitted,
+  recordSandboxFallback,
   recordUnknown,
   type Database,
   type PayoutJob,
+  type Transaction,
 } from "@kin/db";
 import { PayPalError, payoutOutcome, type PayPalPool, type PayoutBatch } from "@kin/paypal";
+
+import { routeReadiedDemoPayout, routedJob, type SandboxJob, type SandboxPayouts } from "./sandbox-route.ts";
 
 export type PayoutDeps = {
   /** Connected as `kin_service`. Every transaction names the one circle it acts for. */
@@ -21,6 +25,8 @@ export type PayoutDeps = {
   readonly now: () => Date;
   /** The fee to reserve for one payout in the circle's currency, before PayPal says what it charged. */
   readonly feeReserve: (currency: string) => number;
+  /** Real PayPal sandbox payouts for demo circles, to Kin's own test account; `null` keeps them simulated. */
+  readonly sandbox?: SandboxPayouts;
 };
 
 /** Where a payout stands after one turn: finished, or to be looked at again after a while. */
@@ -39,9 +45,10 @@ const HELD_SECONDS = 15 * 60;
  * or a lost answer repeats nothing (docs/architecture.md section 7.6).
  */
 export async function executePayout(deps: PayoutDeps, circleId: string, executionId: string): Promise<PayoutStep> {
-  const prepared = await asService(deps.db, circleId, async (tx): Promise<{ readonly step: PayoutStep } | { readonly job: PayoutJob }> => {
-    const job = await readPayoutJob(tx, executionId, deps.now());
-    if (job === null || job.state === "confirmed" || job.state === "failed") return { step: done("gone") };
+  const prepared = await asService(deps.db, circleId, async (tx): Promise<{ readonly step: PayoutStep } | { readonly job: SandboxJob }> => {
+    const read = await readPayoutJob(tx, executionId, deps.now());
+    if (read === null || read.state === "confirmed" || read.state === "failed") return { step: done("gone") };
+    const job = await routedJob(tx, read);
     if (job.state !== "created") return { job };
     const ready = await beginPayout(tx, job, deps.feeReserve(job.currency));
     if (ready !== "ready") {
@@ -50,23 +57,39 @@ export async function executePayout(deps: PayoutDeps, circleId: string, executio
       const untilLifted = ready === "paused" && job.pausedUntil ? Math.ceil((job.pausedUntil.getTime() - job.now.getTime()) / 1000) : HELD_SECONDS;
       return { step: later("held", Math.max(1, Math.min(HELD_SECONDS, untilLifted))) };
     }
-    if (job.simulated) return { step: await paySimulated(tx, job, deps) };
-    // beginPayout fixed the address on the execution if it had none.
-    return { job: { ...job, receiver: payoutReceiver(job) } };
+    if (job.simulated) {
+      // A demo payout, approved and readied like any other, may go to PayPal's sandbox instead.
+      const routed = await routeReadiedDemoPayout(tx, job, deps.sandbox ?? null, deps.now());
+      return routed.sandbox ? { job: routed } : { step: await paySimulated(tx, job, deps) };
+    }
+    // beginPayout fixed the address on the execution if it had none. A sandbox payout's address is Kin's, already set.
+    return { job: job.sandbox ? job : { ...job, receiver: payoutReceiver(job) } };
   });
   if ("step" in prepared) return prepared.step;
   const { job } = prepared;
   const batchId = job.batchId ?? (await askPayPal(deps, job));
+  if (batchId === "simulated") return done("confirmed");
   if (batchId === "failed" || batchId === "unknown") return batchId === "failed" ? done("failed") : later("unknown", SOON_SECONDS);
   return readBack(deps, job, batchId);
 }
 
 // A demo circle's money is simulated: nothing is sent, and the entry says so.
-async function paySimulated(tx: Parameters<Parameters<typeof asService>[2]>[0], job: PayoutJob, deps: PayoutDeps): Promise<PayoutStep> {
+async function paySimulated(tx: Transaction, job: PayoutJob, deps: PayoutDeps): Promise<PayoutStep> {
   const now = job.now;
-  await recordSubmitted(tx, job, null, now);
-  await confirmPayout(tx, { ...job, state: "submitted" }, { itemId: `simulated-payout-${job.executionId}`, batchId: null, feeCents: deps.feeReserve(job.currency), at: now });
+  if (job.state === "created") await recordSubmitted(tx, job, null, now);
+  const submitted = { ...job, simulated: true, state: job.state === "created" ? ("submitted" as const) : job.state };
+  await confirmPayout(tx, submitted, { itemId: `simulated-payout-${job.executionId}`, batchId: null, feeCents: deps.feeReserve(job.currency), at: now });
   return done("confirmed");
+}
+
+/**
+ * PayPal's sandbox would not pay a demo payout: rather than leave the demo
+ * stuck, it is paid simulated, labelled so, with PayPal's reason recorded.
+ * Only on PayPal's own refusal or failed item: never while its answer is unknown.
+ */
+async function fallBackToSimulated(tx: Transaction, job: PayoutJob, deps: PayoutDeps, reason: string): Promise<PayoutStep> {
+  await recordSandboxFallback(tx, job, reason);
+  return paySimulated(tx, job, deps);
 }
 
 /**
@@ -74,7 +97,7 @@ async function paySimulated(tx: Parameters<Parameters<typeof asService>[2]>[0], 
  * refusal means PayPal made nothing. No answer means Kin cannot know: the
  * execution becomes unknown, and the same key is sent again later.
  */
-async function askPayPal(deps: PayoutDeps, job: PayoutJob): Promise<string | "failed" | "unknown"> {
+async function askPayPal(deps: PayoutDeps, job: SandboxJob): Promise<string | "failed" | "unknown" | "simulated"> {
   const receiver = job.receiver;
   if (receiver === null) throw new Error("A payout reached PayPal without a receiver");
   try {
@@ -91,15 +114,18 @@ async function askPayPal(deps: PayoutDeps, job: PayoutJob): Promise<string | "fa
       if (locked === null) return;
       if (locked.state === "created") await recordSubmitted(tx, locked, null, deps.now());
       const submitted = { ...locked, state: locked.state === "created" ? ("submitted" as const) : locked.state };
-      if (error.outcome === "rejected") await failPayout(tx, submitted, `paypal_${error.status ?? "refused"}`);
+      const reason = `paypal_${error.status ?? "refused"}`;
+      if (error.outcome === "rejected" && job.sandbox) await fallBackToSimulated(tx, submitted, deps, error.issue === null ? reason : `${reason}_${error.issue.toLowerCase()}`);
+      else if (error.outcome === "rejected") await failPayout(tx, submitted, reason);
       else if (submitted.state === "submitted") await recordUnknown(tx, submitted);
     });
-    return error.outcome === "rejected" ? "failed" : "unknown";
+    if (error.outcome === "rejected") return job.sandbox ? "simulated" : "failed";
+    return "unknown";
   }
 }
 
 /** Reads the batch back from PayPal: the record that decides what happened. */
-async function readBack(deps: PayoutDeps, job: PayoutJob, batchId: string): Promise<PayoutStep> {
+async function readBack(deps: PayoutDeps, job: SandboxJob, batchId: string): Promise<PayoutStep> {
   let batch: PayoutBatch;
   try {
     batch = await deps.pool.getPayoutBatch(batchId);
@@ -113,13 +139,15 @@ async function readBack(deps: PayoutDeps, job: PayoutJob, batchId: string): Prom
     throw new Error(`Payout batch ${batchId} does not match execution ${job.executionId}`);
   }
   return asService(deps.db, job.circleId, async (tx) => {
-    const locked = await readPayoutJob(tx, job.executionId, deps.now());
-    if (locked === null || locked.state === "confirmed" || locked.state === "failed") return done("gone");
+    const read = await readPayoutJob(tx, job.executionId, deps.now());
+    if (read === null || read.state === "confirmed" || read.state === "failed") return done("gone");
+    const locked = await routedJob(tx, read);
     const outcome = payoutOutcome(item.status);
     if (outcome === "confirmed") {
       await confirmPayout(tx, locked, { itemId: item.itemId, batchId, feeCents: item.fee?.cents ?? 0, at: deps.now() });
       return done("confirmed");
     }
+    if (outcome === "failed" && locked.sandbox) return fallBackToSimulated(tx, locked, deps, `paypal_${item.status.toLowerCase()}`);
     if (outcome === "failed") {
       await failPayout(tx, locked, `paypal_${item.status.toLowerCase()}`);
       return done("failed");
