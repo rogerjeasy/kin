@@ -28,14 +28,16 @@ const MAX_WORDS_LENGTH = 400;
 export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures"> & { readonly language?: string }): boolean {
   if (words.trim() === "" || words.length > MAX_WORDS_LENGTH || hasHiddenCharacters(words) || /https?:|www\.|@/iu.test(words)) return false;
   const figures = facts.figures.flatMap(numbersIn);
-  // A figure may itself contain a number in words, such as a payee called "Seven Oaks".
-  const allowed = new Set([...figures.flatMap((figure) => figure.values), ...facts.figures.flatMap((figure) => spokenNumbers(figure, facts.language)).flatMap((number) => number.readings)]);
+  // Two sets, so a number word inside a name never authorises a digit amount. A figure's digits authorise digits and
+  // words alike; a number word inside a figure, such as a payee called "Seven Oaks", authorises only that word again.
+  const digitValues = new Set(figures.flatMap((figure) => figure.values));
+  const wordValues = new Set(facts.figures.flatMap((figure) => spokenNumbers(figure, facts.language)).flatMap((number) => number.readings));
   // A whole amount may be said without its zero cents: "1.000" for a record that holds "1.000,00".
   const written = new Set(figures.flatMap((figure) => [figure.written, figure.written.replace(/[.,]00$/u, "")]));
   // "64,000" is sixty-four thousand in English and sixty-four in French. A number with two readings passes only if
   // the record wrote it that way itself or every reading is one the record holds, so a guess is never the one accepted.
-  const digitsAllowed = numbersIn(words).every((number) => number.values.every((value) => allowed.has(value)) || (number.values.length > 1 && written.has(number.written)));
-  return digitsAllowed && spokenNumbersAreAllowed(words, (value) => allowed.has(value), facts.language);
+  const digitsAllowed = numbersIn(words).every((number) => number.values.every((value) => digitValues.has(value)) || (number.values.length > 1 && written.has(number.written)));
+  return digitsAllowed && spokenNumbersAreAllowed(words, (value) => digitValues.has(value) || wordValues.has(value), facts.language);
 }
 
 const WORDING_SCHEMA = {

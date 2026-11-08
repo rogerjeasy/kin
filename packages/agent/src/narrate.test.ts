@@ -189,3 +189,11 @@ describe("the number guard and numbers written in words", () => {
     expect(model.requests[0]?.system).toContain("as digits, never in words");
   });
 });
+
+describe("a number word inside a figure authorises only that word", () => {
+  it("lets a name like 'Seven Oaks' be repeated but not turned into a digit amount", () => {
+    expect(passesNumberGuard("Seven Oaks was paid.", { figures: ["Seven Oaks", "$64.00"], language: "English" })).toBe(true);
+    expect(passesNumberGuard("Seven Oaks was paid $7.00.", { figures: ["Seven Oaks", "$64.00"], language: "English" })).toBe(false);
+    expect(passesNumberGuard("A payment of 7 was made.", { figures: ["Seven Oaks"], language: "English" })).toBe(false);
+  });
+});
