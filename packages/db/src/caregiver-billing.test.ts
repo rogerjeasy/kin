@@ -116,6 +116,8 @@ describe("caregiver billing with the app's own database identity", () => {
 
   it("cannot submit before a rate is configured", async () => {
     const circle = await family();
+    // The demo's Amara arrives with the rate her shifts are priced by, so this test starts from none.
+    await db.admin.execute(sql`update payees set caregiver_rate_cents_per_hour = null where id = ${circle.payees.amara}`);
     await expect(asPerson(db.app, circle.caregiver, (tx) => submitCaregiverBill(tx, { circleId: circle.circleId, details, submissionKey: randomUUID() }))).rejects.toMatchObject({ reason: "missing_rate" });
   });
 

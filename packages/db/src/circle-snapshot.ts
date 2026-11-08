@@ -17,10 +17,14 @@ import type {
   ProposalKind,
   ProposalState,
   ReceiptCategory,
+  ShiftCallState,
+  ShiftKind,
+  ShiftState,
+  ShiftWaitingFor,
   VersionStatus,
 } from "@kin/domain";
 
-import type { ApprovalMethod, ClaimVerdict, DocumentKind, InvitationStatus, NarrationState, ReceiptState, SettlementState } from "./values.ts";
+import type { ApprovalMethod, ClaimVerdict, DocumentKind, InvitationStatus, NarrationState, PayoutWallet, ReceiptState, SettlementState } from "./values.ts";
 
 /**
  * Everything a circle's screens show, read in one transaction as the person
@@ -54,6 +58,14 @@ export type CircleSnapshot = {
   readonly purchases: readonly PurchaseRecord[];
   /** The parent's standing permissions, with this period's use. Not shown to a caregiver. */
   readonly mandates: readonly MandateRecord[];
+  /** The calendar of care shifts, by start. A caregiver reads only the shifts they are on. */
+  readonly shifts: readonly ShiftRecord[];
+  /** The parent's standing permissions to pay a caregiver's confirmed shifts, with today's use. Not shown to a caregiver. */
+  readonly shiftPermissions: readonly ShiftPermissionRecord[];
+  /** The pay rules and payout wallet of each caregiver the viewer may see. */
+  readonly shiftRules: readonly ShiftRulesRecord[];
+  /** Whether Kin phones the parent for the family's word, without the number. Only the parent and the organizer are given it; `null` for them until it is set up, and for everyone else. */
+  readonly parentCallSettings: ParentCallSettingsRecord | null;
   readonly documents: readonly DocumentRecord[];
   /** Pending and answered invitations. Only an organizer reads them. */
   readonly invitations: readonly InvitationRecord[];
@@ -295,6 +307,98 @@ export type MandateRecord = {
   readonly usedCents: number;
   readonly usedCount: number;
   readonly uses: readonly { readonly proposalId: string; readonly cents: number; readonly period: string; readonly at: Date; readonly state: string }[];
+};
+
+export type ShiftRecord = {
+  readonly id: string;
+  readonly kind: ShiftKind;
+  readonly title: string | null;
+  /** The member who does the shift. */
+  readonly memberId: string;
+  /** Whom an aide's shift pays. */
+  readonly payeeId: string | null;
+  readonly startsAt: Date;
+  readonly endsAt: Date;
+  readonly state: ShiftState;
+  readonly checkedInAt: Date | null;
+  readonly checkedOutAt: Date | null;
+  readonly familyConfirmedAt: Date | null;
+  readonly familyConfirmedBy: string | null;
+  readonly familyConfirmation: "parent" | "sibling" | null;
+  readonly workedMinutes: number | null;
+  readonly billableMinutes: number | null;
+  /** What the shift is worth, set by the database when it was priced. */
+  readonly cents: number | null;
+  readonly rateCentsPerHour: number | null;
+  readonly proposalId: string | null;
+  /** Where its payment stands, or `null` before one exists or when the viewer may not read it. */
+  readonly proposalState: ProposalState | null;
+  /** The standing permission that covered it, when one did. */
+  readonly permissionId: string | null;
+  /** A demo circle's shift is simulated, and its pay too. */
+  readonly simulated: boolean;
+  /** Which key a shift still waits for; `null` once both have turned, and for a cancelled shift. */
+  readonly waitingFor: ShiftWaitingFor;
+  /** How Kin's latest call to the parent about this shift went, or `null` when none was made or the viewer is a caregiver. */
+  readonly callState: ShiftCallState | null;
+  /** What a credited visit or drive counted for, in whole minutes and cents, from its care entry and its ledger entry; `null` for any other shift. */
+  readonly creditedMinutes: number | null;
+  readonly creditedCents: number | null;
+};
+
+/** Kin's call to the parent, as the parent and the organizer see it. The phone number is never part of it. */
+export type ParentCallSettingsRecord = {
+  /** The circle's parent, whose word the call records. */
+  readonly memberId: string;
+  readonly enabled: boolean;
+  /** The language Kin speaks to her in. */
+  readonly locale: string;
+  /** Who gave the consent, and when it was recorded. `null` until a call was first switched on. */
+  readonly consentedBy: string | null;
+  readonly consentedAt: Date | null;
+  /** No call is placed from the start of the quiet hours until their end, as local times of day (HH:MM:SS) on the circle's clock. */
+  readonly quietStart: string;
+  readonly quietEnd: string;
+};
+
+export type ShiftPermissionRecord = {
+  readonly id: string;
+  /** The caregiver's payee row it covers. */
+  readonly payeeId: string;
+  /** The parent whose permission it is. */
+  readonly grantedBy: string;
+  /** Who recorded it: the parent, or in a demo circle the organizer playing the parent's spoken yes. */
+  readonly recordedBy: string;
+  readonly maxMinutesPerDay: number;
+  readonly perShiftCents: number;
+  readonly validFrom: string;
+  readonly expiresOn: string;
+  readonly status: MandateStatus;
+  readonly spokenText: string | null;
+  readonly simulated: boolean;
+  readonly digest: string;
+  readonly grantedAt: Date;
+  readonly endedAt: Date | null;
+  /** Minutes of shifts paid, or waiting to be, under it on the circle's calendar day now. */
+  readonly usedMinutesToday: number;
+  readonly uses: readonly {
+    readonly shiftId: string;
+    readonly proposalId: string;
+    readonly cents: number;
+    readonly minutes: number;
+    readonly day: string;
+    readonly at: Date;
+    readonly state: ProposalState;
+  }[];
+};
+
+export type ShiftRulesRecord = {
+  readonly payeeId: string;
+  readonly minimumMinutes: number;
+  readonly overtimeAfterMinutes: number | null;
+  readonly overtimePercent: number;
+  /** Where the caregiver's pay lands. */
+  readonly payoutWallet: PayoutWallet;
 };
 
 export type PurchaseRecord = {

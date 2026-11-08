@@ -14,6 +14,7 @@ import {
   BILL_TRANSITIONS,
   EXECUTION_TRANSITIONS,
   PROPOSAL_TRANSITIONS,
+  SHIFT_TRANSITIONS,
 } from "@kin/domain";
 import { pgEnum } from "drizzle-orm/pg-core";
 
@@ -55,6 +56,7 @@ export const direction = pgEnum("direction", DIRECTIONS);
 export const monthlyShareState = pgEnum("monthly_share_state", MONTHLY_SHARE_STATES);
 export const invoiceRequestState = pgEnum("invoice_request_state", statesOf(INVOICE_REQUEST_TRANSITIONS));
 export const invoicePurpose = pgEnum("invoice_purpose", INVOICE_PURPOSES);
+export const shiftState = pgEnum("shift_state", statesOf(SHIFT_TRANSITIONS));
 
 export const userKind = pgEnum("user_kind", USER_KINDS);
 export const circleStatus = pgEnum("circle_status", CIRCLE_STATUSES);

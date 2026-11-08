@@ -13,6 +13,35 @@ export type { CreditOutcome } from "./receipts.ts";
 export { NothingToSettleError, SettlementExistsError, proposeSettlement, setOwnSettlementReceiver } from "./settlement-proposals.ts";
 export { MandateError, grantMandate, newMandateId, setMandateStatus } from "./mandates.ts";
 export type { MandateReason } from "./mandates.ts";
+export {
+  ShiftError,
+  cancelShift,
+  checkInShift,
+  checkOutShift,
+  confirmShift,
+  markShiftPaid,
+  newShiftId,
+  scheduleShift,
+  setOwnPayoutTarget,
+  setShiftRules,
+  SHIFT_HOLD_REASONS,
+  settleShift,
+  settleShiftAsService,
+} from "./shifts.ts";
+export type { ShiftReason, ShiftSettled, ShiftTurn } from "./shifts.ts";
+export { grantShiftPermission, setShiftPermissionStatus, shiftPermissionDigest } from "./shift-permissions.ts";
+export { readShiftRecords } from "./shift-records.ts";
+export { SHIFT_CALL_TOPIC, SHIFT_SETTLE_TOPIC } from "./shift-topics.ts";
+export { ShiftCallError } from "./shift-call-errors.ts";
+export type { ShiftCallReason } from "./shift-call-errors.ts";
+export { hashCheckToken, mintCheckLink, newCheckToken, readCheckLink, useCheckLink } from "./check-links.ts";
+export type { CheckLinkAction, CheckLinkNext, CheckLinkResult, CheckLinkStatus } from "./check-links.ts";
+export { recordCallPlaced, recordCallStatus, recordFamilyWordByCall, setParentCallSettings, startShiftCall } from "./shift-calls.ts";
+export type { CallReport, FamilyWordByCall, ShiftCallRefusal, ShiftCallRefusalReason, ShiftCallToDial } from "./shift-calls.ts";
+export { findStaleShiftCall, openShiftCallForWebhook } from "./shift-call-lookup.ts";
+export type { ActiveShiftCall, ShiftCallWebhookRecord } from "./shift-call-lookup.ts";
+export { SHIFT_CREDIT_TOPIC, creditShift, shiftCreditSourceId } from "./shift-credit.ts";
+export type { CreditSkipReason, ShiftCreditOutcome } from "./shift-credit.ts";
 export { AgreementError, acceptAgreement, proposeAgreement, readAgreementVersions } from "./agreements.ts";
 export type { AgreementReason } from "./agreements.ts";
 export {

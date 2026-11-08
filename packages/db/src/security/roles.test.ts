@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import { readCircle } from "../read-circle.ts";
@@ -20,7 +20,8 @@ describe("a caregiver (the least-privileged role that reads money)", () => {
 
     expect(snapshot.viewer.role).toBe("caregiver");
     expect(snapshot.payees.map((payee) => payee.id)).toEqual([circle.payees.amara]);
-    expect(snapshot.proposals.map((proposal) => proposal.purpose)).toEqual(["caregiverWeek"]);
+    // Her two paid shifts, and her week waiting for Rose.
+    expect(snapshot.proposals.map((proposal) => proposal.purpose)).toEqual(["shift", "shift", "caregiverWeek"]);
     // The approval and the confirmed payout of her twelve hours, each read whole.
     expect(snapshot.ledger.entries.map((entry) => entry.kind).toSorted()).toEqual(["bill_approved", "payout_confirmed"]);
     expect(snapshot.ledger.entries.every((entry) => entry.lines.some((line) => line.account === `payable:${circle.payees.amara}`))).toBe(true);
@@ -57,7 +58,7 @@ describe("an observer", () => {
     const attempt = (work: Parameters<typeof asPerson>[2]) => errorCode(asPerson(db.app, observer.userId, work));
     // A proposal's state is open to answering roles only, so an observer's update finds no row.
     const moved = await asPerson(db.app, observer.userId, (tx) =>
-      tx.update(proposals).set({ state: "approved" }).where(eq(proposals.circleId, circle.circleId)).returning({ id: proposals.id }),
+      tx.update(proposals).set({ state: "approved" }).where(and(eq(proposals.circleId, circle.circleId), eq(proposals.state, "pending_approval"))).returning({ id: proposals.id }),
     );
     expect(moved).toEqual([]);
     expect(await attempt((tx) => tx.delete(members).where(eq(members.circleId, circle.circleId)))).toBe(REFUSED.permission);
@@ -73,8 +74,8 @@ describe("any member, the organizer included", () => {
   it("cannot write the ledger, move a proposal or change who is paid", async () => {
     const circle = await visitorWithCircle(db);
     const attempt = (work: Parameters<typeof asPerson>[2]) => errorCode(asPerson(db.app, circle.userId, work));
-    // Approving takes a recorded yes: the database refuses a bare change of state.
-    expect(await attempt((tx) => tx.update(proposals).set({ state: "approved" }).where(eq(proposals.circleId, circle.circleId)))).toBe(REFUSED.check);
+    // Approving takes a recorded yes: the database refuses a bare change of state. Only waiting proposals are aimed at: a settled one is refused for another reason, and which row is met first is not defined.
+    expect(await attempt((tx) => tx.update(proposals).set({ state: "approved" }).where(and(eq(proposals.circleId, circle.circleId), eq(proposals.state, "pending_approval"))))).toBe(REFUSED.check);
     expect(await attempt((tx) => tx.update(proposals).set({ cents: 1 }).where(eq(proposals.circleId, circle.circleId)))).toBe(REFUSED.permission);
     expect(await attempt((tx) => tx.update(payees).set({ paypalReceiver: "thief@example.com" }).where(eq(payees.circleId, circle.circleId)))).toBe(REFUSED.permission);
     expect(await attempt((tx) => tx.delete(ledgerEntries).where(eq(ledgerEntries.circleId, circle.circleId)))).toBe(REFUSED.permission);

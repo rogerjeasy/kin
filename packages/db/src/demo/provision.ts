@@ -18,6 +18,7 @@ import { writeEntries } from "../ledger-store.ts";
 import { mandateDigest } from "../mandates.ts";
 import { demoTime, type DemoTime } from "./demo-time.ts";
 import { rekeyEntry, rowOf } from "./rekey.ts";
+import { writeShifts } from "./write-shifts.ts";
 import { asProvisioner } from "../scope.ts";
 import {
   agreementAcceptances,
@@ -107,6 +108,7 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     await writeProposals(tx, ids, agreement, ledger);
     const ruleIds = await writePurchaseRules(tx, ids);
     await writeMandates(tx, ids, ruleIds);
+    await writeShifts(tx, ids, agreement.version);
     await writeNews(tx, ids, ledger);
     await tx.insert(auditLog).values({
       id: randomUUID(),
@@ -202,6 +204,10 @@ async function writePayees(tx: Transaction, ids: Ids): Promise<void> {
       autoPayRuleId: payee.autoPay?.ruleId ?? null,
       autoPayMinCents: payee.autoPay?.minCents ?? null,
       autoPayMaxCents: payee.autoPay?.maxCents ?? null,
+      caregiverRateCentsPerHour: payee.caregiver?.rateCentsPerHour ?? null,
+      shiftMinimumMinutes: payee.caregiver?.minimumMinutes ?? 0,
+      shiftOvertimeAfterMinutes: payee.caregiver?.overtimeAfterMinutes ?? null,
+      shiftOvertimePercent: payee.caregiver?.overtimePercent ?? 150,
     })),
   );
 }

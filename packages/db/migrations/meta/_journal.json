@@ -225,6 +225,48 @@
       "when": 1794128958181,
       "tag": "0031_invoice-request-access",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1794143195180,
+      "tag": "0032_shifts",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1794143201076,
+      "tag": "0033_shift-access",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1794161070170,
+      "tag": "0034_shift-credit",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1794161076238,
+      "tag": "0035_shift-credit-access",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1794161348645,
+      "tag": "0036_shift-links-and-calls",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1794161355427,
+      "tag": "0037_shift-links-and-calls-access",
+      "breakpoints": true
     }
   ]
 }

@@ -9,8 +9,8 @@ const { admin } = testDatabases();
 const ROLES = ["kin_app", "kin_service", "kin_provisioner"];
 /** The roles as one SQL array value. */
 const roleArray = sql`string_to_array(${ROLES.join(",")}, ',')`;
-/** Tables no person reads: only Kin's service touches them. */
-const SERVICE_ONLY = ["outbox", "paypal_events"];
+/** Tables no person reads: only Kin's service touches them. A check-in link's hash is a credential, so no screen reads its table. */
+const SERVICE_ONLY = ["outbox", "paypal_events", "shift_check_links"];
 
 async function tables(): Promise<string[]> {
   const result = await admin.execute<{ tablename: string }>(PUBLIC_TABLES_SQL);
@@ -71,6 +71,14 @@ describe("the database's access rules (AGENTS.md section 6)", () => {
           where grantee = 'kin_app' and privilege_type = 'UPDATE' and table_name <> 'users'`,
     );
     expect(result.rows.map((row) => `${row.table_name}.${row.column_name}`).toSorted()).toEqual(["circles.paused_by", "circles.paused_until", "proposals.state"]);
+  });
+
+  it("let Kin's service move a shift's state and write no other shift, permission or use", async () => {
+    const columns = await admin.execute<{ table_name: string; column_name: string }>(
+      sql`select table_name, column_name from information_schema.column_privileges
+          where grantee = 'kin_service' and privilege_type in ('UPDATE', 'INSERT') and table_name in ('shifts', 'shift_permissions', 'shift_permission_uses')`,
+    );
+    expect(columns.rows.map((row) => `${row.table_name}.${row.column_name}`)).toEqual(["shifts.state"]);
   });
 
   it("let no role delete or truncate anything", async () => {

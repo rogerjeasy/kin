@@ -1,6 +1,7 @@
 import { REFILL_PRICE_CENTS, rosesMonth, type CircleRole, type ParentLevel, type ProposalKind } from "@kin/domain";
 
 import type { ApprovalMethod, ClaimVerdict, DocumentKind } from "../values.ts";
+import { AMARA_PAY } from "./roses-shifts.ts";
 
 /**
  * Rose's circle from docs/project-description.md section 5, as the rows a
@@ -54,6 +55,8 @@ export type DemoPayee = {
   readonly status: "approved" | "new";
   readonly member: PersonaKey | null;
   readonly autoPay: { readonly ruleId: string; readonly minCents: number; readonly maxCents: number } | null;
+  /** The caregiver's agreed rate, pay rules and payout wallet. */
+  readonly caregiver?: typeof AMARA_PAY;
 };
 
 /**
@@ -67,7 +70,7 @@ export const PAYEES: readonly DemoPayee[] = [
   { key: "gas", name: "Northfield Gas", category: "utilities", status: "approved", member: null, autoPay: { ruleId: "standing-gas", minCents: 4500, maxCents: 7000 } },
   { key: "water", name: "Lakeside Water", category: "utilities", status: "approved", member: null, autoPay: null },
   { key: "pharmacy", name: "Elm Street Pharmacy", category: "pharmacy", status: "approved", member: null, autoPay: null },
-  { key: "amara", name: "Amara", category: "care", status: "approved", member: "amara", autoPay: null },
+  { key: "amara", name: "Amara", category: "care", status: "approved", member: "amara", autoPay: null, caregiver: AMARA_PAY },
   { key: "stairlift", name: "Ridgeway Stairlifts", category: "repairs", status: "new", member: null, autoPay: null },
 ];
 

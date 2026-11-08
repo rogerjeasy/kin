@@ -1,10 +1,12 @@
-import { billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, settlementPaidOut, type ExecutionState } from "@kin/domain";
+import { SHIFT_PURPOSE, billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, settlementPaidOut, type ExecutionState } from "@kin/domain";
 import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
 import type { Database, Transaction } from "./connection.ts";
 import { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";
 import { auditLog, bills, circles, executions, ledgerEntries, outbox, payees, proposals, settlements } from "./schema/index.ts";
+import { markShiftPaid } from "./shifts.ts";
+import type { PayoutWallet } from "./values.ts";
 
 /** The outbox topic that asks the worker to pay an approved caregiver or settlement payout. */
 export const PAYOUT_TOPIC = "payout.execute";
@@ -26,8 +28,12 @@ export type PayoutJob = {
   /** Who is paid, for a settlement. */
   readonly memberId: string | null;
   readonly category: string;
+  /** What the payout is for, as the proposal records it: a caregiver's bill, a settlement, a care shift. */
+  readonly purpose: string;
   /** The PayPal email the money goes to, fixed on the execution, or `null` while none is known. */
   readonly receiver: string | null;
+  /** Which wallet the receiver names: PayPal, or Venmo through PayPal Payouts. Fixed on the execution with the receiver. */
+  readonly wallet: PayoutWallet;
   /** The payee's address now, used only to fix a receiver the execution does not have yet. */
   readonly payeeReceiver: string | null;
   readonly cents: number;
@@ -81,8 +87,10 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
       payeeId: proposals.payeeId,
       memberId: proposals.memberId,
       kind: proposals.kind,
+      purpose: proposals.purpose,
       category: payees.category,
       receiver: executions.receiver,
+      wallet: executions.wallet,
       payeeReceiver: payees.paypalReceiver,
       currency: circles.currency,
       demo: circles.demo,
@@ -112,7 +120,9 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
     payeeId: row.payeeId,
     memberId: row.memberId,
     category: row.category ?? "settlement",
+    purpose: row.purpose,
     receiver: row.receiver,
+    wallet: row.wallet,
     payeeReceiver: kind === "member_payout" ? memberReceiver : row.payeeReceiver,
     cents: row.cents,
     currency: row.currency,
@@ -161,7 +171,7 @@ export async function beginPayout(tx: Transaction, job: PayoutJob, feeReserveCen
   if (!canPayOut(ledger, { cents: job.cents, feeCents: feeReserveCents, alreadyOwed: owed, reservedCents })) return "waiting_for_funds";
   if (!settlement && job.payeeId !== null && !owed) {
     const entry = billApproved(
-      { ...header(job, `approval`, job.proposalId), description: "Caregiver bill approved by the family" },
+      { ...header(job, `approval`, job.proposalId), description: job.purpose === SHIFT_PURPOSE ? "Care shift approved by the family" : "Caregiver bill approved by the family" },
       { payeeId: job.payeeId, category: job.category, cents: job.cents },
     );
     await writeEntries(tx, [entry], await readAccountIds(tx, job.circleId));
@@ -210,6 +220,8 @@ export async function confirmPayout(tx: Transaction, job: PayoutJob, paid: { rea
   await tx.update(proposals).set({ state: "settled" }).where(and(eq(proposals.id, job.proposalId), eq(proposals.state, "executing")));
   if (job.billId !== null) await tx.update(bills).set({ state: "paid" }).where(and(eq(bills.id, job.billId), eq(bills.state, "proposed")));
   if (job.settlementId !== null) await closeSettlementIfDone(tx, job.circleId, job.settlementId);
+  // A care shift has no bill: its payout is what moves it from priced to paid.
+  if (job.kind === "caregiver_payout" && job.purpose === SHIFT_PURPOSE) await markShiftPaid(tx, { circleId: job.circleId, proposalId: job.proposalId });
   await audit(tx, job, "payout.confirmed", { itemId: paid.itemId, simulated: job.simulated });
 }
 

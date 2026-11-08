@@ -17,6 +17,7 @@ import { readLedger } from "./ledger-store.ts";
 import { parseApprovalPlan } from "./plan-json.ts";
 import { readMandateRecords } from "./mandates.ts";
 import { readPurchaseRecords } from "./purchases.ts";
+import { readShiftRecords } from "./shift-records.ts";
 import {
   approvals,
   bills,
@@ -94,6 +95,7 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     narrations: await readNarrations(tx, circle.id),
     ...(await readPurchaseRecords(tx, circle.id, circle.now, circle.timezone)),
     mandates: await readMandateRecords(tx, circle.id, circle.now, circle.timezone),
+    ...(await readShiftRecords(tx, circle.id, circle.now, circle.timezone)),
     documents: await readDocuments(tx, circle.id),
     invitations: await readInvitations(tx, circle.id),
     monthlyShares: await readMonthlyShares(tx, circle.id, viewerRow.id),

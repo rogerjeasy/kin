@@ -20,6 +20,12 @@ describe("a stored approval plan", () => {
     for (const plan of plans) expect(parseApprovalPlan(stored(plan))).toEqual(plan);
   });
 
+  it("reads a care shift paid on the parent's standing permission as the plan a mandate makes, and refuses one that is malformed", () => {
+    expect(parseApprovalPlan({ outcome: "shift_permission", permissionId: "p-1", agreementVersion: 1 })).toEqual({ outcome: "mandate", mandateId: "p-1", agreementVersion: 1 });
+    expect(() => parseApprovalPlan({ outcome: "shift_permission", agreementVersion: 1 })).toThrow(StoredPlanError);
+    expect(() => parseApprovalPlan({ outcome: "shift_permission", permissionId: "p-1", agreementVersion: "1" })).toThrow(StoredPlanError);
+  });
+
   it.each([
     ["not an object", 42],
     ["an unknown outcome", { outcome: "approved" }],

@@ -1,8 +1,9 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, date, foreignKey, index, jsonb, pgTable, real, text, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, date, foreignKey, index, integer, jsonb, pgTable, real, text, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
-import { PROPOSAL_KINDS } from "@kin/domain";
+import { MAX_SHIFT_MINUTES, PROPOSAL_KINDS } from "@kin/domain";
 
+import { PAYOUT_WALLETS } from "../values.ts";
 import { cents, circleId, createdAt, id } from "./columns.ts";
 import { circles, members } from "./circles.ts";
 import { billState, documentKind, payeeStatus, proposalKind } from "./enums.ts";
@@ -22,6 +23,14 @@ export const payees = pgTable(
     caregiverRateCentsPerHour: cents("caregiver_rate_cents_per_hour"),
     /** Where PayPal sends the money: an email or a PayPal account ID. */
     paypalReceiver: text("paypal_receiver"),
+    /** Which wallet the receiver names: a PayPal account, or a Venmo email, phone or handle. */
+    payoutWallet: text("payout_wallet", { enum: PAYOUT_WALLETS }).notNull().default("paypal"),
+    /** The least a care shift is paid for, in minutes; 0 for none. */
+    shiftMinimumMinutes: integer("shift_minimum_minutes").notNull().default(0),
+    /** Minutes in one shift paid at the normal rate; the rest are overtime. `null` for no overtime. */
+    shiftOvertimeAfterMinutes: integer("shift_overtime_after_minutes"),
+    /** The overtime rate as a whole percent of the normal rate. */
+    shiftOvertimePercent: integer("shift_overtime_percent").notNull().default(150),
     // A standing rule: the payee is paid without a new approval inside this range.
     autoPayRuleId: text("auto_pay_rule_id"),
     autoPayMinCents: cents("auto_pay_min_cents"),
@@ -34,6 +43,9 @@ export const payees = pgTable(
     unique("payees_circle_row").on(t.circleId, t.id),
     uniqueIndex("payees_one_caregiver_rate").on(t.circleId, t.memberId).where(sql`${t.caregiverRateCentsPerHour} is not null`),
     check("payees_caregiver_rate", sql`${t.caregiverRateCentsPerHour} is null or (${t.memberId} is not null and ${t.caregiverRateCentsPerHour} > 0 and ${t.caregiverRateCentsPerHour} <= 9007199254740991)`),
+    check("payees_payout_wallet", sql.raw(`payout_wallet in (${PAYOUT_WALLETS.map((wallet) => `'${wallet}'`).join(", ")})`)),
+    // The same limits as the domain's shift pay rules, so no row can hold rules a shift could not be priced by.
+    check("payees_shift_rules", sql.raw(`shift_minimum_minutes between 0 and ${MAX_SHIFT_MINUTES} and shift_overtime_percent between 100 and 300 and (shift_overtime_after_minutes is null or shift_overtime_after_minutes between 1 and ${MAX_SHIFT_MINUTES})`)),
     check("payees_name_present", sql`length(trim(${t.name})) > 0`),
     check("payees_category_code", sql`${t.category} ~ '^[a-z0-9_-]+$'`),
     check(

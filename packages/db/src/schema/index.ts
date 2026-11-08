@@ -11,5 +11,7 @@ export * from "./shares.ts";
 export * from "./invoices.ts";
 export * from "./purchases.ts";
 export * from "./mandates.ts";
+export * from "./shifts.ts";
+export * from "./shift-calls.ts";
 export * from "./audit-heads.ts";
 export * from "./system.ts";

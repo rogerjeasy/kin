@@ -54,3 +54,7 @@ export const PAYPAL_EVENT_STATES = ["received", "verified", "rejected", "process
 /** Who acted: a signed-in member, Kin's own services, or the demo provisioner. */
 export const AUDIT_ACTORS = ["member", "service", "provisioner"] as const;
 export type AuditActor = (typeof AUDIT_ACTORS)[number];
+
+/** Where a caregiver's pay lands: a PayPal wallet, or their Venmo account through PayPal Payouts. */
+export const PAYOUT_WALLETS = ["paypal", "venmo"] as const;
+export type PayoutWallet = (typeof PAYOUT_WALLETS)[number];

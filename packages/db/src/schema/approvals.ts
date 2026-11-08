@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { check, foreignKey, index, integer, jsonb, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
 
+import { PAYOUT_WALLETS } from "../values.ts";
 import { at, cents, circleId, createdAt, id } from "./columns.ts";
 import { circles, members } from "./circles.ts";
 import { approvalMethod, circleRole, executionState, proposalKind, proposalState, voteDecision } from "./enums.ts";
@@ -93,6 +94,8 @@ export const executions = pgTable(
     paypalOrderId: text("paypal_order_id"),
     /** Where the money goes, fixed once known: a later change of the payee's address never moves it. */
     receiver: text("receiver"),
+    /** Which wallet the receiver names. Fixed when the approval queues the payout, like the receiver. */
+    wallet: text("wallet", { enum: PAYOUT_WALLETS }).notNull().default("paypal"),
     attempts: integer("attempts").notNull().default(0),
     lastError: text("last_error"),
     submittedAt: at("submitted_at"),
@@ -103,6 +106,7 @@ export const executions = pgTable(
     foreignKey({ name: "executions_proposal_fk", columns: [t.circleId, t.proposalId], foreignColumns: [proposals.circleId, proposals.id] }),
     unique("executions_idempotency_key").on(t.idempotencyKey),
     check("executions_attempts", sql`${t.attempts} >= 0`),
+    check("executions_wallet", sql.raw(`wallet in (${PAYOUT_WALLETS.map((wallet) => `'${wallet}'`).join(", ")})`)),
     check("executions_key_present", sql`length(trim(${t.idempotencyKey})) > 0`),
   ],
 );

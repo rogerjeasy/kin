@@ -60,6 +60,13 @@ export function parseApprovalPlan(value: unknown): ApprovalPlan {
       if (typeof version !== "number" || !Number.isInteger(version)) throw new StoredPlanError("agreementVersion is not a whole number");
       return { outcome: "standing_rule", ruleId: text(value, "ruleId"), agreementVersion: version };
     }
+    // A care shift paid on the parent's standing permission is read as the plan a mandate makes: both say the
+    // parent's own standing yes approved it, and no screen needs to tell them apart. The raw plan keeps its name.
+    case "shift_permission": {
+      const version = value.agreementVersion;
+      if (typeof version !== "number" || !Number.isInteger(version)) throw new StoredPlanError("agreementVersion is not a whole number");
+      return { outcome: "mandate", mandateId: text(value, "permissionId"), agreementVersion: version };
+    }
     case "mandate": {
       const version = value.agreementVersion;
       if (typeof version !== "number" || !Number.isInteger(version)) throw new StoredPlanError("agreementVersion is not a whole number");

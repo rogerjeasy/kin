@@ -10,6 +10,10 @@ export { testDatabases } from "./databases.ts";
 export type { TestDatabases } from "./databases.ts";
 export { addMember, seatPerson, signedIn, visitorWithCircle } from "./circles.ts";
 export type { VisitorCircle } from "./circles.ts";
+export { agreeWithoutCare, confirmedVisit } from "./visits.ts";
+export type { ConfirmedVisit } from "./visits.ts";
+export { PARENT_PHONE, enableCalls, openAideShift, queued, realCircle, setQuietHours, startedCall, waitingForWord, withoutTriggers } from "./real-shifts.ts";
+export type { RealCircle } from "./real-shifts.ts";
 
 /** The circle as `userId` sees it, read the way the web app reads it. */
 export function snapshotFor(db: TestDatabases, userId: string, circleId: string): Promise<CircleSnapshot> {
