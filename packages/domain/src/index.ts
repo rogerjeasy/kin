@@ -202,5 +202,67 @@ export { CAREGIVER_CATEGORY, monthlyStatement, yearInReview } from "./statement.
 export type { PeriodFigures, StatementAmount, StatementQuery, YearInReview, YearMonth } from "./statement.ts";
 export { LEDGER_PROBLEMS, auditLedger } from "./verify-ledger.ts";
 export type { LedgerAudit, LedgerProblem, LedgerProblemCode } from "./verify-ledger.ts";
+export { COVER_BUFFER_MINUTES, coverCandidates, coverIsTaken, coverKindOf, shiftNeedsCover } from "./cover.ts";
+export type { CoverCandidate, CoverKind, CoverMember, CoverRequest, CoverShift } from "./cover.ts";
 export { hasHiddenCharacters, spokenNumbers, spokenNumbersAreAllowed } from "./number-words.ts";
 export type { SpokenNumber } from "./number-words.ts";
+export {
+  MAX_SHIFT_CALL_ATTEMPTS,
+  SHIFT_CALL_ANSWERS,
+  SHIFT_CALL_RETRY_MINUTES,
+  SHIFT_CALL_STATES,
+  SHIFT_CALL_TRANSITIONS,
+  SHIFT_CALL_WINDOW_HOURS,
+  shiftCallIsActive,
+  shiftCallMayMove,
+} from "./shift-call.ts";
+export type { ShiftCallAnswer, ShiftCallState } from "./shift-call.ts";
+export { CREDITED_ROLES, CREDITED_SHIFT_KINDS, isCreditedKind, valueCreditedShift } from "./shift-credit.ts";
+export type { ShiftCredit } from "./shift-credit.ts";
+export {
+  DEFAULT_SHIFT_RULES,
+  MAX_PERMISSION_MINUTES_PER_DAY,
+  MAX_SHIFT_MINUTES,
+  MAX_SHIFT_PERMISSION_DAYS,
+  SHIFT_KINDS,
+  SHIFT_PURPOSE,
+  SHIFT_STATES,
+  SHIFT_TRANSITIONS,
+  ShiftPermissionTermsError,
+  ShiftPriceError,
+  ShiftTransitionError,
+  advanceShift,
+  checkShiftPermission,
+  checkShiftPermissionTerms,
+  dayPart,
+  decideShiftPermission,
+  isPaidShiftKind,
+  mayConfirmShift,
+  overtimeRateCentsPerHour,
+  planShiftPayout,
+  priceShift,
+  shiftDay,
+  shiftMoveAllowed,
+  shiftPermissionExcessAboveParentLimit,
+  turnedKeys,
+  waitingFor,
+  workedMinutes,
+} from "./shift.ts";
+export type {
+  ShiftKeys,
+  ShiftKind,
+  ShiftPayoutRequest,
+  ShiftPermission,
+  ShiftPermissionCandidate,
+  ShiftPermissionDecision,
+  ShiftPermissionRefusal,
+  ShiftPermissionTerms,
+  ShiftPermissionTermsRefusal,
+  ShiftPrice,
+  ShiftRules,
+  ShiftState,
+  ShiftToPay,
+  ShiftWaitingFor,
+  ShiftWordRefusal,
+  ShiftWordRequest,
+} from "./shift.ts";

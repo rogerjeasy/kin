@@ -32,6 +32,30 @@ export const CIRCLE_ACTIONS = {
   "mandate.grant": ["organizer", "parent"],
   /** Hold a mandate still without ending it: anyone who answers for the family, since stopping is always safe. */
   "mandate.pause": ["organizer", "contributor", "parent"],
+  /** See the care calendar. A caregiver sees only their own shifts, which the database enforces again. */
+  "shift.view": ["organizer", "contributor", "parent", "caregiver", "observer"],
+  /** Put a shift, a visit, an appointment or a drive on the calendar. */
+  "shift.schedule": ["organizer", "contributor", "parent"],
+  /** Tap in and out of one's own shift. The database refuses anyone but the shift's own member. */
+  "shift.check": ["caregiver", "organizer", "contributor", "parent"],
+  /** Make a no-login check-in link for a shift, to text, print or show as a code. The database refuses anyone but the shift's own member and those who run the calendar. */
+  "shift.link": ["caregiver", "organizer", "contributor", "parent"],
+  /** Print the door tag: the card whose code opens a caregiver's own shifts, with nothing secret on it. */
+  "shift.door": ["organizer", "parent"],
+  /** Give the family's word that a visit happened: the parent, or a sibling where the parent cannot. Never the shift's own member. */
+  "shift.confirm": ["organizer", "contributor", "parent"],
+  /** Take a shift off the calendar: its own member, or whoever runs the calendar. */
+  "shift.cancel": ["caregiver", "organizer", "contributor", "parent"],
+  /** Record the parent's standing permission to pay confirmed shifts, or end it. The parent does so; in a demo circle the organizer plays her spoken yes. */
+  "shift_permission.grant": ["organizer", "parent"],
+  /** Hold a shift permission still without ending it: stopping is always safe. */
+  "shift_permission.pause": ["organizer", "contributor", "parent"],
+  /** Switch on Kin's call to the parent for the family's word, with her consent: the parent; in a demo circle the organizer plays her. */
+  "shift_call.manage": ["organizer", "parent"],
+  /** Switch that call off: stopping is always safe, so anyone who answers for the family may. */
+  "shift_call.stop": ["organizer", "contributor", "parent"],
+  /** Set the minimum visit and overtime rules a caregiver's shifts are priced by. */
+  "shift_rules.manage": ["organizer"],
   /** Stop all approvals for 24 hours (section 15.3). An observer changes nothing. */
   "circle.pause": ["organizer", "contributor", "parent", "caregiver"],
   "member.invite": ["organizer"],
@@ -46,6 +70,8 @@ export const CIRCLE_ACTIONS = {
   "caregiver_bill.submit": ["caregiver"],
   /** Say where one's own pay goes. Nobody else may, so nobody can redirect it. */
   "caregiver_receiver.set": ["caregiver"],
+  /** Say which wallet, PayPal or Venmo, and which address one's own pay goes to. Nobody else may, so nobody can redirect it. */
+  "payout_target.set": ["caregiver"],
   /** Hold up a letter, bill or receipt for Kin to read, and ask Kin to check a demand for money against the record. */
   "letter.read": ["organizer", "contributor", "parent"],
   "claim.check": ["organizer", "contributor", "parent"],
