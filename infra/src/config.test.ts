@@ -67,6 +67,15 @@ describe("readConfig", () => {
     expect(() => read({ "kin:claude": "on" })).toThrow(InfraConfigError);
   });
 
+  it("keeps demo payouts simulated unless Kin's sandbox account is named, and only with the pool's PayPal app", () => {
+    const paypal = { clientId: "client", webhookId: "WH-1" };
+    expect(read({ "kin:paypal": paypal }).demoSandboxPayeeEmail).toBeNull();
+    expect(read({ "kin:paypal": paypal, "kin:demoSandboxPayeeEmail": "sb-kin@personal.example.com" }).demoSandboxPayeeEmail).toBe("sb-kin@personal.example.com");
+    expect(() => read({ "kin:paypal": paypal, "kin:demoSandboxPayeeEmail": "kin" })).toThrow(InfraConfigError);
+    // Nobody would pay them: the worker runs only with the PayPal app.
+    expect(() => read({ "kin:demoSandboxPayeeEmail": "sb-kin@personal.example.com" })).toThrow(InfraConfigError);
+  });
+
   it("refuses a sender that is not an email address", () => {
     expect(() => read({}, { ...env, KIN_SENDER_EMAIL: "kin" })).toThrow(InfraConfigError);
   });

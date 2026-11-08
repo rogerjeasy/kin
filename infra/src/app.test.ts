@@ -25,6 +25,7 @@ const config: InfraConfig = {
   paypal: { clientId: "sandbox-client-id", webhookId: "WH-SANDBOX" },
   speech: false,
   claude: false,
+  demoSandboxPayeeEmail: null,
 };
 
 // The same feature flags as a real synth, so the tests see what is deployed.
@@ -782,5 +783,26 @@ describe("top-ups", () => {
     expect(off.worker).toBeNull();
     expect(actionsOf(Template.fromStack(off.web)).some((action) => action.startsWith("sqs:"))).toBe(false);
     expect(JSON.stringify(Template.fromStack(off.web).toJSON())).not.toContain("KIN_PAYPAL");
+  });
+});
+
+describe("real sandbox payouts in demo circles", () => {
+  const payee = "sb-kin-payee@personal.example.com";
+  const withPayee = buildKin(new App({ context: testContext }), { ...config, demoSandboxPayeeEmail: payee });
+  const variablesOf = (template: Template) => {
+    const [service] = Object.values(template.findResources("AWS::AppRunner::Service"));
+    return service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"]["RuntimeEnvironmentVariables"] as { Name: string; Value: unknown }[];
+  };
+  const workerVariables = (template: Template) => JSON.stringify(Object.values(template.findResources("AWS::ECS::TaskDefinition")).map((task) => task["Properties"]["ContainerDefinitions"]));
+
+  it("are off unless Kin's sandbox account is named: neither the worker nor the web hears of one", () => {
+    expect(workerVariables(worker)).not.toContain("KIN_DEMO_SANDBOX_PAYEE_EMAIL");
+    expect(variablesOf(web).map((each) => each.Name)).not.toContain("KIN_DEMO_SANDBOX_PAYEE_EMAIL");
+  });
+
+  it("named, reach the worker that pays them and the web that says so, as a plain setting", () => {
+    if (withPayee.worker === null) throw new Error("KinWorker exists with a PayPal app");
+    expect(workerVariables(Template.fromStack(withPayee.worker))).toContain(`{"Name":"KIN_DEMO_SANDBOX_PAYEE_EMAIL","Value":"${payee}"}`);
+    expect(variablesOf(Template.fromStack(withPayee.web))).toContainEqual({ Name: "KIN_DEMO_SANDBOX_PAYEE_EMAIL", Value: payee });
   });
 });

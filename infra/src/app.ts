@@ -50,7 +50,7 @@ export function buildKin(app: App, config: InfraConfig): KinStacks {
   const worker =
     config.paypal === null
       ? null
-      : new WorkerStack(app, "KinWorker", { env, vpc: network.vpc, servicesSecurityGroup: network.servicesSecurityGroup, paypal: config.paypal });
+      : new WorkerStack(app, "KinWorker", { env, vpc: network.vpc, servicesSecurityGroup: network.servicesSecurityGroup, paypal: config.paypal, demoSandboxPayeeEmail: config.demoSandboxPayeeEmail });
   // It reads the database, queue and secret settings KinData publishes.
   worker?.addDependency(data);
 

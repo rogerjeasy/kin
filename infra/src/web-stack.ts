@@ -114,6 +114,8 @@ export class WebStack extends Stack {
         { name: "AWS_REGION", value: this.region },
       );
       secrets.push({ name: "KIN_PAYPAL_CLIENT_SECRET", value: paypalSecret });
+      // The web only says how demo payouts are paid; the worker pays them.
+      if (config.demoSandboxPayeeEmail !== null) environment.push({ name: "KIN_DEMO_SANDBOX_PAYEE_EMAIL", value: config.demoSandboxPayeeEmail });
     }
 
     // Speech: Transcribe hears a recording and Polly reads Kin's own words

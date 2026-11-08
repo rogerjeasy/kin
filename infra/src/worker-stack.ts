@@ -18,6 +18,8 @@ type WorkerStackProps = StackProps & {
   readonly vpc: ec2.IVpc;
   readonly servicesSecurityGroup: ec2.ISecurityGroup;
   readonly paypal: { readonly clientId: string; readonly webhookId: string };
+  /** Kin's own PayPal sandbox account, to which approved demo caregiver payouts are paid; `null` keeps them simulated. */
+  readonly demoSandboxPayeeEmail: string | null;
 };
 
 /**
@@ -87,6 +89,7 @@ export class WorkerStack extends Stack {
         KIN_PAYPAL_WEBHOOK_ID: props.paypal.webhookId,
         KIN_PAYPAL_INBOX_URL: setting(PAYPAL_SETTINGS.inboxUrl),
         AWS_REGION: this.region,
+        ...(props.demoSandboxPayeeEmail === null ? {} : { KIN_DEMO_SANDBOX_PAYEE_EMAIL: props.demoSandboxPayeeEmail }),
       },
       secrets: {
         KIN_DATABASE_SERVICE_PASSWORD: ecs.Secret.fromSecretsManager(secret("ServicePassword", DATABASE_SETTINGS.serviceSecretArn)),

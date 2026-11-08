@@ -55,6 +55,13 @@ export type InfraConfig = {
    * it serves, so switch it on only once the model in `@kin/config` answers.
    */
   readonly claude: boolean;
+  /**
+   * Kin's own PayPal sandbox personal account, or `null` to keep every demo
+   * payout simulated. Set, the worker pays an approved demo caregiver payout
+   * through PayPal's sandbox to this account and no other, and the web app
+   * says so. Needs `kin:paypal`, since only the worker pays.
+   */
+  readonly demoSandboxPayeeEmail: string | null;
 };
 
 export class InfraConfigError extends Error {
@@ -91,7 +98,16 @@ export function readConfig({ context, env }: Source): InfraConfig {
     paypal: paypalApp(context("kin:paypal")),
     speech: flag(context("kin:speech"), "kin:speech"),
     claude: flag(context("kin:claude"), "kin:claude"),
+    demoSandboxPayeeEmail: demoSandboxPayee(context("kin:demoSandboxPayeeEmail"), context("kin:paypal")),
   };
+}
+
+function demoSandboxPayee(value: unknown, paypal: unknown): string | null {
+  const payee = optionalEmail(value ?? undefined, "kin:demoSandboxPayeeEmail must be the email of Kin's PayPal sandbox personal account, or unset.");
+  if (payee !== null && (paypal === undefined || paypal === null)) {
+    throw new InfraConfigError("kin:demoSandboxPayeeEmail needs kin:paypal: only the worker pays demo payouts through PayPal's sandbox");
+  }
+  return payee;
 }
 
 function flag(value: unknown, key: string): boolean {
