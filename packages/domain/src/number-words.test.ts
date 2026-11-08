@@ -309,3 +309,24 @@ describe("a join between a digit and a lone one-word still ties them together", 
     for (const text of ["5 un jour", "a 5 un", "5 ein Tag", "5 one"]) expect(values(text), text).toEqual([]);
   });
 });
+
+describe("a language drops only its own ordinary words, never another language's number words", () => {
+  const inLanguage = (language: string, text: string, ...held: string[]) => spokenNumbersAreAllowed(text, (value) => held.includes(value), language);
+
+  it("lets English use 'due' and 'once', and French 'due', as ordinary words", () => {
+    expect(inLanguage("en", "The bill is due on the 20th, once the pool has enough.")).toBe(true);
+    expect(inLanguage("fr", "Cette facture est due demain.")).toBe(true);
+  });
+
+  it("still reads foreign number words inside an English or French sentence", () => {
+    for (const text of ["It costs dos mil dollars.", "It costs 64 mil dollars.", "Es kostet otto euros.", "It costs tre dollars.", "It costs null dollars.", "It costs elf dollars."]) {
+      expect(inLanguage("en", text, "64")).toBe(false);
+    }
+    expect(inLanguage("fr", "Cela coûte dos mil euros.", "64")).toBe(false);
+  });
+
+  it("still reads Italian 'due' and Spanish 'once' as numbers in their own language", () => {
+    expect(inLanguage("it", "Sono due euro.", "64")).toBe(false);
+    expect(inLanguage("es", "Son once euros.", "64")).toBe(false);
+  });
+});

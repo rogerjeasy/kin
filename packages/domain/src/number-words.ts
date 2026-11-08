@@ -290,11 +290,10 @@ export function languageCode(language: string | undefined): string | undefined {
 // drops only those; its own numbers and every other language's number words are still read, so a model that
 // switches language mid-sentence is caught. Arabic and Hebrew have none: an unsure word stays a number.
 const ORDINARY: Readonly<Record<string, ReadonlySet<string>>> = {
-  en: new Set(["due", "once", "dos", "sei", "elf", "null", "otto", "tre", "mil"]),
-  fr: new Set(["due", "once", "dos", "sei", "elf", "null", "otto", "tre", "mil"]),
-  de: new Set(["sei", "dos", "once", "due", "otto", "tre", "mil"]),
-  it: new Set(["once", "dos", "elf", "null", "mil"]),
-  es: new Set(["ten", "due", "elf", "null"]),
+  en: new Set(["due", "once"]),
+  fr: new Set(["due"]),
+  de: new Set(["sei"]),
+  es: new Set(["ten"]),
 };
 
 // Italian "sei" is six and "you are": it is the verb before these words.
