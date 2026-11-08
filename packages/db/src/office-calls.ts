@@ -1,8 +1,10 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { confirmedPayments, type RecordFacts } from "@kin/domain";
+import { and, desc, eq, ne, sql } from "drizzle-orm";
 
 import type { Transaction } from "./connection.ts";
+import { readLedger } from "./ledger-store.ts";
 import { LetterError } from "./letters.ts";
-import { claimChecks, officeCalls } from "./schema/index.ts";
+import { bills, circles, claimChecks, officeCalls, payees } from "./schema/index.ts";
 import type { ClaimVerdict } from "./values.ts";
 
 const REASONS: Readonly<Record<string, "refused" | "invalid">> = { "42501": "refused", "23514": "invalid", "22P02": "invalid" };
@@ -100,4 +102,49 @@ export async function readOfficeCalls(tx: Transaction, circleId: string, limit =
     simulated: row.simulated,
     transcript: turns(row.transcript),
   }));
+}
+
+/** A call that came in over the telephone: the same facts as a simulated one, but never labelled simulated. */
+export type LineCallInput = Omit<OfficeCallInput, "simulated">;
+
+/**
+ * Records a call that came in over the telephone, the claim check it produced
+ * and the alert to the family, as Kin's service identity. Run inside
+ * `asService` for the circle the dialled number belongs to: the database
+ * operation refuses any other circle.
+ */
+export async function recordLineCall(tx: Transaction, input: LineCallInput): Promise<{ callId: string; claimCheckId: string }> {
+  try {
+    const signals = `{${input.pressureSignals.join(",")}}`;
+    const result = await tx.execute<{ recorded: { callId: string; claimCheckId: string } }>(
+      sql`select kin_private.record_office_line_call(${input.circleId}::uuid, ${input.callerNumber}, ${input.callerName}, ${input.organization}, ${input.claimedCents}::bigint, ${input.purpose}, ${input.reference}, ${JSON.stringify(input.transcript)}::jsonb, ${signals}::text[], ${input.payeeId}::uuid, ${input.foundEntryId}::uuid, ${input.verdict}::public.claim_verdict, ${input.topic}, ${input.spoken}, ${input.claim}) as recorded`,
+    );
+    const recorded = result.rows[0]?.recorded;
+    if (!recorded) throw new Error("The office line operation returned nothing");
+    return recorded;
+  } catch (error) {
+    const reason = REASONS[codeOf(error) ?? ""];
+    if (reason) throw new LetterError(reason);
+    throw error;
+  }
+}
+
+/** What the phone line checks a caller's demand against, and the currency of the circle it speaks for. */
+export type LineRecord = { readonly currency: string; readonly record: RecordFacts };
+
+/**
+ * The record of one circle as the phone line may read it: payees, bills and
+ * confirmed payments. Run inside `asService`; `null` when the circle is not
+ * active, so a closed circle's number answers like an unknown one.
+ */
+export async function readLineRecord(tx: Transaction, circleId: string): Promise<LineRecord | null> {
+  const [circle] = await tx.select({ id: circles.id, currency: circles.currency }).from(circles).where(and(eq(circles.id, circleId), eq(circles.status, "active")));
+  if (!circle) return null;
+  const [payeeRows, billRows, ledger] = await Promise.all([
+    // A member's settlement address is a payee row of its own category, and never one a caller could be asking as.
+    tx.select({ id: payees.id, name: payees.name }).from(payees).where(and(eq(payees.circleId, circleId), ne(payees.category, "settlement"))),
+    tx.select({ payeeId: bills.payeeId, cents: bills.amountCents, state: bills.state }).from(bills).where(eq(bills.circleId, circleId)),
+    readLedger(tx, circle),
+  ]);
+  return { currency: circle.currency, record: { payees: payeeRows, bills: billRows, payments: confirmedPayments(ledger.entries) } };
 }

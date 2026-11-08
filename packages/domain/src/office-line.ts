@@ -7,7 +7,9 @@
  * name, so there is nothing for a liar to extract and nothing for a model to
  * get wrong.
  */
-import { checkClaim, type ClaimFacts, type ClaimResult } from "./claim-check.ts";
+import { checkClaim, type ClaimFacts, type ClaimResult, type KnownPayment } from "./claim-check.ts";
+import { entryHeadline } from "./entry-headline.ts";
+import type { LedgerEntry } from "./ledger-entry.ts";
 import { InvalidDecimalError, centsFromDecimal } from "./money.ts";
 
 /** What the receptionist asks, in order. */
@@ -113,6 +115,19 @@ export function pressureSignals(said: readonly string[]): PressureSignal[] {
 
 /** The facts of the record a call is checked against: the claim check's, without the claim itself. */
 export type RecordFacts = Pick<ClaimFacts, "payees" | "bills" | "payments">;
+
+/**
+ * The payments a demand is checked against: the payouts the ledger records as
+ * confirmed, by payee. The web app's claim check and the phone line both read
+ * the record through this one function.
+ */
+export function confirmedPayments(entries: readonly LedgerEntry[]): KnownPayment[] {
+  return entries.flatMap((entry) => {
+    if (entry.kind !== "payout_confirmed") return [];
+    const headline = entryHeadline(entry);
+    return [{ entryId: entry.id, payeeId: headline.subject, cents: headline.cents, day: entry.occurredOn }];
+  });
+}
 
 export type CallVerdict = {
   readonly claimedPayee: string;

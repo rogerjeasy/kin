@@ -192,7 +192,24 @@ importers:
         specifier: ^24.19.2
         version: 24.19.2
 
-  apps/voice: {}
+  apps/voice:
+    dependencies:
+      '@kin/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@kin/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@kin/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kin/telephony':
+        specifier: workspace:*
+        version: link:../../packages/telephony
+    devDependencies:
+      '@types/node':
+        specifier: ^24.19.2
+        version: 24.19.2
 
   apps/web:
     dependencies:
@@ -446,6 +463,10 @@ importers:
       '@kin/domain':
         specifier: workspace:*
         version: link:../domain
+    devDependencies:
+      '@types/node':
+        specifier: ^24.19.2
+        version: 24.19.2
 
   packages/verify:
     dependencies:

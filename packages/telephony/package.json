@@ -11,5 +11,8 @@
   },
   "dependencies": {
     "@kin/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2"
   }
 }

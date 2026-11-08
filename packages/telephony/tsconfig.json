@@ -4,6 +4,9 @@
     "src"
   ],
   "compilerOptions": {
-    "erasableSyntaxOnly": true
+    "erasableSyntaxOnly": true,
+    "types": [
+      "node"
+    ]
   }
 }

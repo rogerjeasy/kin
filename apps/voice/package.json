@@ -6,6 +6,18 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run",
+    "dev": "node --env-file-if-exists=../../.env --watch src/main.ts",
+    "start": "node src/main.ts",
+    "simulate-call": "node src/simulate-call.ts"
+  },
+  "dependencies": {
+    "@kin/config": "workspace:*",
+    "@kin/db": "workspace:*",
+    "@kin/domain": "workspace:*",
+    "@kin/telephony": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2"
   }
 }

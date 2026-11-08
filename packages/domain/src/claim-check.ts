@@ -25,6 +25,9 @@ export type ClaimFacts = {
 
 export type ClaimVerdict = "match" | "no_match" | "unclear";
 
+/** The key under which a verdict's narration is stored; the app words each key in every language. */
+export const CLAIM_TOPIC = { no_match: "falseDemand", match: "claimMatch", unclear: "claimUnclear" } as const satisfies Record<ClaimVerdict, string>;
+
 /** Why the verdict is what it is. The words said to people are chosen from this, never invented. */
 export type ClaimReason =
   /** The payee is known and holds an open bill of exactly this amount. */

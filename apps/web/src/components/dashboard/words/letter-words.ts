@@ -1,5 +1,5 @@
 import type { Reading } from "@kin/documents";
-import type { ClaimReason, ClaimResult, ClaimVerdict } from "@kin/domain";
+import type { ClaimReason, ClaimResult } from "@kin/domain";
 
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
@@ -54,8 +54,7 @@ export function claimWords(dictionary: Dictionary, format: Formatters, { payee, 
   return { text: fill(claim[CLAIM_TEMPLATE[result.reason]], { payee, claimed, paid, paidDay }), figures };
 }
 
-/** The key under which a verdict's narration is stored. */
-export const CLAIM_TOPIC = { no_match: "falseDemand", match: "claimMatch", unclear: "claimUnclear" } as const satisfies Record<ClaimVerdict, string>;
+export { CLAIM_TOPIC } from "@kin/domain";
 
 /** A language's name in English, for telling a model which language to word a sentence in. */
 export const LANGUAGE_NAMES: Record<Locale, string> = { en: "English", fr: "French", de: "German", it: "Italian", es: "Spanish", ar: "Arabic", he: "Hebrew" };
