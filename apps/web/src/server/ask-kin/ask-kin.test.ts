@@ -1,0 +1,162 @@
+import { fakeToolModel, finalTurn, toolCalls, type FakeToolModel } from "@kin/agent/testing";
+import type { ToolCallRecord, ToolTurn } from "@kin/agent";
+import { asPerson, readCircle, readExecutions, type CircleSnapshot } from "@kin/db";
+import { seatPerson, serviceRows, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
+import { describe, expect, it } from "vitest";
+
+import { createRateLimiter } from "../model";
+import { runAskKin, type AskKinContext } from "./ask-kin";
+import { askKinTools } from "./tools";
+import { askKinWorld } from "./world";
+import { getDictionary } from "@/i18n/dictionary";
+import { testDatabases } from "../../../../../packages/db/src/testing/databases.ts";
+
+const db = testDatabases();
+const NOW = new Date("2026-10-30T18:00:00Z");
+
+const snapshot = (circle: VisitorCircle, userId: string): Promise<CircleSnapshot> => asPerson(db.app, userId, (tx) => readCircle(tx, { circleId: circle.circleId, userId, now: NOW }));
+
+function context(circle: CircleSnapshot, userId: string, model: FakeToolModel | null, records: ToolCallRecord[] = []): AskKinContext {
+  return { db: db.app, userId, circle, accountTypes: "demo", model, paypal: null, recorder: (record) => records.push(record), limiter: createRateLimiter(10, 3_600_000), budget: createRateLimiter(100, 3_600_000), now: () => 1_000 };
+}
+
+/** What a tool handed the model, as the model read it. */
+function toolResult(model: FakeToolModel, request: number): unknown {
+  const last = model.requests[request]?.messages.at(-1);
+  const blocks = Array.isArray(last?.content) ? last.content : [];
+  const [first] = blocks as readonly { content: string }[];
+  return first === undefined ? null : JSON.parse(first.content);
+}
+
+const ask = (question: string) => ({ question, locale: "en" });
+const turns = (...list: ToolTurn[]) => fakeToolModel(...list);
+
+describe("Ask Kin in a demo circle", () => {
+  it("answers whether the caregiver was paid from the record, through the payout tool, and shows the trace", async () => {
+    const circle = await visitorWithCircle(db);
+    const records: ToolCallRecord[] = [];
+    const model = turns(toolCalls({ name: "get_paypal_payout_status", input: { payee: "Amara" } }), finalTurn("Yes: Amara was paid $264.00 on Oct 6. It was simulated."));
+    const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, model, records), ask("Has Amara been paid?"));
+
+    expect(result).toEqual({
+      ok: true,
+      answer: "Yes: Amara was paid $264.00 on Oct 6. It was simulated.",
+      source: "claude",
+      model: "fake-model",
+      steps: [{ tool: "get_paypal_payout_status", label: "Checked the payouts with PayPal", outcome: "ok", outcomeLabel: "done" }],
+      proposal: null,
+    });
+    expect(toolResult(model, 1)).toMatchObject({ paid: [{ to: "Amara", amount: "$264.00", day: "Oct 6", simulated: true, paypal: "simulated: no PayPal transaction stands behind it" }] });
+    expect(records).toMatchObject([{ tool: "get_paypal_payout_status", args: { payee: "[text:5]" }, outcome: "ok" }]);
+  });
+
+  it("hands the model the money core's fairness and the pool's figures, never anything it computed", async () => {
+    const circle = await visitorWithCircle(db);
+    const model = turns(toolCalls({ name: "get_fairness" }, { name: "get_pool" }), finalTurn("Here is the month."));
+    const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, model), ask("Who owes whom this month?"));
+    expect(result).toMatchObject({ ok: true, source: "claude", steps: [{ tool: "get_fairness", outcome: "ok" }, { tool: "get_pool", outcome: "ok" }] });
+    const last = model.requests[1]?.messages.at(-1);
+    const [fairness, pool] = (Array.isArray(last?.content) ? last.content : []).map((block) => JSON.parse((block as { content: string }).content) as Record<string, unknown>);
+    expect(fairness).toMatchObject({ month: "October 2026", simulated: true });
+    expect((fairness?.members as { member: string }[]).map((each) => each.member).toSorted()).toEqual(["Ana", "Elena", "Marcus"]);
+    expect(pool).toMatchObject({ month: "October 2026", simulated: true });
+    expect(pool?.pool).toMatch(/^\$[\d,]+\.\d{2}$/u);
+  });
+
+  it("checks a demand with the plain-code claim check, and records nothing and alerts nobody", async () => {
+    const circle = await visitorWithCircle(db);
+    const before = await serviceRows(db, circle.circleId, "select count(*)::int as n from claim_checks where circle_id = $1", [circle.circleId]);
+    const model = turns(toolCalls({ name: "check_claim", input: { payee: "Harbor Gas", amount: "300" } }), finalTurn("Nobody the circle pays is called Harbor Gas, so do not pay the $300.00."));
+    const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, model), ask("Is a $300 demand from Harbor Gas real?"));
+    expect(result).toMatchObject({ ok: true, source: "claude" });
+    expect(toolResult(model, 1)).toMatchObject({ claimedPayee: "Harbor Gas", claimedAmount: "$300.00", verdict: "no_match", reason: "unknown_payee" });
+    expect(await serviceRows(db, circle.circleId, "select count(*)::int as n from claim_checks where circle_id = $1", [circle.circleId])).toEqual(before);
+  });
+
+  it("falls back to Kin's fixed wording when the model's figure is not the record's", async () => {
+    const circle = await visitorWithCircle(db);
+    const model = turns(toolCalls({ name: "get_paypal_payout_status", input: { payee: "Amara" } }), finalTurn("Amara was paid $246.00."));
+    const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, model), ask("Has Amara been paid?"));
+    expect(result).toMatchObject({ ok: true, source: "template", answer: "Here is what the record says: Amara was paid $264.00 on Oct 6. It was simulated." });
+  });
+
+  it("lets the parent's question raise a refill proposal that waits for a yes, at the rule's price", async () => {
+    const circle = await visitorWithCircle(db);
+    const rose = await seatPerson(db, circle.circleId, circle.members.rose);
+    const model = turns(toolCalls({ name: "propose_refill", input: { item: "refill" } }), finalTurn("Kin proposed the refill."));
+    const result = await runAskKin(context(await snapshot(circle, rose), rose, model), ask("Reorder my refill"));
+    expect(result).toMatchObject({ ok: true, proposal: { href: "/dashboard/approvals" }, steps: [{ tool: "propose_refill", outcome: "ok" }] });
+    expect(toolResult(model, 1)).toMatchObject({ proposed: true, item: "Monthly prescription refill (30 days)", price: "$64.00" });
+    expect(await serviceRows(db, circle.circleId, "select cents::int as cents from purchases where circle_id = $1", [circle.circleId])).toEqual([{ cents: 6400 }]);
+  });
+});
+
+describe("Ask Kin's limits by role", () => {
+  it("offers a caregiver only their own payments, refuses the pool, and shows only their own payouts", async () => {
+    const circle = await visitorWithCircle(db);
+    const amara = await seatPerson(db, circle.circleId, circle.members.amara);
+    const model = turns(toolCalls({ name: "get_pool" }, { name: "get_paypal_payout_status" }), finalTurn("Kin cannot show the pool from your seat."));
+    const result = await runAskKin(context(await snapshot(circle, amara), amara, model), ask("How much is in the pool, and have I been paid?"));
+    expect(model.requests[0]?.tools.map((tool) => tool.name)).toEqual(["list_bills", "list_proposals", "get_paypal_payout_status"]);
+    expect(result).toMatchObject({ ok: true, steps: [{ tool: "get_pool", outcome: "refused" }, { tool: "get_paypal_payout_status", outcome: "ok" }] });
+    const last = model.requests[1]?.messages.at(-1);
+    const payouts = JSON.parse(((Array.isArray(last?.content) ? last.content : [])[1] as { content: string }).content) as { paid: { to: string }[] };
+    expect(payouts.paid.map((each) => each.to)).toEqual(["Amara"]);
+  });
+
+  it("refuses an observer's refill, and nothing is bought", async () => {
+    const circle = await visitorWithCircle(db);
+    const daniel = await seatPerson(db, circle.circleId, circle.members.daniel);
+    const model = turns(toolCalls({ name: "propose_refill" }), finalTurn("Kin cannot do that from your seat."));
+    const result = await runAskKin(context(await snapshot(circle, daniel), daniel, model), ask("Reorder Rose's refill"));
+    expect(model.requests[0]?.tools.map((tool) => tool.name)).not.toContain("propose_refill");
+    expect(result).toMatchObject({ ok: true, proposal: null, steps: [{ tool: "propose_refill", outcome: "refused" }] });
+    expect(await serviceRows(db, circle.circleId, "select count(*)::int as n from purchases where circle_id = $1", [circle.circleId])).toEqual([{ n: 0 }]);
+  });
+});
+
+describe("one circle's Ask Kin and another's", () => {
+  it("cannot be pointed at another circle, by the model or by a context", async () => {
+    const mine = await visitorWithCircle(db);
+    const theirs = await visitorWithCircle(db);
+    const model = turns(toolCalls({ name: "get_pool", input: { circleId: theirs.circleId } }), finalTurn("No."));
+    const result = await runAskKin(context(await snapshot(mine, mine.userId), mine.userId, model), ask("What is in the other circle's pool?"));
+    expect(result).toMatchObject({ ok: true, steps: [{ tool: "get_pool", outcome: "invalid" }] });
+
+    const tools = askKinTools(
+      askKinWorld({ circle: await snapshot(mine, mine.userId), locale: "en", dictionary: await getDictionary("en"), db: db.app, userId: mine.userId, paypal: null, executions: async () => [] }),
+    );
+    await expect(tools.get_pool({}, { circleId: theirs.circleId, memberId: theirs.members.elena, role: "organizer" })).rejects.toThrow(/another circle/u);
+  });
+
+  it("reads executions through row-level security: another circle's never come back", async () => {
+    const mine = await visitorWithCircle(db);
+    const theirs = await visitorWithCircle(db);
+    const [proposal] = await serviceRows(db, theirs.circleId, "select id from proposals where circle_id = $1 limit 1", [theirs.circleId]);
+    await serviceRows(db, theirs.circleId, "insert into executions (id, circle_id, proposal_id, idempotency_key, state) values (gen_random_uuid(), $1, $2, $3, 'created')", [theirs.circleId, proposal?.id, `test-${theirs.circleId}`]);
+    expect(await asPerson(db.app, theirs.userId, (tx) => readExecutions(tx, theirs.circleId))).toHaveLength(1);
+    expect(await asPerson(db.app, mine.userId, (tx) => readExecutions(tx, theirs.circleId))).toEqual([]);
+  });
+});
+
+describe("Ask Kin's request boundary", () => {
+  it("refuses a malformed request before the model is asked", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    const model = turns();
+    for (const bad of [null, {}, { question: "" }, { question: "x".repeat(501), locale: "en" }, { question: "Hi", locale: "xx" }, { question: "Hi", locale: "en", extra: 1 }, { question: "Hi", locale: "en", history: [{ question: "a" }] }, { question: "Hi", locale: "en", history: Array.from({ length: 7 }, () => ({ question: "a", answer: "b" })) }]) {
+      expect(await runAskKin(context(seen, circle.userId, model), bad)).toEqual({ ok: false, reason: "invalid" });
+    }
+    expect(model.requests).toEqual([]);
+  });
+
+  it("is unavailable without a model, and busy once the person's limit is spent", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    expect(await runAskKin(context(seen, circle.userId, null), ask("Hi"))).toEqual({ ok: false, reason: "unavailable" });
+    const limiter = createRateLimiter(1, 3_600_000);
+    const model = turns(finalTurn("Hello."));
+    expect(await runAskKin({ ...context(seen, circle.userId, model), limiter }, ask("Hi"))).toMatchObject({ ok: true });
+    expect(await runAskKin({ ...context(seen, circle.userId, model), limiter }, ask("Hi again"))).toEqual({ ok: false, reason: "busy" });
+  });
+});

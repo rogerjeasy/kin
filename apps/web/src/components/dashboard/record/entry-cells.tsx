@@ -2,13 +2,13 @@ import type { CustomCellRendererProps } from "ag-grid-react";
 
 import { FlowAmount } from "@/components/dashboard/ui/flow-amount";
 
-import type { RecordEntryItem } from "./record-entry";
+import { isEntry, type LedgerGridRow } from "./ledger-row.ts";
 
-type Cell = CustomCellRendererProps<RecordEntryItem>;
+type Cell = CustomCellRendererProps<LedgerGridRow>;
 
 /** The entry's words, with its kind and labels under them. */
 export function EntryCell({ data }: Cell) {
-  if (!data) return null;
+  if (!isEntry(data)) return null;
   return (
     <div className="flex h-full min-w-0 flex-col justify-center leading-snug">
       <span className="truncate font-medium">{data.text}</span>
@@ -26,7 +26,7 @@ export function EntryCell({ data }: Cell) {
 
 /** The amount with how it moved the pool, and its fee or care note. */
 export function AmountCell({ data }: Cell) {
-  if (!data) return null;
+  if (!isEntry(data)) return null;
   return (
     <div className="flex h-full flex-col items-end justify-center leading-snug">
       <FlowAmount amount={data.amount} flow={data.flow} />
@@ -37,5 +37,5 @@ export function AmountCell({ data }: Cell) {
 
 /** The day as the reader writes it. The column sorts by the calendar date behind it. */
 export function DayCell({ data }: Cell) {
-  return <span className="text-muted-foreground tabular-nums">{data?.day}</span>;
+  return <span className="text-muted-foreground tabular-nums">{isEntry(data) ? data.day : null}</span>;
 }

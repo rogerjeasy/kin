@@ -3,6 +3,7 @@ import { seatPerson, visitorWithCircle } from "@kin/db/testing";
 import { testDatabases } from "../../../../packages/db/src/testing/databases.ts";
 import { describe, expect, it } from "vitest";
 
+import { ModelUnavailableError } from "@kin/agent";
 import { fakeModel, visitsReply } from "@kin/agent/testing";
 
 import { runCaregiverBilling } from "./caregiver-billing";
@@ -135,9 +136,10 @@ describe("caregiver billing at the untrusted request boundary", () => {
       expect(await runCaregiverBilling(context, { operation: "describe", description: text })).toEqual({
         ok: true,
         described: true,
-        visits: [{ date: "2026-10-26", minutes: 240 }, { date: "2026-10-27", minutes: 120 }],
+        visits: [{ date: "2026-10-26", minutes: 240, quotes: ["Monday 4 hours"] }, { date: "2026-10-27", minutes: 120, quotes: ["Tuesday from 9 to 11"] }],
         unclear: [],
         dropped: 0,
+        provenance: { source: "claude", model: "fake-model" },
       });
       const [request] = model.requests;
       expect(request?.system).toMatch(/Today is \w+day, 2026-10-30/);
@@ -149,9 +151,11 @@ describe("caregiver billing at the untrusted request boundary", () => {
       const { caregiver, snapshot } = await setup();
       const base = { db: db.app, userId: caregiver, circle: await snapshot(caregiver), accountTypes: "demo" as const };
       const describe = (context: object, description = text) => runCaregiverBilling({ ...base, ...context }, { operation: "describe", description });
-      expect(await describe({ model: null })).toEqual({ ok: false, reason: "model_unavailable" });
-      expect(await describe({ model: fakeModel({ kind: "refused" }) })).toEqual({ ok: false, reason: "model_refused" });
-      expect(await describe({ model: fakeModel({ kind: "json", text: "nonsense" }) })).toEqual({ ok: false, reason: "model_unavailable" });
+      expect(await describe({ model: null })).toEqual({ ok: false, reason: "model_unavailable", why: "not_configured" });
+      expect(await describe({ model: fakeModel({ kind: "refused" }) })).toEqual({ ok: false, reason: "model_refused", why: "model_refused" });
+      expect(await describe({ model: fakeModel({ kind: "json", text: "nonsense" }) })).toEqual({ ok: false, reason: "model_unavailable", why: "unreadable" });
+      // A throttled service is told apart from an unreachable one, so the screen can say "the model was busy".
+      expect(await describe({ model: fakeModel(new ModelUnavailableError("throttled", { kind: "busy" })) })).toEqual({ ok: false, reason: "model_unavailable", why: "model_busy" });
       expect(await describe({ model: fakeModel() }, "  ")).toEqual({ ok: false, reason: "description" });
       expect(await describe({ model: fakeModel() }, "x".repeat(1001))).toEqual({ ok: false, reason: "description" });
       expect(await runCaregiverBilling({ ...base, model: fakeModel() }, { operation: "describe", description: text, rate: 1 })).toEqual({ ok: false, reason: "invalid" });
@@ -162,13 +166,13 @@ describe("caregiver billing at the untrusted request boundary", () => {
       const limiter = createRateLimiter(1, 60_000);
       const context = { db: db.app, userId: caregiver, circle: await snapshot(caregiver), accountTypes: "demo" as const, model: fakeModel(reply, reply), limiter, now: () => 1_000 };
       expect(await runCaregiverBilling(context, { operation: "describe", description: text })).toMatchObject({ ok: true });
-      expect(await runCaregiverBilling(context, { operation: "describe", description: text })).toEqual({ ok: false, reason: "busy" });
+      expect(await runCaregiverBilling(context, { operation: "describe", description: text })).toEqual({ ok: false, reason: "busy", why: "limit_reached" });
       expect(await runCaregiverBilling({ ...context, now: () => 61_001 }, { operation: "describe", description: text })).toMatchObject({ ok: true });
       // Fresh identities do not escape the server-wide budget, and the demo's visitors never use up the families' share.
       const budget = createRateLimiter(1, 60_000);
       const first = { ...context, limiter: createRateLimiter(10, 60_000), budget, model: fakeModel(reply, reply) };
       expect(await runCaregiverBilling(first, { operation: "describe", description: text })).toMatchObject({ ok: true });
-      expect(await runCaregiverBilling({ ...first, userId: "demo:another-visitor" }, { operation: "describe", description: text })).toEqual({ ok: false, reason: "busy" });
+      expect(await runCaregiverBilling({ ...first, userId: "demo:another-visitor" }, { operation: "describe", description: text })).toEqual({ ok: false, reason: "busy", why: "limit_reached" });
       expect(await runCaregiverBilling({ ...first, accountTypes: ["caregiver" as const] }, { operation: "describe", description: text })).toMatchObject({ ok: true });
       const organizer = { db: db.app, userId: circle.userId, circle: await snapshot(circle.userId), accountTypes: "demo" as const, model: fakeModel(reply) };
       expect(await runCaregiverBilling(organizer, { operation: "describe", description: text })).toEqual({ ok: false, reason: "refused" });

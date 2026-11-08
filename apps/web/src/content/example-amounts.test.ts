@@ -9,7 +9,7 @@ describe("exampleAmounts", () => {
       bill: "$84.00",
       gasBill: "$57.00",
       caregiverPay: "$264.00",
-      refill: "$42.00",
+      refill: "$64.00",
       elena: "$126.00",
       ana: "$40.00",
     });

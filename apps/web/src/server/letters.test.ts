@@ -1,3 +1,4 @@
+import { ModelUnavailableError } from "@kin/agent";
 import { fakeModel } from "@kin/agent/testing";
 import { asPerson, readCircle, takeDemoSeat, type CircleSnapshot } from "@kin/db";
 import { addMember, seatPerson, serviceRows, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
@@ -197,5 +198,70 @@ describe("checking a demand for money", () => {
       expect(await checkDemand(context, { payee: "Northfield Gas", amount, claim: "", locale: "en" })).toEqual({ ok: false, reason: "amount" });
     }
     expect(await rows(circle, "select count(*)::int as n from claim_checks")).toEqual([{ n: 1 }]);
+  });
+});
+
+describe("saying who read a letter and who worded a verdict", () => {
+  it("says Claude read it, with the model's ID, and quotes where each field is written", async () => {
+    const circle = await visitorWithCircle(db);
+    const result = await readLetter(await actingAs(circle, "rose", { model: fakeModel(json(modelReading)) }), { text: LETTER, locale: "en" });
+    expect(result).toMatchObject({
+      ok: true,
+      provenance: { source: "claude", model: "fake-model" },
+      evidence: {
+        fields: [
+          { field: "sender", quote: "Greenway Power" },
+          { field: "amount", quote: "Amount due: $86.40" },
+          { field: "dueOn", quote: "Please pay by 2026-11-20" },
+        ],
+        claudeQuote: { text: "Amount due: $86.40", checked: true },
+      },
+    });
+  });
+
+  it("says fixed rules read it, and why, whichever way the model was not used", async () => {
+    const circle = await visitorWithCircle(db);
+    const why = async (extra: object) => {
+      const result = await readLetter(await actingAs(circle, "rose", extra), { text: LETTER, locale: "en" });
+      return result.ok ? result.provenance : result;
+    };
+    expect(await why({})).toEqual({ source: "rules", reason: "not_configured" });
+    expect(await why({ model: fakeModel(new ModelUnavailableError("throttled", { kind: "busy" })) })).toEqual({ source: "rules", reason: "model_busy" });
+    expect(await why({ model: fakeModel(new ModelUnavailableError("down")) })).toEqual({ source: "rules", reason: "model_unavailable" });
+    expect(await why({ model: fakeModel(json({ nonsense: true })) })).toEqual({ source: "rules", reason: "unreadable" });
+    // Past this person's limit typed words are still read, by rules, and the reading says the limit was why.
+    expect(await why({ model: fakeModel(json(modelReading)), limiter: createRateLimiter(0, 60_000), now: () => 0 })).toEqual({ source: "rules", reason: "limit_reached" });
+    const rules = await readLetter(await actingAs(circle, "rose"), { text: LETTER, locale: "en" });
+    expect(rules.ok && rules.evidence.claudeQuote).toBeNull();
+    expect(rules.ok && rules.evidence.fields.map((each) => each.field)).toEqual(["sender", "amount", "dueOn"]);
+  });
+
+  it("gives a photograph's quote only as Claude's word, never as checked, and keeps the provenance with the stored reading", async () => {
+    const circle = await visitorWithCircle(db);
+    const result = await readLetter(await actingAs(circle, "rose", { model: fakeModel(json(modelReading)) }), { image: photo, locale: "en" });
+    expect(result).toMatchObject({ ok: true, provenance: { source: "claude", model: "fake-model" }, evidence: { fields: [], claudeQuote: { text: "Amount due: $86.40", checked: false } } });
+    const [stored] = await rows<{ extraction: { provenance: unknown; source: string } }>(circle, "select extraction from documents where extraction is not null order by created_at desc limit 1");
+    expect(stored?.extraction).toMatchObject({ source: "model_photo", provenance: { source: "claude", model: "fake-model" } });
+  });
+
+  it("drops a quote that is not in the typed words instead of showing it as evidence", async () => {
+    const circle = await visitorWithCircle(db);
+    const result = await readLetter(await actingAs(circle, "rose", { model: fakeModel(json({ ...modelReading, quote: "Amount due: $99.00" })) }), { text: LETTER, locale: "en" });
+    expect(result).toMatchObject({ ok: true, evidence: { claudeQuote: null } });
+  });
+
+  it("says who worded a verdict: Claude when its wording passed the guard, and the fixed words with a reason when not", async () => {
+    const circle = await visitorWithCircle(db);
+    const ask = async (extra: object) => {
+      const result = await checkDemand(await actingAs(circle, "rose", extra), { payee: "Northfield Gas", amount: "57.00", claim: "", locale: "en" });
+      return result.ok ? result.provenance : result;
+    };
+    expect(await ask({ model: fakeModel(json({ text: "«payee» wants $57.00, but you already paid that." })) })).toEqual({ source: "claude", model: "fake-model" });
+    expect(await ask({})).toEqual({ source: "template", reason: "not_configured" });
+    expect(await ask({ model: fakeModel(json({ text: "«payee» wants $570.00, so pay at once." })) })).toEqual({ source: "template", reason: "wording_rejected" });
+    // Wording that loses the place for the name is replaced by the fixed sentence, so it is not the model's.
+    expect(await ask({ model: fakeModel(json({ text: "This demand is for $57.00." })) })).toEqual({ source: "template", reason: "wording_rejected" });
+    expect(await ask({ model: fakeModel(new ModelUnavailableError("throttled", { kind: "busy" })) })).toEqual({ source: "template", reason: "model_busy" });
+    expect(await ask({ model: fakeModel(json({ text: "x" })), limiter: createRateLimiter(0, 60_000), now: () => 0 })).toEqual({ source: "template", reason: "limit_reached" });
   });
 });

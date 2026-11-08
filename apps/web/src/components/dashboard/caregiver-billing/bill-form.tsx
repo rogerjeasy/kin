@@ -25,10 +25,12 @@ type Props = {
   /** Kin's voice and listening, when this deployment has them. */
   speech: Dictionary["dashboard"]["speech"] | null;
   copy: Dictionary["dashboard"]["caregiverBilling"];
+  /** The words that say who read a description, and the evidence for it. */
+  ai: Dictionary["aiProvenance"];
 };
 
 /** A bill is reviewed on the server and requires a separate, explicit submission. */
-export function BillForm({ locale, name, today, simulated, canDescribe, speech, copy }: Props) {
+export function BillForm({ locale, name, today, simulated, canDescribe, speech, copy, ai }: Props) {
   const prefix = useId();
   const nextId = useRef(1);
   const [visits, setVisits] = useState<VisitInput[]>([{ id: 0, date: today, hours: "0", minutes: "0" }]);
@@ -72,6 +74,7 @@ export function BillForm({ locale, name, today, simulated, canDescribe, speech, 
                     locale={locale}
                     speech={speech}
                     copy={copy}
+                    ai={ai}
                     disabled={pending}
                     onDescribed={(described) => setVisits(described.map((visit) => ({ id: nextId.current++, date: visit.date, hours: String(Math.floor(visit.minutes / 60)), minutes: String(visit.minutes % 60) })))}
                   />

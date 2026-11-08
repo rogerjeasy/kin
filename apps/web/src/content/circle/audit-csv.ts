@@ -3,10 +3,10 @@ import type { CircleSnapshot } from "@kin/db";
 
 import { describeAccountCode, describeEntry } from "@/components/dashboard/words/entry-words";
 import type { Dictionary } from "@/i18n/dictionary";
+import { csvRow } from "@/lib/csv-cell";
 
 import type { CircleNames } from "./names";
 import { recordEntries } from "./record";
-import { csvRow } from "./record-csv";
 
 /**
  * The audit export: one row per ledger line, oldest first, each carrying the

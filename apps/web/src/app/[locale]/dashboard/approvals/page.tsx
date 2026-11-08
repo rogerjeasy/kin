@@ -5,6 +5,7 @@ import { AnsweredList } from "@/components/dashboard/approvals/answered-list";
 import { AnswerButtons } from "@/components/dashboard/approvals/answer-buttons";
 import { VoiceAnswer } from "@/components/dashboard/approvals/voice-answer";
 import { DecidedList } from "@/components/dashboard/approvals/decided-list";
+import { SandboxPayoutProof } from "@/components/dashboard/payouts/sandbox-payout-proof";
 import { ProposalCard } from "@/components/dashboard/approvals/proposal-card";
 import { RefillsPanel } from "@/components/dashboard/refills/refills-panel";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
@@ -13,6 +14,7 @@ import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";
 import { activityItems } from "@/components/dashboard/words/activity-items";
 import { proposalCardProps, type CardContext } from "@/components/dashboard/words/proposal-card-props";
+import { answeredStatus } from "@/components/dashboard/words/answered-status";
 import { proposalStatus, proposalTitle } from "@/components/dashboard/words/proposal-words";
 import { circleFormatters } from "@/content/circle/format";
 import { parentOf } from "@/content/circle/members";
@@ -21,12 +23,14 @@ import { openPeriod } from "@/content/circle/period";
 import { waitingProposals } from "@/content/circle/proposal-view";
 import { refillViews } from "@/content/circle/refills";
 import { monthTotals, recordEntries } from "@/content/circle/record";
+import { voteLine } from "@/content/circle/vote-words";
 import { circleSlots } from "@/content/circle/words";
 import { mandatesRoute } from "@/content/dashboard-routes";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
 import { dashboardContext, may } from "@/server/dashboard-context";
+import { demoPayeeOf, payoutProofsOf } from "@/server/sandbox-payout";
 import { speechServices } from "@/server/speech";
 
 export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/approvals">): Promise<Metadata> {
@@ -38,7 +42,7 @@ const DECIDED = ["approved", "executing", "settled", "failed", "rejected", "expi
 const SAID_YES = new Set<string>(["approved", "executing", "settled"]);
 
 export default async function ApprovalsPage({ params }: PageProps<"/[locale]/dashboard/approvals">) {
-  const { locale, dictionary, circle } = await dashboardContext(params, "approvals");
+  const { locale, dictionary, circle, viewer } = await dashboardContext(params, "approvals");
   const { approvals, common, empty, notices } = dictionary.dashboard;
   // The spoken answer is for the demo's simulated money: real money needs the fresh check.
   const speechOn = speechServices() !== null;
@@ -56,11 +60,14 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
     now: circle.circle.now,
     month: slots.month,
     receiverOf: (payeeId) => circle.payees.find((payee) => payee.id === payeeId)?.receiver ?? null,
+    demoPayee: demoPayeeOf(circle),
   };
   const waiting = waitingProposals(circle).toSorted((a, b) => Number(b.viewerCanAnswer) - Number(a.viewerCanAnswer));
   const answered = circle.proposals.filter((proposal) => DECIDED.some((state) => state === proposal.state)).toReversed();
   const decided = recordEntries(circle).filter((view) => view.entry.source.type === "approval");
   const refills = refillViews(circle);
+  // A demo payout PayPal's sandbox made shows PayPal's own record, not "simulated".
+  const proofs = circle.circle.demo ? (await payoutProofsOf(viewer, circle.circle.id)).byProposal : new Map<string, never>();
 
   return (
     <>
@@ -115,23 +122,21 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
         <AnsweredList
           title={approvals.answered.title}
           description={approvals.answered.text}
-          items={answered.map((proposal) => ({
+          items={answered.map((proposal) => {
+            const proof = proofs.get(proposal.id);
+            return {
             id: proposal.id,
             title: proposalTitle(dictionary, names, proposal, slots.month),
             kind: common.proposalKinds[proposal.kind],
             amount: format.money(proposal.cents),
-            status: approvals.answered.states[proposal.state as (typeof DECIDED)[number]],
+            status: answeredStatus(approvals.answered, circle.circle.demo && proof === undefined, proposal.state as (typeof DECIDED)[number]),
             approved: SAID_YES.has(proposal.state),
             answers: proposal.votes
-              .map((vote) =>
-                fill(vote.decision === "approve" ? approvals.slots.saidYes : approvals.slots.saidNo, {
-                  name: names.member(vote.memberId),
-                  method: approvals.slots.methods[vote.method],
-                  time: format.dateTime(vote.at),
-                }),
-              )
+              .map((vote) => voteLine(approvals.slots, { name: names.member(vote.memberId), decision: vote.decision, method: vote.method, time: format.dateTime(vote.at) }))
               .join(" · "),
-          }))}
+            proof: proof ? <SandboxPayoutProof proof={proof} copy={dictionary.sandboxPayout} /> : undefined,
+            };
+          })}
         />
       ) : null}
       {decided.length > 0 ? (

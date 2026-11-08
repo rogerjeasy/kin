@@ -36,3 +36,14 @@ export function upcomingBills(circle: CircleSnapshot): UpcomingView[] {
     return [{ id: bill.id, payeeId: bill.payeeId, kind: bill.kind, expectedCents: bill.expectedCents, due: bill.dueOn, category: payee.category, plan }];
   });
 }
+
+/**
+ * The month every upcoming bill falls in, as YYYY-MM, or `null` when there are
+ * none or they span more than one month. A heading names a month only when it
+ * is true of every row beneath it.
+ */
+export function upcomingMonth(bills: readonly Pick<UpcomingView, "due">[]): string | null {
+  const months = new Set(bills.map((bill) => bill.due.slice(0, 7)));
+  const [only] = months;
+  return months.size === 1 && only !== undefined ? only : null;
+}

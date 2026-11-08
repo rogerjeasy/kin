@@ -25,7 +25,7 @@ export function durationWords(speech: Speech, locale: Locale, minutes: number): 
 
 /** The caregiver's bill, read back before they submit it. */
 export function billReadBack(speech: Speech, locale: Locale, format: Formatters, name: string, bill: CaregiverBill): string {
-  const days = bill.lines.map((line) => fill(speech.readBackDay, { day: format.longDay(new Date(`${line.date}T00:00:00Z`)), duration: durationWords(speech, locale, line.minutes) }));
+  const days = bill.lines.map((line) => fill(speech.readBackDay, { day: format.longCalendarDay(line.date), duration: durationWords(speech, locale, line.minutes) }));
   return fill(speech.readBack, { name, days: format.allOf(days), rate: format.money(bill.details.rateCentsPerHour), total: format.money(bill.cents) });
 }
 

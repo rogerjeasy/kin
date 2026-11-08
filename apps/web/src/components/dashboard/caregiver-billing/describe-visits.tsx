@@ -3,6 +3,8 @@
 import { SparklesIcon } from "lucide-react";
 import { useId, useState } from "react";
 
+import { VisitReadingResult } from "@/components/dashboard/ai/visit-reading-result";
+import { WhyNotClaude } from "@/components/dashboard/ai/why-not-claude";
 import { inputClass } from "@/components/dashboard/create-circle/field";
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
@@ -19,6 +21,8 @@ import { useBillingRequest } from "./use-billing-request";
 type Props = {
   locale: Locale;
   copy: Dictionary["dashboard"]["caregiverBilling"];
+  /** Who read the description, and the evidence for each day. */
+  ai: Dictionary["aiProvenance"];
   /** Kin's listening, when this deployment has it: the caregiver may speak instead of typing. */
   speech: Dictionary["dashboard"]["speech"] | null;
   disabled: boolean;
@@ -30,11 +34,11 @@ type Props = {
  * them into days to fill the form. Nothing is sent for payment: the
  * caregiver checks the days, then reviews the bill as always.
  */
-export function DescribeVisits({ locale, copy, speech, disabled, onDescribed }: Props) {
+export function DescribeVisits({ locale, copy, ai, speech, disabled, onDescribed }: Props) {
   const id = useId();
   const [text, setText] = useState("");
-  const [outcome, setOutcome] = useState<DescribedVisits | null>(null);
-  const { send, pending, error } = useBillingRequest(copy.errors);
+  const [outcome, setOutcome] = useState<{ visits: DescribedVisits; read: string } | null>(null);
+  const { send, pending, error, why } = useBillingRequest(copy.errors);
   const [listening, setListening] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
   // What was said is written into the box, where the caregiver can read and correct it before Kin reads it.
@@ -48,9 +52,10 @@ export function DescribeVisits({ locale, copy, speech, disabled, onDescribed }: 
   }
   async function read() {
     setOutcome(null);
-    const result = await send({ operation: "describe", description: text });
+    const read = text;
+    const result = await send({ operation: "describe", description: read });
     if (result.ok && "described" in result) {
-      setOutcome(result);
+      setOutcome({ visits: result, read });
       if (result.visits.length > 0) onDescribed(result.visits);
     }
   }
@@ -70,11 +75,13 @@ export function DescribeVisits({ locale, copy, speech, disabled, onDescribed }: 
         {pending ? copy.describing : copy.describe}
       </Button>
       {error ? <p role="alert" className="text-sm text-danger">{copy.errors[error]}</p> : null}
+      {why === null ? null : <WhyNotClaude why={why} copy={ai} />}
       {outcome ? (
-        <div role="status" className="space-y-1 text-sm">
-          {outcome.visits.length > 0 ? <p className="text-positive">{copy.described}</p> : null}
-          {outcome.unclear.length > 0 ? <p className="wrap-anywhere text-muted-foreground">{fill(copy.unclearNote, { items: outcome.unclear.join("; ") })}</p> : null}
-          {outcome.dropped > 0 ? <p className="text-muted-foreground">{fill(copy.droppedNote, { count: String(outcome.dropped) })}</p> : null}
+        <div role="status" className="min-w-0 space-y-3 text-sm">
+          {outcome.visits.visits.length > 0 ? <p className="text-positive">{copy.described}</p> : null}
+          <VisitReadingResult outcome={outcome.visits} sourceText={outcome.read} locale={locale} copy={ai} />
+          {outcome.visits.unclear.length > 0 ? <p className="wrap-anywhere text-muted-foreground">{fill(copy.unclearNote, { items: outcome.visits.unclear.join("; ") })}</p> : null}
+          {outcome.visits.dropped > 0 ? <p className="text-muted-foreground">{fill(copy.droppedNote, { count: String(outcome.visits.dropped) })}</p> : null}
         </div>
       ) : null}
     </div>

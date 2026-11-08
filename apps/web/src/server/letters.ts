@@ -1,7 +1,7 @@
-import { ModelUnavailableError, MAX_DOCUMENT_TEXT, narrate, readDocument, type StructuredImage, type StructuredModel } from "@kin/agent";
+import { ModelUnavailableError, MAX_DOCUMENT_TEXT, byClaude, narrateWithProvenance, readDocument, reasonForFailure, type FallbackReason, type Provenance, type StructuredImage, type StructuredModel } from "@kin/agent";
 import { authorize, type BillingAccount } from "@kin/auth";
 import { LetterError, addLetter, asPerson, recordClaimCheck, type CircleSnapshot, type Database } from "@kin/db";
-import { needsAction, readLetterText, settleReading, MAX_DOCUMENT_CENTS, type Reading } from "@kin/documents";
+import { fieldEvidence, groundedQuote, needsAction, readLetterText, settleReading, MAX_DOCUMENT_CENTS, type FieldEvidence, type Reading } from "@kin/documents";
 import { InvalidDecimalError, calendarDay, centsFromDecimal, checkClaim, sameName, type ClaimVerdict } from "@kin/domain";
 
 import { CLAIM_TOPIC, LANGUAGE_NAMES, claimWords, letterWords, type LetterOutcome } from "@/components/dashboard/words/letter-words";
@@ -30,12 +30,20 @@ export type LetterFailure = "refused" | "invalid" | "amount" | "image_too_large"
 /** What the screen shows of a reading: only checked fields, never the raw model answer. */
 export type ShownReading = Pick<Reading, "kind" | "sender" | "amountCents" | "dueOn" | "pressure" | "source">;
 
+/**
+ * Where in the typed words a reading's fields were found, so a person can
+ * check each against the letter. `claudeQuote` is what Claude said it read:
+ * `checked` when plain code found those words in the typed text, not when it
+ * is only Claude's word for a photograph.
+ */
+export type LetterEvidence = { readonly fields: readonly FieldEvidence[]; readonly claudeQuote: { readonly text: string; readonly checked: boolean } | null };
+
 export type LetterResult =
-  | { readonly ok: true; readonly documentId: string; readonly billId: string | null; readonly outcome: LetterOutcome; readonly reading: ShownReading; readonly words: string }
+  | { readonly ok: true; readonly documentId: string; readonly billId: string | null; readonly outcome: LetterOutcome; readonly reading: ShownReading; readonly words: string; readonly provenance: Provenance; readonly evidence: LetterEvidence }
   | { readonly ok: false; readonly reason: LetterFailure };
 
 export type DemandResult =
-  | { readonly ok: true; readonly claimCheckId: string; readonly verdict: ClaimVerdict; readonly payeeId: string | null; readonly words: string; readonly told: number }
+  | { readonly ok: true; readonly claimCheckId: string; readonly verdict: ClaimVerdict; readonly payeeId: string | null; readonly words: string; readonly told: number; readonly provenance: Provenance }
   | { readonly ok: false; readonly reason: LetterFailure };
 
 /** Stands for the payee's name while a model words a verdict, so the name is never part of its instructions. */
@@ -90,14 +98,15 @@ export async function readLetter(context: LettersContext, input: unknown): Promi
 
   const { circle } = context;
   const today = calendarDay(circle.circle.now, circle.circle.timezone).occurredOn;
-  const reading = await read(context, { text, image, today });
-  if (typeof reading === "string") return fail(reading);
+  const made = await read(context, { text, image, today });
+  if (typeof made === "string") return fail(made);
+  const { reading, provenance } = made;
 
   const actionable = needsAction(reading);
   const payee = actionable && reading.sender !== null ? circle.payees.find((each) => each.payee.member === null && sameName(each.name, reading.sender ?? "")) : undefined;
   let recorded: Awaited<ReturnType<typeof recordLetter>>;
   try {
-    recorded = await recordLetter(context, reading, actionable, payee?.id ?? null);
+    recorded = await recordLetter(context, reading, provenance, actionable, payee?.id ?? null);
   } catch (error) {
     if (error instanceof LetterError) return fail(error.reason);
     throw error;
@@ -106,29 +115,41 @@ export async function readLetter(context: LettersContext, input: unknown): Promi
   const dictionary = await getDictionary(locale);
   const words = letterWords(dictionary, circleFormatters(locale, circle), reading, outcome);
   const { kind, sender, amountCents, dueOn, pressure, source } = reading;
-  return { ok: true, documentId: recorded.documentId, billId: recorded.billId, outcome, reading: { kind, sender, amountCents, dueOn, pressure, source }, words };
+  const evidence = letterEvidence(text, made.quote, reading, circle.circle.currency);
+  return { ok: true, documentId: recorded.documentId, billId: recorded.billId, outcome, reading: { kind, sender, amountCents, dueOn, pressure, source }, words, provenance, evidence };
 }
 
-async function read(context: LettersContext, { text, image, today }: { text: string | null; image: StructuredImage | null; today: string }): Promise<Reading | LetterFailure> {
+/** A reading, who made it, and the words Claude said it quoted, if it was Claude. */
+type Made = { readonly reading: Reading; readonly provenance: Provenance; readonly quote: string | null };
+
+/** The fields' places in the typed words (found by plain code, whoever read them), and Claude's own quote with whether it checks out. */
+function letterEvidence(text: string | null, quote: string | null, reading: Reading, currency: string): LetterEvidence {
+  if (text === null) return { fields: [], claudeQuote: quote === null || quote.trim() === "" ? null : { text: quote.trim(), checked: false } };
+  const grounded = groundedQuote(text, quote);
+  return { fields: fieldEvidence(text, reading, currency), claudeQuote: grounded === null ? null : { text: grounded, checked: true } };
+}
+
+async function read(context: LettersContext, { text, image, today }: { text: string | null; image: StructuredImage | null; today: string }): Promise<Made | LetterFailure> {
   const { currency } = context.circle.circle;
   const model = context.model ?? null;
-  const byRules = () => (text === null ? "model_unavailable" : readLetterText(text, { currency }));
-  if (model === null) return byRules();
-  if (!spendUse(context, context, (context.now ?? Date.now)())) return "busy";
+  // Typed words can still be read by plain rules, and the reading says why they were used; a photograph cannot.
+  const byRules = (reason: FallbackReason, failure: LetterFailure): Made | LetterFailure =>
+    text === null ? failure : { reading: readLetterText(text, { currency }), provenance: { source: "rules", reason }, quote: null };
+  if (model === null) return byRules("not_configured", "model_unavailable");
+  if (!spendUse(context, context, (context.now ?? Date.now)())) return byRules("limit_reached", "busy");
   try {
     const result = await readDocument(model, { text, image, today, currency });
     if (result.kind === "refused") return "model_refused";
     if (result.kind === "unreadable") return "unreadable";
     // Against a photograph there are no words to check an answer against, so the reading says so.
-    return settleReading(result.reading, { text: image === null ? text : null, currency, today });
+    return { reading: settleReading(result.reading, { text: image === null ? text : null, currency, today }), provenance: byClaude(model), quote: result.reading.quote };
   } catch (error) {
-    // Typed words can still be read by plain rules; a photograph cannot.
-    if (error instanceof ModelUnavailableError) return byRules();
+    if (error instanceof ModelUnavailableError) return byRules(reasonForFailure(error), "model_unavailable");
     throw error;
   }
 }
 
-function recordLetter(context: LettersContext, reading: Reading, actionable: boolean, payeeId: string | null) {
+function recordLetter(context: LettersContext, reading: Reading, provenance: Provenance, actionable: boolean, payeeId: string | null) {
   return asPerson(context.db, context.userId, (tx) =>
     addLetter(tx, {
       circleId: context.circle.circle.id,
@@ -137,7 +158,8 @@ function recordLetter(context: LettersContext, reading: Reading, actionable: boo
       sender: actionable ? reading.sender : null,
       amountCents: actionable ? reading.amountCents : null,
       dueOn: reading.dueOn,
-      extraction: reading,
+      // Kept with the reading so the list can say later who read the letter.
+      extraction: { ...reading, provenance },
       confidence: reading.confidence,
     }),
   );
@@ -173,12 +195,16 @@ export async function checkDemand(context: LettersContext, input: unknown): Prom
   const worded = claimWords(dictionary, formatters, { payee: PAYEE_TOKEN, claimedCents, result });
   // The model is asked only when this person and this server still have a use left; otherwise the fixed wording stands.
   const model = context.model ?? null;
-  const narration = await narrate(
-    model !== null && spendUse(context, context, (context.now ?? Date.now)()) ? model : null,
+  const asked = model !== null && spendUse(context, context, (context.now ?? Date.now)());
+  const narration = await narrateWithProvenance(
+    asked ? model : null,
     { figures: worded.figures.filter((figure) => figure !== PAYEE_TOKEN), statement: worded.text, language: LANGUAGE_NAMES[locale] },
     worded.text,
   );
-  const wording = { text: (narration.text.includes(PAYEE_TOKEN) ? narration.text : fixed.text).replaceAll(PAYEE_TOKEN, () => payee) };
+  const keptName = narration.text.includes(PAYEE_TOKEN);
+  const wording = { text: (keptName ? narration.text : fixed.text).replaceAll(PAYEE_TOKEN, () => payee) };
+  // The screen says who worded it: a model's sentence that lost the place for the name was replaced, so it was not the model's.
+  const provenance: Provenance = model !== null && !asked ? { source: "template", reason: "limit_reached" } : keptName || narration.source === "template" ? narration.provenance : { source: "template", reason: "wording_rejected" };
 
   try {
     const claimCheckId = await asPerson(context.db, context.userId, (tx) =>
@@ -194,7 +220,7 @@ export async function checkDemand(context: LettersContext, input: unknown): Prom
       }),
     );
     const told = circle.members.filter((member) => member.status === "active" && member.role !== "caregiver").length;
-    return { ok: true, claimCheckId, verdict: result.verdict, payeeId: result.payeeId, words: wording.text, told };
+    return { ok: true, claimCheckId, verdict: result.verdict, payeeId: result.payeeId, words: wording.text, told, provenance };
   } catch (error) {
     if (error instanceof LetterError) return fail(error.reason);
     throw error;

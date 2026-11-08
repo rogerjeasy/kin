@@ -44,7 +44,25 @@ function answer(system: string, user: string): { stop_reason: string; text: stri
   return { stop_reason: "end_turn", text: JSON.stringify({ visits: [{ date: yesterday, hours: Number(said[1]), minutes: 0, quote: said[0] }], unclear: [] }) };
 }
 
-type Sent = { model: string; system: string; messages: { content: string | { type: string; text?: string }[] }[]; tools?: unknown };
+type Sent = { model: string; system: string; messages: { role: string; content: string | { type: string; text?: string }[] }[]; tools?: { name: string }[] };
+
+/**
+ * Ask Kin, the one request that offers tools: a question about payment calls
+ * the payout tool, one about fairness the fairness tool, a reorder the refill
+ * tool, anything else no tool. Once a tool has answered, it ends with words
+ * that hold no figure, so they pass the number guard.
+ */
+function agentTurn(sent: Sent): { stop_reason: string; content: unknown[] } {
+  const last = sent.messages.at(-1);
+  if (last && Array.isArray(last.content) && last.content.some((block) => block.type === "tool_result")) {
+    return { stop_reason: "end_turn", content: [{ type: "text", text: "Kin read the record for you." }] };
+  }
+  const question = typeof last?.content === "string" ? last.content : "";
+  const offered = new Set((sent.tools ?? []).map((tool) => tool.name));
+  const wanted = /paid/i.test(question) ? { name: "get_paypal_payout_status", input: { payee: "Amara" } } : /owes/i.test(question) ? { name: "get_fairness", input: {} } : /reorder/i.test(question) ? { name: "propose_refill", input: {} } : null;
+  if (wanted === null || !offered.has(wanted.name)) return { stop_reason: "end_turn", content: [{ type: "text", text: "Kin cannot show that from your seat." }] };
+  return { stop_reason: "tool_use", content: [{ type: "tool_use", id: "toolu_stand_in", ...wanted }] };
+}
 
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? "/", `http://localhost:${MODEL_STAND_IN.port}`);
@@ -53,8 +71,12 @@ const server = createServer((request, response) => {
   body(request)
     .then((raw) => {
       const sent = JSON.parse(raw) as Sent;
-      // Extraction never carries tools (AGENTS.md section 7).
-      if (sent.tools !== undefined) return response.writeHead(400).end();
+      // Only Ask Kin offers tools; extraction never carries them (AGENTS.md section 7).
+      if (sent.tools !== undefined) {
+        if (!sent.system.startsWith("You are Kin, the assistant of a family circle")) return response.writeHead(400).end();
+        const { stop_reason, content } = agentTurn(sent);
+        return response.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ id: "msg_stand_in", type: "message", role: "assistant", model: sent.model, content, stop_reason, stop_sequence: null, usage: { input_tokens: 1, output_tokens: 1 } }));
+      }
       // A request about words sends them as plain text; one about a photograph sends the picture, then the words.
       const first = sent.messages[0]?.content ?? "";
       const user = typeof first === "string" ? first : first.flatMap((block) => (block.type === "text" ? [block.text ?? ""] : [])).join("");

@@ -20,7 +20,7 @@ for (const viewport of viewports) {
     // The permission covers $64.00 once a month, so nobody is asked and the purchase is already approved.
     // The button's own confirmation lasts only until the page refreshes, so the test reads the order, which stays.
     await expect(refills).toContainText("Under a standing permission");
-    await expect(refills).toContainText("Said yes, being bought");
+    await expect(refills).toContainText("Approved, being bought");
     await expect(refills).toContainText("$86.00 of $150.00 left this month");
     await expectNoHorizontalOverflow(page);
 
@@ -53,7 +53,7 @@ test("with the permission ended, the family asks Kin to reorder and Rose is aske
   const waiting = page.getByRole("article").filter({ hasText: "Elm Street Pharmacy refill" });
   await expect(waiting).toContainText("$64.00");
   await waiting.getByRole("button", { name: "Approve" }).click();
-  await expect(page.getByRole("region", { name: "Refills" })).toContainText("Said yes, being bought");
+  await expect(page.getByRole("region", { name: "Refills" })).toContainText("Approved, being bought");
 });
 
 test("a new permission is read back before it is recorded, and one above what it allows falls back to asking", async ({ page }) => {

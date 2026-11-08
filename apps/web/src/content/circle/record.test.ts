@@ -51,17 +51,17 @@ describe("the month's figures", () => {
   });
 
   it("are the figures Rose's story implies, read back from the database", () => {
-    expect(monthTotals(circle, "2026-10")).toEqual({ poolCents: 38218, paidInCents: 92400, paidOutCents: 50800, feesCents: 3382, entryCount: 19 });
+    expect(monthTotals(circle, "2026-10")).toEqual({ poolCents: 36018, paidInCents: 92400, paidOutCents: 53000, feesCents: 3382, entryCount: 19 });
   });
 
   it("count nothing for a month the ledger has no entries in, but keep the pool", () => {
-    expect(monthTotals(circle, "2026-11")).toEqual({ poolCents: 38218, paidInCents: 0, paidOutCents: 0, feesCents: 0, entryCount: 0 });
+    expect(monthTotals(circle, "2026-11")).toEqual({ poolCents: 36018, paidInCents: 0, paidOutCents: 0, feesCents: 0, entryCount: 0 });
   });
 
   it("split spending by category, largest first, adding up to every approved cost", () => {
     const spending = spendingByCategory(circle, "2026-10");
     expect(spending.map((row) => row.category)).toEqual(["care", "pharmacy", "utilities"]);
-    expect(sumCents(spending.map((row) => row.cents))).toBe(68800);
+    expect(sumCents(spending.map((row) => row.cents))).toBe(71000);
   });
 
   it("measure the same total contributed as the settlement, cash and own pocket and care", () => {
@@ -107,7 +107,7 @@ describe("what Rose heard, and the false demand", () => {
     expect(heard.map((line) => [line.topic, line.cents])).toEqual([
       ["falseDemand", 5700],
       ["letter", 6100],
-      ["refill", 4200],
+      ["refill", 6400],
       ["caregiverPaid", 26400],
       ["billPaid", 8400],
     ]);

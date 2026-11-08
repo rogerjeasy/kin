@@ -62,8 +62,8 @@ for (const viewport of [...viewports, { name: "narrow", width: 320, height: 740 
       await review.getByRole("link", { name: "Follow it in Approvals" }).click();
       const proposal = page.getByRole("article", { name: "Amara’s bill for completed visits" });
       await expect(proposal).toContainText("$88.00");
-      // The family sees where the money will go before saying yes.
-      await expect(proposal).toContainText("Paid by PayPal to a••••@personal.example.com, the address Amara gave");
+      // The family is told before saying yes how the money will move. A demo never pays the address a visitor typed, so it says the payment is simulated.
+      await expect(proposal).toContainText("In this demo, the payment to Amara is simulated");
       await expectNoHorizontalOverflow(page);
 
       // $88.00 is above Rose's $50.00, so Rose decides.

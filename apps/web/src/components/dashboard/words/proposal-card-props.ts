@@ -3,7 +3,9 @@ import type { ApprovalTerms } from "@kin/domain";
 import type { SlotItem } from "@/components/dashboard/approvals/approval-slots";
 import type { ProposalCardProps } from "@/components/dashboard/approvals/proposal-card";
 import type { CircleNames } from "@/content/circle/names";
+import { demoPayeeNote, type DemoPayee } from "@/content/circle/payout-proof";
 import type { ProposalView, SlotView } from "@/content/circle/proposal-view";
+import { voteLine } from "@/content/circle/vote-words";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
 import type { Formatters } from "@/lib/format";
@@ -24,6 +26,8 @@ export type CardContext = {
   readonly month: string;
   /** Where PayPal sends a payee's money, masked; `null` while none is recorded. */
   readonly receiverOf: (payeeId: string) => string | null;
+  /** How a demo circle pays caregivers, which then never waits for an address; `null` in a real circle. */
+  readonly demoPayee?: DemoPayee;
 };
 
 function slotTitle(dictionary: Dictionary, context: CardContext, slot: SlotView): string {
@@ -46,7 +50,7 @@ function slotItem(dictionary: Dictionary, context: CardContext, slot: SlotView):
   const title = slotTitle(dictionary, context, slot);
   if (slot.filledBy) {
     const { memberId, method, at } = slot.filledBy;
-    return { title, filled: true, detail: fill(slots.saidYes, { name: names.member(memberId), method: slots.methods[method], time: format.dateTime(at) }) };
+    return { title, filled: true, detail: voteLine(slots, { name: names.member(memberId), decision: "approve", method, time: format.dateTime(at) }) };
   }
   const waiting = fill(slots.open, { names: format.anyOf(slot.waitingFor.map(names.member)) });
   const asksParent = parentId !== null && slot.waitingFor.includes(parentId);
@@ -72,8 +76,10 @@ function destination(dictionary: Dictionary, context: CardContext, view: Proposa
   const { notes } = dictionary.dashboard.approvals;
   const { proposal } = view;
   if (proposal.kind !== "caregiver_payout" || !("payeeId" in proposal.to)) return null;
-  const receiver = context.receiverOf(proposal.to.payeeId);
   const name = context.names.payee(proposal.to.payeeId);
+  const demo = demoPayeeNote(dictionary.sandboxPayout, context.demoPayee ?? null);
+  if (demo !== null) return fill(demo, { name });
+  const receiver = context.receiverOf(proposal.to.payeeId);
   return receiver === null ? fill(notes.noReceiver, { name }) : fill(notes.receiver, { address: receiver, name });
 }
 

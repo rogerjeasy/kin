@@ -18,11 +18,13 @@ type Props = {
   configuredPayeeId: string | null;
   /** The recorded PayPal address, masked, or `null` when none is recorded. */
   receiver: string | null;
+  /** In a demo circle, how the caregiver is paid instead: a demo payment never waits for an address. */
+  demoNote?: string | null;
   copy: Dictionary["dashboard"]["caregiverBilling"];
 };
 
 /** An organizer records one caregiver's rate without changing payment permissions. */
-export function RateForm({ memberId, name, rate, payees, configuredPayeeId, receiver, copy }: Props) {
+export function RateForm({ memberId, name, rate, payees, configuredPayeeId, receiver, demoNote = null, copy }: Props) {
   const { send, pending, error } = useBillingRequest(copy.errors);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
@@ -53,7 +55,7 @@ export function RateForm({ memberId, name, rate, payees, configuredPayeeId, rece
           </Field>
         ) : null}
       </fieldset>
-      <p className="text-sm text-muted-foreground wrap-anywhere">{receiver === null ? fill(copy.receiverMissing, { name }) : fill(copy.receiverRecorded, { address: receiver })}</p>
+      <p className="text-sm text-muted-foreground wrap-anywhere">{demoNote !== null ? fill(demoNote, { name }) : receiver === null ? fill(copy.receiverMissing, { name }) : fill(copy.receiverRecorded, { address: receiver })}</p>
       {error ? <p role="alert" className="text-sm text-danger">{copy.errors[error]}</p> : null}
       {saved ? <p role="status" className="text-sm text-positive">{copy.saved}</p> : null}
       <Button type="submit" disabled={pending} className="min-h-11 justify-self-start">{pending ? copy.saving : copy.save}</Button>

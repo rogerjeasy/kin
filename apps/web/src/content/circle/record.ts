@@ -58,6 +58,8 @@ export type PaidBill = {
   readonly cents: number;
   readonly feeCents: number;
   readonly simulated: boolean;
+  /** What caused the payment: PayPal's payout item, or a simulated one's stand-in. */
+  readonly reference: string;
 };
 
 /** Every bill PayPal confirmed paid, newest first, with the day it was approved. */
@@ -76,6 +78,7 @@ export function paidBills(circle: CircleSnapshot): PaidBill[] {
         cents: paid.cents,
         feeCents: paid.feeCents,
         simulated: paid.entry.simulated,
+        reference: paid.entry.source.id,
       };
     });
 }

@@ -1,4 +1,4 @@
-import { bedrockModel, type StructuredModel } from "@kin/agent";
+import { bedrockModel, bedrockToolModel, type StructuredModel, type ToolModel } from "@kin/agent";
 import type { BillingAccount } from "@kin/auth";
 import { readModelConfig } from "@kin/config";
 
@@ -82,4 +82,19 @@ export function spendUse(limits: { readonly limiter?: RateLimiter; readonly budg
   if (!asked.every(({ limiter, key }) => limiter.allows(key, at))) return false;
   for (const { limiter, key } of asked) limiter.record(key, at);
   return true;
+}
+
+/** Each person may ask Kin ten questions an hour; each server 200 for demo visitors and 200 for people. */
+export const askKinLimiter = createRateLimiter(10, 60 * 60 * 1000);
+export const askKinBudget = createRateLimiter(200, 60 * 60 * 1000);
+
+let tools: ToolModel | null | undefined;
+
+/** Claude with Ask Kin's tools, or `null` when this deployment has no model. Read on first use, never at build time. */
+export function toolModel(): ToolModel | null {
+  if (tools === undefined) {
+    const config = readModelConfig(process.env);
+    tools = config.enabled ? bedrockToolModel(config) : null;
+  }
+  return tools;
 }

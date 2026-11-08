@@ -1,7 +1,9 @@
-type PayeeCellProps = { name: string; detail?: string; tags?: readonly string[] };
+import type { ReactNode } from "react";
+
+type PayeeCellProps = { name: string; detail?: string; tags?: readonly string[]; children?: ReactNode };
 
 /** Who a row is about, with a line under it and any labels. */
-export function PayeeCell({ name, detail, tags = [] }: PayeeCellProps) {
+export function PayeeCell({ name, detail, tags = [], children }: PayeeCellProps) {
   return (
     <div className="min-w-0">
       <p className="wrap-anywhere font-medium">{name}</p>
@@ -15,6 +17,7 @@ export function PayeeCell({ name, detail, tags = [] }: PayeeCellProps) {
           ))}
         </p>
       ) : null}
+      {children}
     </div>
   );
 }

@@ -26,14 +26,20 @@ export function isolatedFor(locale: Locale): (text: string) => string {
 /**
  * Every way the dashboard writes a number, a date or a list, in the reader's
  * language. Money goes through the one shared formatter in the money core.
+ *
+ * `timeZone` is the circle's: an instant ("Nov 6, 9:23 PM", "Sunday, November
+ * 8") is written on the calendar and clock of the place the family lives in,
+ * so it agrees with the calendar days the database records in that zone. A
+ * calendar day that is already a date, such as a due date, is never shifted.
  */
-export function formatters(locale: Locale, currency: string) {
+export function formatters(locale: Locale, currency: string, timeZone = "UTC") {
   const intlLocale = numberLocaleOf(locale);
   const shortDay = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", timeZone: "UTC" });
   const dayWithYear = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-  const longDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  const longDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone });
+  const longCalendarDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
   const month = new Intl.DateTimeFormat(intlLocale, { month: "long", year: "numeric", timeZone: "UTC" });
-  const dayAndTime = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "UTC" });
+  const dayAndTime = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone });
   const relative = new Intl.RelativeTimeFormat(intlLocale, { numeric: "auto" });
   const list = new Intl.ListFormat(intlLocale, { style: "long", type: "disjunction" });
   const allOf = new Intl.ListFormat(intlLocale, { style: "long", type: "conjunction" });
@@ -46,7 +52,10 @@ export function formatters(locale: Locale, currency: string) {
     day: (isoDay: string) => shortDay.format(calendarDay(isoDay)),
     /** "Oct 9, 2026": for spans that can cross a year, where the short form is ambiguous. */
     dayWithYear: (isoDay: string) => dayWithYear.format(calendarDay(isoDay)),
+    /** "Sunday, November 8, 2026": the day an instant falls on in the circle's time zone. */
     longDay: (date: Date) => longDay.format(date),
+    /** The same, for a day already written as YYYY-MM-DD. */
+    longCalendarDay: (isoDay: string) => longCalendarDay.format(calendarDay(isoDay)),
     month: (period: string) => month.format(calendarDay(`${period}-01`)),
     dateTime: (date: Date) => dayAndTime.format(date),
     /** "in 47 hours", from now until `then`. */

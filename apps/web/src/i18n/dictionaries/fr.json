@@ -1,4 +1,113 @@
 {
+  "askKin": {
+    "title": "Demander à Kin",
+    "lede": "Posez votre question sur l'argent du cercle avec vos propres mots. Claude lit le registre avec les outils de Kin et répond ; Kin vérifie chaque chiffre dans le registre avant que vous ne le voyiez.",
+    "card": {
+      "title": "Demander à Kin",
+      "text": "Claude cherche avec les outils de Kin et répond simplement. Il peut proposer un renouvellement, mais il n'approuve ni ne paie jamais rien.",
+      "open": "Ouvrir Demander à Kin"
+    },
+    "suggestions": {
+      "label": "Essayez de demander",
+      "paid": "{caregiver} a-t-elle été payée ?",
+      "owes": "Qui doit quoi à qui ce mois-ci ?",
+      "demand": "Une demande de {amount} de Harbor Gas est-elle réelle ?",
+      "refill": "Renouveler l'ordonnance de {parent}"
+    },
+    "form": {
+      "label": "Votre question",
+      "placeholder": "Par exemple : combien y a-t-il dans la cagnotte ?",
+      "hint": "500 caractères au plus. Kin ne lit que le registre de ce cercle.",
+      "ask": "Demander à Kin",
+      "asking": "Kin lit le registre…"
+    },
+    "answer": {
+      "heading": "La réponse de Kin",
+      "empty": "Posez une question, ou choisissez une des suggestions.",
+      "claude": "Écrit par Claude ({model}), chaque chiffre vérifié dans le registre",
+      "template": "Formulation fixe de Kin, remplie à partir du registre",
+      "trace": "Comment Kin l'a trouvé",
+      "traceEmpty": "Kin a répondu sans lire le registre."
+    },
+    "proposal": {
+      "title": "Un renouvellement a été proposé",
+      "text": "En attente d'un oui — Kin ne peut rien approuver ni payer.",
+      "link": "Ouvrir les approbations"
+    },
+    "errors": {
+      "invalid": "Écrivez une question de 500 caractères au plus.",
+      "busy": "Vous avez posé beaucoup de questions à Kin cette heure-ci. Réessayez plus tard.",
+      "unavailable": "Kin ne peut pas joindre Claude pour le moment. Réessayez dans un instant.",
+      "refused": "Demander à Kin n'est pas disponible depuis votre place dans ce cercle."
+    },
+    "tools": {
+      "get_pool": "A consulté le solde de la cagnotte",
+      "list_bills": "A lu les factures",
+      "get_fairness": "A fait calculer l'équité du mois par le moteur financier",
+      "check_claim": "A vérifié la demande dans le registre",
+      "list_proposals": "A lu ce qui attend un oui",
+      "get_record": "A lu les dernières écritures du registre",
+      "get_paypal_payout_status": "A vérifié les versements auprès de PayPal",
+      "get_paypal_topup_status": "A vérifié les apports auprès de PayPal",
+      "get_subscription_status": "A vérifié les parts mensuelles auprès de PayPal",
+      "propose_refill": "A proposé un renouvellement",
+      "unknown": "A demandé un outil que Kin n'a pas"
+    },
+    "outcomes": {
+      "ok": "fait",
+      "unknown_tool": "refusé : outil inconnu",
+      "refused": "refusé : pas ouvert à votre rôle",
+      "invalid": "refusé : la demande ne convenait pas",
+      "limit": "ignoré : la limite était atteinte",
+      "failed": "lecture impossible",
+      "timeout": "pas de réponse à temps",
+      "too_large": "trop volumineux"
+    },
+    "fallback": {
+      "lead": "Voici ce que dit le registre : {facts}",
+      "none": "Kin n'a pas pu répondre à partir du registre. Essayez une des suggestions."
+    },
+    "facts": {
+      "simulated": "L'argent de ce cercle est simulé.",
+      "pool": "La cagnotte contient {pool}. En {month}, {paidIn} sont entrés et {paidOut} sont sortis, avec {fees} de frais PayPal.",
+      "bills": "{waiting} factures attendent d'être payées, {upcoming} sont prévues et {paid} sont payées.",
+      "billWaiting": "{payee} demande {amount}.",
+      "fairnessNone": "Kin ne peut pas montrer l'équité du mois depuis votre place.",
+      "fairness": "Pour {month}, selon les parts de l'accord :",
+      "owesPool": "{member} doit {amount} à la cagnotte.",
+      "poolOwes": "La cagnotte doit {amount} à {member}.",
+      "even": "personne ne doit rien.",
+      "claimUnreadable": "Kin n'a pas pu lire ce montant, il n'a donc rien vérifié.",
+      "claim": {
+        "open_bill": "{payee} a une facture ouverte de {amount} dans le registre, la demande y correspond donc.",
+        "already_paid": "{payee} a déjà été payé {paid} le {day}, et le registre ne montre rien de plus dû : cette demande ne correspond pas.",
+        "unknown_payee": "Personne que le cercle paie ne s'appelle {claimed}. Considérez la demande comme fausse et ne la payez pas.",
+        "amount_differs": "{payee} est connu, mais le registre ne contient ni facture ni paiement de {amount}.",
+        "no_amount": "{payee} est connu, mais aucun montant n'a été indiqué à vérifier."
+      },
+      "proposals": "{count} paiements attendent un oui.",
+      "proposal": "{to}, {amount} : en attente de {people}.",
+      "nobody": "personne",
+      "record": "La dernière écriture, le {day} : {about}, {amount}.",
+      "recordNone": "Le registre ne contient encore aucune écriture.",
+      "payout": "{payee} a été payé {amount} le {day}, confirmé par PayPal.",
+      "payoutSimulated": "{payee} a été payé {amount} le {day}. C'était simulé.",
+      "payoutPending": "Un versement de {amount} à {payee} est en cours chez PayPal.",
+      "payoutNoneAny": "Le registre ne contient encore aucun versement.",
+      "payoutNone": "Le registre ne contient aucun versement à {payee}.",
+      "topUp": "{member} a versé {amount} le {day}.",
+      "topUpSimulated": "{member} a versé {amount} le {day}. C'était simulé.",
+      "topUpNone": "Le registre ne contient aucun apport.",
+      "share": "La part mensuelle de {member} est de {amount}.",
+      "shareNone": "Aucune part mensuelle n'est en place.",
+      "refillNone": "La famille n'a prévu aucun renouvellement.",
+      "refillChoose": "Quel renouvellement ? La famille autorise : {items}.",
+      "refillWaiting": "Un renouvellement de {item} attend déjà, ou le cercle est en pause : Kin n'a rien proposé.",
+      "refillRefused": "Kin n'a pas pu proposer {item} à {price}. Les règles de la famille ne le permettaient pas.",
+      "refillCovered": "Kin a proposé {item} à {price}. L'autorisation permanente du parent le couvre.",
+      "refillProposed": "Kin a proposé {item} à {price}. Il attend un oui."
+    }
+  },
   "meta": {
     "home": {
       "title": "Kin : rien sur l’argent de Maman sans Maman",
@@ -76,7 +185,7 @@
       "product": "Produit",
       "people": "Pour qui",
       "forFamilies": "Pour les familles",
-      "disclaimer": "Kin n’est ni une banque, ni un cabinet d’avocats, ni un prestataire de soins. Il ne détient pas de fonds. Cette version fonctionne dans l’environnement de test de PayPal (sandbox), avec de l’argent fictif, pour le PayPal AI Hackathon 2026.",
+      "disclaimer": "Kin n’est ni une banque, ni un cabinet d’avocats, ni un prestataire de soins. Dans cette version de test (sandbox), l’argent fictif arrive sur le compte PayPal de Kin et un registre indique à quel cercle il appartient ; un lancement réel ferait détenir l’argent de chaque famille par PayPal, sous ses propres agréments. Conçu pour le PayPal AI Hackathon 2026.",
       "photos": "Les photographies montrent des modèles, pas une vraie famille. Les montants sont des exemples."
     },
     "related": {
@@ -158,7 +267,7 @@
       "decide": {
         "label": "Décider",
         "kin": "Votre renouvellement de médicaments est prêt à être commandé. Cela coûte {amount}. Je passe la commande ?",
-        "kinAmount": "42 dollars",
+        "kinAmount": "64 dollars",
         "rose": "Oui, allez-y."
       },
       "check": {
@@ -188,7 +297,7 @@
         "refill": {
           "day": "Jour 9",
           "title": "Rose approuve ses médicaments",
-          "quote": "Cela coûte 42 dollars. Je passe la commande ?",
+          "quote": "Cela coûte 64 dollars. Je passe la commande ?",
           "alt": "Un flacon de médicaments sur une table en bois"
         },
         "letter": {
@@ -332,9 +441,9 @@
           "title": "Rose approuve ses médicaments",
           "text": "Il est temps de renouveler le médicament de Rose contre l’hypertension. Elle dit oui. Kin passe la commande et lui indique quand elle arrivera.",
           "speaker": "Kin",
-          "quote": "Votre renouvellement de médicaments est prêt à être commandé. Cela coûte 42 dollars. Je passe la commande ?",
+          "quote": "Votre renouvellement de médicaments est prêt à être commandé. Cela coûte 64 dollars. Je passe la commande ?",
           "approval": "Rose, de vive voix",
-          "paypal": "Un moyen de paiement enregistré"
+          "paypal": "Un moyen de paiement enregistré (vendeur fictif)"
         },
         {
           "day": "Jour 12",
@@ -352,7 +461,7 @@
           "speaker": "Kin",
           "quote": "Je ne trouve aucune facture de gaz impayée. Votre facture de gaz de 57 dollars a été réglée le 2. Ne payez rien à cette personne, s’il vous plaît. J’ai prévenu Elena et Marcus.",
           "approval": "Personne. Rien n’a été payé.",
-          "paypal": "Historique des transactions"
+          "paypal": "Le registre de la famille"
         },
         {
           "day": "Jour 20",
@@ -379,7 +488,7 @@
     "paypal": {
       "eyebrow": "Construit sur PayPal",
       "title": "PayPal déplace chaque dollar et tient le registre auquel Kin se fie.",
-      "lede": "La famille n’a besoin ni d’un nouveau compte bancaire ni d’une nouvelle carte. Kin ne détient jamais l’argent.",
+      "lede": "La famille n’a besoin ni d’un nouveau compte bancaire ni d’une nouvelle carte. Dans cette version de test, chaque versement arrive sur le compte PayPal de Kin et un registre l’attribue au cercle ; un lancement réel passerait par la plateforme partenaires de PayPal, de sorte que les fonds de chaque famille soient détenus sous les agréments de PayPal, et non ceux de Kin.",
       "needHeader": "Ce dont la famille a besoin",
       "capabilityHeader": "Fonction PayPal",
       "rows": [
@@ -389,7 +498,7 @@
         },
         {
           "need": "Un frère ou une sœur fait un versement exceptionnel",
-          "capability": "Paiement en ligne (Checkout), avec Pay Later pour les grosses dépenses"
+          "capability": "Paiement en ligne (Checkout), avec Pay Later pour les grosses dépenses là où PayPal le propose"
         },
         {
           "need": "Un versement exceptionnel ou une régularisation est demandé à l’un d’eux",
@@ -405,19 +514,19 @@
         },
         {
           "need": "L’agent achète ce dont le parent a besoin, après confirmation par une personne",
-          "capability": "Un moyen de paiement enregistré chez un marchand partenaire"
+          "capability": "Un moyen de paiement enregistré chez un marchand partenaire (une pharmacie fictive dans cette version)"
         },
         {
           "need": "Une livraison est suivie jusqu’à la porte",
-          "capability": "Suivi des colis"
+          "capability": "Suivi des colis (prévu ; cette version suit les relevés de livraison du vendeur fictif)"
         },
         {
           "need": "Un débit erroné est contesté",
-          "capability": "Litiges"
+          "capability": "Litiges (prévu, non réalisé)"
         },
         {
           "need": "Kin sait ce qui s’est réellement passé",
-          "capability": "Notifications de paiement et historique des transactions"
+          "capability": "Notifications de paiement, et paiements relus auprès de PayPal"
         }
       ]
     },
@@ -567,7 +676,7 @@
         },
         {
           "title": "Honnête sur ce qu’il est",
-          "text": "Kin n’est ni une banque, ni un cabinet d’avocats, ni un prestataire de soins. Il ne détient pas de fonds et ne donne aucun conseil juridique, fiscal ou médical."
+          "text": "Kin n’est ni une banque, ni un cabinet d’avocats, ni un prestataire de soins, et ne donne aucun conseil juridique, fiscal ou médical. Kin n’a pas de compte bancaire propre : dans cette version de test, chaque versement arrive sur le compte PayPal de Kin et un registre l’attribue au cercle. Un lancement réel passerait par la plateforme partenaires de PayPal, ou par un partenaire agréé, afin que les fonds de chaque cercle soient détenus et déplacés sous les agréments de PayPal, et non ceux de Kin."
         },
         {
           "title": "Une IA qui reconnaît ses doutes",
@@ -752,7 +861,7 @@
         },
         {
           "question": "Kin détient-il notre argent ?",
-          "answer": "Non. La cagnotte familiale est un compte PayPal qui appartient à la famille. Kin s’y connecte et ne détient jamais l’argent lui-même."
+          "answer": "Pas dans un compte bancaire à lui. Dans cette version de test, chaque versement arrive sur le compte PayPal de Kin, et le registre de Kin l’attribue à votre cercle. Un lancement réel passerait par la plateforme partenaires de PayPal (ou un partenaire agréé) : les fonds de votre cercle seraient détenus et déplacés sous les agréments de PayPal, et non ceux de Kin."
         },
         {
           "question": "Nous faut-il un nouveau compte bancaire ou une nouvelle carte ?",
@@ -859,6 +968,211 @@
         "unavailable": "Le service de connexion est injoignable pour le moment. Merci de réessayer dans un instant."
       },
       "noCircle": "Pas encore de compte ?"
+    }
+  },
+  "dataGrid": {
+    "localeText": {
+      "noRowsToShow": "Aucune écriture à afficher",
+      "noMatchingRows": "Aucune écriture ne correspond. Effacez la recherche ou les filtres pour tout voir.",
+      "loadingOoo": "Chargement...",
+      "exportingOoo": "Préparation du téléchargement...",
+      "filterOoo": "Filtrer...",
+      "applyFilter": "Appliquer",
+      "clearFilter": "Effacer",
+      "resetFilter": "Réinitialiser",
+      "cancelFilter": "Annuler",
+      "textFilter": "Filtre de texte",
+      "numberFilter": "Filtre de montant",
+      "dateFilter": "Filtre de date",
+      "empty": "Choisissez",
+      "equals": "Égal à",
+      "notEqual": "Différent de",
+      "lessThan": "Inférieur à",
+      "greaterThan": "Supérieur à",
+      "lessThanOrEqual": "Inférieur ou égal à",
+      "greaterThanOrEqual": "Supérieur ou égal à",
+      "inRange": "Entre",
+      "inRangeStart": "De",
+      "inRangeEnd": "À",
+      "contains": "Contient",
+      "notContains": "Ne contient pas",
+      "startsWith": "Commence par",
+      "endsWith": "Finit par",
+      "blank": "Vide",
+      "notBlank": "Non vide",
+      "before": "Avant",
+      "after": "Après",
+      "andCondition": "ET",
+      "orCondition": "OU",
+      "dateFormatOoo": "aaaa-mm-jj",
+      "invalidDate": "Date non valide",
+      "invalidNumber": "Montant non valide",
+      "ariaFilterInput": "Champ de filtre",
+      "ariaFilterValue": "Valeur du filtre",
+      "ariaFilterFromValue": "Filtrer à partir de la valeur",
+      "ariaFilterToValue": "Filtrer jusqu’à la valeur",
+      "ariaFilteringOperator": "Opérateur de filtrage",
+      "ariaDateFilterInput": "Champ du filtre de date",
+      "ariaLabelColumnFilter": "Filtre de la colonne",
+      "ariaLabelColumnMenu": "Menu de la colonne",
+      "ariaLabelInputClear": "Effacer",
+      "ariaFilterColumn": "Appuyez sur Ctrl Entrée pour ouvrir le filtre",
+      "ariaMenuColumn": "Appuyez sur Alt Bas pour ouvrir le menu de la colonne",
+      "ariaSortableColumn": "Appuyez sur Entrée pour trier",
+      "ariaColumnFiltered": "Colonne filtrée",
+      "ariaRowSelect": "Appuyez sur Espace pour sélectionner cette ligne",
+      "ariaRowDeselect": "Appuyez sur Espace pour désélectionner cette ligne",
+      "ariaRowToggleSelection": "Appuyez sur Espace pour basculer la sélection de la ligne",
+      "ariaRowSelectAll": "Appuyez sur Espace pour basculer la sélection de toutes les lignes",
+      "ariaHeaderSelection": "Colonne avec sélection dans l’en-tête",
+      "ariaRowSelectionDisabled": "La sélection est désactivée pour cette ligne"
+    },
+    "hint": "Clavier : Tab entre dans la grille par les titres de colonnes, et Tab en sort. Les flèches déplacent entre les cellules. Entrée sur un titre trie la colonne. Ctrl et Entrée sur un titre ouvrent son filtre. Espace sur une ligne la coche. Échap quitte un champ de filtre.",
+    "states": {
+      "loading": "Chargement des écritures",
+      "errorTitle": "Les écritures n’ont pas pu s’afficher",
+      "errorText": "Rien n’est perdu : le registre est conservé en sécurité. Réessayez dans un instant.",
+      "retry": "Réessayer",
+      "emptyTitle": "Aucune écriture pour l’instant",
+      "emptyText": "Les écritures apparaissent ici au fil de l’argent : une contribution, une facture approuvée, un achat. Rien n’est modifié ni supprimé, et une correction est une nouvelle écriture.",
+      "noMatches": "Aucune écriture ne correspond à votre recherche. Effacez-la, ou choisissez Réinitialiser l’affichage, pour tout voir."
+    },
+    "toolbar": {
+      "search": "Rechercher une écriture",
+      "searchPlaceholder": "Un nom, un montant, une date, un identifiant",
+      "group": "Regrouper par",
+      "groups": {
+        "none": "Aucun regroupement",
+        "person": "Personne ou bénéficiaire",
+        "category": "Catégorie",
+        "month": "Mois"
+      },
+      "columns": "Colonnes",
+      "columnsLabel": "Afficher ces colonnes",
+      "export": "Télécharger cet affichage (CSV)",
+      "reset": "Réinitialiser l’affichage",
+      "shown": "{shown} écritures affichées sur {total}.",
+      "selected": "Sélection : {count}. Net pour la cagnotte : {amount}."
+    },
+    "columns": {
+      "kind": "Type",
+      "person": "Personne ou bénéficiaire",
+      "category": "Catégorie",
+      "reference": "Référence de la source",
+      "entryId": "Identifiant de l’écriture",
+      "reverses": "Annule",
+      "debit": "Débits",
+      "credit": "Crédits",
+      "effect": "Effet sur la cagnotte"
+    },
+    "live": {
+      "shown": "{shown} écritures affichées sur {total}.",
+      "sorted": "Trié par {column}, {direction}.",
+      "ascending": "croissant",
+      "descending": "décroissant",
+      "unsorted": "Tri supprimé.",
+      "grouped": "Regroupé par {group}.",
+      "ungrouped": "Regroupement supprimé.",
+      "exported": "Le téléchargement a commencé.",
+      "reset": "Affichage réinitialisé."
+    },
+    "totals": {
+      "total": "Total de ce qui est affiché",
+      "entries": "Écritures : {count}",
+      "in": "Argent entrant",
+      "out": "Argent sortant",
+      "net": "Net pour la cagnotte",
+      "debits": "Débits",
+      "credits": "Crédits",
+      "balanced": "égaux, donc les écritures sont équilibrées",
+      "noCategory": "Sans catégorie"
+    },
+    "detail": {
+      "source": "Source",
+      "reference": "Référence de la source",
+      "id": "Identifiant de l’écriture",
+      "reverses": "Annule l’écriture",
+      "copyId": "Copier l’identifiant",
+      "copied": "Identifiant copié.",
+      "copyFailed": "Copie impossible. Sélectionnez l’identifiant et copiez-le."
+    },
+    "csv": {
+      "title": "Registre Kin : {circle}",
+      "generated": "Généré le {date}",
+      "rowsShown": "Écritures dans ce fichier : {shown} sur {total}",
+      "total": "Total"
+    },
+    "audit": {
+      "title": "Piste d’audit",
+      "lede": "Chaque écriture avec son identifiant et la preuve qui la soutient : ce qui l’a causée, et la référence propre de cette cause. Triez, filtrez et cherchez, puis téléchargez exactement ce que vous voyez.",
+      "link": "Piste d’audit"
+    },
+    "statement": {
+      "yearGridLabel": "Mois par mois en {year}",
+      "entriesTitle": "Les écritures de {month}",
+      "entriesText": "Le registre d’où ce relevé est tiré, écriture par écriture, avec la preuve de chacune.",
+      "entriesEmpty": "Aucune écriture ce mois-ci."
+    }
+  },
+  "invoicing": {
+    "title": "Demandes par facture PayPal",
+    "lede": "Un organisateur demande de l'argent à un membre avec une facture que PayPal envoie par e-mail depuis la cagnotte familiale. Kin n'enregistre le paiement qu'une fois confirmé par PayPal.",
+    "request": "Demander par facture PayPal",
+    "requesting": "Envoi par PayPal…",
+    "check": "Vérifier auprès de PayPal",
+    "checking": "Interrogation de PayPal…",
+    "checked": "Kin a interrogé PayPal. Le registre change dès que PayPal confirme un paiement.",
+    "cancel": "Retirer",
+    "cancelling": "Retrait…",
+    "open": "Ouvrir sur PayPal",
+    "number": "Facture {number}",
+    "paypalId": "ID PayPal {id}",
+    "sentTo": "Envoyée par PayPal à {email}",
+    "simulated": "Simulé",
+    "simulatedNote": "Simulé : cette démo n'a pas de compte sandbox PayPal pour remplacer la famille, donc aucune facture n'a été envoyée et aucun argent n'a bougé.",
+    "sandboxNote": "Une vraie facture sandbox PayPal, envoyée au compte de test de Kin à la place de {name}.",
+    "notRequested": "Pas encore demandé",
+    "states": {
+      "requested": "Demandée",
+      "sent": "Envoyée par PayPal",
+      "paid": "Payée",
+      "cancelled": "Retirée",
+      "failed": "Refusée par PayPal"
+    },
+    "purposes": {
+      "settlement": "Règlement, {month}",
+      "topUp": "Versement"
+    },
+    "empty": "Aucun membre n'a encore reçu de demande par facture.",
+    "topUp": {
+      "title": "Demander un versement à un membre",
+      "text": "PayPal envoie au membre une facture de la cagnotte. La payer ajoute le montant à ce qu'il a donné.",
+      "member": "Membre",
+      "amount": "Montant",
+      "hint": "Entre {min} et {max}",
+      "submit": "Envoyer la facture",
+      "submitting": "Envoi…",
+      "sent": "Facture demandée. Son état figure ci-dessous."
+    },
+    "item": {
+      "settlement": "{circle} : votre part pour {month}",
+      "topUp": "{circle} : un versement au fonds commun de soins"
+    },
+    "note": "Demandé via Kin. Payer ajoute ce montant au fonds commun de la famille, et Kin l'enregistre dès que PayPal confirme le paiement.",
+    "cancelNote": "Cette demande a été retirée via Kin. Rien n'est dû.",
+    "errors": {
+      "invalid": "Cette demande n'a pas pu être lue. Veuillez réessayer.",
+      "refused": "Seul un organisateur peut demander de l'argent par facture.",
+      "unavailable": "Les demandes par facture PayPal ne sont pas disponibles pour le moment.",
+      "paypal": "PayPal n'a pas envoyé la facture. Rien n'a été demandé à personne ; veuillez réessayer.",
+      "paid": "Cette facture est déjà payée, elle ne peut pas être retirée.",
+      "open": "Ce membre a déjà une demande en attente.",
+      "no_email": "Ce membre n'a pas d'e-mail auquel Kin peut envoyer une facture. Il peut ajouter son e-mail PayPal sur la page Équité.",
+      "move": "Cette demande est déjà terminée.",
+      "not_owed": "Le règlement ne demande rien à ce membre.",
+      "currency": "Les factures sont en dollars américains uniquement pour l'instant.",
+      "too_small": "Le montant est trop faible.",
+      "too_large": "Le montant est trop élevé."
     }
   },
   "dashboard": {
@@ -1165,6 +1479,7 @@
         "second_approval": "Un second oui au-delà de {amount}",
         "saidYes": "{name} a dit oui {method} le {time}",
         "saidNo": "{name} a dit non {method} le {time}",
+        "byMandate": "Approuvé selon l’autorisation permanente de {name}, {time}",
         "methods": {
           "voice": "par téléphone",
           "app": "dans l’application",
@@ -1183,6 +1498,12 @@
       "answered": {
         "title": "Décidé",
         "text": "Les propositions sur lesquelles le cercle s’est prononcé. Chaque réponse est conservée avec son auteur, la manière et le moment.",
+        "simulatedStates": {
+          "approved": "Approuvée · Kin la paie dans la démo, avec de l’argent simulé",
+          "executing": "Approuvée · en cours de paiement dans la démo, avec de l’argent simulé",
+          "settled": "Approuvée · payée dans la démo, avec de l’argent simulé",
+          "failed": "Approuvée · le paiement simulé a échoué, l’organisateur est prévenu"
+        },
         "states": {
           "approved": "Approuvée · Kin la paie via PayPal",
           "rejected": "Refusé · rien n’est payé",
@@ -1278,7 +1599,7 @@
         "collection": "Demandé à {name}",
         "fee": "Retenue pour les frais PayPal : {fee}",
         "now": "Payable maintenant",
-        "invoice": "Demandé par facture PayPal",
+        "invoice": "Encaissé par une facture PayPal envoyée par un organisateur",
         "status": "En attente d’approbation",
         "link": "Aller aux décisions",
         "core": "Calculé par le cœur financier de Kin, pas par l’IA. Le même registre donne toujours le même résultat."
@@ -2009,7 +2330,7 @@
         "over_period": "cela dépasserait ce qui était permis pour le mois",
         "already_used_this_period": "un par mois était permis et celui de ce mois est acheté"
       },
-      "aboveUsual": "Au-dessus de la limite habituelle, autorisé à l’avance"
+      "aboveUsual": "Plus que ce qui est approuvé d’habitude sans demander. L’autorisation permanente le couvre."
     },
     "letters": {
       "title": "Courriers et appels",
@@ -2369,5 +2690,86 @@
         "simulated_and_real": "Le registre mélange des écritures simulées et de vraies transactions du bac à sable."
       }
     }
+  },
+  "aiProvenance": {
+    "badge": {
+      "claudeRead": "Lu par Claude",
+      "claudeWorded": "Formulé par Claude",
+      "rules": "Lu par des règles fixes (le modèle n’a pas été utilisé)",
+      "template": "Formulation fixe"
+    },
+    "model": "Modèle : {model}",
+    "reasons": {
+      "not_configured": "Aucun modèle n’est activé ici.",
+      "not_requested": "Le modèle n’a pas été sollicité.",
+      "limit_reached": "La limite d’utilisation du modèle est atteinte pour le moment.",
+      "model_busy": "Le modèle était occupé.",
+      "model_unavailable": "Le modèle n’a pas pu être joint.",
+      "model_refused": "Le modèle a refusé de répondre.",
+      "unreadable": "La réponse du modèle n’a pas pu être utilisée.",
+      "wording_rejected": "La formulation du modèle ne correspondait pas aux chiffres du registre."
+    },
+    "unavailable": "Claude n’a pas été utilisé. {reason}",
+    "evidence": {
+      "title": "Où Kin l’a trouvé",
+      "fields": {
+        "sender": "Expéditeur",
+        "amount": "Montant",
+        "dueOn": "Échéance"
+      },
+      "found": "Écrit dans la lettre : « {quote} »",
+      "notFound": "Introuvable dans les mots : vérifiez-le sur la lettre.",
+      "textTitle": "Les mots, avec les preuves surlignées",
+      "markedNote": "Les mots marqués sont la preuve, soulignés et surlignés.",
+      "claudeChecked": "Claude a cité « {quote} », et Kin a retrouvé ces mots dans le texte.",
+      "claudeUnchecked": "Claude dit avoir lu « {quote} » sur la photo. Kin ne peut pas le vérifier avec des mots saisis : vérifiez-le sur la lettre.",
+      "rules": "Des règles fixes ont repéré ces mots. Claude n’a rien cité."
+    },
+    "visits": {
+      "readFrom": "Lu dans « {quote} »",
+      "duration": "{hours} h {minutes} min",
+      "hours": "{hours} h",
+      "none": "Kin n’a trouvé aucun jour dans ces mots."
+    },
+    "sample": {
+      "title": "Pas de lettre sous la main ?",
+      "text": "Essayez une facture d’eau inventée. Claude lit cette image comme il lit n’importe quelle photo que vous prenez.",
+      "button": "Essayer une photo de lettre d’exemple",
+      "imageAlt": "Une lettre d’exemple de Lakeside Water. Montant dû : $73.15. Échéance : 27 novembre 2026.",
+      "failed": "La lettre d’exemple n’a pas pu être chargée. Veuillez réessayer."
+    },
+    "preview": {
+      "tag": "Aperçu",
+      "title": "Essayez : comment une aide facture à la voix ou avec ses mots",
+      "text": "Une aide décrit ses visites avec ses mots, ou les dit à voix haute, et Kin les transforme en jours. Essayez ici : ce n’est qu’un aperçu, aucune facture n’est créée et rien n’est enregistré.",
+      "label": "Ce que dit l’aide",
+      "sentence": "Lundi et mardi de cette semaine, 4 heures chacun, et jeudi de 9 h à 11 h 30 du matin.",
+      "submit": "Aperçu de ce que lit Kin",
+      "reading": "Kin lit…",
+      "resultTitle": "Ce que Kin a lu",
+      "nothingSaved": "Aperçu seulement. Aucune facture n’a été créée et rien n’a été enregistré."
+    }
+  },
+  "sandboxPayout": {
+    "tag": "Sandbox PayPal",
+    "testMoney": "Sandbox PayPal, argent de test : le compte de test sandbox de Kin l’a reçu, et aucun argent réel n’a circulé.",
+    "title": "L’enregistrement PayPal de ce versement",
+    "batch": "ID du lot de versement",
+    "item": "ID de l’élément de versement",
+    "status": "Statut relu auprès de PayPal",
+    "states": {
+      "created": "Pas encore envoyé à PayPal",
+      "submitted": "Envoyé à PayPal",
+      "pending_at_paypal": "En attente chez PayPal",
+      "unknown": "Vérification auprès de PayPal",
+      "confirmed": "SUCCESS : PayPal indique qu’il a été payé",
+      "failed": "PayPal ne l’a pas payé"
+    },
+    "copyBatch": "Copier l’ID du lot",
+    "copyItem": "Copier l’ID de l’élément",
+    "copied": "Copié",
+    "copyFailed": "Copie impossible. Sélectionnez l’ID pour le copier.",
+    "receiverSandbox": "Dans cette démo, Kin paie {name} via la sandbox PayPal, sur le propre compte de test sandbox de Kin, jamais à une adresse saisie ici. C’est de l’argent de test.",
+    "receiverSimulated": "Dans cette démo, le paiement à {name} est simulé : aucune adresse PayPal n’est nécessaire et aucun argent ne circule."
   }
 }

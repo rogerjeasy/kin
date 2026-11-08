@@ -15,11 +15,21 @@ describe("the billing response boundary", () => {
     expect(parseBillingResponse(input, errors)).toEqual(input);
   });
   it("reads days Claude filled in only when every one is a real day in whole minutes", () => {
-    const good = { ok: true, described: true, visits: [{ date: "2026-10-26", minutes: 240 }], unclear: ["Tuesday"], dropped: 1 };
+    const good = { ok: true, described: true, visits: [{ date: "2026-10-26", minutes: 240, quotes: ["Monday, four hours"] }], unclear: ["Tuesday"], dropped: 1, provenance: { source: "claude", model: "us.anthropic.claude-opus-4-6-v1" } };
     expect(parseBillingResponse(good, errors)).toEqual(good);
-    for (const visits of [[{ date: "Monday", minutes: 240 }], [{ date: "2026-10-26", minutes: 0 }], [{ date: "2026-10-26", minutes: 1441 }], [{ date: "2026-10-26", minutes: 2.5 }], "many"]) {
+    const day = { date: "2026-10-26", minutes: 240, quotes: [] };
+    for (const visits of [[{ ...day, date: "Monday" }], [{ ...day, minutes: 0 }], [{ ...day, minutes: 1441 }], [{ ...day, minutes: 2.5 }], [{ ...day, quotes: [4] }], [{ date: "2026-10-26", minutes: 240 }], "many"]) {
       expect(parseBillingResponse({ ...good, visits }, errors)).toEqual({ ok: false, reason: "unavailable" });
     }
+  });
+  it("refuses days that do not say who read them, so a reading never passes without a badge", () => {
+    const good = { ok: true, described: true, visits: [], unclear: [], dropped: 0 };
+    expect(parseBillingResponse(good, errors)).toEqual({ ok: false, reason: "unavailable" });
+    expect(parseBillingResponse({ ...good, provenance: { source: "claude" } }, errors)).toEqual({ ok: false, reason: "unavailable" });
+  });
+  it("keeps the reason the model was not used, when it is one Kin knows", () => {
+    expect(parseBillingResponse({ ok: false, reason: "model_unavailable", why: "model_busy" }, errors)).toEqual({ ok: false, reason: "model_unavailable", why: "model_busy" });
+    expect(parseBillingResponse({ ok: false, reason: "model_unavailable", why: "provider says no" }, errors)).toEqual({ ok: false, reason: "model_unavailable" });
   });
 });
 

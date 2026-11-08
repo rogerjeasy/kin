@@ -1,4 +1,5 @@
 import { ArrowDownLeftIcon, ArrowUpRightIcon, CpuIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { Panel } from "@/components/dashboard/ui/panel";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";
@@ -6,7 +7,8 @@ import { StatusPill } from "@/components/dashboard/ui/status-pill";
 export type MovementGroup = {
   title: string;
   direction: "in" | "out";
-  items: readonly { id: string; who: string; amount: string; detail: string }[];
+  /** `extra` is shown under a movement, such as the PayPal invoice behind a collection. */
+  items: readonly { id: string; who: string; amount: string; detail: string; extra?: ReactNode }[];
 };
 
 type SettlementPanelProps = {
@@ -33,12 +35,15 @@ export function SettlementPanel({ title, description, status, groups, core, link
               </h3>
               <ul className="mt-3 divide-y">
                 {group.items.map((item) => (
-                  <li key={item.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                    <div className="min-w-0">
-                      <p className="font-medium">{item.who}</p>
-                      <p className="text-sm text-muted-foreground">{item.detail}</p>
+                  <li key={item.id} className="py-3 first:pt-0 last:pb-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium">{item.who}</p>
+                        <p className="text-sm text-muted-foreground">{item.detail}</p>
+                      </div>
+                      <span className="text-lg font-semibold whitespace-nowrap tabular-nums">{item.amount}</span>
                     </div>
-                    <span className="text-lg font-semibold whitespace-nowrap tabular-nums">{item.amount}</span>
+                    {item.extra}
                   </li>
                 ))}
               </ul>

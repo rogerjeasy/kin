@@ -28,7 +28,7 @@ describe("the words for an approval plan", () => {
   it("say how each of November's bills will be approved", async () => {
     const english = await getDictionary("en");
     const labels = upcomingBills(circle).map((bill) => (bill.plan ? fill(english.dashboard.common.planLabels[planLabel(bill.plan)], { parent: "Rose" }) : null));
-    expect(labels).toEqual(["Pays itself under a standing rule", "Pays itself under a standing rule", "Rose decides", "The organizer approves"]);
+    expect(labels).toEqual(["Pays itself under a standing rule", "Pays itself under a standing rule", "Rose decides", "Rose decides"]);
   });
 
   it("cover every outcome the approval engine can give", () => {

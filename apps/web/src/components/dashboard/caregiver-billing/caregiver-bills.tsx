@@ -5,14 +5,15 @@ import type { CircleSnapshot } from "@kin/db";
 import { Panel } from "@/components/dashboard/ui/panel";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
+import { fill } from "@/i18n/template";
 import type { Viewer } from "@/server/viewer";
 import { BillForm } from "./bill-form";
 import { ReceiverForm } from "./receiver-form";
 import { SubmittedBills } from "./submitted-bills";
 
-type Props = { circle: CircleSnapshot; viewer: Viewer; locale: Locale; canDescribe: boolean; speech: Dictionary["dashboard"]["speech"] | null; copy: Dictionary["dashboard"]["caregiverBilling"] };
+type Props = { circle: CircleSnapshot; viewer: Viewer; locale: Locale; canDescribe: boolean; speech: Dictionary["dashboard"]["speech"] | null; copy: Dictionary["dashboard"]["caregiverBilling"]; ai: Dictionary["aiProvenance"]; demoNote?: string | null; sandbox?: { readonly paid: ReadonlySet<string>; readonly tag: string } };
 
-export function CaregiverBills({ circle, viewer, locale, canDescribe, speech, copy }: Props) {
+export function CaregiverBills({ circle, viewer, locale, canDescribe, speech, copy, ai, demoNote = null, sandbox }: Props) {
   const account = viewer.kind === "visitor" ? "demo" : viewer.session.accountTypes;
   const seat = { role: circle.viewer.role, status: "active" } as const;
   const canSubmit = caregiverAccess(seat, "caregiver_bill.submit", account);
@@ -21,9 +22,9 @@ export function CaregiverBills({ circle, viewer, locale, canDescribe, speech, co
   const payee = circle.payees.find((each) => each.payee.member?.memberId === circle.viewer.memberId && each.caregiverRateCentsPerHour !== null);
   return (
     <>
-      {canSubmit ? payee ? <BillForm locale={locale} name={payee.name} canDescribe={canDescribe} speech={speech} today={calendarDay(circle.circle.now, circle.circle.timezone).occurredOn} simulated={circle.circle.demo} copy={copy} /> : <Panel title={copy.formTitle}><p>{copy.missingRate}</p></Panel> : null}
-      {setsReceiver && payee ? <ReceiverForm receiver={payee.receiver} copy={copy} /> : null}
-      <SubmittedBills circle={circle} locale={locale} canReview={canReview} copy={copy} />
+      {canSubmit ? payee ? <BillForm locale={locale} name={payee.name} canDescribe={canDescribe} speech={speech} today={calendarDay(circle.circle.now, circle.circle.timezone).occurredOn} simulated={circle.circle.demo} copy={copy} ai={ai} /> : <Panel title={copy.formTitle}><p>{copy.missingRate}</p></Panel> : null}
+      {setsReceiver && payee ? <ReceiverForm receiver={payee.receiver} demoNote={demoNote === null ? null : fill(demoNote, { name: payee.name })} copy={copy} /> : null}
+      <SubmittedBills circle={circle} locale={locale} canReview={canReview} copy={copy} sandbox={sandbox} />
     </>
   );
 }

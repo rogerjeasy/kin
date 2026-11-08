@@ -1,10 +1,11 @@
-import { FlaskConicalIcon, LogOutIcon, RotateCcwIcon } from "lucide-react";
+import { LogOutIcon, RotateCcwIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 import { leaveDemo, startDemoAgain } from "@/server/demo-actions";
 
+import { DemoBannerFrame } from "./demo-banner-frame";
 import { RoleSwitcher } from "./role-switcher";
 import type { ShellContext } from "./shell-context";
 
@@ -22,30 +23,28 @@ type DemoBannerProps = {
  */
 export function DemoBanner({ locale, copy, demo }: DemoBannerProps) {
   return (
-    <div role="note" className="space-y-3 rounded-xl border border-highlight/25 bg-highlight/8 px-4 py-3 text-sm">
-      <div className="flex items-start gap-3">
-        <FlaskConicalIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-highlight" />
-        <p className="min-w-0">
-          <strong className="font-semibold">{copy.label}.</strong> <span className="text-muted-foreground">{demo.text}</span>
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-2 ps-7">
-        <RoleSwitcher locale={locale} label={copy.viewAs} seat={demo.seat} personas={demo.personas} />
-        <form action={startDemoAgain}>
-          <input type="hidden" name="locale" value={locale} />
-          <Button type="submit" variant="ghost" size="sm" className="min-h-11" title={copy.restartNote}>
-            <RotateCcwIcon aria-hidden="true" />
-            {copy.restart}
-          </Button>
-        </form>
-        <form action={leaveDemo}>
-          <input type="hidden" name="locale" value={locale} />
-          <Button type="submit" variant="ghost" size="sm" className="min-h-11">
-            <LogOutIcon aria-hidden="true" />
-            {copy.leave}
-          </Button>
-        </form>
-      </div>
-    </div>
+    <DemoBannerFrame
+      label={copy.label}
+      switcher={<RoleSwitcher locale={locale} label={copy.viewAs} seat={demo.seat} personas={demo.personas} />}
+      explanation={demo.text}
+      actions={
+        <>
+          <form action={startDemoAgain}>
+            <input type="hidden" name="locale" value={locale} />
+            <Button type="submit" variant="ghost" size="sm" className="min-h-11" title={copy.restartNote}>
+              <RotateCcwIcon aria-hidden="true" />
+              {copy.restart}
+            </Button>
+          </form>
+          <form action={leaveDemo}>
+            <input type="hidden" name="locale" value={locale} />
+            <Button type="submit" variant="ghost" size="sm" className="min-h-11">
+              <LogOutIcon aria-hidden="true" />
+              {copy.leave}
+            </Button>
+          </form>
+        </>
+      }
+    />
   );
 }

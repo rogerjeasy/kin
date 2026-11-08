@@ -4,6 +4,7 @@ import { CameraIcon, FileTextIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 
+import { SampleLetter } from "@/components/dashboard/ai/sample-letter";
 import { inputClass } from "@/components/dashboard/create-circle/field";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { Button } from "@/components/ui/button";
@@ -19,10 +20,13 @@ type Props = {
   locale: Locale;
   currency: string;
   copy: Dictionary["dashboard"]["letters"];
+  ai: Dictionary["aiProvenance"];
   /** Kin's voice, when this deployment has it. */
   speech: Dictionary["dashboard"]["speech"] | null;
   /** Whether Claude can read a photograph here. Without it only typed words are read. */
   canReadPhotos: boolean;
+  /** Whether a sample letter photo is offered: a demo circle with Claude behind it, so nothing false lands in a real family's list. */
+  offerSample: boolean;
 };
 
 /**
@@ -30,7 +34,7 @@ type Props = {
  * server lists a bill for someone to review, and what Kin says is shown and
  * can be played. Nothing here pays anything.
  */
-export function LetterReader({ locale, currency, copy, speech, canReadPhotos }: Props) {
+export function LetterReader({ locale, currency, copy, ai, speech, canReadPhotos, offerSample }: Props) {
   const id = useId();
   const router = useRouter();
   const file = useRef<HTMLInputElement>(null);
@@ -38,21 +42,24 @@ export function LetterReader({ locale, currency, copy, speech, canReadPhotos }: 
   const [text, setText] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<Extract<LetterResult, { ok: true }> | null>(null);
+  const [result, setResult] = useState<{ reading: Extract<LetterResult, { ok: true }>; typed: string | null } | null>(null);
 
-  async function read() {
+  /** Reads what was chosen, or `chosen` when a sample is: through the one route every photograph takes. */
+  async function read(chosen?: File) {
     setPending(true);
     setError(null);
     setResult(null);
-    const image = photo === null ? null : await photoForKin(photo);
-    if (photo !== null && image === null) {
+    const picture = chosen ?? photo;
+    const typed = chosen === undefined && text.trim() !== "" ? text.trim() : null;
+    const image = picture === null ? null : await photoForKin(picture);
+    if (picture !== null && image === null) {
       setPending(false);
       return setError("unreadable");
     }
-    const reply = await postLetterJson<Extract<LetterResult, { ok: true }>>("/api/letters/read", { text: text.trim() === "" ? null : text.trim(), image, locale });
+    const reply = await postLetterJson<Extract<LetterResult, { ok: true }>>("/api/letters/read", { text: typed, image, locale });
     setPending(false);
     if (reply.ok) {
-      setResult(reply);
+      setResult({ reading: reply, typed });
       // The bills list beside this form is read on the server: fetch it again.
       router.refresh();
     } else setError((reply as LetterError).reason);
@@ -69,6 +76,7 @@ export function LetterReader({ locale, currency, copy, speech, canReadPhotos }: 
   return (
     <Panel title={copy.read.title} description={copy.read.text}>
       <div className="min-w-0 space-y-4">
+        {canReadPhotos && offerSample ? <SampleLetter copy={ai.sample} disabled={pending} onPick={(sample) => void read(sample)} /> : null}
         {canReadPhotos ? (
           <div className="min-w-0 space-y-2">
             <input ref={file} id={`${id}-photo`} type="file" accept="image/*" capture="environment" className="sr-only" disabled={pending} onChange={(event) => setPhoto(event.target.files?.[0] ?? null)} />
@@ -84,16 +92,16 @@ export function LetterReader({ locale, currency, copy, speech, canReadPhotos }: 
           <p id={`${id}-hint`} className="text-sm text-muted-foreground">{copy.read.wordsHint}</p>
           <textarea id={`${id}-words`} aria-describedby={`${id}-hint`} rows={5} maxLength={6000} value={text} disabled={pending} onChange={(event) => setText(event.target.value)} className={`${inputClass} min-h-28 py-2`} />
         </div>
-        <Button type="button" disabled={pending || empty} className="h-auto min-h-11 max-w-full shrink whitespace-normal text-start" onClick={read}>
+        <Button type="button" disabled={pending || empty} className="h-auto min-h-11 max-w-full shrink whitespace-normal text-start" onClick={() => void read()}>
           <FileTextIcon aria-hidden="true" />
           {pending ? copy.read.reading : copy.read.submit}
         </Button>
         {error ? <p role="alert" className="text-sm text-danger">{copy.errors[error as keyof typeof copy.errors] ?? copy.errors.unavailable}</p> : null}
         {result ? (
           <div className="min-w-0 space-y-3">
-            <LetterResultCard result={result} locale={locale} currency={currency} copy={copy} />
+            <LetterResultCard result={result.reading} locale={locale} currency={currency} copy={copy} ai={ai} sourceText={result.typed} />
             <div className="flex min-w-0 flex-wrap items-start gap-3">
-              {speech ? <HearButton label={copy.read.hear} speaking={copy.read.hearing} request={{ kind: "letter", documentId: result.documentId }} locale={locale} speech={speech} /> : null}
+              {speech ? <HearButton label={copy.read.hear} speaking={copy.read.hearing} request={{ kind: "letter", documentId: result.reading.documentId }} locale={locale} speech={speech} /> : null}
               <Button type="button" variant="ghost" className="h-auto min-h-11" onClick={again}>{copy.read.again}</Button>
             </div>
           </div>

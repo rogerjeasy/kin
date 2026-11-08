@@ -1,61 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import type { GridCopy } from "@/components/data-grid/data-grid";
 import type { Dictionary } from "@/i18n/dictionary";
-import { cn } from "@/lib/utils";
+import type { Locale } from "@/i18n/locales";
 
-import { RecordEntry } from "./record-entry";
-import { RECORD_FILTERS, type RecordFilter } from "./record-filters";
-import { RecordGrid, type LedgerRow } from "./record-grid";
+import type { LedgerRow, LedgerVariant } from "./ledger-row.ts";
+import { LedgerToolbar } from "./ledger-toolbar";
+import { RecordCards } from "./record-cards";
+import { RecordFilterPills } from "./record-filter-pills";
+import type { RecordFilter } from "./record-filters";
+import { RecordGrid } from "./record-grid";
+import { useLedgerView } from "./use-ledger-view";
 
 type RecordListProps = {
+  variant: LedgerVariant;
   copy: Dictionary["dashboard"]["record"];
-  items: readonly (LedgerRow & { filter: RecordFilter })[];
+  grid: GridCopy;
+  items: readonly LedgerRow[];
   rtl: boolean;
+  locale: Locale;
+  currency: string;
+  circleName: string;
+  /** The day the screen was made on the circle's clock, `YYYY-MM-DD`. */
+  generatedOn: string;
+  /** Where this person's view of this circle is remembered. */
+  storageKey: string;
+  fileName: string;
 };
 
 /**
- * The month's entries under one row of filters: a grid on a wide screen, and
- * on a phone the same entries as cards that open to their lines.
+ * The month's entries under one row of kind filters and one toolbar: a grid
+ * on a wide screen and, on a phone, the same rows as cards. Both read from one
+ * grid, so the search, grouping, totals and download are the same on both.
  */
-export function RecordList({ copy, items, rtl }: RecordListProps) {
+export function RecordList({ variant, copy, grid, items, rtl, locale, currency, circleName, generatedOn, storageKey, fileName }: RecordListProps) {
   const [filter, setFilter] = useState<RecordFilter>("all");
-  const shown = filter === "all" ? items : items.filter((item) => item.filter === filter);
+  const shown = useMemo(() => (filter === "all" ? items : items.filter((item) => item.filter === filter)), [items, filter]);
+  const view = useLedgerView({ variant, rows: shown, entryCount: items.length, record: copy, grid, locale, currency, circleName, generatedOn, storageKey, fileName });
 
   return (
     <>
-      <div role="group" aria-label={copy.filters.label} className="flex flex-wrap gap-2 px-5 pb-4 sm:px-6">
-        {RECORD_FILTERS.map((key) => (
-          <button
-            key={key}
-            type="button"
-            aria-pressed={filter === key}
-            onClick={() => setFilter(key)}
-            className={cn(
-              "min-h-11 rounded-full border px-4 text-sm font-medium transition-colors",
-              filter === key ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
-            )}
-          >
-            {copy.filters[key]}
-          </button>
-        ))}
-      </div>
+      {variant === "record" ? <RecordFilterPills copy={copy.filters} value={filter} onChange={setFilter} /> : null}
+      <LedgerToolbar view={view} copy={grid} total={shown.length} />
       <div className="hidden md:block">
-        <RecordGrid key={filter} copy={copy} rows={shown} rtl={rtl} />
+        <RecordGrid variant={variant} view={view} record={copy} grid={grid} rtl={rtl} rows={shown} />
       </div>
       <div className="md:hidden">
-        {shown.length === 0 ? (
-          <p className="border-t px-5 py-8 text-center text-muted-foreground">{copy.empty}</p>
-        ) : (
-          <ul aria-label={copy.grid.label} className="divide-y border-t">
-            {shown.map((item) => (
-              <li key={item.id}>
-                <RecordEntry item={item} copy={copy.lines} />
-              </li>
-            ))}
-          </ul>
-        )}
+        <RecordCards view={view} record={copy} grid={grid} available={shown.length} />
       </div>
     </>
   );

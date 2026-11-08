@@ -69,7 +69,7 @@ export default async function VerifyPage({ params, searchParams }: PageProps<"/[
     .toSorted((a, b) => order[a.severity] - order[b.severity])
     .map((item) => {
       const entry = circle.ledger.entries.find((candidate) => candidate.id === item.entryId);
-      return { id: item.id, severity: item.severity, text: item.text, source: item.source, about: entry === undefined ? null : describeEntry(dictionary, names, entryView(entry)) };
+      return { id: item.id, severity: item.severity, text: item.text, provenance: item.provenance, about: entry === undefined ? null : describeEntry(dictionary, names, entryView(entry)) };
     });
   const notice = review.status === "unavailable" ? copy.auditor.unavailable : review.status === "busy" ? copy.auditor.busy : null;
 
@@ -124,7 +124,7 @@ export default async function VerifyPage({ params, searchParams }: PageProps<"/[
         }
       >
         {notice === null ? null : <p className="mb-4 text-sm text-muted-foreground">{notice}</p>}
-        {findings.length === 0 ? <EmptyState text={copy.auditor.none} icon={ShieldCheckIcon} /> : <FindingsList copy={copy.auditor} rows={findings} />}
+        {findings.length === 0 ? <EmptyState text={copy.auditor.none} icon={ShieldCheckIcon} /> : <FindingsList copy={copy.auditor} ai={dictionary.aiProvenance} rows={findings} />}
       </Panel>
       <p className="text-sm text-muted-foreground">
         <Link href={localizedPath(locale, dashboardRoutes.record)} className="font-semibold underline underline-offset-4">

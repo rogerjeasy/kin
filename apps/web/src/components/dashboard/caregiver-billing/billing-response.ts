@@ -1,4 +1,6 @@
+import { FALLBACK_REASONS } from "@kin/agent/provenance";
 import { CaregiverBillError, parseCaregiverBillDetails } from "@kin/domain";
+import { parseProvenance } from "@/lib/provenance";
 import type { BillingFailure, BillingResult } from "@/server/caregiver-billing";
 
 const unavailable: BillingResult = { ok: false, reason: "unavailable" };
@@ -8,7 +10,8 @@ export function parseBillingResponse(value: unknown, errors: Record<BillingFailu
   const row = object(value);
   if (row?.ok === false && typeof row.reason === "string" && Object.hasOwn(errors, row.reason)) {
     const billId = row.reason === "duplicate" && typeof row.billId === "string" && /^[0-9a-f-]{36}$/.test(row.billId) ? row.billId : null;
-    return { ok: false, reason: row.reason as BillingFailure, ...(billId === null ? {} : { billId }) };
+    const why = FALLBACK_REASONS.find((reason) => reason === row.why);
+    return { ok: false, reason: row.reason as BillingFailure, ...(billId === null ? {} : { billId }), ...(why === undefined ? {} : { why }) };
   }
   if (row?.ok !== true) return unavailable;
   if (row.described === true) return described(row);
@@ -33,13 +36,15 @@ export function parseBillingResponse(value: unknown, errors: Record<BillingFailu
 
 // Days Claude read from the caregiver's words: only well-formed days and whole minutes fill the form.
 function described(row: Record<string, unknown>): BillingResult {
-  if (!Array.isArray(row.visits) || !Array.isArray(row.unclear) || !cents(row.dropped)) return unavailable;
-  const visits = row.visits.map(object).filter((visit) => visit !== null && typeof visit.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(visit.date) && cents(visit.minutes) && visit.minutes > 0 && visit.minutes <= 1440);
+  const provenance = parseProvenance(row.provenance);
+  if (!Array.isArray(row.visits) || !Array.isArray(row.unclear) || !cents(row.dropped) || provenance === null) return unavailable;
+  const visits = row.visits.map(object).filter((visit) => visit !== null && typeof visit.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(visit.date) && cents(visit.minutes) && visit.minutes > 0 && visit.minutes <= 1440 && Array.isArray(visit.quotes) && visit.quotes.every((quote) => typeof quote === "string"));
   if (visits.length !== row.visits.length) return unavailable;
   return {
     ok: true,
     described: true,
-    visits: visits.map((visit) => ({ date: String(visit?.date), minutes: Number(visit?.minutes) })),
+    provenance,
+    visits: visits.map((visit) => ({ date: String(visit?.date), minutes: Number(visit?.minutes), quotes: (visit?.quotes as string[]).slice() })),
     unclear: row.unclear.filter((each): each is string => typeof each === "string"),
     dropped: row.dropped,
   };

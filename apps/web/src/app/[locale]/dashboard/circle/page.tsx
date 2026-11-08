@@ -16,12 +16,14 @@ import { Panel } from "@/components/dashboard/ui/panel";
 import { circleFormatters } from "@/content/circle/format";
 import { activeMembers, parentOf } from "@/content/circle/members";
 import { circleNames } from "@/content/circle/names";
+import { demoPayeeNote } from "@/content/circle/payout-proof";
 import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
 import { agreementRoute } from "@/content/dashboard-routes";
 import { localizedPath } from "@/i18n/routing";
 import { dashboardContext, may } from "@/server/dashboard-context";
+import { demoPayeeOf } from "@/server/sandbox-payout";
 
 export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/circle">): Promise<Metadata> {
   return dashboardMetadata(params, "circle");
@@ -46,7 +48,7 @@ export default async function CirclePage({ params, searchParams }: PageProps<"/[
   return (
     <>
       <PageHeader title={copy.title} lede={copy.lede} />
-      {caregiverAccess({ role: circle.viewer.role, status: "active" }, "caregiver_rate.manage", viewer.kind === "visitor" ? "demo" : viewer.session.accountTypes) ? <CaregiverRates circle={circle} copy={dictionary.dashboard.caregiverBilling} /> : null}
+      {caregiverAccess({ role: circle.viewer.role, status: "active" }, "caregiver_rate.manage", viewer.kind === "visitor" ? "demo" : viewer.session.accountTypes) ? <CaregiverRates circle={circle} copy={dictionary.dashboard.caregiverBilling} demoNote={demoPayeeNote(dictionary.sandboxPayout, demoPayeeOf(circle))} /> : null}
       <div className="grid gap-6 lg:grid-cols-3">
         {parent ? (
           <ParentPanel

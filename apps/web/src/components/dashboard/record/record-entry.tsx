@@ -1,8 +1,11 @@
 import { ChevronDownIcon } from "lucide-react";
 
+import type { GridCopy } from "@/components/data-grid/data-grid";
 import { FlowAmount } from "@/components/dashboard/ui/flow-amount";
 
+import { EntryFacts } from "./entry-facts";
 import { EntryLines, type EntryLineRow } from "./entry-lines";
+import type { LedgerRow } from "./ledger-row.ts";
 
 export type RecordEntryItem = {
   id: string;
@@ -19,12 +22,13 @@ export type RecordEntryItem = {
 };
 
 type RecordEntryProps = {
-  item: RecordEntryItem;
+  item: LedgerRow;
   copy: { show: string; account: string; debit: string; credit: string };
+  grid: GridCopy;
 };
 
 /** One ledger entry on a phone, which opens to show its lines. */
-export function RecordEntry({ item, copy }: RecordEntryProps) {
+export function RecordEntry({ item, copy, grid }: RecordEntryProps) {
   return (
     <details className="group">
       <summary className="grid cursor-pointer list-none grid-cols-[3.5rem_minmax(0,1fr)_auto] items-start gap-x-3 px-5 py-4 transition-colors hover:bg-muted/50 [&::-webkit-details-marker]:hidden">
@@ -48,6 +52,9 @@ export function RecordEntry({ item, copy }: RecordEntryProps) {
         </span>
       </summary>
       <div className="px-5 pb-4">
+        <div className="mb-3">
+          <EntryFacts item={item} copy={grid.detail} />
+        </div>
         <div className="rounded-xl bg-muted px-4 py-2">
           <EntryLines caption={`${copy.show}: ${item.text}`} headers={copy} lines={item.lines} />
         </div>

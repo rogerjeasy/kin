@@ -31,6 +31,49 @@ for (const viewport of viewports) {
   });
 }
 
+test.describe("the demo banner on a phone", () => {
+  test.use({ viewport: { width: phone.width, height: phone.height } });
+
+  test("is one short line that opens to its explanation and actions", async ({ page }) => {
+    await startDemo(page);
+    const banner = page.getByRole("note");
+    const toggle = banner.getByRole("button", { name: dashboard.shell.demo.label });
+    const seat = banner.getByRole("button", { name: /^You are Elena/ });
+    const restart = banner.getByRole("button", { name: dashboard.shell.demo.restart });
+
+    // Closed: the label and the role switcher only, well under a fifth of the first screen.
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(seat).toBeVisible();
+    await expect(restart).toBeHidden();
+    await expect(banner.getByText(/Its history is simulated/)).toBeHidden();
+    const closed = await banner.boundingBox();
+    expect(closed?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(phone.height * 0.2);
+    for (const control of [toggle, seat]) {
+      const box = await control.boundingBox();
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+    await expectNoHorizontalOverflow(page);
+
+    // Open by keyboard: the explanation and both actions appear, still within the viewport.
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(banner.getByText(/Its history is simulated/)).toBeVisible();
+    await expect(restart).toBeVisible();
+    await expect(banner.getByRole("button", { name: dashboard.shell.demo.leave })).toBeVisible();
+    for (const action of [restart, banner.getByRole("button", { name: dashboard.shell.demo.leave })]) {
+      const box = await action.boundingBox();
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test("still lets a visitor change seat without opening it", async ({ page }) => {
+    await startDemo(page);
+    await seatAs(page, "Marcus");
+  });
+});
+
 test.describe("the Demo button", () => {
   test.use({ viewport: { width: laptop.width, height: laptop.height } });
 
@@ -38,8 +81,12 @@ test.describe("the Demo button", () => {
     await startDemo(page);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(fill(dashboard.overview.greeting, { name: "Elena" }));
     await expect(page.getByRole("note").getByRole("button", { name: /^You are Elena/ })).toBeVisible();
+    // On a wide screen nothing is folded away: the explanation and both actions are always there.
+    await expect(page.getByRole("note").getByRole("button", { name: dashboard.shell.demo.restart })).toBeVisible();
+    await expect(page.getByRole("note").getByRole("button", { name: dashboard.shell.demo.leave })).toBeVisible();
+    await expect(page.getByRole("note").getByRole("button", { name: dashboard.shell.demo.label })).toBeHidden();
     const stats = page.getByRole("definition");
-    await expect(stats.filter({ hasText: "$382.18" })).toBeVisible();
+    await expect(stats.filter({ hasText: "$360.18" })).toBeVisible();
     await expect(stats.filter({ hasText: "$924.00" })).toBeVisible();
     expect((await page.context().cookies()).map((cookie) => cookie.name)).toContain("__Host-kin-demo");
   });
@@ -202,7 +249,8 @@ test.describe("the circle and its record in the demo", () => {
     await startDemo(page);
     await page.goto("/dashboard/record");
     const grid = page.getByRole("region", { name: dashboard.record.grid.label });
-    const rows = grid.locator(".ag-row");
+    // Only the entries: the pinned columns and the totals row are rows of their own.
+    const rows = grid.locator(".ag-grid-scrolling-rows .ag-row:not(.ag-full-width-row)");
     await expect(rows).toHaveCount(19);
     await page.getByRole("button", { name: dashboard.record.filters.care }).click();
     await expect(rows).toHaveCount(4);
@@ -216,7 +264,7 @@ test.describe("the circle and its record in the demo", () => {
     await page.goto("/dashboard/record");
     const grid = page.getByRole("region", { name: dashboard.record.grid.label });
     const detail = page.getByRole("region", { name: dashboard.record.grid.detailTitle });
-    await grid.locator(".ag-row").first().locator("[role='gridcell']").first().click();
+    await grid.locator(".ag-grid-scrolling-rows .ag-row:not(.ag-full-width-row)").first().locator("[role='gridcell']").nth(1).click();
     const first = await detail.locator("p").first().textContent();
     await page.keyboard.press("ArrowDown");
     await expect(detail.locator("p").first()).not.toHaveText(first ?? "");

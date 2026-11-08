@@ -1,5 +1,6 @@
 import type { CircleSnapshot } from "@kin/db";
 
+import { ProvenanceBadge } from "@/components/dashboard/ai/provenance-badge";
 import { PayeeCell } from "@/components/dashboard/bills/payee-cell";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";
@@ -7,11 +8,12 @@ import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 import { fill } from "@/i18n/template";
 import { formatters } from "@/lib/format";
+import { storedProvenance } from "@/lib/provenance";
 
-type Props = { circle: CircleSnapshot; locale: Locale; copy: Dictionary["dashboard"]["letters"] };
+type Props = { circle: CircleSnapshot; locale: Locale; copy: Dictionary["dashboard"]["letters"]; ai: Dictionary["aiProvenance"] };
 
 /** The bills Kin put on the list from a letter, with where each stands. None is paid from here. */
-export function LetterBills({ circle, locale, copy }: Props) {
+export function LetterBills({ circle, locale, copy, ai }: Props) {
   const format = formatters(locale, circle.circle.currency);
   const bills = circle.bills.filter((bill) => bill.caregiverDetails === null && bill.documentId !== null).toReversed();
   return (
@@ -22,6 +24,7 @@ export function LetterBills({ circle, locale, copy }: Props) {
         <ul className="min-w-0 divide-y">
           {bills.map((bill) => {
             const payee = circle.payees.find((each) => each.id === bill.payeeId);
+            const provenance = storedProvenance(circle.documents.find((each) => each.id === bill.documentId)?.extraction);
             const state = bill.state === "duplicate" || bill.state === "extracted" || bill.state === "needs_review" ? bill.state : null;
             return (
               <li key={bill.id} className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0">
@@ -30,6 +33,7 @@ export function LetterBills({ circle, locale, copy }: Props) {
                   {state === null ? null : <StatusPill tone={state === "duplicate" ? "neutral" : "waiting"}>{copy.bills.states[state]}</StatusPill>}
                   <span className="font-semibold tabular-nums">{format.money(bill.amountCents)}</span>
                 </div>
+                {provenance === null ? null : <div className="basis-full"><ProvenanceBadge provenance={provenance} kind="read" copy={ai} /></div>}
               </li>
             );
           })}

@@ -1,5 +1,7 @@
 import { AlertTriangleIcon, CheckCircle2Icon, CopyIcon, InfoIcon } from "lucide-react";
 
+import { LetterEvidence } from "@/components/dashboard/ai/letter-evidence";
+import { ProvenanceBadge } from "@/components/dashboard/ai/provenance-badge";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
@@ -12,10 +14,13 @@ type Props = {
   locale: Locale;
   currency: string;
   copy: Dictionary["dashboard"]["letters"];
+  ai: Dictionary["aiProvenance"];
+  /** What was typed or pasted when the letter was read; `null` for a photograph alone. */
+  sourceText: string | null;
 };
 
 /** What Kin read from a letter, what became of it, and the words it says, so nothing is only heard. */
-export function LetterResultCard({ result, locale, currency, copy }: Props) {
+export function LetterResultCard({ result, locale, currency, copy, ai, sourceText }: Props) {
   const format = formatters(locale, currency);
   const { reading } = result;
   const sender = reading.sender ?? copy.result.unknownSender;
@@ -28,7 +33,10 @@ export function LetterResultCard({ result, locale, currency, copy }: Props) {
         : { tone: "neutral", icon: InfoIcon, label: copy.result.nothing };
   return (
     <div role="status" className="min-w-0 space-y-3 rounded-xl border bg-secondary/40 p-4">
-      <StatusPill tone={pill.tone as "danger" | "positive" | "waiting" | "neutral"} icon={pill.icon}>{pill.label}</StatusPill>
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+        <StatusPill tone={pill.tone as "danger" | "positive" | "waiting" | "neutral"} icon={pill.icon}>{pill.label}</StatusPill>
+        <ProvenanceBadge provenance={result.provenance} kind="read" copy={ai} />
+      </div>
       <p className="wrap-anywhere font-medium">{fill(copy.result.from, { kind: copy.result.kinds[reading.kind], sender })}</p>
       <ul className="space-y-1 text-sm text-muted-foreground">
         {reading.amountCents === null ? null : <li>{fill(copy.result.amount, { amount: format.money(reading.amountCents) })}</li>}
@@ -39,6 +47,7 @@ export function LetterResultCard({ result, locale, currency, copy }: Props) {
         {reading.source === "rules" ? <li>{copy.result.rulesNote}</li> : null}
       </ul>
       <p className="wrap-anywhere text-sm">{result.words}</p>
+      <LetterEvidence reading={reading} evidence={result.evidence} provenance={result.provenance} sourceText={sourceText} locale={locale} currency={currency} copy={ai.evidence} />
     </div>
   );
 }

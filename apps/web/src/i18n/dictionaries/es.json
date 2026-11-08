@@ -1,4 +1,113 @@
 {
+  "askKin": {
+    "title": "Preguntar a Kin",
+    "lede": "Pregunte por el dinero del círculo con sus propias palabras. Claude lee el registro con las herramientas de Kin y responde; Kin comprueba cada cifra en el registro antes de que usted la vea.",
+    "card": {
+      "title": "Preguntar a Kin",
+      "text": "Claude consulta con las herramientas de Kin y responde con palabras sencillas. Puede proponer una reposición, pero nunca aprueba ni paga nada.",
+      "open": "Abrir Preguntar a Kin"
+    },
+    "suggestions": {
+      "label": "Pruebe a preguntar",
+      "paid": "¿Se le ha pagado a {caregiver}?",
+      "owes": "¿Quién le debe a quién este mes?",
+      "demand": "¿Es real un cobro de {amount} de Harbor Gas?",
+      "refill": "Volver a pedir la receta de {parent}"
+    },
+    "form": {
+      "label": "Su pregunta",
+      "placeholder": "Por ejemplo: ¿cuánto hay en el fondo?",
+      "hint": "Hasta 500 caracteres. Kin solo lee el registro de este círculo.",
+      "ask": "Preguntar a Kin",
+      "asking": "Kin está leyendo el registro…"
+    },
+    "answer": {
+      "heading": "La respuesta de Kin",
+      "empty": "Haga una pregunta o elija una de las sugerencias.",
+      "claude": "Escrito por Claude ({model}), cada cifra comprobada en el registro",
+      "template": "Redacción fija de Kin, completada con el registro",
+      "trace": "Cómo lo encontró Kin",
+      "traceEmpty": "Kin respondió sin leer el registro."
+    },
+    "proposal": {
+      "title": "Se propuso una reposición",
+      "text": "Esperando un sí — Kin no puede aprobar ni pagar nada.",
+      "link": "Abrir aprobaciones"
+    },
+    "errors": {
+      "invalid": "Escriba una pregunta de hasta 500 caracteres.",
+      "busy": "Ha hecho muchas preguntas a Kin en esta hora. Inténtelo más tarde.",
+      "unavailable": "Kin no puede contactar con Claude ahora mismo. Inténtelo de nuevo en un momento.",
+      "refused": "Preguntar a Kin no está disponible desde su puesto en este círculo."
+    },
+    "tools": {
+      "get_pool": "Consultó el saldo del fondo",
+      "list_bills": "Leyó las facturas",
+      "get_fairness": "Hizo que el núcleo financiero calculara la equidad del mes",
+      "check_claim": "Comprobó el cobro en el registro",
+      "list_proposals": "Leyó lo que espera un sí",
+      "get_record": "Leyó los últimos asientos del registro",
+      "get_paypal_payout_status": "Comprobó los pagos con PayPal",
+      "get_paypal_topup_status": "Comprobó las aportaciones con PayPal",
+      "get_subscription_status": "Comprobó las cuotas mensuales con PayPal",
+      "propose_refill": "Propuso una reposición",
+      "unknown": "Pidió una herramienta que Kin no tiene"
+    },
+    "outcomes": {
+      "ok": "hecho",
+      "unknown_tool": "rechazado: no existe esa herramienta",
+      "refused": "rechazado: no está abierto a su rol",
+      "invalid": "rechazado: la petición no encajaba",
+      "limit": "omitido: se alcanzó el límite",
+      "failed": "no se pudo leer",
+      "timeout": "sin respuesta a tiempo",
+      "too_large": "demasiado grande"
+    },
+    "fallback": {
+      "lead": "Esto es lo que dice el registro: {facts}",
+      "none": "Kin no pudo responder eso a partir del registro. Pruebe una de las sugerencias."
+    },
+    "facts": {
+      "simulated": "El dinero de este círculo es simulado.",
+      "pool": "El fondo tiene {pool}. En {month} entraron {paidIn} y salieron {paidOut}, con {fees} de comisiones de PayPal.",
+      "bills": "{waiting} facturas esperan pago, {upcoming} están previstas y {paid} están pagadas.",
+      "billWaiting": "{payee} pide {amount}.",
+      "fairnessNone": "Kin no puede mostrar la equidad del mes desde su puesto.",
+      "fairness": "Para {month}, según las cuotas del acuerdo:",
+      "owesPool": "{member} debe {amount} al fondo.",
+      "poolOwes": "El fondo debe {amount} a {member}.",
+      "even": "nadie debe nada.",
+      "claimUnreadable": "Kin no pudo leer ese importe, así que no comprobó nada.",
+      "claim": {
+        "open_bill": "{payee} tiene una factura abierta de {amount} en el registro, así que el cobro coincide.",
+        "already_paid": "A {payee} ya se le pagaron {paid} el {day}, y el registro no muestra nada más pendiente, así que este cobro no coincide.",
+        "unknown_payee": "Nadie a quien paga el círculo se llama {claimed}. Trate el cobro como falso y no lo pague.",
+        "amount_differs": "{payee} es conocido, pero el registro no tiene ninguna factura ni pago de {amount}.",
+        "no_amount": "{payee} es conocido, pero no se indicó ningún importe que comprobar."
+      },
+      "proposals": "{count} pagos esperan un sí.",
+      "proposal": "{to}, {amount}: esperando a {people}.",
+      "nobody": "nadie",
+      "record": "El último asiento, el {day}: {about}, {amount}.",
+      "recordNone": "El registro aún no tiene asientos.",
+      "payout": "A {payee} se le pagaron {amount} el {day}, confirmado por PayPal.",
+      "payoutSimulated": "A {payee} se le pagaron {amount} el {day}. Fue simulado.",
+      "payoutPending": "Un pago de {amount} a {payee} está en curso en PayPal.",
+      "payoutNoneAny": "El registro aún no tiene pagos.",
+      "payoutNone": "El registro no tiene ningún pago a {payee}.",
+      "topUp": "{member} aportó {amount} el {day}.",
+      "topUpSimulated": "{member} aportó {amount} el {day}. Fue simulado.",
+      "topUpNone": "El registro no tiene aportaciones.",
+      "share": "La cuota mensual de {member} es de {amount}.",
+      "shareNone": "No hay cuotas mensuales configuradas.",
+      "refillNone": "La familia no ha configurado reposiciones.",
+      "refillChoose": "¿Qué reposición? La familia permite: {items}.",
+      "refillWaiting": "Ya espera una reposición de {item}, o el círculo está en pausa, así que Kin no propuso nada.",
+      "refillRefused": "Kin no pudo proponer {item} por {price}. Las reglas de la familia no lo permitían.",
+      "refillCovered": "Kin propuso {item} por {price}. El permiso permanente del progenitor lo cubre.",
+      "refillProposed": "Kin propuso {item} por {price}. Espera un sí."
+    }
+  },
   "meta": {
     "home": {
       "title": "Kin: nada sobre el dinero de mamá sin mamá",
@@ -76,7 +185,7 @@
       "product": "Producto",
       "people": "Personas",
       "forFamilies": "Para familias",
-      "disclaimer": "Kin no es un banco, ni un bufete de abogados, ni un proveedor de cuidados. No custodia fondos. Esta versión funciona en el entorno de pruebas (sandbox) de PayPal con dinero de prueba, para el PayPal AI Hackathon 2026.",
+      "disclaimer": "Kin no es un banco, ni un bufete de abogados, ni un proveedor de cuidados. En esta versión de pruebas (sandbox), el dinero de prueba llega a la cuenta de PayPal de Kin y un libro de cuentas indica a qué círculo pertenece; un lanzamiento real haría que PayPal custodiara el dinero de cada familia bajo sus propias licencias. Creado para el PayPal AI Hackathon 2026.",
       "photos": "Las fotografías muestran a modelos, no a una familia real. Los montos son ejemplos."
     },
     "related": {
@@ -158,7 +267,7 @@
       "decide": {
         "label": "Decidir",
         "kin": "Ya se puede volver a pedir su medicamento. Cuesta {amount}. ¿Quiere que lo pida?",
-        "kinAmount": "42 dólares",
+        "kinAmount": "64 dólares",
         "rose": "Sí, adelante."
       },
       "check": {
@@ -188,7 +297,7 @@
         "refill": {
           "day": "Día 9",
           "title": "Rose aprueba el pedido de su medicamento",
-          "quote": "Cuesta 42 dólares. ¿Quiere que lo pida?",
+          "quote": "Cuesta 64 dólares. ¿Quiere que lo pida?",
           "alt": "Un frasco de medicamento sobre una mesa de madera"
         },
         "letter": {
@@ -332,9 +441,9 @@
           "title": "Rose aprueba el pedido de su medicamento",
           "text": "A Rose le toca volver a pedir su medicamento para la presión. Ella dice que sí. Kin hace el pedido y le avisa cuándo llegará.",
           "speaker": "Kin",
-          "quote": "Ya se puede volver a pedir su medicamento. Cuesta 42 dólares. ¿Quiere que lo pida?",
+          "quote": "Ya se puede volver a pedir su medicamento. Cuesta 64 dólares. ¿Quiere que lo pida?",
           "approval": "Rose, por voz",
-          "paypal": "Un método de pago guardado"
+          "paypal": "Un método de pago guardado (vendedor de ejemplo)"
         },
         {
           "day": "Día 12",
@@ -352,7 +461,7 @@
           "speaker": "Kin",
           "quote": "No encuentro ninguna factura de gas pendiente. Su factura de gas de 57 dólares se pagó el día 2. Por favor, no le pague a esa persona. Ya les avisé a Elena y a Marcus.",
           "approval": "Nadie. No se pagó nada.",
-          "paypal": "Registros de transacciones"
+          "paypal": "El registro propio de la familia"
         },
         {
           "day": "Día 20",
@@ -379,7 +488,7 @@
     "paypal": {
       "eyebrow": "Construido sobre PayPal",
       "title": "PayPal mueve cada dólar y guarda el registro en el que Kin confía.",
-      "lede": "La familia no necesita una cuenta bancaria nueva ni una tarjeta nueva. Kin nunca tiene el dinero en su poder.",
+      "lede": "La familia no necesita una cuenta bancaria nueva ni una tarjeta nueva. En esta versión de pruebas, cada aportación llega a la cuenta de PayPal de Kin y un libro de cuentas la atribuye al círculo; un lanzamiento real usaría la plataforma de socios de PayPal, de modo que los fondos de cada familia se custodiaran bajo las licencias de PayPal, no las de Kin.",
       "needHeader": "Lo que necesita la familia",
       "capabilityHeader": "Función de PayPal",
       "rows": [
@@ -389,7 +498,7 @@
         },
         {
           "need": "Un hermano hace un aporte adicional único",
-          "capability": "Pago en línea (Checkout), con Pay Later para gastos grandes"
+          "capability": "Pago en línea (Checkout), con Pay Later para gastos grandes cuando PayPal lo ofrece"
         },
         {
           "need": "Se le pide a un hermano un aporte adicional o una liquidación",
@@ -405,19 +514,19 @@
         },
         {
           "need": "El agente compra lo que el padre o la madre necesita, una vez que una persona lo confirma",
-          "capability": "Un método de pago guardado en un comercio participante"
+          "capability": "Un método de pago guardado en un comercio participante (en esta versión, una farmacia de ejemplo)"
         },
         {
           "need": "Se sigue una entrega hasta la puerta",
-          "capability": "Seguimiento de envíos"
+          "capability": "Seguimiento de envíos (previsto; esta versión sigue los avisos de entrega del vendedor de ejemplo)"
         },
         {
           "need": "Se reclama un cargo incorrecto",
-          "capability": "Disputas"
+          "capability": "Disputas (previsto, aún no construido)"
         },
         {
           "need": "Kin sabe lo que pasó de verdad",
-          "capability": "Notificaciones de pago y registros de transacciones"
+          "capability": "Notificaciones de pago y pagos releídos desde PayPal"
         }
       ]
     },
@@ -567,7 +676,7 @@
         },
         {
           "title": "Honesto sobre lo que es",
-          "text": "Kin no es un banco, ni un bufete de abogados, ni un proveedor de cuidados. No custodia fondos y no da asesoría legal, fiscal ni médica."
+          "text": "Kin no es un banco, ni un bufete de abogados, ni un proveedor de cuidados, y no da asesoría legal, fiscal ni médica. No tiene una cuenta bancaria propia: en esta versión de pruebas, cada aportación llega a la cuenta de PayPal de Kin y un libro de cuentas la atribuye al círculo. Un lanzamiento real usaría la plataforma de socios de PayPal, o un socio con licencia, de modo que los fondos de cada círculo se custodiaran y movieran bajo las licencias de PayPal, no las de Kin."
         },
         {
           "title": "Una IA que admite sus dudas",
@@ -752,7 +861,7 @@
         },
         {
           "question": "¿Kin tiene nuestro dinero en su poder?",
-          "answer": "No. El fondo familiar es una cuenta de PayPal que pertenece a la familia. Kin se conecta a ella y nunca tiene el dinero en su poder."
+          "answer": "No en una cuenta bancaria propia. En esta versión de pruebas, cada aportación llega a la cuenta de PayPal de Kin y el libro de cuentas de Kin la atribuye a su círculo. Un lanzamiento real usaría la plataforma de socios de PayPal (o un socio con licencia): los fondos de su círculo se custodiarían y moverían bajo las licencias de PayPal, no las de Kin."
         },
         {
           "question": "¿Necesitamos una cuenta bancaria nueva o una tarjeta nueva?",
@@ -859,6 +968,211 @@
         "unavailable": "No se puede acceder al inicio de sesión en este momento. Inténtalo de nuevo dentro de un rato."
       },
       "noCircle": "¿Aún no tienes una cuenta?"
+    }
+  },
+  "dataGrid": {
+    "localeText": {
+      "noRowsToShow": "No hay entradas que mostrar",
+      "noMatchingRows": "Ninguna entrada coincide. Borra la búsqueda o los filtros para verlas todas.",
+      "loadingOoo": "Cargando...",
+      "exportingOoo": "Preparando la descarga...",
+      "filterOoo": "Filtrar...",
+      "applyFilter": "Aplicar",
+      "clearFilter": "Borrar",
+      "resetFilter": "Restablecer",
+      "cancelFilter": "Cancelar",
+      "textFilter": "Filtro de texto",
+      "numberFilter": "Filtro de monto",
+      "dateFilter": "Filtro de fecha",
+      "empty": "Elige una opción",
+      "equals": "Igual a",
+      "notEqual": "Distinto de",
+      "lessThan": "Menor que",
+      "greaterThan": "Mayor que",
+      "lessThanOrEqual": "Menor o igual que",
+      "greaterThanOrEqual": "Mayor o igual que",
+      "inRange": "Entre",
+      "inRangeStart": "Desde",
+      "inRangeEnd": "Hasta",
+      "contains": "Contiene",
+      "notContains": "No contiene",
+      "startsWith": "Empieza por",
+      "endsWith": "Termina en",
+      "blank": "En blanco",
+      "notBlank": "No está en blanco",
+      "before": "Antes de",
+      "after": "Después de",
+      "andCondition": "Y",
+      "orCondition": "O",
+      "dateFormatOoo": "aaaa-mm-dd",
+      "invalidDate": "Fecha no válida",
+      "invalidNumber": "Monto no válido",
+      "ariaFilterInput": "Campo del filtro",
+      "ariaFilterValue": "Valor del filtro",
+      "ariaFilterFromValue": "Filtrar desde el valor",
+      "ariaFilterToValue": "Filtrar hasta el valor",
+      "ariaFilteringOperator": "Operador de filtrado",
+      "ariaDateFilterInput": "Campo del filtro de fecha",
+      "ariaLabelColumnFilter": "Filtro de la columna",
+      "ariaLabelColumnMenu": "Menú de la columna",
+      "ariaLabelInputClear": "Borrar",
+      "ariaFilterColumn": "Pulsa Ctrl Intro para abrir el filtro",
+      "ariaMenuColumn": "Pulsa Alt Flecha abajo para abrir el menú de la columna",
+      "ariaSortableColumn": "Pulsa Intro para ordenar",
+      "ariaColumnFiltered": "Columna filtrada",
+      "ariaRowSelect": "Pulsa Espacio para seleccionar esta fila",
+      "ariaRowDeselect": "Pulsa Espacio para quitar la selección de esta fila",
+      "ariaRowToggleSelection": "Pulsa Espacio para alternar la selección de la fila",
+      "ariaRowSelectAll": "Pulsa Espacio para alternar la selección de todas las filas",
+      "ariaHeaderSelection": "Columna con selección en el encabezado",
+      "ariaRowSelectionDisabled": "La selección está desactivada para esta fila"
+    },
+    "hint": "Teclado: Tab entra en la tabla por los títulos de las columnas, y otro Tab sale de ella. Las flechas se mueven entre celdas. Intro sobre un título ordena la columna. Ctrl e Intro sobre un título abren su filtro. Espacio sobre una fila la marca. Esc sale de un campo de filtro.",
+    "states": {
+      "loading": "Cargando las entradas",
+      "errorTitle": "No se pudieron mostrar las entradas",
+      "errorText": "No se ha perdido nada: el registro está guardado con seguridad. Inténtalo de nuevo en un momento.",
+      "retry": "Intentar de nuevo",
+      "emptyTitle": "Aún no hay entradas",
+      "emptyText": "Las entradas aparecen aquí a medida que se mueve el dinero: una aportación, una factura aprobada, una compra. Nada se cambia ni se borra, y una corrección es una entrada nueva.",
+      "noMatches": "Ninguna entrada coincide con tu búsqueda. Bórrala, o elige Restablecer vista, para verlas todas."
+    },
+    "toolbar": {
+      "search": "Buscar entradas",
+      "searchPlaceholder": "Un nombre, un monto, una fecha, un identificador",
+      "group": "Agrupar por",
+      "groups": {
+        "none": "Sin agrupar",
+        "person": "Persona o beneficiario",
+        "category": "Categoría",
+        "month": "Mes"
+      },
+      "columns": "Columnas",
+      "columnsLabel": "Mostrar estas columnas",
+      "export": "Descargar esta vista (CSV)",
+      "reset": "Restablecer vista",
+      "shown": "Se muestran {shown} de {total} entradas.",
+      "selected": "Seleccionadas: {count}. Neto para el fondo: {amount}."
+    },
+    "columns": {
+      "kind": "Tipo",
+      "person": "Persona o beneficiario",
+      "category": "Categoría",
+      "reference": "Referencia del origen",
+      "entryId": "Identificador de la entrada",
+      "reverses": "Anula",
+      "debit": "Débitos",
+      "credit": "Créditos",
+      "effect": "Efecto en el fondo"
+    },
+    "live": {
+      "shown": "Se muestran {shown} de {total} entradas.",
+      "sorted": "Ordenado por {column}, {direction}.",
+      "ascending": "ascendente",
+      "descending": "descendente",
+      "unsorted": "Orden quitado.",
+      "grouped": "Agrupado por {group}.",
+      "ungrouped": "Agrupación quitada.",
+      "exported": "La descarga ha empezado.",
+      "reset": "Vista restablecida."
+    },
+    "totals": {
+      "total": "Total de lo que se muestra",
+      "entries": "Entradas: {count}",
+      "in": "Dinero que entra",
+      "out": "Dinero que sale",
+      "net": "Neto para el fondo",
+      "debits": "Débitos",
+      "credits": "Créditos",
+      "balanced": "iguales, así que las entradas cuadran",
+      "noCategory": "Sin categoría"
+    },
+    "detail": {
+      "source": "Origen",
+      "reference": "Referencia del origen",
+      "id": "Identificador de la entrada",
+      "reverses": "Anula la entrada",
+      "copyId": "Copiar el identificador",
+      "copied": "Identificador copiado.",
+      "copyFailed": "No se pudo copiar. Selecciona el identificador y cópialo."
+    },
+    "csv": {
+      "title": "Registro de Kin: {circle}",
+      "generated": "Generado el {date}",
+      "rowsShown": "Entradas en este archivo: {shown} de {total}",
+      "total": "Total"
+    },
+    "audit": {
+      "title": "Pista de auditoría",
+      "lede": "Cada entrada con su identificador y la prueba que la respalda: qué la causó, y la referencia propia de esa causa. Ordénala, fíltrala y búscala, y descarga justo lo que ves.",
+      "link": "Pista de auditoría"
+    },
+    "statement": {
+      "yearGridLabel": "Mes a mes en {year}",
+      "entriesTitle": "Las entradas de {month}",
+      "entriesText": "El registro del que se lee este extracto, entrada por entrada, con la prueba de cada una.",
+      "entriesEmpty": "No hay entradas este mes."
+    }
+  },
+  "invoicing": {
+    "title": "Solicitudes por factura de PayPal",
+    "lede": "Un organizador pide dinero a un miembro con una factura que PayPal envía por correo desde el fondo familiar. Kin registra el pago solo cuando PayPal lo confirma.",
+    "request": "Solicitar por factura de PayPal",
+    "requesting": "Enviando por PayPal…",
+    "check": "Consultar con PayPal",
+    "checking": "Consultando a PayPal…",
+    "checked": "Kin consultó a PayPal. El registro cambia en cuanto PayPal confirma un pago.",
+    "cancel": "Retirar",
+    "cancelling": "Retirando…",
+    "open": "Abrir en PayPal",
+    "number": "Factura {number}",
+    "paypalId": "ID de PayPal {id}",
+    "sentTo": "Enviada por PayPal a {email}",
+    "simulated": "Simulado",
+    "simulatedNote": "Simulado: esta demostración no tiene una cuenta sandbox de PayPal que represente a la familia, así que no se envió ninguna factura ni se movió dinero.",
+    "sandboxNote": "Una factura sandbox real de PayPal, enviada a la cuenta de prueba de Kin en lugar de {name}.",
+    "notRequested": "Aún no solicitado",
+    "states": {
+      "requested": "Solicitada",
+      "sent": "Enviada por PayPal",
+      "paid": "Pagada",
+      "cancelled": "Retirada",
+      "failed": "PayPal la rechazó"
+    },
+    "purposes": {
+      "settlement": "Liquidación, {month}",
+      "topUp": "Aportación"
+    },
+    "empty": "Todavía no se ha pedido dinero por factura a ningún miembro.",
+    "topUp": {
+      "title": "Pedir una aportación a un miembro",
+      "text": "PayPal envía al miembro una factura del fondo. Al pagarla, el importe se suma a lo que ha aportado.",
+      "member": "Miembro",
+      "amount": "Importe",
+      "hint": "Entre {min} y {max}",
+      "submit": "Enviar la factura",
+      "submitting": "Enviando…",
+      "sent": "Factura solicitada. Su estado aparece abajo."
+    },
+    "item": {
+      "settlement": "{circle}: tu parte de {month}",
+      "topUp": "{circle}: una aportación al fondo común de cuidados"
+    },
+    "note": "Solicitado a través de Kin. Al pagar, el importe se suma al fondo común de la familia, y Kin lo registra en cuanto PayPal confirma el pago.",
+    "cancelNote": "Esta solicitud se retiró a través de Kin. No se debe nada.",
+    "errors": {
+      "invalid": "No se pudo leer la solicitud. Inténtalo de nuevo.",
+      "refused": "Solo un organizador puede pedir dinero por factura.",
+      "unavailable": "Las solicitudes por factura de PayPal no están disponibles ahora mismo.",
+      "paypal": "PayPal no envió la factura. No se pidió nada a nadie; inténtalo de nuevo.",
+      "paid": "Esta factura ya está pagada, así que no se puede retirar.",
+      "open": "Este miembro ya tiene una solicitud pendiente.",
+      "no_email": "Kin no tiene un correo de este miembro al que enviar una factura. Puede añadir su correo de PayPal en la página de Equidad.",
+      "move": "Esta solicitud ya terminó.",
+      "not_owed": "La liquidación no le cobra nada a este miembro.",
+      "currency": "Por ahora las facturas son solo en dólares estadounidenses.",
+      "too_small": "El importe es demasiado bajo.",
+      "too_large": "El importe es demasiado alto."
     }
   },
   "dashboard": {
@@ -1165,6 +1479,7 @@
         "second_approval": "Un segundo sí por encima de {amount}",
         "saidYes": "{name} dijo que sí {method}, {time}",
         "saidNo": "{name} dijo que no {method}, {time}",
+        "byMandate": "Aprobado con el permiso permanente de {name}, {time}",
         "methods": {
           "voice": "por teléfono",
           "app": "en la app",
@@ -1183,6 +1498,12 @@
       "answered": {
         "title": "Decidido",
         "text": "Las propuestas que el círculo ha decidido. Cada respuesta queda guardada con quién la dio, cómo y cuándo.",
+        "simulatedStates": {
+          "approved": "Aprobada · Kin la paga en la demostración, con dinero simulado",
+          "executing": "Aprobada · pagándose en la demostración, con dinero simulado",
+          "settled": "Aprobada · pagada en la demostración, con dinero simulado",
+          "failed": "Aprobada · el pago simulado falló y se avisa a la organizadora"
+        },
         "states": {
           "approved": "Aprobada · Kin la paga con PayPal",
           "rejected": "Rechazado · no se paga nada",
@@ -1278,7 +1599,7 @@
         "collection": "De {name}",
         "fee": "{fee} reservados para la comisión de PayPal",
         "now": "Se puede pagar ya",
-        "invoice": "Se pide con una factura de PayPal",
+        "invoice": "Se cobra con una factura de PayPal que envía un organizador",
         "status": "Esperando aprobación",
         "link": "Ver lo que hay por aprobar",
         "core": "Lo calcula el núcleo de dinero de Kin, no la IA. El mismo registro siempre da el mismo resultado."
@@ -2009,7 +2330,7 @@
         "over_period": "superaría lo permitido para el mes",
         "already_used_this_period": "se permitía uno al mes y el de este mes ya está comprado"
       },
-      "aboveUsual": "Por encima del límite habitual, permitido por adelantado"
+      "aboveUsual": "Más de lo que se aprueba normalmente sin preguntar. El permiso permanente lo cubre."
     },
     "letters": {
       "title": "Cartas y llamadas",
@@ -2369,5 +2690,86 @@
         "simulated_and_real": "El registro mezcla asientos simulados con transacciones reales del entorno de pruebas."
       }
     }
+  },
+  "aiProvenance": {
+    "badge": {
+      "claudeRead": "Leído por Claude",
+      "claudeWorded": "Redactado por Claude",
+      "rules": "Leído con reglas fijas (no se usó el modelo)",
+      "template": "Redacción fija"
+    },
+    "model": "Modelo: {model}",
+    "reasons": {
+      "not_configured": "Aquí no hay ningún modelo activado.",
+      "not_requested": "No se consultó al modelo.",
+      "limit_reached": "Se alcanzó por ahora el límite de uso del modelo.",
+      "model_busy": "El modelo estaba ocupado.",
+      "model_unavailable": "No se pudo contactar con el modelo.",
+      "model_refused": "El modelo se negó a responder.",
+      "unreadable": "No se pudo usar la respuesta del modelo.",
+      "wording_rejected": "La redacción del modelo no coincidía con las cifras del registro."
+    },
+    "unavailable": "No se usó Claude. {reason}",
+    "evidence": {
+      "title": "Dónde lo encontró Kin",
+      "fields": {
+        "sender": "Remitente",
+        "amount": "Importe",
+        "dueOn": "Vencimiento"
+      },
+      "found": "Escrito en la carta como «{quote}»",
+      "notFound": "No se encontró escrito en las palabras. Compruébelo con la carta.",
+      "textTitle": "Las palabras, con las pruebas marcadas",
+      "markedNote": "Las palabras marcadas son la prueba, subrayadas y sombreadas.",
+      "claudeChecked": "Claude citó «{quote}», y Kin encontró esas palabras en el texto.",
+      "claudeUnchecked": "Claude dice que leyó «{quote}» en la foto. Kin no puede comprobarlo con palabras escritas. Compruébelo con la carta.",
+      "rules": "Unas reglas fijas encontraron estas palabras. Claude no citó nada."
+    },
+    "visits": {
+      "readFrom": "Leído de «{quote}»",
+      "duration": "{hours} h {minutes} min",
+      "hours": "{hours} h",
+      "none": "Kin no encontró ningún día en esas palabras."
+    },
+    "sample": {
+      "title": "¿No tiene una carta a mano?",
+      "text": "Pruebe una factura de agua inventada. Claude lee esta imagen igual que cualquier foto que usted haga.",
+      "button": "Probar una foto de carta de ejemplo",
+      "imageAlt": "Una carta de ejemplo de Lakeside Water. Importe a pagar: $73.15. Vence el 27 de noviembre de 2026.",
+      "failed": "No se pudo cargar la carta de ejemplo. Inténtelo de nuevo."
+    },
+    "preview": {
+      "tag": "Vista previa",
+      "title": "Pruébalo: cómo factura un cuidador por voz o con palabras",
+      "text": "Un cuidador describe sus visitas con sus palabras, o las dice en voz alta, y Kin las convierte en días. Pruébalo aquí: es solo una vista previa, no se crea ninguna factura ni se guarda nada.",
+      "label": "Lo que dice el cuidador",
+      "sentence": "El lunes y el martes de esta semana, 4 horas cada día, y el jueves de 9 a 11:30 de la mañana.",
+      "submit": "Ver lo que lee Kin",
+      "reading": "Kin está leyendo…",
+      "resultTitle": "Lo que leyó Kin",
+      "nothingSaved": "Solo una vista previa. No se creó ninguna factura ni se guardó nada."
+    }
+  },
+  "sandboxPayout": {
+    "tag": "Sandbox de PayPal",
+    "testMoney": "Sandbox de PayPal, dinero de prueba: lo recibió la cuenta de prueba sandbox de Kin y no se movió dinero real.",
+    "title": "El registro de PayPal de este pago",
+    "batch": "ID del lote de pago",
+    "item": "ID del elemento de pago",
+    "status": "Estado consultado a PayPal",
+    "states": {
+      "created": "Aún no enviado a PayPal",
+      "submitted": "Enviado a PayPal",
+      "pending_at_paypal": "En espera en PayPal",
+      "unknown": "Comprobando con PayPal",
+      "confirmed": "SUCCESS: PayPal dice que se pagó",
+      "failed": "PayPal no lo pagó"
+    },
+    "copyBatch": "Copiar ID del lote",
+    "copyItem": "Copiar ID del elemento",
+    "copied": "Copiado",
+    "copyFailed": "No se pudo copiar. Seleccione el ID para copiarlo.",
+    "receiverSandbox": "En esta demo, Kin paga a {name} a través de la sandbox de PayPal en la propia cuenta de prueba sandbox de Kin, nunca a una dirección escrita aquí. Es dinero de prueba.",
+    "receiverSimulated": "En esta demo, el pago a {name} es simulado: no hace falta una dirección de PayPal y no se mueve dinero."
   }
 }

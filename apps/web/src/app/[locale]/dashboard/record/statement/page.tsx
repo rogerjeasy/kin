@@ -2,9 +2,11 @@ import { monthlyStatement, yearInReview } from "@kin/domain";
 import { DownloadIcon, HandHeartIcon, ReceiptIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import type { Metadata } from "next";
 
+import { RecordList } from "@/components/dashboard/record/record-list";
 import { AmountList } from "@/components/dashboard/statement/amount-list";
 import { MonthLinks } from "@/components/dashboard/statement/month-links";
 import { PrintButton } from "@/components/dashboard/statement/print-button";
+import { YearGrid } from "@/components/dashboard/statement/year-grid";
 import { DataTable } from "@/components/dashboard/ui/data-table";
 import { EmptyState } from "@/components/dashboard/ui/empty-state";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
@@ -12,6 +14,7 @@ import { Panel } from "@/components/dashboard/ui/panel";
 import { StatTile } from "@/components/dashboard/ui/stat-tile";
 import { Button } from "@/components/ui/button";
 import { circleFormatters } from "@/content/circle/format";
+import { ledgerRows } from "@/content/circle/ledger-rows";
 import { circleNames } from "@/content/circle/names";
 import { periodSettlement } from "@/content/circle/fairness";
 import { expectedAfter, requestedPeriod, statementPeriods } from "@/content/circle/statement";
@@ -19,6 +22,8 @@ import { dashboardRoutes } from "@/content/dashboard-routes";
 import { pageContext } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
+import { circleToday } from "@/content/circle/today";
+import { directionOf } from "@/i18n/locales";
 import { dashboardContext } from "@/server/dashboard-context";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/dashboard/record/statement">): Promise<Metadata> {
@@ -43,6 +48,9 @@ export default async function StatementPage({ params, searchParams }: PageProps<
   const recordBase = localizedPath(locale, dashboardRoutes.record);
   const settled = statement.settlementCollectedCents > 0 || statement.settlementPaidCents > 0;
   const activeMonths = review.months.filter((each) => each.entryCount > 0);
+  const grid = dictionary.dataGrid;
+  const generatedOn = circleToday(circle);
+  const periodEntries = ledgerRows(circle, dictionary, names, format).filter((row) => row.period === period);
 
   return (
     <>
@@ -137,35 +145,72 @@ export default async function StatementPage({ params, searchParams }: PageProps<
             <EmptyState text={copy.year.empty} />
           </div>
         ) : (
-          <DataTable
-            caption={fill(copy.year.title, { year })}
-            primary="month"
-            columns={[
-              { key: "month", header: copy.year.month },
-              { key: "paidIn", header: copy.year.paidIn, align: "end" },
-              { key: "spent", header: copy.year.spent, align: "end" },
-              { key: "caregiver", header: copy.year.caregiver, align: "end" },
-            ]}
-            rows={[
-              ...activeMonths.map((each) => ({
-                id: each.period,
-                cells: {
-                  month: format.month(each.period),
-                  paidIn: format.money(each.contributedCents),
-                  spent: format.money(each.spentCents),
-                  caregiver: format.money(each.caregiverPayCents),
-                },
-              })),
-              {
-                id: "total",
-                cells: {
-                  month: <strong>{year}</strong>,
-                  paidIn: <strong>{format.money(review.contributedCents)}</strong>,
-                  spent: <strong>{format.money(review.spentCents)}</strong>,
-                  caregiver: <strong>{format.money(review.caregiverPayCents)}</strong>,
-                },
-              },
-            ]}
+          <>
+            <div className="hidden px-5 pb-5 md:block sm:px-6">
+              <YearGrid
+                label={fill(grid.statement.yearGridLabel, { year })}
+                copy={grid}
+                rtl={directionOf(locale) === "rtl"}
+                locale={locale}
+                currency={circle.circle.currency}
+                headers={{ month: copy.year.month, paidIn: copy.year.paidIn, spent: copy.year.spent, caregiver: copy.year.caregiver }}
+                rows={activeMonths.map((each) => ({ id: each.period, month: format.month(each.period), paidInCents: each.contributedCents, spentCents: each.spentCents, caregiverCents: each.caregiverPayCents }))}
+                total={{ id: year, month: year, paidInCents: review.contributedCents, spentCents: review.spentCents, caregiverCents: review.caregiverPayCents }}
+              />
+            </div>
+            <div className="md:hidden">
+              <DataTable
+                caption={fill(copy.year.title, { year })}
+                primary="month"
+                columns={[
+                  { key: "month", header: copy.year.month },
+                  { key: "paidIn", header: copy.year.paidIn, align: "end" },
+                  { key: "spent", header: copy.year.spent, align: "end" },
+                  { key: "caregiver", header: copy.year.caregiver, align: "end" },
+                ]}
+                rows={[
+                  ...activeMonths.map((each) => ({
+                    id: each.period,
+                    cells: {
+                      month: format.month(each.period),
+                      paidIn: format.money(each.contributedCents),
+                      spent: format.money(each.spentCents),
+                      caregiver: format.money(each.caregiverPayCents),
+                    },
+                  })),
+                  {
+                    id: "total",
+                    cells: {
+                      month: <strong>{year}</strong>,
+                      paidIn: <strong>{format.money(review.contributedCents)}</strong>,
+                      spent: <strong>{format.money(review.spentCents)}</strong>,
+                      caregiver: <strong>{format.money(review.caregiverPayCents)}</strong>,
+                    },
+                  },
+                ]}
+              />
+            </div>
+          </>
+        )}
+      </Panel>
+      <Panel title={fill(grid.statement.entriesTitle, { month: format.month(period) })} description={grid.statement.entriesText} flush>
+        {periodEntries.length === 0 ? (
+          <div className="px-5 pb-5 sm:px-6">
+            <EmptyState text={grid.statement.entriesEmpty} />
+          </div>
+        ) : (
+          <RecordList
+            variant="audit"
+            copy={dictionary.dashboard.record}
+            grid={grid}
+            items={periodEntries}
+            rtl={directionOf(locale) === "rtl"}
+            locale={locale}
+            currency={circle.circle.currency}
+            circleName={circle.circle.name}
+            generatedOn={generatedOn}
+            storageKey={`kin.grid.statement.v1:${circle.circle.id}:${circle.viewer.memberId}`}
+            fileName={`kin-statement-${period}.csv`}
           />
         )}
       </Panel>

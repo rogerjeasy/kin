@@ -19,6 +19,9 @@ export const mandatesRoute = "/dashboard/circle/mandates";
 /** What Kin says aloud about confirmed money: a screen of the overview, not a section of its own. */
 export const listenRoute = "/dashboard/listen";
 
+/** Ask Kin, the agent that reads the record with tools: a screen of the overview, not a section of its own. */
+export const askRoute = "/dashboard/ask";
+
 /** The family office line, where a demanding caller is handed to Kin: a screen of the bills, not a section of its own. */
 export const officeLineRoute = "/dashboard/office-line";
 /** Where the circle's record is checked again; its `/export` is the file anyone can check offline with `kin-verify`. */

@@ -1,4 +1,5 @@
 import { CheckIcon, XIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { Panel } from "@/components/dashboard/ui/panel";
 
@@ -12,6 +13,8 @@ export type AnsweredItem = {
   approved: boolean;
   /** Who answered, and how: "Rose said yes by phone · Marcus said yes". */
   answers: string;
+  /** PayPal's record of the payment, when PayPal's sandbox made it. */
+  proof?: ReactNode;
 };
 
 type AnsweredListProps = { title: string; description: string; items: readonly AnsweredItem[] };
@@ -35,6 +38,7 @@ export function AnsweredList({ title, description, items }: AnsweredListProps) {
                 {item.kind} · {item.status}
               </p>
               {item.answers ? <p className="mt-1 text-sm text-pretty text-muted-foreground">{item.answers}</p> : null}
+              {item.proof}
             </div>
             <span className="font-semibold whitespace-nowrap tabular-nums">{item.amount}</span>
           </li>

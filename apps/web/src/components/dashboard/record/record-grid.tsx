@@ -1,95 +1,59 @@
 "use client";
 
-import { CellStyleModule, ClientSideRowModelModule, RowApiModule, RowSelectionModule, ValidationModule, type ColDef, type GridApi } from "ag-grid-community";
-import { AgGridProvider, AgGridReact } from "ag-grid-react";
-import { useMemo, useRef, useState } from "react";
+import type { CellFocusedEvent, RowClickedEvent } from "ag-grid-community";
+import { useState } from "react";
 
+import { DataGrid, type GridCopy } from "@/components/data-grid/data-grid";
 import type { Dictionary } from "@/i18n/dictionary";
+import { cn } from "@/lib/utils";
 
-import { AmountCell, DayCell, EntryCell } from "./entry-cells";
 import { EntryDetail } from "./entry-detail";
-import { ledgerGridTheme } from "./grid-theme";
-import type { RecordEntryItem } from "./record-entry";
-
-/**
- * Only what the ledger uses, to keep the page light. In development the
- * validation module explains, in words, any feature used without its module.
- */
-const modules = [
-  ClientSideRowModelModule,
-  RowSelectionModule,
-  RowApiModule,
-  CellStyleModule,
-  ...(process.env.NODE_ENV === "production" ? [] : [ValidationModule]),
-];
-
-export type LedgerRow = RecordEntryItem & { readonly isoDay: string; readonly cents: number };
+import { isEntry, type LedgerGridRow, type LedgerRow, type LedgerVariant } from "./ledger-row.ts";
+import type { LedgerView } from "./use-ledger-view";
 
 type RecordGridProps = {
-  copy: Dictionary["dashboard"]["record"];
-  rows: readonly LedgerRow[];
+  variant: LedgerVariant;
+  view: LedgerView;
+  record: Dictionary["dashboard"]["record"];
+  grid: GridCopy;
   rtl: boolean;
+  rows: readonly LedgerRow[];
 };
 
 /**
- * The ledger as a grid (AGENTS.md section 8): sortable by date and amount,
- * fully usable by keyboard. Selecting a row, by click or by moving to it with
- * the arrow keys, shows that entry's ledger lines beside the grid.
+ * The ledger as a grid (AGENTS.md section 8): sortable, filterable, groupable
+ * and fully usable by keyboard. Moving to a row, by click or by the arrow
+ * keys, shows that entry's proof and its balanced lines beside the grid.
+ * Ticking rows totals them in the toolbar instead.
  */
-export function RecordGrid({ copy, rows, rtl }: RecordGridProps) {
-  const api = useRef<GridApi<LedgerRow> | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(rows[0]?.id ?? null);
-  const selected = rows.find((row) => row.id === selectedId) ?? null;
+export function RecordGrid({ variant, view, record, grid, rtl, rows }: RecordGridProps) {
+  const [detailId, setDetailId] = useState<string | null>(rows[0]?.id ?? null);
+  const detail = rows.find((row) => row.id === detailId) ?? null;
 
-  const columns = useMemo<ColDef<LedgerRow>[]>(
-    () => [
-      { field: "isoDay", headerName: copy.columns.date, cellRenderer: DayCell, sort: "desc", width: 104, suppressMovable: true },
-      { field: "text", headerName: copy.columns.entry, cellRenderer: EntryCell, flex: 1, minWidth: 220, sortable: false, suppressMovable: true },
-      { field: "source", headerName: copy.columns.source, width: 150, suppressMovable: true },
-      { field: "cents", headerName: copy.columns.amount, cellRenderer: AmountCell, type: "rightAligned", width: 170, suppressMovable: true },
-    ],
-    [copy],
-  );
-
-  function select(id: string | undefined) {
-    if (!id) return;
-    setSelectedId(id);
-    api.current?.getRowNode(id)?.setSelected(true, true);
+  function show(data: LedgerGridRow | undefined) {
+    if (isEntry(data)) setDetailId(data.id);
   }
 
   return (
-    <div className="grid gap-5 px-5 pb-5 sm:px-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-      <div role="region" aria-label={copy.grid.label} className="min-w-0 overflow-hidden rounded-xl border">
-        <AgGridProvider modules={modules}>
-          <AgGridReact<LedgerRow>
-            theme={ledgerGridTheme}
-            rowData={rows as LedgerRow[]}
-            columnDefs={columns}
-            getRowId={({ data }) => data.id}
-            domLayout="autoHeight"
-            enableRtl={rtl}
-            rowSelection={{ mode: "singleRow", checkboxes: false, enableClickSelection: true }}
-            suppressCellFocus={false}
-            overlayNoRowsTemplate={`<span>${escapeHtml(copy.empty)}</span>`}
-            onGridReady={(event) => {
-              api.current = event.api;
-            }}
-            onFirstDataRendered={() => select(selectedId ?? undefined)}
-            onRowClicked={(event) => select(event.data?.id)}
-            onCellFocused={(event) => {
-              if (typeof event.rowIndex !== "number" || event.rowPinned) return;
-              select(api.current?.getDisplayedRowAtIndex(event.rowIndex)?.data?.id);
-            }}
-          />
-        </AgGridProvider>
-      </div>
-      <div className="min-w-0 xl:sticky xl:top-20 xl:self-start">
-        <EntryDetail item={selected} copy={copy} />
-      </div>
+    <div className={cn("grid gap-5 px-5 pb-5 sm:px-6", variant === "record" && "xl:grid-cols-[minmax(0,1fr)_20rem]")}>
+      <DataGrid<LedgerGridRow>
+        {...view.gridProps}
+        label={record.grid.label}
+        copy={grid}
+        rtl={rtl}
+        ready={view.ready}
+        empty={{ title: record.empty }}
+        onRowClicked={(event: RowClickedEvent<LedgerGridRow>) => show(event.data)}
+        onCellFocused={(event: CellFocusedEvent<LedgerGridRow>) => {
+          if (typeof event.rowIndex !== "number" || event.rowPinned) return;
+          show(event.api.getDisplayedRowAtIndex(event.rowIndex)?.data);
+        }}
+      />
+      {variant === "record" ? (
+        <div className="min-w-0 xl:sticky xl:top-20 xl:self-start print:hidden">
+          <EntryDetail item={detail} copy={record} grid={grid} />
+        </div>
+      ) : null}
     </div>
   );
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
 }

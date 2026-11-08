@@ -3,6 +3,9 @@ import Link from "next/link";
 
 import { MemberCard } from "@/components/dashboard/fairness/member-card";
 import { SettlementPanel } from "@/components/dashboard/fairness/settlement-panel";
+import { CollectionInvoice } from "@/components/dashboard/invoicing/collection-invoice";
+import { InvoiceRequestsPanel } from "@/components/dashboard/invoicing/invoice-requests-panel";
+import { invoiceViewer } from "@/components/dashboard/invoicing/invoice-viewer";
 import { SettlementSections } from "@/components/dashboard/settlement/settlement-sections";
 import { Button } from "@/components/ui/button";
 import { GivenBars } from "@/components/dashboard/ui/given-bars";
@@ -22,7 +25,7 @@ import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
-import { dashboardContext } from "@/server/dashboard-context";
+import { dashboardContext, may } from "@/server/dashboard-context";
 
 export function generateMetadata({ params }: PageProps<"/[locale]/dashboard/fairness">): Promise<Metadata> {
   return dashboardMetadata(params, "fairness");
@@ -138,15 +141,21 @@ export default async function FairnessPage({ params }: PageProps<"/[locale]/dash
           {
             title: settle.collections,
             direction: "in",
-            items: settlement.plan.collections.map((collection) => ({
-              id: collection.memberId,
-              who: fill(settle.collection, { name: names.member(collection.memberId) }),
-              amount: format.money(collection.cents),
-              detail: settle.invoice,
-            })),
+            items: settlement.plan.collections.map((collection) => {
+              const request = circle.invoiceRequests.find((each) => each.memberId === collection.memberId && each.purpose === "settlement" && each.period === period) ?? null;
+              const viewer = request === null ? (may(circle, "invoice.request") ? "organizer" : "family") : invoiceViewer(circle, request);
+              return {
+                id: collection.memberId,
+                who: fill(settle.collection, { name: names.member(collection.memberId) }),
+                amount: format.money(collection.cents),
+                detail: request === null && viewer === "organizer" ? dictionary.invoicing.notRequested : settle.invoice,
+                extra: <CollectionInvoice memberId={collection.memberId} name={names.member(collection.memberId)} request={request} viewer={viewer} copy={dictionary.invoicing} />,
+              };
+            }),
           },
         ]}
       />
+      <InvoiceRequestsPanel locale={locale} dictionary={dictionary} circle={circle} />
       <SettlementSections circle={circle} dictionary={dictionary} names={names} format={format} settlement={settlement} period={period} />
     </>
   );

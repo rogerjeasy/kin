@@ -3,23 +3,10 @@ import type { CircleSnapshot } from "@kin/db";
 
 import { describeAccountCode, describeEntry } from "@/components/dashboard/words/entry-words";
 import type { Dictionary } from "@/i18n/dictionary";
+import { csvRow } from "@/lib/csv-cell";
 
 import type { CircleNames } from "./names";
 import { recordEntries } from "./record";
-
-// A spreadsheet runs a cell that starts with one of these as a formula, so
-// such text is written with a leading apostrophe and read back as text.
-const FORMULA_START = /^[=+\-@\t\r]/;
-
-function cell(value: string): string {
-  const safe = FORMULA_START.test(value) ? `'${value}` : value;
-  return /[",\n\r]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
-}
-
-/** One CSV row, each cell quoted and defused as above. */
-export function csvRow(row: readonly string[]): string {
-  return row.map(cell).join(",");
-}
 
 /**
  * The circle's record as CSV, one row per ledger line, oldest first, in the

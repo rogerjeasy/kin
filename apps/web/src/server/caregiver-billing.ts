@@ -1,4 +1,4 @@
-import { MAX_DESCRIPTION_LENGTH, ModelUnavailableError, readVisits, type StructuredModel } from "@kin/agent";
+import { MAX_DESCRIPTION_LENGTH, ModelUnavailableError, byClaude, readVisits, reasonForFailure, type FallbackReason, type Provenance, type StructuredModel } from "@kin/agent";
 import { caregiverAccess, type BillingAccount, type CaregiverAction } from "@kin/auth";
 import { asPerson, CaregiverBillingError, configureCaregiver, declineCaregiverBill, sendCaregiverBill, setOwnReceiver, submitCaregiverBill, type CircleSnapshot, type Database, type CaregiverBillingReason } from "@kin/db";
 import { calculateCaregiverBill, CaregiverBillError, calendarDay, centsFromDecimal, InvalidDecimalError, type CaregiverBill } from "@kin/domain";
@@ -21,12 +21,18 @@ export type BillingContext = {
   readonly now?: () => number;
 };
 export type BillingFailure = CaregiverBillingReason | CaregiverBillError["reason"] | "unavailable" | "model_unavailable" | "model_refused" | "description" | "busy";
-export type DescribedVisits = { readonly visits: readonly { readonly date: string; readonly minutes: number }[]; readonly unclear: readonly string[]; readonly dropped: number };
+/** Days Claude read from a description, each with the caregiver's own words it was traced to, and who read them. */
+export type DescribedVisits = {
+  readonly visits: readonly { readonly date: string; readonly minutes: number; readonly quotes: readonly string[] }[];
+  readonly unclear: readonly string[];
+  readonly dropped: number;
+  readonly provenance: Provenance;
+};
 export type BillingResult =
   | { readonly ok: true; readonly bill: CaregiverBill; readonly submissionKey: string }
   | ({ readonly ok: true; readonly described: true } & DescribedVisits)
   | { readonly ok: true; readonly id: string }
-  | { readonly ok: false; readonly reason: BillingFailure; readonly billId?: string };
+  | { readonly ok: false; readonly reason: BillingFailure; readonly billId?: string; /** When the model was not used, why, so the screen never leaves it unsaid. */ readonly why?: FallbackReason };
 
 const ACTIONS = {
   configure: "caregiver_rate.manage",
@@ -71,27 +77,31 @@ async function configure(context: BillingContext, row: Record<string, unknown>):
   return { ok: true, id };
 }
 
-/**
- * Claude reads the caregiver's own description into service days and
- * durations, to fill in the form. Nothing is stored and nothing is valued:
- * the caregiver reviews the days like any they typed, and the server values
- * them at review.
- */
 async function describe(context: BillingContext, row: Record<string, unknown>): Promise<BillingResult> {
   if (!keys(row, ["operation", "description"]) || typeof row.description !== "string") return refusal("invalid");
+  return readDescription(context, row.description);
+}
+
+/**
+ * Claude reads a description of visits into service days and durations, to
+ * fill in a form or to show a preview. Nothing is stored and nothing is
+ * valued: the description is the only thing sent, so no rate ever reaches the
+ * model. The caller has already decided that this person may ask.
+ */
+export async function readDescription(context: BillingContext, description: string): Promise<BillingResult> {
   const model = context.model ?? null;
-  if (model === null) return refusal("model_unavailable");
-  if (row.description.trim() === "" || row.description.length > MAX_DESCRIPTION_LENGTH) return refusal("description");
-  if (!spendUse(context, context, (context.now ?? Date.now)())) return refusal("busy");
+  if (model === null) return refusal("model_unavailable", "not_configured");
+  if (description.trim() === "" || description.length > MAX_DESCRIPTION_LENGTH) return refusal("description");
+  if (!spendUse(context, context, (context.now ?? Date.now)())) return refusal("busy", "limit_reached");
   const { now, timezone } = context.circle.circle;
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: timezone }).format(now);
   try {
-    const result = await readVisits(model, { description: row.description, today: calendarDay(now, timezone).occurredOn, weekday, timezone });
-    if (result.kind === "refused") return refusal("model_refused");
-    if (result.kind === "unreadable") return refusal("description");
-    return { ok: true, described: true, visits: result.visits, unclear: result.unclear, dropped: result.dropped };
+    const result = await readVisits(model, { description, today: calendarDay(now, timezone).occurredOn, weekday, timezone });
+    if (result.kind === "refused") return refusal("model_refused", "model_refused");
+    if (result.kind === "unreadable") return refusal("description", "unreadable");
+    return { ok: true, described: true, visits: result.visits, unclear: result.unclear, dropped: result.dropped, provenance: byClaude(model) };
   } catch (error) {
-    if (error instanceof ModelUnavailableError) return refusal("model_unavailable");
+    if (error instanceof ModelUnavailableError) return refusal("model_unavailable", reasonForFailure(error));
     throw error;
   }
 }
@@ -142,6 +152,6 @@ function object(value: unknown): Record<string, unknown> | null {
 function keys(row: Record<string, unknown>, allowed: readonly string[]): boolean {
   return Object.keys(row).every((key) => allowed.includes(key));
 }
-function refusal(reason: BillingFailure): BillingResult {
-  return { ok: false, reason };
+function refusal(reason: BillingFailure, why?: FallbackReason): BillingResult {
+  return { ok: false, reason, ...(why === undefined ? {} : { why }) };
 }

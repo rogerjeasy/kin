@@ -16,7 +16,7 @@ export function BillBreakdown({ bill, locale, copy }: Props) {
       <ul className="divide-y">
         {bill.lines.map((line) => (
           <li key={line.date} className="flex min-w-0 flex-wrap items-center justify-between gap-2 py-3">
-            <div className="min-w-0"><time dateTime={line.date}>{format.longDay(new Date(`${line.date}T00:00:00Z`))}</time><p className="text-sm text-muted-foreground">{fill(copy.duration, { minutes: format.count(line.minutes) })}</p></div>
+            <div className="min-w-0"><time dateTime={line.date}>{format.longCalendarDay(line.date)}</time><p className="text-sm text-muted-foreground">{fill(copy.duration, { minutes: format.count(line.minutes) })}</p></div>
             <span className="font-medium tabular-nums wrap-anywhere">{format.money(line.cents)}</span>
           </li>
         ))}

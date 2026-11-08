@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { calendarDay } from "@kin/domain";
+
 import { formatters } from "./format";
 
 const english = formatters("en", "USD");
@@ -29,6 +31,31 @@ describe("the dashboard's formatters", () => {
     expect(english.day("2026-10-02")).toBe("Oct 2");
     expect(english.day("2026-10-31")).toBe("Oct 31");
     expect(english.month("2026-11")).toBe("November 2026");
+  });
+
+  it("write an instant on the circle's own calendar and clock, not UTC's", () => {
+    // 02:00 UTC on 8 November is 9:00 PM on 7 November in New York, where the family lives.
+    const lateEvening = new Date("2026-11-08T02:00:00Z");
+    const newYork = formatters("en", "USD", "America/New_York");
+
+    expect(newYork.longDay(lateEvening)).toBe("Saturday, November 7, 2026");
+    expect(newYork.dateTime(lateEvening)).toBe("Nov 7, 9:00 PM");
+    expect(english.longDay(lateEvening)).toBe("Sunday, November 8, 2026");
+    expect(formatters("en", "USD", "Pacific/Auckland").dateTime(lateEvening)).toBe("Nov 8, 3:00 PM");
+  });
+
+  it("agrees with the calendar day the database records for the same instant", () => {
+    const lateEvening = new Date("2026-11-08T02:00:00Z");
+    const zone = "America/New_York";
+    const recorded = calendarDay(lateEvening, zone).occurredOn;
+
+    expect(formatters("en", "USD", zone).day(recorded)).toBe("Nov 7");
+    expect(formatters("en", "USD", zone).longDay(lateEvening)).toContain("November 7");
+  });
+
+  it("never shifts a day that is already a date, in any zone", () => {
+    expect(formatters("en", "USD", "America/New_York").longCalendarDay("2026-11-08")).toBe("Sunday, November 8, 2026");
+    expect(formatters("en", "USD", "Pacific/Auckland").day("2026-11-08")).toBe("Nov 8");
   });
 
   it("say how long until a moment, in whole hours", () => {

@@ -21,10 +21,10 @@ export async function auditorReview(
   language: string,
   ask: { readonly asked: boolean; readonly userId: string; readonly accountTypes: BillingAccount },
 ): Promise<AuditorReview> {
-  const fixed = await reviewFindings(null, items, language);
-  if (!ask.asked || items.length === 0) return { items: fixed, status: "not_asked" };
+  // Each item says why it carries the fixed sentence, so the screen never leaves a silent fallback.
+  if (!ask.asked || items.length === 0) return { items: await reviewFindings(null, items, language, "not_requested"), status: "not_asked" };
   const model = structuredModel();
-  if (model === null) return { items: fixed, status: "unavailable" };
-  if (!spendUse({ limiter: auditorLimiter, budget: auditorBudget }, ask, Date.now())) return { items: fixed, status: "busy" };
+  if (model === null) return { items: await reviewFindings(null, items, language, "not_configured"), status: "unavailable" };
+  if (!spendUse({ limiter: auditorLimiter, budget: auditorBudget }, ask, Date.now())) return { items: await reviewFindings(null, items, language, "limit_reached"), status: "busy" };
   return { items: await reviewFindings(model, items, language), status: "worded" };
 }

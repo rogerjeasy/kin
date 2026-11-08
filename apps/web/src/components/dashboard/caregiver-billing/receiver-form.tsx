@@ -11,14 +11,15 @@ import { fill } from "@/i18n/template";
 
 import { useBillingRequest } from "./use-billing-request";
 
-type Props = { receiver: string | null; copy: Dictionary["dashboard"]["caregiverBilling"] };
+/** `demoNote`: in a demo circle, how the caregiver is paid, since a demo payment never waits for an address. */
+type Props = { receiver: string | null; demoNote?: string | null; copy: Dictionary["dashboard"]["caregiverBilling"] };
 
 /**
  * The caregiver says where their own pay goes. Only they can, and the
  * address cannot change while a payment to them is waiting or under way.
  * The recorded address is shown masked; the field starts empty.
  */
-export function ReceiverForm({ receiver, copy }: Props) {
+export function ReceiverForm({ receiver, demoNote = null, copy }: Props) {
   const { send, pending, error } = useBillingRequest(copy.errors);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
@@ -33,7 +34,8 @@ export function ReceiverForm({ receiver, copy }: Props) {
       router.refresh();
     }
   }
-  const hint = receiver === null ? copy.receiverNone : fill(copy.receiverRecorded, { address: receiver });
+  const recorded = receiver === null ? null : fill(copy.receiverRecorded, { address: receiver });
+  const hint = demoNote === null ? (recorded ?? copy.receiverNone) : [demoNote, recorded].filter((line) => line !== null).join(" ");
   return (
     <Panel title={copy.receiverTitle} description={copy.receiverText}>
       <form onSubmit={save} className="grid min-w-0 gap-4 sm:max-w-md" aria-busy={pending}>

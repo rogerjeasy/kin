@@ -1,4 +1,4 @@
-import { rosesMonth, settlePeriod, type Money } from "@kin/domain";
+import { REFILL_PRICE_CENTS, rosesMonth, settlePeriod, type Money } from "@kin/domain";
 
 function usd(cents: number): Money {
   return { cents, currency: "USD" };
@@ -25,7 +25,7 @@ export const exampleFamily = {
   electricityBill: usd(8400),
   gasBill: usd(5700),
   caregiverPay: usd(26400),
-  refill: usd(4200),
+  refill: usd(REFILL_PRICE_CENTS),
   settlement: { elena: payoutTo("elena"), ana: payoutTo("ana") },
   shares: [
     { member: "marcus", percent: 50 },
@@ -35,10 +35,11 @@ export const exampleFamily = {
 } as const;
 
 /**
- * The PayPal webhook that confirms money has left the pool for a payee
- * (docs/architecture.md section 8.2).
+ * What Kin reads back from PayPal before it records a payout as paid: the
+ * payout batch's item, with this status (docs/architecture.md section 8.5).
+ * Kin polls the batch; it does not subscribe to a payout-item webhook.
  */
-export const PAYOUT_EVENT = "PAYMENT.PAYOUTS-ITEM.SUCCEEDED";
+export const PAYOUT_RECORD = "payout item: transaction_status SUCCESS";
 
 export type Sibling = (typeof exampleFamily.shares)[number]["member"];
 

@@ -4,6 +4,7 @@ import { ShieldCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 
+import { ProvenanceBadge } from "@/components/dashboard/ai/provenance-badge";
 import { inputClass } from "@/components/dashboard/create-circle/field";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import { VerdictPill } from "./verdict-pill";
 type Props = {
   locale: Locale;
   copy: Dictionary["dashboard"]["letters"];
+  ai: Dictionary["aiProvenance"];
   speech: Dictionary["dashboard"]["speech"] | null;
 };
 
@@ -27,7 +29,7 @@ type Props = {
  * the server compares it with what was billed and paid; Kin tells the whole
  * circle. What they said is shown back as information, never acted on.
  */
-export function DemandCheck({ locale, copy, speech }: Props) {
+export function DemandCheck({ locale, copy, ai, speech }: Props) {
   const id = useId();
   const router = useRouter();
   const [payee, setPayee] = useState("");
@@ -84,6 +86,7 @@ export function DemandCheck({ locale, copy, speech }: Props) {
           <div role="status" className="min-w-0 space-y-3 rounded-xl border bg-secondary/40 p-4">
             <VerdictPill verdict={result.verdict} payeeId={result.payeeId} labels={words.verdicts} />
             <p className="wrap-anywhere text-sm">{result.words}</p>
+            <ProvenanceBadge provenance={result.provenance} kind="worded" copy={ai} />
             <p className="text-sm text-muted-foreground">{fill(words.told, { count: String(result.told) })}</p>
             {speech ? <HearButton label={words.hear} speaking={copy.read.hearing} request={{ kind: "claim", claimCheckId: result.claimCheckId }} locale={locale} speech={speech} /> : null}
           </div>

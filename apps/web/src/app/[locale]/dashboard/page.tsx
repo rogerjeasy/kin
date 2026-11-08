@@ -3,6 +3,7 @@ import { ShieldCheckIcon } from "lucide-react";
 import Link from "next/link";
 import { sumCents } from "@kin/domain";
 
+import { AskKinCard } from "@/components/dashboard/ask-kin/ask-kin-card";
 import { ActivityPanel } from "@/components/dashboard/overview/activity-panel";
 import { AgreementPrompt } from "@/components/dashboard/overview/agreement-prompt";
 import { AttentionPanel } from "@/components/dashboard/overview/attention-panel";
@@ -21,7 +22,8 @@ import { givenRows } from "@/components/dashboard/words/given-rows";
 import { planLabel } from "@/components/dashboard/words/plan-words";
 import { ButtonLink } from "@/components/shared/button-link";
 import { Button } from "@/components/ui/button";
-import { agreementRoute, dashboardRoutes, listenRoute } from "@/content/dashboard-routes";
+import { agreementRoute, askRoute, dashboardRoutes, listenRoute } from "@/content/dashboard-routes";
+import { askKinSuggestions } from "@/content/circle/ask-kin-suggestions";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
@@ -111,6 +113,7 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
       {awaitsMe ? (
         <AgreementPrompt href={path(agreementRoute)} text={fill(dictionary.dashboard.agreement.attention, { version: format.count(awaitsMe.version) })} label={dictionary.dashboard.agreement.open} />
       ) : null}
+      <AskKinCard copy={dictionary.askKin} suggestions={askKinSuggestions(circle, dictionary.askKin.suggestions, format, names)} href={path(askRoute)} />
       <div className="grid gap-6 lg:grid-cols-3">
         {waiting.length > 0 ? (
           <AttentionPanel

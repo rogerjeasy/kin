@@ -1,4 +1,113 @@
 {
+  "askKin": {
+    "title": "Ask Kin",
+    "lede": "Ask about the circle's money in your own words. Claude reads the record through Kin's tools and answers; Kin checks every figure against the record before you see it.",
+    "card": {
+      "title": "Ask Kin",
+      "text": "Claude looks things up with Kin's tools and answers in plain words. It can propose a refill, but it never approves or pays anything.",
+      "open": "Open Ask Kin"
+    },
+    "suggestions": {
+      "label": "Try asking",
+      "paid": "Has {caregiver} been paid?",
+      "owes": "Who owes whom this month?",
+      "demand": "Is a {amount} demand from Harbor Gas real?",
+      "refill": "Reorder {parent}'s refill"
+    },
+    "form": {
+      "label": "Your question",
+      "placeholder": "For example: how much is in the pool?",
+      "hint": "Up to 500 characters. Kin reads only this circle's record.",
+      "ask": "Ask Kin",
+      "asking": "Kin is reading the record…"
+    },
+    "answer": {
+      "heading": "Kin's answer",
+      "empty": "Ask a question, or pick one of the suggestions.",
+      "claude": "Written by Claude ({model}), every figure checked against the record",
+      "template": "Kin's fixed wording, filled from the record",
+      "trace": "How Kin found this",
+      "traceEmpty": "Kin answered without reading the record."
+    },
+    "proposal": {
+      "title": "A refill was proposed",
+      "text": "Waiting for a yes — Kin cannot approve or pay anything.",
+      "link": "Open approvals"
+    },
+    "errors": {
+      "invalid": "Write a question of up to 500 characters.",
+      "busy": "You have asked Kin many questions this hour. Try again later.",
+      "unavailable": "Kin cannot reach Claude just now. Try again in a moment.",
+      "refused": "Ask Kin is not available from your seat in this circle."
+    },
+    "tools": {
+      "get_pool": "Looked up the pool balance",
+      "list_bills": "Read the bills",
+      "get_fairness": "Had the money core work out this month's fairness",
+      "check_claim": "Checked the demand against the record",
+      "list_proposals": "Read what waits for a yes",
+      "get_record": "Read the latest entries in the record",
+      "get_paypal_payout_status": "Checked the payouts with PayPal",
+      "get_paypal_topup_status": "Checked the top-ups with PayPal",
+      "get_subscription_status": "Checked the monthly shares with PayPal",
+      "propose_refill": "Proposed a refill",
+      "unknown": "Asked for a tool Kin does not have"
+    },
+    "outcomes": {
+      "ok": "done",
+      "unknown_tool": "refused: no such tool",
+      "refused": "refused: not open to your role",
+      "invalid": "refused: the request did not fit",
+      "limit": "skipped: the limit was reached",
+      "failed": "could not be read",
+      "timeout": "no answer in time",
+      "too_large": "too large to use"
+    },
+    "fallback": {
+      "lead": "Here is what the record says: {facts}",
+      "none": "Kin could not answer that from the record. Try one of the suggestions."
+    },
+    "facts": {
+      "simulated": "This circle's money is simulated.",
+      "pool": "The pool holds {pool}. In {month}, {paidIn} came in and {paidOut} went out, with {fees} in PayPal fees.",
+      "bills": "{waiting} bills wait to be paid, {upcoming} are expected and {paid} are paid.",
+      "billWaiting": "{payee} asks for {amount}.",
+      "fairnessNone": "Kin cannot show this month's fairness from your seat.",
+      "fairness": "For {month}, by the agreement's shares:",
+      "owesPool": "{member} owes the pool {amount}.",
+      "poolOwes": "The pool owes {member} {amount}.",
+      "even": "nobody owes anything.",
+      "claimUnreadable": "Kin could not read that amount, so it checked nothing.",
+      "claim": {
+        "open_bill": "{payee} has an open bill of {amount} on record, so the demand matches it.",
+        "already_paid": "{payee} was already paid {paid} on {day}, and the record shows nothing more owed, so this demand does not match.",
+        "unknown_payee": "Nobody the circle pays is called {claimed}. Treat the demand as not real, and do not pay it.",
+        "amount_differs": "{payee} is known, but the record holds no bill or payment of {amount}.",
+        "no_amount": "{payee} is known, but no amount was named to check."
+      },
+      "proposals": "{count} payments wait for a yes.",
+      "proposal": "{to}, {amount}: waiting for {people}.",
+      "nobody": "nobody",
+      "record": "The latest entry, on {day}: {about}, {amount}.",
+      "recordNone": "The record holds no entries yet.",
+      "payout": "{payee} was paid {amount} on {day}, confirmed by PayPal.",
+      "payoutSimulated": "{payee} was paid {amount} on {day}. It was simulated.",
+      "payoutPending": "A payout of {amount} to {payee} is under way at PayPal.",
+      "payoutNoneAny": "The record holds no payouts yet.",
+      "payoutNone": "The record holds no payout to {payee}.",
+      "topUp": "{member} topped up {amount} on {day}.",
+      "topUpSimulated": "{member} topped up {amount} on {day}. It was simulated.",
+      "topUpNone": "The record holds no top-ups.",
+      "share": "{member}'s monthly share is {amount}.",
+      "shareNone": "No monthly shares are set up.",
+      "refillNone": "The family has set up no refills.",
+      "refillChoose": "Which refill? The family allows: {items}.",
+      "refillWaiting": "A refill of {item} already waits, or the circle is paused, so Kin proposed nothing.",
+      "refillRefused": "Kin could not propose {item} at {price}. The family's rules did not allow it.",
+      "refillCovered": "Kin proposed {item} at {price}. The parent's standing permission covers it.",
+      "refillProposed": "Kin proposed {item} at {price}. It waits for a yes."
+    }
+  },
   "meta": {
     "home": {
       "title": "Kin: nothing about Mom’s money without Mom",
@@ -76,7 +185,7 @@
       "product": "Product",
       "people": "People",
       "forFamilies": "For families",
-      "disclaimer": "Kin is not a bank, a law firm or a care provider. It does not hold funds. This version runs in the PayPal sandbox with test money, for the PayPal AI Hackathon 2026.",
+      "disclaimer": "Kin is not a bank, a law firm or a care provider. In this sandbox build, test money lands in Kin’s own PayPal account and a ledger shows which circle it belongs to; a production launch would have PayPal hold each family’s money under its own licences. Made for the PayPal AI Hackathon 2026.",
       "photos": "The photographs show models, not a real family. The amounts are examples."
     },
     "related": {
@@ -158,7 +267,7 @@
       "decide": {
         "label": "Decide",
         "kin": "Your refill is ready to order. It costs {amount}. Shall I go ahead?",
-        "kinAmount": "42 dollars",
+        "kinAmount": "64 dollars",
         "rose": "Yes, go ahead."
       },
       "check": {
@@ -188,7 +297,7 @@
         "refill": {
           "day": "Day 9",
           "title": "Rose approves her refill",
-          "quote": "It costs 42 dollars. Shall I go ahead?",
+          "quote": "It costs 64 dollars. Shall I go ahead?",
           "alt": "A bottle of medication on a wooden table"
         },
         "letter": {
@@ -332,9 +441,9 @@
           "title": "Rose approves her refill",
           "text": "Rose’s blood pressure medication is due. She says yes. Kin places the order and tells her when it will arrive.",
           "speaker": "Kin",
-          "quote": "Your refill is ready to order. It costs 42 dollars. Shall I go ahead?",
+          "quote": "Your refill is ready to order. It costs 64 dollars. Shall I go ahead?",
           "approval": "Rose, by voice",
-          "paypal": "A saved payment method"
+          "paypal": "A saved payment method (stand-in seller)"
         },
         {
           "day": "Day 12",
@@ -352,7 +461,7 @@
           "speaker": "Kin",
           "quote": "I find no gas bill outstanding. Your gas bill of 57 dollars was paid on the 2nd. Please do not pay this caller. I have told Elena and Marcus.",
           "approval": "Nobody. Nothing was paid.",
-          "paypal": "Transaction records"
+          "paypal": "The family’s own record"
         },
         {
           "day": "Day 20",
@@ -379,7 +488,7 @@
     "paypal": {
       "eyebrow": "Built on PayPal",
       "title": "PayPal moves every dollar, and keeps the record Kin trusts.",
-      "lede": "The family needs no new bank account and no new card. Kin never holds the money.",
+      "lede": "The family needs no new bank account and no new card. In this sandbox build every top-up lands in Kin’s PayPal account and a ledger attributes it to the circle; a production launch would use PayPal’s partner platform, so each family’s funds sit under PayPal’s licences, not Kin’s.",
       "needHeader": "What the family needs",
       "capabilityHeader": "PayPal capability",
       "rows": [
@@ -389,7 +498,7 @@
         },
         {
           "need": "A sibling makes a one-off top-up",
-          "capability": "Checkout, with Pay Later for large costs"
+          "capability": "Checkout, with Pay Later for large costs where PayPal offers it"
         },
         {
           "need": "A sibling is asked for a top-up or a settlement",
@@ -405,19 +514,19 @@
         },
         {
           "need": "The agent buys what the parent needs, after a person confirms",
-          "capability": "A saved payment method at a participating merchant"
+          "capability": "A saved payment method at a participating merchant (a stand-in pharmacy in this build)"
         },
         {
           "need": "A delivery is followed to the door",
-          "capability": "Shipment tracking"
+          "capability": "Shipment tracking (planned; this build follows the stand-in seller’s own delivery reports)"
         },
         {
           "need": "A wrong charge is contested",
-          "capability": "Disputes"
+          "capability": "Disputes (planned, not built)"
         },
         {
           "need": "Kin knows what truly happened",
-          "capability": "Payment notifications and transaction records"
+          "capability": "Payment notifications, and payments read back from PayPal"
         }
       ]
     },
@@ -567,7 +676,7 @@
         },
         {
           "title": "Honest about what it is",
-          "text": "Kin is not a bank, a law firm or a care provider. It does not hold funds, and it does not give legal, tax or medical advice."
+          "text": "Kin is not a bank, a law firm or a care provider, and it does not give legal, tax or medical advice. It takes no bank account of its own: in this sandbox build every top-up lands in Kin’s PayPal account and a ledger attributes it to the circle. A production launch would use PayPal’s partner platform, or a licensed partner, so each circle’s funds are held and moved under PayPal’s licences, not Kin’s."
         },
         {
           "title": "An AI that admits doubt",
@@ -752,7 +861,7 @@
         },
         {
           "question": "Does Kin hold our money?",
-          "answer": "No. The family pool is a PayPal account that belongs to the family. Kin connects to it and never holds the money itself."
+          "answer": "Not in a bank account of its own. In this sandbox build every top-up lands in Kin’s PayPal account, and Kin’s ledger attributes each amount to your circle. A production launch would use PayPal’s partner platform (or a licensed partner), so your circle’s funds are held and moved under PayPal’s licences, not Kin’s."
         },
         {
           "question": "Do we need a new bank account or a new card?",
@@ -859,6 +968,211 @@
         "unavailable": "Sign-in cannot be reached right now. Please try again in a moment."
       },
       "noCircle": "No account yet?"
+    }
+  },
+  "dataGrid": {
+    "localeText": {
+      "noRowsToShow": "No entries to show",
+      "noMatchingRows": "No entries match. Clear the search or the filters to see them all.",
+      "loadingOoo": "Loading...",
+      "exportingOoo": "Preparing the download...",
+      "filterOoo": "Filter...",
+      "applyFilter": "Apply",
+      "clearFilter": "Clear",
+      "resetFilter": "Reset",
+      "cancelFilter": "Cancel",
+      "textFilter": "Text filter",
+      "numberFilter": "Amount filter",
+      "dateFilter": "Date filter",
+      "empty": "Choose one",
+      "equals": "Equals",
+      "notEqual": "Does not equal",
+      "lessThan": "Less than",
+      "greaterThan": "Greater than",
+      "lessThanOrEqual": "Less than or equal to",
+      "greaterThanOrEqual": "Greater than or equal to",
+      "inRange": "Between",
+      "inRangeStart": "From",
+      "inRangeEnd": "To",
+      "contains": "Contains",
+      "notContains": "Does not contain",
+      "startsWith": "Begins with",
+      "endsWith": "Ends with",
+      "blank": "Blank",
+      "notBlank": "Not blank",
+      "before": "Before",
+      "after": "After",
+      "andCondition": "AND",
+      "orCondition": "OR",
+      "dateFormatOoo": "yyyy-mm-dd",
+      "invalidDate": "Not a valid date",
+      "invalidNumber": "Not a valid amount",
+      "ariaFilterInput": "Filter input",
+      "ariaFilterValue": "Filter value",
+      "ariaFilterFromValue": "Filter from value",
+      "ariaFilterToValue": "Filter to value",
+      "ariaFilteringOperator": "Filtering operator",
+      "ariaDateFilterInput": "Date filter input",
+      "ariaLabelColumnFilter": "Column filter",
+      "ariaLabelColumnMenu": "Column menu",
+      "ariaLabelInputClear": "Clear",
+      "ariaFilterColumn": "Press Ctrl Enter to open the filter",
+      "ariaMenuColumn": "Press Alt Down to open the column menu",
+      "ariaSortableColumn": "Press Enter to sort",
+      "ariaColumnFiltered": "Column filtered",
+      "ariaRowSelect": "Press Space to select this row",
+      "ariaRowDeselect": "Press Space to deselect this row",
+      "ariaRowToggleSelection": "Press Space to toggle row selection",
+      "ariaRowSelectAll": "Press Space to toggle selection of all rows",
+      "ariaHeaderSelection": "Column with header selection",
+      "ariaRowSelectionDisabled": "Row selection is disabled for this row"
+    },
+    "hint": "Keyboard: Tab enters the grid at its column headings and Tab again leaves it. Arrow keys move between cells. Enter on a heading sorts that column. Ctrl and Enter on a heading opens its filter. Space on a row ticks it. Escape leaves a filter box.",
+    "states": {
+      "loading": "Loading the entries",
+      "errorTitle": "The entries could not be shown",
+      "errorText": "Nothing was lost: the record is kept safely. Try again in a moment.",
+      "retry": "Try again",
+      "emptyTitle": "No entries yet",
+      "emptyText": "Entries appear here as money moves: a contribution, an approved bill, a purchase. Nothing is changed or deleted, and a correction is a new entry.",
+      "noMatches": "No entries match your search. Clear it, or choose Reset view, to see them all."
+    },
+    "toolbar": {
+      "search": "Search entries",
+      "searchPlaceholder": "A name, an amount, a date, an ID",
+      "group": "Group by",
+      "groups": {
+        "none": "No grouping",
+        "person": "Person or payee",
+        "category": "Category",
+        "month": "Month"
+      },
+      "columns": "Columns",
+      "columnsLabel": "Show these columns",
+      "export": "Download this view (CSV)",
+      "reset": "Reset view",
+      "shown": "Showing {shown} of {total} entries.",
+      "selected": "Selected: {count}. Net to the pool: {amount}."
+    },
+    "columns": {
+      "kind": "Kind",
+      "person": "Person or payee",
+      "category": "Category",
+      "reference": "Source reference",
+      "entryId": "Entry ID",
+      "reverses": "Reverses",
+      "debit": "Debits",
+      "credit": "Credits",
+      "effect": "Effect on the pool"
+    },
+    "live": {
+      "shown": "Showing {shown} of {total} entries.",
+      "sorted": "Sorted by {column}, {direction}.",
+      "ascending": "ascending",
+      "descending": "descending",
+      "unsorted": "Sorting removed.",
+      "grouped": "Grouped by {group}.",
+      "ungrouped": "Grouping removed.",
+      "exported": "The download has started.",
+      "reset": "View reset."
+    },
+    "totals": {
+      "total": "Total of what is shown",
+      "entries": "Entries: {count}",
+      "in": "Money in",
+      "out": "Money out",
+      "net": "Net to the pool",
+      "debits": "Debits",
+      "credits": "Credits",
+      "balanced": "equal, so the entries balance",
+      "noCategory": "No category"
+    },
+    "detail": {
+      "source": "Source",
+      "reference": "Source reference",
+      "id": "Entry ID",
+      "reverses": "Reverses entry",
+      "copyId": "Copy entry ID",
+      "copied": "Entry ID copied.",
+      "copyFailed": "Could not copy. Select the ID and copy it."
+    },
+    "csv": {
+      "title": "Kin record: {circle}",
+      "generated": "Generated on {date}",
+      "rowsShown": "Entries in this file: {shown} of {total}",
+      "total": "Total"
+    },
+    "audit": {
+      "title": "Audit trail",
+      "lede": "Every entry with its ID and the evidence behind it: what caused it, and that cause's own reference. Sort, filter and search it, then download exactly what you see.",
+      "link": "Audit trail"
+    },
+    "statement": {
+      "yearGridLabel": "Month by month in {year}",
+      "entriesTitle": "Entries behind {month}",
+      "entriesText": "The record this statement is read from, entry by entry, with the evidence for each.",
+      "entriesEmpty": "No entries this month."
+    }
+  },
+  "invoicing": {
+    "title": "Requests by PayPal invoice",
+    "lede": "An organizer asks a member for money with an invoice PayPal emails from the family's pool. Kin records the payment only once PayPal confirms it.",
+    "request": "Request by PayPal invoice",
+    "requesting": "Sending through PayPal…",
+    "check": "Check with PayPal",
+    "checking": "Asking PayPal…",
+    "checked": "Kin asked PayPal. The record changes once PayPal confirms a payment.",
+    "cancel": "Withdraw",
+    "cancelling": "Withdrawing…",
+    "open": "Open on PayPal",
+    "number": "Invoice {number}",
+    "paypalId": "PayPal ID {id}",
+    "sentTo": "Emailed by PayPal to {email}",
+    "simulated": "Simulated",
+    "simulatedNote": "Simulated: this demo has no PayPal sandbox account to stand in for the family, so no invoice was sent and no money moved.",
+    "sandboxNote": "A real PayPal sandbox invoice, sent to Kin's own test account in place of {name}.",
+    "notRequested": "Not requested yet",
+    "states": {
+      "requested": "Requested",
+      "sent": "Sent by PayPal",
+      "paid": "Paid",
+      "cancelled": "Withdrawn",
+      "failed": "PayPal refused it"
+    },
+    "purposes": {
+      "settlement": "Settlement, {month}",
+      "topUp": "Top-up"
+    },
+    "empty": "No member has been asked for money by invoice yet.",
+    "topUp": {
+      "title": "Ask a member for a top-up",
+      "text": "PayPal emails the member an invoice from the pool. Paying it adds the amount to what they have given.",
+      "member": "Member",
+      "amount": "Amount",
+      "hint": "Between {min} and {max}",
+      "submit": "Send the invoice",
+      "submitting": "Sending…",
+      "sent": "Invoice requested. Its state is below."
+    },
+    "item": {
+      "settlement": "{circle}: your share for {month}",
+      "topUp": "{circle}: a top-up to the shared care fund"
+    },
+    "note": "Requested through Kin. Paying this adds the amount to the family's shared fund, and Kin records it once PayPal confirms the payment.",
+    "cancelNote": "This request was withdrawn through Kin. Nothing is owed on it.",
+    "errors": {
+      "invalid": "That request could not be read. Please try again.",
+      "refused": "Only an organizer can ask for money by invoice.",
+      "unavailable": "Requests by PayPal invoice are not available right now.",
+      "paypal": "PayPal did not send the invoice. Nothing was asked of anyone; please try again.",
+      "paid": "This invoice is already paid, so it cannot be withdrawn.",
+      "open": "This member already has a request waiting.",
+      "no_email": "This member has no email Kin may send an invoice to. They can add their PayPal email on the Fairness page.",
+      "move": "This request has already ended.",
+      "not_owed": "The settlement does not collect anything from this member.",
+      "currency": "Invoices are in US dollars only for now.",
+      "too_small": "The amount is too small.",
+      "too_large": "The amount is too large."
     }
   },
   "dashboard": {
@@ -1165,6 +1479,7 @@
         "second_approval": "A second yes above {amount}",
         "saidYes": "{name} said yes {method}, {time}",
         "saidNo": "{name} said no {method}, {time}",
+        "byMandate": "Approved under {name}’s standing permission, {time}",
         "methods": {
           "voice": "by phone",
           "app": "in the app",
@@ -1183,6 +1498,12 @@
       "answered": {
         "title": "Answered",
         "text": "Proposals the circle has decided. Each answer is kept with who gave it, how and when.",
+        "simulatedStates": {
+          "approved": "Approved · Kin is paying it in the demo, with simulated money",
+          "executing": "Approved · being paid in the demo, with simulated money",
+          "settled": "Approved · paid in the demo, with simulated money",
+          "failed": "Approved · the simulated payment failed, and the organizer is told"
+        },
         "states": {
           "approved": "Approved · Kin is paying it through PayPal",
           "rejected": "Declined · nothing is paid",
@@ -1278,7 +1599,7 @@
         "collection": "From {name}",
         "fee": "{fee} held back for PayPal’s fee",
         "now": "Payable now",
-        "invoice": "Requested by PayPal invoice",
+        "invoice": "Collected by a PayPal invoice an organizer sends",
         "status": "Waiting for approval",
         "link": "Go to approvals",
         "core": "Calculated by Kin’s money core, not by the AI. The same record always gives the same answer."
@@ -1975,7 +2296,7 @@
       },
       "proposalStates": {
         "pending_approval": "Waiting for a yes",
-        "approved": "Said yes, being bought",
+        "approved": "Approved, being bought",
         "executing": "Being bought",
         "failed": "Could not be bought",
         "rejected": "Not approved",
@@ -2009,7 +2330,7 @@
         "over_period": "it would pass what was allowed for the month",
         "already_used_this_period": "one a month was allowed and this month's is bought"
       },
-      "aboveUsual": "Above the usual limit, allowed ahead of time"
+      "aboveUsual": "More than is normally approved without asking. The standing permission covers it."
     },
     "letters": {
       "title": "Letters and calls",
@@ -2369,5 +2690,86 @@
         "simulated_and_real": "The record mixes simulated entries with real sandbox transactions."
       }
     }
+  },
+  "aiProvenance": {
+    "badge": {
+      "claudeRead": "Read by Claude",
+      "claudeWorded": "Worded by Claude",
+      "rules": "Read by fixed rules (the model was not used)",
+      "template": "Fixed wording"
+    },
+    "model": "Model: {model}",
+    "reasons": {
+      "not_configured": "No model is switched on here.",
+      "not_requested": "The model was not asked.",
+      "limit_reached": "The limit on model use was reached for now.",
+      "model_busy": "The model was busy.",
+      "model_unavailable": "The model could not be reached.",
+      "model_refused": "The model declined to answer.",
+      "unreadable": "The model’s answer could not be used.",
+      "wording_rejected": "The model’s wording did not match the record’s figures."
+    },
+    "unavailable": "Claude was not used. {reason}",
+    "evidence": {
+      "title": "Where Kin found it",
+      "fields": {
+        "sender": "Sender",
+        "amount": "Amount",
+        "dueOn": "Due date"
+      },
+      "found": "Written in the letter as “{quote}”",
+      "notFound": "Not found written in the words, so check it against the letter.",
+      "textTitle": "The words, with the evidence marked",
+      "markedNote": "Marked words are the evidence, underlined as well as shaded.",
+      "claudeChecked": "Claude quoted “{quote}”, and Kin found those words in the text.",
+      "claudeUnchecked": "Claude says it read “{quote}” on the photograph. Kin cannot check that against typed words, so check it against the letter.",
+      "rules": "Fixed rules matched these words. Claude quoted nothing."
+    },
+    "visits": {
+      "readFrom": "Read from “{quote}”",
+      "duration": "{hours} h {minutes} min",
+      "hours": "{hours} h",
+      "none": "Kin found no days in those words."
+    },
+    "sample": {
+      "title": "No letter to hand?",
+      "text": "Try a made-up water bill. Claude reads this picture the way it reads any photo you take.",
+      "button": "Try a sample letter photo",
+      "imageAlt": "A sample letter from Lakeside Water. Amount due: $73.15. Due: November 27, 2026.",
+      "failed": "The sample letter could not be loaded. Please try again."
+    },
+    "preview": {
+      "tag": "Preview",
+      "title": "Try it: how a caregiver bills by voice or words",
+      "text": "A caregiver describes their visits in their own words, or speaks them, and Kin reads them into days. Try it here: this is a preview, so no bill is made and nothing is saved.",
+      "label": "What the caregiver says",
+      "sentence": "Monday and Tuesday this week, 4 hours each, and on Thursday from 9 to 11:30 in the morning.",
+      "submit": "Preview what Kin reads",
+      "reading": "Kin is reading…",
+      "resultTitle": "What Kin read",
+      "nothingSaved": "Preview only. No bill was made and nothing was saved."
+    }
+  },
+  "sandboxPayout": {
+    "tag": "PayPal sandbox",
+    "testMoney": "PayPal sandbox, test money: Kin’s own sandbox test account received it, and no real money moved.",
+    "title": "PayPal’s record of this payout",
+    "batch": "Payout batch ID",
+    "item": "Payout item ID",
+    "status": "Status read back from PayPal",
+    "states": {
+      "created": "Not sent to PayPal yet",
+      "submitted": "Sent to PayPal",
+      "pending_at_paypal": "Waiting at PayPal",
+      "unknown": "Checking with PayPal",
+      "confirmed": "SUCCESS: PayPal says it was paid",
+      "failed": "PayPal did not pay it"
+    },
+    "copyBatch": "Copy batch ID",
+    "copyItem": "Copy item ID",
+    "copied": "Copied",
+    "copyFailed": "Could not copy. Select the ID to copy it.",
+    "receiverSandbox": "In this demo, Kin pays {name} through PayPal’s sandbox into Kin’s own sandbox test account, never to an address typed here. It is test money.",
+    "receiverSimulated": "In this demo, the payment to {name} is simulated: no PayPal address is needed and no money moves."
   }
 }
