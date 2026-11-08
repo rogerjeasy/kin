@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./provenance": "./src/provenance.ts",
     "./testing": "./src/testing/index.ts"
   },
   "scripts": {
@@ -12,10 +13,12 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "eval": "node scripts/eval-visits.ts",
-    "eval:documents": "node scripts/eval-documents.ts"
+    "eval:documents": "node scripts/eval-documents.ts",
+    "eval:agent": "node scripts/eval-agent.ts"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "1.1.0",
+    "@kin/auth": "workspace:*",
     "@kin/config": "workspace:*",
     "@kin/domain": "workspace:*"
   }

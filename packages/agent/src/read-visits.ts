@@ -20,8 +20,8 @@ export type ReadVisitsRequest = {
 export type ReadVisitsResult =
   | {
       readonly kind: "visits";
-      /** One per day, oldest first, each traced to the caregiver's own words. */
-      readonly visits: readonly { readonly date: string; readonly minutes: number }[];
+      /** One per day, oldest first, each traced to the caregiver's own words, which `quotes` repeat as the evidence. */
+      readonly visits: readonly { readonly date: string; readonly minutes: number; readonly quotes: readonly string[] }[];
       /** What the model could not place, in the caregiver's words. */
       readonly unclear: readonly string[];
       /** Entries left out because they could not be traced to the description, or were not real visits. */
@@ -57,11 +57,11 @@ function parse(text: string): Answer {
   try {
     value = JSON.parse(text);
   } catch (error) {
-    throw new ModelUnavailableError("The model's answer was not JSON", { cause: error });
+    throw new ModelUnavailableError("The model's answer was not JSON", { cause: error, kind: "unusable" });
   }
   const row = value as Partial<Answer> | null;
   if (row === null || typeof row !== "object" || !Array.isArray(row.visits) || !Array.isArray(row.unclear)) {
-    throw new ModelUnavailableError("The model's answer did not follow the schema");
+    throw new ModelUnavailableError("The model's answer did not follow the schema", { kind: "unusable" });
   }
   return { visits: row.visits, unclear: row.unclear.filter((each): each is string => typeof each === "string") };
 }
@@ -69,7 +69,7 @@ function parse(text: string): Answer {
 function checkAnswer(answer: Answer, description: string, today: string): ReadVisitsResult {
   const words = normalize(description);
   const earliest = new Date(Date.parse(`${today}T00:00:00Z`) - MAX_DAYS_BACK * DAY_MS).toISOString().slice(0, 10);
-  const byDay = new Map<string, number>();
+  const byDay = new Map<string, { minutes: number; quotes: string[] }>();
   let dropped = 0;
   for (const visit of answer.visits) {
     const minutes = isWhole(visit.hours) && isWhole(visit.minutes) && visit.minutes < 60 ? visit.hours * 60 + visit.minutes : 0;
@@ -78,11 +78,13 @@ function checkAnswer(answer: Answer, description: string, today: string): ReadVi
       dropped += 1;
       continue;
     }
-    byDay.set(visit.date, (byDay.get(visit.date) ?? 0) + minutes);
+    const day = byDay.get(visit.date) ?? { minutes: 0, quotes: [] };
+    const quote = visit.quote.trim();
+    byDay.set(visit.date, { minutes: day.minutes + minutes, quotes: day.quotes.includes(quote) ? day.quotes : [...day.quotes, quote] });
   }
   // A day that adds up to more than a day cannot be right: it is left for the caregiver.
   const unclear = [...answer.unclear.map((each) => each.trim()).filter((each) => each !== "").slice(0, 10)];
-  const visits = [...byDay].filter(([, minutes]) => minutes <= MINUTES_IN_A_DAY).map(([date, minutes]) => ({ date, minutes }));
+  const visits = [...byDay].filter(([, day]) => day.minutes <= MINUTES_IN_A_DAY).map(([date, day]) => ({ date, minutes: day.minutes, quotes: day.quotes }));
   dropped += byDay.size - visits.length;
   return { kind: "visits", visits: visits.toSorted((a, b) => a.date.localeCompare(b.date)), unclear, dropped };
 }

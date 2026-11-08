@@ -1,4 +1,5 @@
 import { passesNumberGuard } from "./narrate.ts";
+import { byClaude, reasonForFailure, type FallbackReason, type Provenance } from "./provenance.ts";
 import type { StructuredModel } from "./structured-model.ts";
 
 export const AUDITOR_PROMPT_VERSION = "auditor-2026-11-08";
@@ -19,7 +20,7 @@ export type ReviewItem = {
   readonly template: string;
 };
 
-export type ReviewedItem = ReviewItem & { readonly text: string; readonly source: "model" | "template" };
+export type ReviewedItem = ReviewItem & { readonly text: string; readonly source: "model" | "template"; readonly provenance: Provenance };
 
 const REVIEW_SCHEMA = {
   type: "object",
@@ -46,10 +47,13 @@ const REVIEW_SCHEMA = {
  * sentence whose numbers are not the finding's own, that names an unknown
  * finding, or that is missing, is replaced by the fixed template, so the
  * reviewed list always holds every finding exactly once and in the same order.
+ * Each item says who worded it; `why` is the reason given when no model is
+ * asked at all (none configured, not requested, or its use limit reached).
  */
-export async function reviewFindings(model: StructuredModel | null, items: readonly ReviewItem[], language: string): Promise<ReviewedItem[]> {
-  const fallback = (): ReviewedItem[] => items.map((item) => ({ ...item, text: item.template, source: "template" }));
-  if (model === null || items.length === 0) return fallback();
+export async function reviewFindings(model: StructuredModel | null, items: readonly ReviewItem[], language: string, why: FallbackReason = "not_configured"): Promise<ReviewedItem[]> {
+  const fixed = (item: ReviewItem, reason: FallbackReason): ReviewedItem => ({ ...item, text: item.template, source: "template", provenance: { source: "template", reason } });
+  const fallback = (reason: FallbackReason): ReviewedItem[] => items.map((item) => fixed(item, reason));
+  if (model === null || items.length === 0) return fallback(why);
   try {
     const reply = await model({
       system: [
@@ -60,7 +64,8 @@ export async function reviewFindings(model: StructuredModel | null, items: reado
       user: items.map((item) => `<finding id="${item.id}" severity="${item.severity}">\n${item.template.replaceAll(/<\/?finding[^>]*>/giu, "")}\n</finding>`).join("\n"),
       schema: REVIEW_SCHEMA,
     });
-    if (reply.kind !== "json") return fallback();
+    if (reply.kind === "refused") return fallback("model_refused");
+    if (reply.kind !== "json") return fallback("unreadable");
     const parsed = JSON.parse(reply.text) as { items?: unknown };
     const wording = new Map<string, string>();
     for (const each of Array.isArray(parsed.items) ? parsed.items : []) {
@@ -68,9 +73,10 @@ export async function reviewFindings(model: StructuredModel | null, items: reado
     }
     return items.map((item) => {
       const words = wording.get(item.id);
-      return words !== undefined && passesNumberGuard(words, { ...item, language }) ? { ...item, text: words.trim(), source: "model" } : { ...item, text: item.template, source: "template" };
+      if (words === undefined) return fixed(item, "unreadable");
+      return passesNumberGuard(words, { ...item, language }) ? { ...item, text: words.trim(), source: "model", provenance: byClaude(model) } : fixed(item, "wording_rejected");
     });
-  } catch {
-    return fallback();
+  } catch (error) {
+    return fallback(reasonForFailure(error));
   }
 }

@@ -12,16 +12,24 @@ function plainDecimal(token: string): string | null {
   return whole === "" ? null : `${whole}${decimal === null ? "" : `.${decimal[1]}`}`;
 }
 
-/** Every amount a document's text writes, in minor units, in the order written. */
-export function amountsIn(text: string, currency: string): number[] {
+/** An amount a document's text writes, in minor units, with where in the text it is written. */
+export type AmountSpan = { readonly cents: number; readonly start: number; readonly end: number };
+
+/** Every amount a document's text writes, with its place, in the order written. */
+export function amountSpans(text: string, currency: string): AmountSpan[] {
   return [...text.matchAll(TOKEN)].flatMap((match) => {
     const decimal = plainDecimal(match[0]);
     if (decimal === null) return [];
     try {
       const cents = centsFromDecimal(decimal, currency);
-      return cents > 0 && cents <= MAX_DOCUMENT_CENTS ? [cents] : [];
+      return cents > 0 && cents <= MAX_DOCUMENT_CENTS ? [{ cents, start: match.index, end: match.index + match[0].length }] : [];
     } catch {
       return [];
     }
   });
+}
+
+/** Every amount a document's text writes, in minor units, in the order written. */
+export function amountsIn(text: string, currency: string): number[] {
+  return amountSpans(text, currency).map((span) => span.cents);
 }

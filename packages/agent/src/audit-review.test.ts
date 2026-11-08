@@ -38,4 +38,19 @@ describe("the independent auditor", () => {
     const down = await reviewFindings(fakeModel(new ModelUnavailableError("down")), items, "English");
     expect(down.every((item) => item.source === "template")).toBe(true);
   });
+
+  it("says for each finding who worded it, and why the fixed sentence stands when it is not Claude", async () => {
+    const mixed = await reviewFindings(fakeModel(said({ id: "a", text: "On Oct 14 a payment of $85.00 was larger than usual." }, { id: "b", text: "Mixed in 2 places." })), items, "English");
+    expect(mixed.map((item) => item.provenance)).toEqual([{ source: "claude", model: "fake-model" }, { source: "template", reason: "wording_rejected" }]);
+    const missing = await reviewFindings(fakeModel(said({ id: "a", text: "On Oct 14 a payment of $85.00 was larger than usual." })), items, "English");
+    expect(missing[1]?.provenance).toEqual({ source: "template", reason: "unreadable" });
+    const provenances = async (...args: Parameters<typeof reviewFindings>) => (await reviewFindings(...args)).map((item) => item.provenance);
+    const only = (reason: string) => items.map(() => ({ source: "template", reason }));
+    expect(await provenances(null, items, "English")).toEqual(only("not_configured"));
+    expect(await provenances(null, items, "English", "not_requested")).toEqual(only("not_requested"));
+    expect(await provenances(null, items, "English", "limit_reached")).toEqual(only("limit_reached"));
+    expect(await provenances(fakeModel({ kind: "refused" }), items, "English")).toEqual(only("model_refused"));
+    expect(await provenances(fakeModel(new ModelUnavailableError("throttled", { kind: "busy" })), items, "English")).toEqual(only("model_busy"));
+    expect(await provenances(fakeModel(new ModelUnavailableError("down")), items, "English")).toEqual(only("model_unavailable"));
+  });
 });

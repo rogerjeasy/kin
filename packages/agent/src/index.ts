@@ -1,7 +1,9 @@
 export { bedrockModel } from "./bedrock-model.ts";
 export { DOCUMENT_PROMPT_VERSION } from "./document-prompt.ts";
-export { NARRATION_PROMPT_VERSION, narrate, passesNumberGuard } from "./narrate.ts";
-export type { NarrationFacts } from "./narrate.ts";
+export { NARRATION_PROMPT_VERSION, narrate, narrateWithProvenance, passesNumberGuard } from "./narrate.ts";
+export type { Narration, NarrationFacts } from "./narrate.ts";
+export { FALLBACK_REASONS, byClaude, reasonForFailure } from "./provenance.ts";
+export type { FallbackReason, Provenance } from "./provenance.ts";
 export { MAX_DOCUMENT_TEXT, readDocument } from "./read-document.ts";
 export type { DocumentKind, RawReading, ReadDocumentRequest, ReadDocumentResult } from "./read-document.ts";
 export { MAX_DAYS_BACK, MAX_DESCRIPTION_LENGTH, readVisits } from "./read-visits.ts";
@@ -11,3 +13,12 @@ export type { StructuredImage, StructuredModel, StructuredReply, StructuredReque
 export { VISIT_PROMPT_VERSION } from "./visit-prompt.ts";
 export { AUDITOR_PROMPT_VERSION, SEVERITIES, reviewFindings } from "./audit-review.ts";
 export type { ReviewItem, ReviewedItem, Severity } from "./audit-review.ts";
+export { ANSWER_CHARACTERS, ASK_KIN_PROMPT_VERSION } from "./ask-kin/ask-kin-prompt.ts";
+export { MAX_HISTORY_TURNS, MAX_MODEL_TURNS, MAX_QUESTION_LENGTH, answerPassesGuard, askKin, figuresOf } from "./ask-kin/ask-kin.ts";
+export type { AskKinCall, AskKinRequest, AskKinResult, AskKinTurn, TemplateReason } from "./ask-kin/ask-kin.ts";
+export { ASK_KIN_TOOLS, ASK_KIN_TOOL_NAMES, isAskKinTool } from "./ask-kin/ask-kin-tools.ts";
+export type { AskKinToolName } from "./ask-kin/ask-kin-tools.ts";
+export { bedrockToolModel } from "./ask-kin/bedrock-tool-model.ts";
+export { DEFAULT_LIMITS, maskArgs, mayUseTool, toolGateway, toolsForRole } from "./ask-kin/tool-gateway.ts";
+export type { GatewayLimits, JsonValue, ToolCallRecord, ToolContext, ToolGateway, ToolImplementation, ToolImplementations, ToolOutcome, ToolOutput, ToolRecorder } from "./ask-kin/tool-gateway.ts";
+export type { ToolModel, ToolRequest, ToolSpec, ToolTurn, ToolUse } from "./ask-kin/tool-model.ts";

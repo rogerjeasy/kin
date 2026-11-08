@@ -12,7 +12,7 @@ export function fakeModel(...replies: (StructuredReply | Error)[]): FakeModel {
     if (reply instanceof Error) throw reply;
     return reply;
   };
-  return Object.assign(model, { requests });
+  return Object.assign(model, { requests, modelId: "fake-model" });
 }
 
 /** A JSON reply with these visits. */

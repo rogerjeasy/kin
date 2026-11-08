@@ -26,14 +26,23 @@ export type StructuredReply =
   /** The answer ran out of room before it finished. */
   | { readonly kind: "cut_off" };
 
-export type StructuredModel = (request: StructuredRequest) => Promise<StructuredReply>;
+export type StructuredModel = ((request: StructuredRequest) => Promise<StructuredReply>) & {
+  /** The configured model's own ID, so a result can say which model made it. Absent for a stand-in that has none. */
+  readonly modelId?: string;
+};
 
 /** The model could not be reached, or answered in a way Kin cannot use. A retry may help. */
 export class ModelUnavailableError extends Error {
   readonly retryable = true;
+  /**
+   * `busy`: the service said it was throttled or overloaded, so waiting a little will probably help.
+   * `unusable`: it answered, but not with anything Kin can use. `unreachable`: it could not be reached or failed.
+   */
+  readonly kind: "busy" | "unreachable" | "unusable";
 
-  constructor(message: string, options?: { cause?: unknown }) {
+  constructor(message: string, options?: { cause?: unknown; kind?: "busy" | "unreachable" | "unusable" }) {
     super(message, options);
     this.name = "ModelUnavailableError";
+    this.kind = options?.kind ?? "unreachable";
   }
 }

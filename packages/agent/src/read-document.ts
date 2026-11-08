@@ -57,7 +57,7 @@ function parse(text: string): RawReading {
   try {
     value = JSON.parse(text);
   } catch (error) {
-    throw new ModelUnavailableError("The model's answer was not JSON", { cause: error });
+    throw new ModelUnavailableError("The model's answer was not JSON", { cause: error, kind: "unusable" });
   }
   const row = value as Partial<Record<keyof RawReading, unknown>> | null;
   if (
@@ -71,7 +71,7 @@ function parse(text: string): RawReading {
     typeof row.demandsPayment !== "boolean" ||
     typeof row.pressure !== "boolean"
   ) {
-    throw new ModelUnavailableError("The model's answer did not follow the schema");
+    throw new ModelUnavailableError("The model's answer did not follow the schema", { kind: "unusable" });
   }
   return { kind: row.kind, sender: row.sender, amount: row.amount, dueOn: row.dueOn, demandsPayment: row.demandsPayment, pressure: row.pressure, quote: row.quote };
 }

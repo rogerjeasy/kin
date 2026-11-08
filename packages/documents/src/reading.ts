@@ -2,6 +2,7 @@ import type { RawReading } from "@kin/agent";
 import { centsFromDecimal } from "@kin/domain";
 
 import { MAX_DOCUMENT_CENTS, amountsIn } from "./amounts.ts";
+import { readableName } from "./readable-name.ts";
 
 export type DocumentKind = RawReading["kind"];
 
@@ -101,7 +102,8 @@ export function parseStoredReading(value: unknown): Reading | null {
 function checkedSender(sender: string | null, words: string | null): string | null {
   const name = sender?.replace(/\s+/gu, " ").trim() ?? "";
   if (name === "" || name.length > MAX_SENDER_LENGTH) return null;
-  return words !== null && !words.includes(normalize(name)) ? null : name;
+  // The check ignores case, so the capitals a letter prints are dropped only after it passes.
+  return words !== null && !words.includes(normalize(name)) ? null : readableName(name);
 }
 
 function checkedAmount(amount: string | null, context: ReadingContext): number | null {

@@ -1,6 +1,7 @@
 import { hasHiddenCharacters, spokenNumbers, spokenNumbersAreAllowed } from "@kin/domain";
 
 import { numbersIn } from "./number-values.ts";
+import { byClaude, reasonForFailure, type FallbackReason, type Provenance } from "./provenance.ts";
 import type { StructuredModel } from "./structured-model.ts";
 
 /** The words and numbers a sentence may use: all of them come from the record. */
@@ -49,16 +50,19 @@ const WORDING_SCHEMA = {
 
 export const NARRATION_PROMPT_VERSION = "narration-2026-11-08";
 
+export type Narration = { readonly text: string; readonly source: "model" | "template"; readonly provenance: Provenance };
+
 /**
  * Words a result that plain code already decided. The model may phrase it
  * warmly; it may not add a number, so a wording that fails the guard, a
  * refusal, an outage or no model at all falls back to `template`, which
  * Kin fills from the record with fixed wording. The returned text is
- * therefore always safe to speak.
+ * therefore always safe to speak, and `provenance` says honestly whether the
+ * model worded it or why it did not.
  */
-export async function narrate(model: StructuredModel | null, facts: NarrationFacts, template: string): Promise<{ readonly text: string; readonly source: "model" | "template" }> {
-  const fallback = { text: template, source: "template" } as const;
-  if (model === null) return fallback;
+export async function narrateWithProvenance(model: StructuredModel | null, facts: NarrationFacts, template: string): Promise<Narration> {
+  const fallback = (reason: FallbackReason): Narration => ({ text: template, source: "template", provenance: { source: "template", reason } });
+  if (model === null) return fallback("not_configured");
   try {
     const reply = await model({
       system: [
@@ -69,11 +73,19 @@ export async function narrate(model: StructuredModel | null, facts: NarrationFac
       user: `<statement>\n${facts.statement.replaceAll(/<\/?statement\s*>/giu, "")}\n</statement>`,
       schema: WORDING_SCHEMA,
     });
-    if (reply.kind !== "json") return fallback;
+    if (reply.kind === "refused") return fallback("model_refused");
+    if (reply.kind !== "json") return fallback("unreadable");
     const { text } = JSON.parse(reply.text) as { text?: unknown };
-    if (typeof text !== "string" || !passesNumberGuard(text, facts)) return fallback;
-    return { text: text.trim(), source: "model" };
-  } catch {
-    return fallback;
+    if (typeof text !== "string") return fallback("unreadable");
+    if (!passesNumberGuard(text, facts)) return fallback("wording_rejected");
+    return { text: text.trim(), source: "model", provenance: byClaude(model) };
+  } catch (error) {
+    return fallback(reasonForFailure(error));
   }
+}
+
+/** The same wording, without the provenance, for callers that only need the text and who made it. */
+export async function narrate(model: StructuredModel | null, facts: NarrationFacts, template: string): Promise<{ readonly text: string; readonly source: "model" | "template" }> {
+  const { text, source } = await narrateWithProvenance(model, facts, template);
+  return { text, source };
 }

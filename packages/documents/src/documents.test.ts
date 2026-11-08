@@ -2,7 +2,7 @@ import type { RawReading } from "@kin/agent";
 import { describe, expect, it } from "vitest";
 
 import { amountsIn } from "./amounts.ts";
-import { needsAction, parseStoredReading, readLetterText, settleReading } from "./index.ts";
+import { fieldEvidence, needsAction, parseStoredReading, readLetterText, readableName, settleReading } from "./index.ts";
 
 const context = { currency: "USD", today: "2026-11-07" };
 const letter = "Greenway Power\nAccount 4471\nAmount due: $86.40\nPlease pay by 2026-11-20.";
@@ -93,5 +93,34 @@ describe("a reading stored with a document", () => {
     for (const bad of [null, "x", [], {}, { kind: "bill" }, { kind: "bill", sender: null, amountCents: -1, dueOn: null, demandsPayment: true, pressure: false, confidence: 0.5, source: "rules" }, { kind: "bill", sender: null, amountCents: null, dueOn: null, demandsPayment: true, pressure: false, confidence: 2, source: "rules" }]) {
       expect(parseStoredReading(bad)).toBeNull();
     }
+  });
+});
+
+describe("a name printed in capitals", () => {
+  const printed = "CITY OF SPRINGFIELD WATER DEPARTMENT\nAccount 4471\nAmount due: $61.00\nPlease pay by 2026-11-20.";
+
+  it("is shown in a readable case, keeping acronyms and small words sensible", () => {
+    expect(readableName("CITY OF SPRINGFIELD WATER DEPARTMENT")).toBe("City of Springfield Water Department");
+    expect(readableName("ACME PLUMBING LLC")).toBe("Acme Plumbing LLC");
+    expect(readableName("PG&E")).toBe("PG&E");
+    expect(readableName("O'BRIEN & SONS INC.")).toBe("O'Brien & Sons Inc.");
+    expect(readableName("THE ELM STREET PHARMACY")).toBe("The Elm Street Pharmacy");
+  });
+
+  it("is left alone when it already has lower-case letters or has no case at all", () => {
+    expect(readableName("Greenway Power Co")).toBe("Greenway Power Co");
+    expect(readableName("iPhone Repairs LLC")).toBe("iPhone Repairs LLC");
+    expect(readableName("شركة الكهرباء")).toBe("شركة الكهرباء");
+  });
+
+  it("is readable in the settled reading while the quoted evidence stays the letter's own capitals", () => {
+    const reading = settleReading({ ...raw, sender: "CITY OF SPRINGFIELD WATER DEPARTMENT", amount: "61.00" }, { ...context, text: printed });
+    expect(reading.sender).toBe("City of Springfield Water Department");
+    expect(reading.amountCents).toBe(6_100);
+    expect(fieldEvidence(printed, reading, "USD")).toContainEqual({ field: "sender", quote: "CITY OF SPRINGFIELD WATER DEPARTMENT" });
+  });
+
+  it("is readable when plain rules read the sender line too", () => {
+    expect(readLetterText(printed, { currency: "USD" }).sender).toBe("City of Springfield Water Department");
   });
 });

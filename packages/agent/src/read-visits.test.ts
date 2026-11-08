@@ -29,7 +29,11 @@ describe("reading a caregiver's description of their visits", () => {
     );
     expect(await readVisits(model, { description, ...today })).toEqual({
       kind: "visits",
-      visits: [{ date: "2026-10-26", minutes: 240 }, { date: "2026-10-27", minutes: 240 }, { date: "2026-10-29", minutes: 150 }],
+      visits: [
+        { date: "2026-10-26", minutes: 240, quotes: ["on Monday and Tuesday, four hours each"] },
+        { date: "2026-10-27", minutes: 240, quotes: ["on Monday and Tuesday, four hours each"] },
+        { date: "2026-10-29", minutes: 150, quotes: ["Yesterday 2h30"] },
+      ],
       unclear: [],
       dropped: 0,
     });
@@ -46,7 +50,7 @@ describe("reading a caregiver's description of their visits", () => {
       ]),
     );
     const result = await readVisits(model, { description: text, ...today });
-    expect(result).toMatchObject({ visits: [{ date: "2026-10-26", minutes: 360 }], dropped: 1 });
+    expect(result).toMatchObject({ visits: [{ date: "2026-10-26", minutes: 360, quotes: ["Monday 9-12", "again 14-17"] }], dropped: 1 });
   });
 
   it("leaves out any entry it cannot trace to the caregiver's own words, however plausible", async () => {
