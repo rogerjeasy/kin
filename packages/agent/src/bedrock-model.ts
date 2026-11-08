@@ -53,7 +53,8 @@ export function messagesModel(client: MessagesClient, model: string): Structured
  * No tools are sent, and the answer must follow the request's JSON schema.
  */
 export function bedrockModel(config: Extract<ModelConfig, { enabled: true }>): StructuredModel {
-  const options = { awsRegion: config.region, timeout: TIMEOUT_MS, maxRetries: 2 };
+  // Bedrock throttles this account (a 429 on a few calls in a hundred); the SDK backs off between tries, so four tries keep a throttled call from falling back to the fixed wording.
+  const options = { awsRegion: config.region, timeout: TIMEOUT_MS, maxRetries: 4 };
   const standIn = config.endpoint === null ? {} : { baseURL: config.endpoint, skipAuth: true };
   const client = config.api === "invoke" ? new AnthropicBedrock({ ...options, ...standIn }) : new AnthropicBedrockMantle({ ...options, ...standIn });
   return messagesModel(client, config.model);
