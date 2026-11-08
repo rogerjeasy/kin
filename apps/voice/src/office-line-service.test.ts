@@ -74,6 +74,19 @@ describe("the phone service, for what Twilio sends", () => {
     expect(response.body).not.toContain("<Gather");
   });
 
+  it("answers every inbound call with the 'no record' sentence when no office line is configured, and records nothing", async () => {
+    const noLine = await startService({ numbers: new Map(), store, log: () => undefined });
+    try {
+      const response = await twilioCaller(noLine.baseUrl, TEST_AUTH_TOKEN).post("/voice/incoming", form({ To: NUMBER }));
+      expect(spokenIn(response.body)).toEqual([OFFICE_WORDS.en.script.reply_no_record]);
+      expect(response.body).toContain("<Hangup/>");
+      expect(recorded).toEqual([]);
+      expect((await fetch(`${noLine.baseUrl}/health`)).status).toBe(200);
+    } finally {
+      await noLine.close();
+    }
+  });
+
   it("starts a known number's call with the disclosure and the first question, in the number's language", async () => {
     const response = await twilio.post("/voice/incoming", form({ To: OTHER_NUMBER }));
     expect(spokenIn(response.body)).toEqual([OFFICE_WORDS.fr.script.disclosure, OFFICE_WORDS.fr.script.ask_caller]);

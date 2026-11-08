@@ -68,6 +68,27 @@ jobs:
       # The worker's image (apps/worker/Dockerfile) too, for the Arm task it
       # runs as. Its last stage only copies files, so no emulation is needed.
       - run: docker build --platform linux/arm64 -f apps/worker/Dockerfile -t kin-worker:ci .
+      # The phone service's image (apps/voice/Dockerfile) must start with only
+      # the settings of Kin's call about a shift, no office line, and answer its
+      # health check, as App Runner will run it. It connects to the database
+      # only when a request needs it, so no database is needed here. The values
+      # are made up for this run.
+      - run: docker build -f apps/voice/Dockerfile -t kin-voice:ci .
+      - run: |
+          docker run -d --name kin-voice -p 4200:4200 \
+            -e KIN_DATABASE_HOST=localhost \
+            -e KIN_DATABASE_SERVICE_PASSWORD="$(openssl rand -hex 16)" \
+            -e KIN_TWILIO_AUTH_TOKEN="$(openssl rand -hex 16)" \
+            -e KIN_VOICE_STATE_KEY="$(openssl rand -hex 32)" \
+            -e KIN_VOICE_PUBLIC_URL=https://voice.example.invalid \
+            kin-voice:ci
+          for _ in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:4200/health && break
+            sleep 1
+          done
+          curl -sf -w " health %{http_code}\n" http://localhost:4200/health
+      - if: failure()
+        run: docker logs kin-voice || true
 
   infra:
     name: Synthesize infrastructure

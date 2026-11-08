@@ -2,7 +2,8 @@ name: Deploy
 
 # Deploys Kin to the shared AWS account (docs/architecture.md section 14.8)
 # once CI has passed for a push to main: every stack, and the web app, whose
-# image CDK builds and App Runner then rolls to. The role kin-github-deploy
+# image CDK builds and App Runner then rolls to, with the worker and the phone
+# service once they are configured. The role kin-github-deploy
 # trusts only this repository's main branch, so a run from any other ref is
 # refused by AWS.
 on:
@@ -53,19 +54,26 @@ jobs:
           # Unset, Cognito keeps its own sender and password-only sign-in.
           # Set, sign-in codes go by email through Kin's Gmail sender.
           KIN_SENDER_EMAIL: ${{ secrets.KIN_SENDER_EMAIL }}
+          # Kin's Twilio numbers are not committed. Unset (an empty secret reads
+          # as unset), no call is placed and no text is sent.
+          KIN_TWILIO_CALLER_NUMBER: ${{ secrets.KIN_TWILIO_CALLER_NUMBER }}
+          KIN_TWILIO_SMS_FROM: ${{ secrets.KIN_TWILIO_SMS_FROM }}
       # Before the web app rolls out, so it never meets a schema older than its
       # code. A one-off task in Kin's network; the step fails if it does.
       - name: Migrate the database
         working-directory: infra
         run: pnpm run migrate
-      # KinWorker exists once kin:paypal in infra/cdk.json switches top-ups on;
-      # until then the app has no such stack and only KinWeb is deployed.
-      - name: Build and roll out the web and worker images
+      # KinWorker exists once kin:paypal in infra/cdk.json switches top-ups on,
+      # and KinVoice once kin:voice does; until then the app has no such stack.
+      - name: Build and roll out the web, worker and voice images
         working-directory: infra
-        run: pnpm exec cdk deploy KinWeb $(pnpm exec cdk list 2>/dev/null | grep -x KinWorker || true) --require-approval never --outputs-file cdk-outputs.json
+        run: pnpm exec cdk deploy KinWeb $(pnpm exec cdk list 2>/dev/null | grep -x -e KinWorker -e KinVoice || true) --require-approval never --outputs-file cdk-outputs.json
         env:
           KIN_ALERT_EMAIL: ${{ secrets.KIN_ALERT_EMAIL }}
           KIN_SENDER_EMAIL: ${{ secrets.KIN_SENDER_EMAIL }}
+          KIN_TWILIO_CALLER_NUMBER: ${{ secrets.KIN_TWILIO_CALLER_NUMBER }}
+          KIN_TWILIO_SMS_FROM: ${{ secrets.KIN_TWILIO_SMS_FROM }}
+      # The web app, and the phone service when this deployment made one.
       - name: Check the live app
         working-directory: infra
         run: pnpm run smoke cdk-outputs.json

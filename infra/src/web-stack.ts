@@ -7,7 +7,7 @@ import type { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
 import type { InfraConfig } from "./config.ts";
-import { DATABASE_SETTINGS, PAYPAL_SETTINGS } from "./database-settings.ts";
+import { DATABASE_SETTINGS, PAYPAL_SETTINGS, TWILIO_SETTINGS } from "./database-settings.ts";
 import { WEB_SETTINGS } from "./web-settings.ts";
 
 /** Claude Opus 4.6 as a US cross-region inference profile, and the foundation model it routes to. Matches `BEDROCK_INVOKE_DEFAULT_MODEL` in `@kin/config`. */
@@ -77,7 +77,7 @@ export class WebStack extends Stack {
     const demoSessionKey = setting(DATABASE_SETTINGS.demoSessionKeyArn);
     const instance = new iam.Role(this, "Instance", {
       roleName: "kin-web-instance",
-      description: "What Kin's web app may reach in AWS: its database passwords, the demo session key, and PayPal's secret and inbox when top-ups are on",
+      description: "What Kin's web app may reach in AWS: its database passwords, the demo session key, PayPal's secret and inbox when top-ups are on, and Twilio's credentials when texting is on",
       assumedBy: new iam.ServicePrincipal("tasks.apprunner.amazonaws.com"),
     });
     instance.addToPolicy(new iam.PolicyStatement({ actions: ["secretsmanager:GetSecretValue"], resources: [appSecret, provisionerSecret, demoSessionKey] }));
@@ -116,6 +116,17 @@ export class WebStack extends Stack {
       secrets.push({ name: "KIN_PAYPAL_CLIENT_SECRET", value: paypalSecret });
       // The web only says how demo payouts are paid; the worker pays them.
       if (config.demoSandboxPayeeEmail !== null) environment.push({ name: "KIN_DEMO_SANDBOX_PAYEE_EMAIL", value: config.demoSandboxPayeeEmail });
+    }
+
+    // Texting a check-in link: the web app sends the message itself with
+    // Twilio's account, so it reads the account SID and the auth token, and
+    // nothing of the phone service's. Unset, the button is not shown.
+    if (config.twilioSmsFrom !== null) {
+      const accountSidSecret = setting(TWILIO_SETTINGS.accountSidSecretArn);
+      const authTokenSecret = setting(TWILIO_SETTINGS.authTokenSecretArn);
+      instance.addToPolicy(new iam.PolicyStatement({ actions: ["secretsmanager:GetSecretValue"], resources: [accountSidSecret, authTokenSecret] }));
+      environment.push({ name: "KIN_TWILIO_SMS_FROM", value: config.twilioSmsFrom });
+      secrets.push({ name: "KIN_TWILIO_ACCOUNT_SID", value: accountSidSecret }, { name: "KIN_TWILIO_AUTH_TOKEN", value: authTokenSecret });
     }
 
     // Speech: Transcribe hears a recording and Polly reads Kin's own words

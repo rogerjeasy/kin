@@ -13,6 +13,7 @@ import { Identity } from "./identity.ts";
 import { createPayPalSettings } from "./paypal-secret.ts";
 import { Queues } from "./queues.ts";
 import { createPrivateBucket } from "./storage.ts";
+import { createTwilioSettings } from "./twilio-secrets.ts";
 
 type DataStackProps = StackProps & {
   readonly vpc: ec2.IVpc;
@@ -47,6 +48,7 @@ export class DataStack extends Stack {
     createPrivateBucket(this, "Exports", { config, key, purpose: "exports" });
     const queues = new Queues(this, "Queues", { config, key, alerts: props.alerts });
     createPayPalSettings(this, config, key, queues.byName["paypal-events"]);
+    createTwilioSettings(this, config, key);
     new Identity(this, "Identity", config, key);
 
     // Period closes, reminders and calling times are created in this group at

@@ -63,43 +63,47 @@ Both routes are served only when the service has a database store for them, whic
 
 ## Settings
 
-The phone service needs nothing new for the shift call: it reads the database as the service role and verifies signatures with the settings below. The worker has five new settings (all needed to place the call), and the call loop stays off, with one line in the worker's startup log naming what is missing, unless all five are set:
+The service reads its settings from the environment and refuses to start on a missing or malformed one. In AWS it runs on App Runner as the `KinVoice` stack (architecture decision 85), which fills them: the database password, Twilio's auth token and the state key come from Secrets Manager, and the address from `kin:voicePublicUrl`. Nothing below is typed by hand in AWS.
 
 | Variable | Read by | Meaning |
 |---|---|---|
-| `KIN_TWILIO_ACCOUNT_SID` | worker | The Twilio account (`AC` and 32 hex characters) the calls are placed from |
-| `KIN_TWILIO_AUTH_TOKEN` | worker and phone service | The account's auth token: the worker authenticates `Calls.create` with it, the phone service verifies every webhook with it. Secret |
-| `KIN_TWILIO_CALLER_NUMBER` | worker | Kin's own Twilio number in E.164 form: the caller ID the parent sees |
-| `KIN_VOICE_PUBLIC_URL` | worker and phone service | The https address of this service with no path. The worker builds the call's addresses from it, and the service rebuilds the signed URL from it |
-| `KIN_VOICE_STATE_KEY` | worker and phone service | At least 32 characters, different from the auth token, **the same value in both**. The worker seals the call's token with it and the service opens it. Secret |
+| `KIN_TWILIO_AUTH_TOKEN` | worker and phone service | The account's auth token: the phone service verifies every webhook with it, the worker authenticates `Calls.create` with it. Secret. Stored by `pnpm --filter @kin/infra run twilio:store` |
+| `KIN_VOICE_PUBLIC_URL` | worker and phone service | The https address of this service with no path (the `Url` output of `KinVoice`). Twilio signs the URL it called, so this must match it exactly. The worker builds the call's addresses from it, and the service rebuilds the signed URL from it |
+| `KIN_VOICE_STATE_KEY` | worker and phone service | At least 32 characters, different from the auth token, **the same value in both**. The worker seals the call's token with it and the service opens it. Secret. In AWS it is one secret Secrets Manager generates, read by both, so it cannot drift |
+| `KIN_DATABASE_*` | phone service and worker | The database host and the `kin_service` password (`.env.example`) |
+| `PORT` | phone service | Default `4200` |
 
+The worker has three more settings for the call, and the call loop stays off, with one line in its startup log naming what is missing, unless all five of `KIN_TWILIO_ACCOUNT_SID`, `KIN_TWILIO_AUTH_TOKEN`, `KIN_TWILIO_CALLER_NUMBER`, `KIN_VOICE_PUBLIC_URL` and `KIN_VOICE_STATE_KEY` are set:
 
-The settings of the office line itself:
+| Variable | Read by | Meaning |
+|---|---|---|
+| `KIN_TWILIO_ACCOUNT_SID` | worker | The Twilio account (`AC` and 32 hex characters) the calls are placed from. The phone service never holds it |
+| `KIN_TWILIO_CALLER_NUMBER` | worker | Kin's own Twilio number in E.164 form: the caller ID the parent sees. In AWS it is `kin:twilioCallerNumber` or the GitHub secret `KIN_TWILIO_CALLER_NUMBER`, never committed |
+
+The settings of the office line itself, which is optional:
 
 | Variable | Meaning |
 |---|---|
-| `KIN_OFFICE_LINE_NUMBERS` | JSON: `{"+15551234567": "<circle uuid>"}`. A value may be `{"circleId": "<uuid>", "locale": "fr"}` to answer in `en`, `fr`, `de`, `it`, `es`, `ar` or `he` (default `en`). E.164 numbers only; one number per circle |
-| `KIN_TWILIO_AUTH_TOKEN` | The Twilio account's auth token. It signs every webhook. Secret |
-| `KIN_VOICE_STATE_KEY` | At least 32 characters, different from the auth token. Seals the state between turns. Secret |
-| `KIN_VOICE_PUBLIC_URL` | The https address Twilio calls, no path (for example `https://voice.example.com`). Twilio signs the URL it called, so this must match it exactly |
-| `PORT` | Default `4200` |
-| `KIN_DATABASE_*` | The database host and the `kin_service` password, as for the worker (`.env.example`) |
+| `KIN_OFFICE_LINE_NUMBERS` | JSON: `{"+15551234567": "<circle uuid>"}`. A value may be `{"circleId": "<uuid>", "locale": "fr"}` to answer in `en`, `fr`, `de`, `it`, `es`, `ar` or `he` (default `en`). E.164 numbers only; one number per circle. **Unset (or blank), the service starts with no numbers: every inbound office-line call hears the fixed "no record" sentence and the line drops, and the shift-call routes work as usual.** Set, it is read exactly as before: an empty object or a malformed value stops the service |
 
-The service refuses to start on a missing or malformed setting. Secrets belong in AWS Secrets Manager and reach the task as environment variables, as the worker's do; none is in the repository, the image or a log. Logs carry masked numbers (`+1********99`), call IDs and circle IDs, never the caller's words.
+Secrets belong in AWS Secrets Manager and reach the service as environment variables; none is in the repository, the image or a log. Logs carry masked numbers (`+1********99`), call IDs and circle IDs, never the caller's words.
+
+## Hosting
+
+`cdk deploy KinVoice` (the deploy pipeline does it when `"kin:voice": true` in `infra/cdk.json`, which it is) runs this service on App Runner: port 4200, health check `GET /health`, 0.25 vCPU and 0.5 GB, one to two instances, out through the same VPC connector as the web app so it reaches the database. Its role may read three secrets and nothing else: the service role's database password, Twilio's auth token and the state key. Build the image alone with `docker build -f apps/voice/Dockerfile .` (add `--platform linux/amd64` on an Arm machine).
+
+The public address takes two deployments, because App Runner names the service only when it creates it. The first deployment runs the service with the placeholder `https://voice-address-not-set.invalid`, so every Twilio request fails its signature check (safe, and it proves nothing about Twilio). Set `kin:voicePublicUrl` in `infra/cdk.json` to the stack's `Url` output and deploy again.
 
 ## What the owner still has to do
 
-None of this exists yet, and none of it has been done by this change:
+1. **A Twilio account and a voice-capable number** for Kin to call from. The account must be allowed to call the parent's country (geographic permissions; a trial account calls only verified numbers).
+2. **Store the credentials.** Put `KIN_TWILIO_ACCOUNT_SID` and `KIN_TWILIO_AUTH_TOKEN` in the root `.env` and run `AWS_PROFILE=wick-dev pnpm --filter @kin/infra run twilio:store`. Do this before step 4: the worker stops with a configuration error if it is given a number and an address while the account SID is still the placeholder.
+3. **Deploy KinVoice, then name it.** Merge to main (or deploy by hand), read the `Url` output of `KinVoice`, set `kin:voicePublicUrl` to it in `infra/cdk.json` and deploy again.
+4. **Give the worker the number.** Set the GitHub secret `KIN_TWILIO_CALLER_NUMBER` (or `kin:twilioCallerNumber` locally) and deploy. With the number and the address set, KinWorker's call loop starts.
+5. **For the office line only:** point a number at the service. In the Twilio console, under the number's Voice configuration: "A call comes in" is a Webhook, `POST`, `https://<voice host>/voice/incoming`; "Call status changes" is `POST`, `https://<voice host>/voice/status`. Nothing is configured on the number for the shift call, which names its own addresses. Then set `KIN_OFFICE_LINE_NUMBERS` on the service, which no stack does yet (the office line is still unconfigured and needs numbers).
+6. **Place a real call and check** the items below.
 
-1. **A Twilio account and a voice-capable number** (a number per circle; the map allows several).
-2. **Store the secrets.** Generate a state key (`openssl rand -base64 48`) and put it and the account's auth token in Secrets Manager.
-3. **Host the service** over https at a stable address. Build the image with `docker build -f apps/voice/Dockerfile .` (add `--platform linux/amd64` on an Arm machine). No CDK stack is added: the worker's Fargate pattern needs a public listener with a certificate, which Kin has no domain for yet (decision 35). App Runner, as the web app uses, would serve https at its own address. Any hosting change is a `AGENTS.md` section 12 matter.
-4. **Point the number at it.** In the Twilio console, under the number's Voice configuration: "A call comes in" is a Webhook, `POST`, `https://<voice host>/voice/incoming`; "Call status changes" is `POST`, `https://<voice host>/voice/status`. Set `KIN_VOICE_PUBLIC_URL` to `https://<voice host>`.
-5. **Fill `KIN_OFFICE_LINE_NUMBERS`** with the number and the circle's ID.
-6. **For the shift call to the parent**, give the worker the five settings above (account SID, auth token, caller number, this service's public address and the same state key as this service) and store the secrets in Secrets Manager like the others. Nothing is configured on the number for the outbound call. The Twilio account must be allowed to call the parent's country (geographic permissions; a trial account calls only verified numbers).
-7. **Place a real call and check** the items below.
-
-Nothing hosts this service yet and no Twilio account exists for Kin yet: the shift call is built and tested against stand-ins, not deployed.
+Until step 6 nothing in this repository has spoken to Twilio: the shift call is built and tested against stand-ins, and the hosting is configured but not yet proven by a live call.
 
 ## Not verified without a Twilio account
 

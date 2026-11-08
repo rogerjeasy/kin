@@ -14,7 +14,8 @@
     "gmail:store": "node --env-file=../.env scripts/store-gmail-password.ts",
     "smoke": "node scripts/smoke-test-web.ts",
     "migrate": "node scripts/run-migrations.ts",
-    "paypal:store": "node --env-file=../.env scripts/store-paypal-secret.ts"
+    "paypal:store": "node --env-file=../.env scripts/store-paypal-secret.ts",
+    "twilio:store": "node --env-file=../.env scripts/store-twilio-credentials.ts"
   },
   "dependencies": {
     "@kin/auth": "workspace:*",

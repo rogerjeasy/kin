@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import { ACCOUNT_TYPES } from "@kin/auth";
 
-import { buildKin } from "./app.ts";
+import { buildKin, type KinStacks } from "./app.ts";
 import type { InfraConfig } from "./config.ts";
 import { QUEUES } from "./queues.ts";
 
@@ -26,6 +26,10 @@ const config: InfraConfig = {
   speech: false,
   claude: false,
   demoSandboxPayeeEmail: null,
+  voice: false,
+  voicePublicUrl: null,
+  twilioCallerNumber: null,
+  twilioSmsFrom: null,
 };
 
 // The same feature flags as a real synth, so the tests see what is deployed.
@@ -111,10 +115,11 @@ describe("Kin's place in the shared account", () => {
       ...policyStatements(data, "AWS::KMS::Key", "KeyPolicy"),
     ];
 
-    // Two buckets, ten queues, seven secrets (the database admin's, the Gmail
+    // Two buckets, ten queues, ten secrets (the database admin's, the Gmail
     // app password, the three database roles' passwords, the demo session
-    // key and the PayPal client secret) and the key.
-    expect(statements).toHaveLength(2 + 10 + 7 + 1);
+    // key, the PayPal client secret, and Twilio's account SID, auth token and
+    // the voice state key) and the key.
+    expect(statements).toHaveLength(2 + 10 + 10 + 1);
     for (const statement of statements) {
       expect(statement).toEqual(expect.arrayContaining([neighbourDeny]));
     }
@@ -674,8 +679,10 @@ describe("the deployment boundary", () => {
 
   it("leaves room for every role Kin's stacks create", () => {
     for (const stack of Object.values(stacks)) {
-      expect(stack?.stackName).toMatch(/^Kin/);
+      // The worker and the phone service exist only when configured.
+      if (stack !== null) expect(stack.stackName).toMatch(/^Kin/);
     }
+    expect(buildKin(new App({ context: testContext }), { ...config, voice: true }).voice?.stackName).toBe("KinVoice");
     for (const template of all) {
       for (const role of Object.values(template.findResources("AWS::IAM::Role"))) {
         const name = role["Properties"]["RoleName"];
@@ -804,5 +811,203 @@ describe("real sandbox payouts in demo circles", () => {
     if (withPayee.worker === null) throw new Error("KinWorker exists with a PayPal app");
     expect(workerVariables(Template.fromStack(withPayee.worker))).toContain(`{"Name":"KIN_DEMO_SANDBOX_PAYEE_EMAIL","Value":"${payee}"}`);
     expect(variablesOf(Template.fromStack(withPayee.web))).toContainEqual({ Name: "KIN_DEMO_SANDBOX_PAYEE_EMAIL", Value: payee });
+  });
+});
+
+describe("Kin's phone service", () => {
+  const statementsOf = (template: Template) =>
+    Object.values(template.findResources("AWS::IAM::Policy")).flatMap(
+      (policy) => policy["Properties"]["PolicyDocument"]["Statement"] as { Action: string | string[]; Resource: unknown; Condition?: unknown }[],
+    );
+  const actionsOf = (template: Template) => statementsOf(template).flatMap((statement) => [statement.Action].flat());
+  const build = (overrides: Partial<InfraConfig>) => buildKin(new App({ context: testContext }), { ...config, ...overrides });
+  const imageOf = (template: Template, type: string) => {
+    const [service] = Object.values(template.findResources(type));
+    return service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"] as {
+      Port: string;
+      RuntimeEnvironmentVariables: { Name: string; Value: unknown }[];
+      RuntimeEnvironmentSecrets: { Name: string; Value: unknown }[];
+    };
+  };
+  const workerContainer = (template: Template) => {
+    const [task] = Object.values(template.findResources("AWS::ECS::TaskDefinition"));
+    return task?.["Properties"]["ContainerDefinitions"][0] as { Environment: { Name: string; Value: unknown }[]; Secrets: { Name: string; ValueFrom: unknown }[] };
+  };
+  const twilioNames = /TWILIO|VOICE_/;
+
+  const voiceOf = (built: KinStacks) => {
+    if (built.voice === null) throw new Error("kin:voice is on, so KinVoice exists");
+    return Template.fromStack(built.voice);
+  };
+  const workerOf = (built: KinStacks) => {
+    if (built.worker === null) throw new Error("The test configuration has a PayPal app, so KinWorker exists");
+    return Template.fromStack(built.worker);
+  };
+  const voiceStacks = build({ voice: true });
+  const voice = voiceOf(voiceStacks);
+
+  it("is not deployed unless kin:voice is on, and then the other stacks hold no Twilio setting", () => {
+    expect(stacks.voice).toBeNull();
+    for (const template of [web, worker]) expect(JSON.stringify(template.toJSON())).not.toMatch(/TWILIO|VOICE_PUBLIC_URL|VOICE_STATE_KEY|kin-twilio|kin-voice/);
+    // Whether the voice stack exists changes neither the web app nor the worker.
+    expect(JSON.stringify(Template.fromStack(voiceStacks.web).toJSON())).toBe(JSON.stringify(web.toJSON()));
+    expect(workerContainer(workerOf(voiceStacks))).toEqual(workerContainer(worker));
+  });
+
+  it("runs on App Runner from Kin's image: port 4200, the /health check, the smallest size, one to two instances", () => {
+    voice.hasResourceProperties("AWS::AppRunner::Service", {
+      ServiceName: "kin-voice",
+      InstanceConfiguration: Match.objectLike({ Cpu: "0.25 vCPU", Memory: "0.5 GB" }),
+      HealthCheckConfiguration: Match.objectLike({ Protocol: "HTTP", Path: "/health" }),
+      SourceConfiguration: Match.objectLike({
+        AutoDeploymentsEnabled: false,
+        ImageRepository: Match.objectLike({ ImageRepositoryType: "ECR", ImageConfiguration: Match.objectLike({ Port: "4200" }) }),
+      }),
+      NetworkConfiguration: { EgressConfiguration: { EgressType: "VPC", VpcConnectorArn: Match.anyValue() }, IngressConfiguration: { IsPubliclyAccessible: true } },
+    });
+    voice.hasResourceProperties("AWS::AppRunner::AutoScalingConfiguration", { AutoScalingConfigurationName: "kin-voice", MinSize: 1, MaxSize: 2 });
+    voice.hasOutput("Url", { Value: Match.anyValue() });
+  });
+
+  it("reaches the database through Kin's services subnets, like the web app", () => {
+    voice.hasResourceProperties("AWS::AppRunner::VpcConnector", {
+      VpcConnectorName: "kin-voice",
+      Subnets: { Ref: Match.stringLikeRegexp("SsmParameterValuekinservicessubnets") },
+      SecurityGroups: [{ Ref: Match.stringLikeRegexp("SsmParameterValuekinservicessecuritygroup") }],
+    });
+  });
+
+  it("is told a placeholder address until the real one is configured, then the real one", () => {
+    expect(imageOf(voice, "AWS::AppRunner::Service").RuntimeEnvironmentVariables).toContainEqual({ Name: "KIN_VOICE_PUBLIC_URL", Value: "https://voice-address-not-set.invalid" });
+    const named = voiceOf(build({ voice: true, voicePublicUrl: "https://abc123.us-east-1.awsapprunner.com" }));
+    expect(imageOf(named, "AWS::AppRunner::Service").RuntimeEnvironmentVariables).toContainEqual({ Name: "KIN_VOICE_PUBLIC_URL", Value: "https://abc123.us-east-1.awsapprunner.com" });
+  });
+
+  it("is given its database settings and exactly three secrets, none of them in a plain setting", () => {
+    const image = imageOf(voice, "AWS::AppRunner::Service");
+    expect(image.RuntimeEnvironmentVariables.map((variable) => variable.Name).toSorted()).toEqual([
+      "KIN_DATABASE_HOST",
+      "KIN_DATABASE_NAME",
+      "KIN_DATABASE_PORT",
+      "KIN_DATABASE_TLS",
+      "KIN_VOICE_PUBLIC_URL",
+      "PORT",
+    ]);
+    expect(image.RuntimeEnvironmentVariables).toContainEqual({ Name: "PORT", Value: "4200" });
+    expect(image.RuntimeEnvironmentVariables).toContainEqual({ Name: "KIN_DATABASE_TLS", Value: "require" });
+    expect(image.RuntimeEnvironmentSecrets.map((secret) => secret.Name).toSorted()).toEqual(["KIN_DATABASE_SERVICE_PASSWORD", "KIN_TWILIO_AUTH_TOKEN", "KIN_VOICE_STATE_KEY"]);
+  });
+
+  it("may read only the service role's password, Twilio's auth token and the state key, through the key and only via Secrets Manager", () => {
+    const statements = statementsOf(voice);
+    const reads = statements.filter((statement) => statement.Action === "secretsmanager:GetSecretValue");
+    expect(reads).toHaveLength(1);
+    const resources = (reads[0]?.Resource as { Ref: string }[]).map((resource) => resource.Ref).toSorted();
+    expect(resources).toHaveLength(3);
+    expect(resources[0]).toMatch(/SsmParameterValuekindatabaseserviceSecretarn/i);
+    expect(resources[1]).toMatch(/SsmParameterValuekintwilioauthtokenarn/i);
+    expect(resources[2]).toMatch(/SsmParameterValuekinvoicestatekeyarn/i);
+    const decrypt = statements.find((statement) => statement.Action === "kms:Decrypt");
+    expect(JSON.stringify(decrypt?.Condition)).toContain("kms:ViaService");
+    expect(JSON.stringify(decrypt?.Condition)).toContain("secretsmanager.");
+    // Nothing else beyond pulling its own image.
+    expect(actionsOf(voice).filter((action) => !action.startsWith("ecr:")).toSorted()).toEqual(["kms:Decrypt", "secretsmanager:GetSecretValue"]);
+    expect(actionsOf(voice)).not.toContain("ecr:PutImage");
+    // Not the account SID, nor any other password, nor PayPal's, nor any queue.
+    expect(JSON.stringify(voice.toJSON())).not.toMatch(/kin-twilio-account-sid-arn|kin-database-(app|provisioner|admin)|kin-paypal|kin-web-demo-session-key|sqs:|bedrock|transcribe|polly/i);
+    voice.hasResourceProperties("AWS::IAM::Role", {
+      RoleName: "kin-voice-instance",
+      AssumeRolePolicyDocument: Match.objectLike({ Statement: [Match.objectLike({ Principal: { Service: "tasks.apprunner.amazonaws.com" } })] }),
+    });
+  });
+
+  it("carries the deployment boundary on every role it creates, all named kin or Kin", () => {
+    const roles = Object.entries(voice.findResources("AWS::IAM::Role"));
+    expect(roles.length).toBeGreaterThanOrEqual(2);
+    for (const [logicalId, role] of roles) {
+      expect(JSON.stringify(role["Properties"]["PermissionsBoundary"])).toMatch(/arn:(aws)?.*:iam::123456789012:policy\/kin-deploy-boundary"/);
+      const name = role["Properties"]["RoleName"];
+      // A role with no explicit name is named after its stack and path, which begins with the stack's name: KinVoice-.
+      expect(name === undefined ? logicalId : name).toMatch(/^(kin-|Kin|ImageAccess|Instance)/);
+    }
+  });
+
+  it("keeps the Twilio credentials and the state key in KinData, retained, encrypted with Kin's key, and closed to the other projects", () => {
+    for (const name of ["kin/twilio/account-sid", "kin/twilio/auth-token", "kin/voice/state-key"]) {
+      data.hasResourceProperties("AWS::SecretsManager::Secret", { Name: name, KmsKeyId: { "Fn::GetAtt": [keyId(), "Arn"] } });
+    }
+    const secrets = Object.values(data.findResources("AWS::SecretsManager::Secret")).filter((secret) => /^kin\/(twilio|voice)\//.test(String(secret["Properties"]["Name"])));
+    expect(secrets).toHaveLength(3);
+    expect(secrets.map((secret) => secret["DeletionPolicy"])).toEqual(["Retain", "Retain", "Retain"]);
+    // The state key is generated: sixty-four characters, no punctuation, and nobody ever types it.
+    data.hasResourceProperties("AWS::SecretsManager::Secret", { Name: "kin/voice/state-key", GenerateSecretString: { PasswordLength: 64, ExcludePunctuation: true } });
+    const policies = policyStatements(data, "AWS::SecretsManager::ResourcePolicy", "ResourcePolicy");
+    for (const arnParameter of ["kin-twilio-account-sid-arn", "kin-twilio-auth-token-arn", "kin-voice-state-key-arn"]) {
+      data.hasResourceProperties("AWS::SSM::Parameter", { Name: arnParameter, Type: "String" });
+    }
+    expect(policies.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("holds no secret value in any template, only ARNs and the names of parameters", () => {
+    const withEverything = build({
+      voice: true,
+      voicePublicUrl: "https://abc123.us-east-1.awsapprunner.com",
+      twilioCallerNumber: "+15555550100",
+      twilioSmsFrom: "+15555550101",
+    });
+    for (const stack of [withEverything.data, withEverything.voice, withEverything.worker, withEverything.web]) {
+      if (stack === null) throw new Error("every stack exists in this configuration");
+      const json = Template.fromStack(stack).toJSON();
+      const text = JSON.stringify(json);
+      // No secret is ever written into a template as a literal.
+      for (const resource of Object.values(json["Resources"] as Record<string, { Type: string; Properties?: Record<string, unknown> }>)) {
+        if (resource.Type === "AWS::SecretsManager::Secret") expect(Object.keys(resource.Properties ?? {})).not.toContain("SecretString");
+      }
+      // Nor pasted in by a dynamic reference. Aurora's own admin password is the one such reference, in KinData, and none names Twilio's.
+      const references = text.match(/\{\{resolve:[^}]*\}\}/g) ?? [];
+      expect(references.filter((reference) => /twilio|voice/i.test(reference))).toEqual([]);
+      if (stack !== withEverything.data) expect(references).toEqual([]);
+    }
+  });
+
+  it("is given to the worker, with its three secrets, only when voice, a number and the address are all set", () => {
+    const full = { voice: true, voicePublicUrl: "https://abc123.us-east-1.awsapprunner.com", twilioCallerNumber: "+15555550100" } as const;
+    const on = workerContainer(workerOf(build(full)));
+    expect(on.Environment).toContainEqual({ Name: "KIN_TWILIO_CALLER_NUMBER", Value: "+15555550100" });
+    expect(on.Environment).toContainEqual({ Name: "KIN_VOICE_PUBLIC_URL", Value: "https://abc123.us-east-1.awsapprunner.com" });
+    expect(on.Secrets.map((secret) => secret.Name)).toEqual(expect.arrayContaining(["KIN_TWILIO_ACCOUNT_SID", "KIN_TWILIO_AUTH_TOKEN", "KIN_VOICE_STATE_KEY", "KIN_DATABASE_SERVICE_PASSWORD", "KIN_PAYPAL_CLIENT_SECRET"]));
+
+    const before = workerContainer(worker);
+    for (const missing of ["voice", "voicePublicUrl", "twilioCallerNumber"] as const) {
+      const partial = { ...full, [missing]: missing === "voice" ? false : null } as unknown as Partial<InfraConfig>;
+      // A number or an address without the voice stack is refused by readConfig; here the stacks are built directly, so the worker must still stay as it was.
+      const template = workerOf(build(partial));
+      expect(workerContainer(template)).toEqual(before);
+      expect(JSON.stringify(template.toJSON())).not.toMatch(twilioNames);
+    }
+  });
+
+  it("lets the worker read the three secrets through its execution role, and the account SID only the worker and the web may read", () => {
+    const full = build({ voice: true, voicePublicUrl: "https://abc123.us-east-1.awsapprunner.com", twilioCallerNumber: "+15555550100" });
+    const workerTemplate = workerOf(full);
+    const reads = statementsOf(workerTemplate).filter((statement) => statement.Action === "secretsmanager:GetSecretValue" || [statement.Action].flat().includes("secretsmanager:GetSecretValue"));
+    expect(JSON.stringify(reads)).toMatch(/kintwilioaccountsidarn/i);
+    expect(JSON.stringify(reads)).toMatch(/kintwilioauthtokenarn/i);
+    expect(JSON.stringify(reads)).toMatch(/kinvoicestatekeyarn/i);
+  });
+
+  it("gives the web app the SMS settings and the two Twilio credentials only when a sender is set", () => {
+    expect(JSON.stringify(web.toJSON())).not.toMatch(/TWILIO/);
+    const texting = Template.fromStack(build({ twilioSmsFrom: "+15555550101" }).web);
+    const image = imageOf(texting, "AWS::AppRunner::Service");
+    expect(image.RuntimeEnvironmentVariables).toContainEqual({ Name: "KIN_TWILIO_SMS_FROM", Value: "+15555550101" });
+    const added = image.RuntimeEnvironmentSecrets.map((secret) => secret.Name).filter((name) => /TWILIO/.test(name)).toSorted();
+    expect(added).toEqual(["KIN_TWILIO_ACCOUNT_SID", "KIN_TWILIO_AUTH_TOKEN"]);
+    const read = statementsOf(texting).filter((statement) => statement.Action === "secretsmanager:GetSecretValue");
+    const readable = JSON.stringify(read);
+    expect(readable).toMatch(/kintwilioaccountsidarn/i);
+    expect(readable).toMatch(/kintwilioauthtokenarn/i);
+    // Not the state key: only the voice service and the worker open a call's token.
+    expect(JSON.stringify(texting.toJSON())).not.toMatch(/KIN_VOICE_STATE_KEY|kinvoicestatekeyarn/i);
   });
 });

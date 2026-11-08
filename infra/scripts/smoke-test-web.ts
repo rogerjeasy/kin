@@ -3,8 +3,11 @@ import { readFileSync } from "node:fs";
 /**
  * Checks the deployed web app from the outside, after a deploy:
  *   pnpm --filter @kin/infra run smoke -- cdk-outputs.json
- * The address comes from KinWeb's `Url` output. Each check is retried for a
- * while, because App Runner may still be swapping in the new version.
+ * The address comes from KinWeb's `Url` output. When the deployment also made
+ * the phone service (KinVoice, once `kin:voice` is on), its `Url` output is
+ * checked too: it answers its health check, and it refuses a request that
+ * Twilio did not sign. Each check is retried for a while, because App Runner
+ * may still be swapping in the new version.
  */
 const outputsFile = process.argv[2] ?? "cdk-outputs.json";
 const outputs = JSON.parse(readFileSync(outputsFile, "utf8")) as Record<string, Record<string, string>>;
@@ -14,18 +17,22 @@ if (!base) {
   process.exit(1);
 }
 
-type Check = { name: string; path: string; expect: (response: Response) => string | null };
+type Check = { name: string; base: string; path: string; method?: "GET" | "POST"; expect: (response: Response, body: string) => string | null };
+
+const voiceBase = outputs["KinVoice"]?.["Url"];
 
 const checks: Check[] = [
-  { name: "the home page loads", path: "/", expect: (r) => (r.status === 200 ? null : `status ${r.status}`) },
-  { name: "a translated page loads", path: "/fr/pricing", expect: (r) => (r.status === 200 ? null : `status ${r.status}`) },
+  { name: "the home page loads", base, path: "/", expect: (r) => (r.status === 200 ? null : `status ${r.status}`) },
+  { name: "a translated page loads", base, path: "/fr/pricing", expect: (r) => (r.status === 200 ? null : `status ${r.status}`) },
   {
     name: "the circle's screens need a session",
+    base,
     path: "/dashboard",
     expect: (r) => (r.status === 303 && (r.headers.get("location") ?? "").includes("/auth/refresh") ? null : `status ${r.status}, location ${r.headers.get("location")}`),
   },
   {
     name: "sign-in goes to Cognito and comes back to this address",
+    base,
     path: "/auth/sign-in?next=/dashboard",
     expect: (r) => {
       const location = r.headers.get("location") ?? "";
@@ -35,6 +42,21 @@ const checks: Check[] = [
         : `status ${r.status}, redirect_uri ${callback}`;
     },
   },
+  // The phone service, when this deployment made one. An unsigned POST is
+  // refused whatever the service's address: that proves it is up and that it
+  // acts on nothing Twilio did not sign.
+  ...(voiceBase === undefined
+    ? []
+    : [
+        { name: "the phone service is healthy", base: voiceBase, path: "/health", expect: (r: Response, body: string) => (r.status === 200 && body === "ok" ? null : `status ${r.status}`) },
+        {
+          name: "the phone service refuses a request Twilio did not sign",
+          base: voiceBase,
+          path: "/voice/shift/answer",
+          method: "POST" as const,
+          expect: (r: Response) => (r.status === 403 ? null : `status ${r.status}`),
+        },
+      ]),
 ];
 
 const ATTEMPTS = 20;
@@ -44,7 +66,10 @@ for (const check of checks) {
   let problem: string | null = "not tried";
   for (let attempt = 1; attempt <= ATTEMPTS && problem !== null; attempt += 1) {
     try {
-      problem = check.expect(await fetch(`${base}${check.path}`, { redirect: "manual", signal: AbortSignal.timeout(20_000) }));
+      // The phone service reads only form posts, as Twilio sends them, and checks the signature before the body.
+      const post = check.method === "POST" ? { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: "" } : {};
+      const response = await fetch(`${check.base}${check.path}`, { ...post, redirect: "manual", signal: AbortSignal.timeout(20_000) });
+      problem = check.expect(response, await response.text());
     } catch (error) {
       problem = error instanceof Error ? error.message : String(error);
     }
@@ -53,5 +78,6 @@ for (const check of checks) {
   console.log(`${problem === null ? "ok  " : "FAIL"} ${check.name}${problem === null ? "" : `: ${problem}`}`);
   failed ||= problem !== null;
 }
-console.log(failed ? `The deployed app at ${base} failed its smoke test.` : `The deployed app at ${base} is healthy.`);
+const where = voiceBase === undefined ? base : `${base} and ${voiceBase}`;
+console.log(failed ? `The deployed app at ${where} failed its smoke test.` : `The deployed app at ${where} is healthy.`);
 process.exit(failed ? 1 : 0);

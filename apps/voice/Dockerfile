@@ -1,7 +1,12 @@
-# Kin's office line (the phone service) as a long-running container.
+# Kin's phone service (Twilio's webhook: Kin's call to a parent about a shift, and
+# the office line) as a long-running container.
 # Built from the repository root, so the workspace packages it imports are in reach:
 #   docker build -f apps/voice/Dockerfile .
-# Nothing deploys it yet: apps/voice/README.md lists what the owner still has to do.
+# The KinVoice stack (infra/src/voice-stack.ts) builds it for App Runner when
+# kin:voice is true in infra/cdk.json, and the settings below are filled by that
+# stack from Secrets Manager. The office line needs numbers (KIN_OFFICE_LINE_NUMBERS)
+# that are not configured; without them it answers every call with "no record".
+# apps/voice/README.md says what only a live Twilio account proves.
 
 # Install on the build machine's own platform: pnpm is a native program and
 # fails under emulation. Everything installed here is plain JavaScript, so the
@@ -30,5 +35,5 @@ COPY --from=build --chown=node:node /repo/apps/voice ./apps/voice
 USER node
 WORKDIR /repo/apps/voice
 EXPOSE 4200
-# Node runs the TypeScript directly. The settings come from the task.
+# Node runs the TypeScript directly. The settings come from the service.
 CMD ["node", "src/main.ts"]

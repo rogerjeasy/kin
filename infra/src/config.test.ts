@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { InfraConfigError, readConfig } from "./config.ts";
+import { InfraConfigError, readConfig, shiftCallSettings } from "./config.ts";
 
 const context: Record<string, unknown> = {
   "kin:region": "us-east-1",
@@ -74,6 +74,61 @@ describe("readConfig", () => {
     expect(() => read({ "kin:paypal": paypal, "kin:demoSandboxPayeeEmail": "kin" })).toThrow(InfraConfigError);
     // Nobody would pay them: the worker runs only with the PayPal app.
     expect(() => read({ "kin:demoSandboxPayeeEmail": "sb-kin@personal.example.com" })).toThrow(InfraConfigError);
+  });
+
+  it("leaves the phone service off, with no address and no numbers, unless switched on", () => {
+    expect(read()).toMatchObject({ voice: false, voicePublicUrl: null, twilioCallerNumber: null, twilioSmsFrom: null });
+    expect(read({ "kin:voice": true }).voice).toBe(true);
+    expect(() => read({ "kin:voice": "yes" })).toThrow(InfraConfigError);
+  });
+
+  it("takes the voice service's address only with the service, as an https address with no path or trailing slash", () => {
+    const url = "https://abc123.us-east-1.awsapprunner.com";
+    expect(read({ "kin:voice": true, "kin:voicePublicUrl": url }).voicePublicUrl).toBe(url);
+    expect(() => read({ "kin:voicePublicUrl": url })).toThrow(InfraConfigError);
+    for (const bad of ["http://abc.example.com", "https://abc.example.com/", "https://abc.example.com/voice", "abc.example.com", "https://a_b.example.com", 7]) {
+      expect(() => read({ "kin:voice": true, "kin:voicePublicUrl": bad })).toThrow(InfraConfigError);
+    }
+    expect(read({ "kin:voice": true, "kin:voicePublicUrl": "" }).voicePublicUrl).toBeNull();
+  });
+
+  it("takes Kin's Twilio number from cdk.json or the environment, as E.164, only with the PayPal app and the voice service", () => {
+    const paypal = { clientId: "client", webhookId: "WH-1" };
+    const on = { "kin:paypal": paypal, "kin:voice": true };
+    expect(read(on).twilioCallerNumber).toBeNull();
+    expect(read(on, { ...env, KIN_TWILIO_CALLER_NUMBER: "" }).twilioCallerNumber).toBeNull();
+    expect(read(on, { ...env, KIN_TWILIO_CALLER_NUMBER: "+15551234567" }).twilioCallerNumber).toBe("+15551234567");
+    expect(read({ ...on, "kin:twilioCallerNumber": "+41225550100" }, { ...env, KIN_TWILIO_CALLER_NUMBER: "+15551234567" }).twilioCallerNumber).toBe("+41225550100");
+    for (const bad of ["15551234567", "+0551234567", "+1 555 123 4567", "+1555", "(555) 123-4567"]) {
+      expect(() => read(on, { ...env, KIN_TWILIO_CALLER_NUMBER: bad })).toThrow(InfraConfigError);
+    }
+    // The worker places the call, and the voice service answers it.
+    expect(() => read({ "kin:voice": true }, { ...env, KIN_TWILIO_CALLER_NUMBER: "+15551234567" })).toThrow(InfraConfigError);
+    expect(() => read({ "kin:paypal": paypal }, { ...env, KIN_TWILIO_CALLER_NUMBER: "+15551234567" })).toThrow(InfraConfigError);
+  });
+
+  it("takes the text sender from cdk.json or the environment, as a number or a messaging service, or leaves texting off", () => {
+    expect(read().twilioSmsFrom).toBeNull();
+    expect(read({}, { ...env, KIN_TWILIO_SMS_FROM: "" }).twilioSmsFrom).toBeNull();
+    expect(read({}, { ...env, KIN_TWILIO_SMS_FROM: "+15551234567" }).twilioSmsFrom).toBe("+15551234567");
+    const service = `MG${"a1".repeat(16)}`;
+    expect(read({ "kin:twilioSmsFrom": service }).twilioSmsFrom).toBe(service);
+    for (const bad of ["5551234567", "MG123", `AC${"a1".repeat(16)}`, "sender"]) {
+      expect(() => read({}, { ...env, KIN_TWILIO_SMS_FROM: bad })).toThrow(InfraConfigError);
+    }
+    // Texting is the web app's own and needs neither the worker nor the voice service.
+    expect(read({}, { ...env, KIN_TWILIO_SMS_FROM: "+15551234567" }).voice).toBe(false);
+  });
+
+  it("switches the worker's call loop on only when the worker, the voice service, a number and an address all exist", () => {
+    const paypal = { clientId: "client", webhookId: "WH-1" };
+    const url = "https://abc123.us-east-1.awsapprunner.com";
+    const all = { "kin:paypal": paypal, "kin:voice": true, "kin:voicePublicUrl": url, "kin:twilioCallerNumber": "+15551234567" };
+    expect(shiftCallSettings(read(all))).toEqual({ callerNumber: "+15551234567", publicUrl: url });
+    expect(shiftCallSettings(read({ ...all, "kin:voicePublicUrl": undefined }))).toBeNull();
+    expect(shiftCallSettings(read({ ...all, "kin:twilioCallerNumber": undefined }))).toBeNull();
+    expect(shiftCallSettings(read({ "kin:paypal": paypal, "kin:voice": true }))).toBeNull();
+    expect(shiftCallSettings(read({}))).toBeNull();
   });
 
   it("refuses a sender that is not an email address", () => {

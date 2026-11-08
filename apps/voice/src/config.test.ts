@@ -43,6 +43,20 @@ describe("the voice settings", () => {
     expect(readVoiceConfig({ ...ENV, PORT: "8080" }).port).toBe(8080);
   });
 
+  it("start with no office line when KIN_OFFICE_LINE_NUMBERS is unset or blank, so the shift call can run alone", () => {
+    const shiftCallOnly = { ...ENV, KIN_OFFICE_LINE_NUMBERS: undefined };
+    expect(readVoiceConfig(shiftCallOnly).numbers.size).toBe(0);
+    expect(readVoiceConfig({ ...shiftCallOnly, KIN_OFFICE_LINE_NUMBERS: "  " }).numbers.size).toBe(0);
+    expect(readVoiceConfig({ ...shiftCallOnly, KIN_OFFICE_LINE_NUMBERS: "" }).numbers.get("+15555550100")).toBeUndefined();
+  });
+
+  it("still read a set office line exactly as before, and refuse a set one that is empty or malformed", () => {
+    expect(readVoiceConfig(ENV).numbers.get("+15555550100")).toEqual({ circleId: CIRCLE, locale: "en" });
+    for (const text of ["{}", "[]", "not json", JSON.stringify({ "5555550100": CIRCLE })]) {
+      expect(() => readVoiceConfig({ ...ENV, KIN_OFFICE_LINE_NUMBERS: text })).toThrow(ConfigError);
+    }
+  });
+
   it("refuse missing secrets, weak keys, a shared key, a plain-http public address and a bad port", () => {
     for (const patch of [
       { KIN_TWILIO_AUTH_TOKEN: undefined },

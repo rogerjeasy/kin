@@ -9,7 +9,7 @@ import * as ssm from "aws-cdk-lib/aws-ssm";
 import type { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
-import { DATABASE_SETTINGS, MIGRATION_TASK, PAYPAL_SETTINGS } from "./database-settings.ts";
+import { DATABASE_SETTINGS, MIGRATION_TASK, PAYPAL_SETTINGS, TWILIO_SETTINGS } from "./database-settings.ts";
 import { SUBNETS } from "./network-stack.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -20,6 +20,12 @@ type WorkerStackProps = StackProps & {
   readonly paypal: { readonly clientId: string; readonly webhookId: string };
   /** Kin's own PayPal sandbox account, to which approved demo caregiver payouts are paid; `null` keeps them simulated. */
   readonly demoSandboxPayeeEmail: string | null;
+  /**
+   * Kin's phone call to a parent about a shift: the number it calls from and the phone service's address.
+   * `null` leaves the call loop off, and the worker with no Twilio setting at all. Given only when
+   * the phone service, a number and its address all exist (`callLoopOn` in config.ts).
+   */
+  readonly shiftCall: { readonly callerNumber: string; readonly publicUrl: string } | null;
 };
 
 /**
@@ -90,10 +96,19 @@ export class WorkerStack extends Stack {
         KIN_PAYPAL_INBOX_URL: setting(PAYPAL_SETTINGS.inboxUrl),
         AWS_REGION: this.region,
         ...(props.demoSandboxPayeeEmail === null ? {} : { KIN_DEMO_SANDBOX_PAYEE_EMAIL: props.demoSandboxPayeeEmail }),
+        ...(props.shiftCall === null ? {} : { KIN_TWILIO_CALLER_NUMBER: props.shiftCall.callerNumber, KIN_VOICE_PUBLIC_URL: props.shiftCall.publicUrl }),
       },
       secrets: {
         KIN_DATABASE_SERVICE_PASSWORD: ecs.Secret.fromSecretsManager(secret("ServicePassword", DATABASE_SETTINGS.serviceSecretArn)),
         KIN_PAYPAL_CLIENT_SECRET: ecs.Secret.fromSecretsManager(secret("PayPalSecret", PAYPAL_SETTINGS.secretArn)),
+        // The call loop dials with the account's SID and token, and seals each call's token with the key the phone service opens it with.
+        ...(props.shiftCall === null
+          ? {}
+          : {
+              KIN_TWILIO_ACCOUNT_SID: ecs.Secret.fromSecretsManager(secret("TwilioAccountSid", TWILIO_SETTINGS.accountSidSecretArn)),
+              KIN_TWILIO_AUTH_TOKEN: ecs.Secret.fromSecretsManager(secret("TwilioAuthToken", TWILIO_SETTINGS.authTokenSecretArn)),
+              KIN_VOICE_STATE_KEY: ecs.Secret.fromSecretsManager(secret("VoiceStateKey", TWILIO_SETTINGS.stateKeySecretArn)),
+            }),
       },
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: "worker",

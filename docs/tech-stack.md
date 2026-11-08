@@ -20,9 +20,9 @@ This document says what to build with and why. It is not a design or an implemen
 | PayPal server side | Direct REST calls from `packages/paypal` (built). The PayPal Agent Toolkit and sandbox MCP server are **Planned, not built** |
 | AI model | Claude through the Anthropic TypeScript SDK on Amazon Bedrock: Opus 4.6 by InvokeModel today, Opus 5.5 when the account is granted it |
 | Speech | Amazon Transcribe and Amazon Polly (built, switched on; architecture decision 59) |
-| Phone calls | Twilio voice, as a webhook service (`apps/voice`, built and simulated; not connected to a phone number or hosted) |
+| Phone calls | Twilio voice, as a webhook service (`apps/voice`) hosted on App Runner by the `KinVoice` stack once `kin:voice` is on (architecture decision 85); no Twilio account or number is connected yet, so no live call has been placed |
 | Containers | Docker, one image for all three services, Docker Compose locally |
-| Compute | AWS App Runner for the web app today (architecture decision 35); ECS on Fargate planned for voice and worker |
+| Compute | AWS App Runner for the web app and the voice service (architecture decisions 35 and 85); ECS on Fargate for the worker |
 | Database | Amazon Aurora Serverless v2, PostgreSQL-compatible |
 | Authentication and authorization | Amazon Cognito |
 | File storage | Amazon S3 |

@@ -14,7 +14,11 @@ export const VOICE_ENV = {
 export type LineTarget = { readonly circleId: string; readonly locale: OfficeLocale };
 
 export type VoiceConfig = {
-  /** Dialled number in E.164 form, to the circle behind it. The only thing that picks a circle. */
+  /**
+   * Dialled number in E.164 form, to the circle behind it. The only thing that picks a circle on the office
+   * line. Empty when `KIN_OFFICE_LINE_NUMBERS` is unset: every inbound call then hears the fixed "no record"
+   * answer, and the shift-call routes (which take their circle from a sealed token) work as usual.
+   */
   readonly numbers: ReadonlyMap<string, LineTarget>;
   /** Twilio's auth token: signs every webhook Twilio sends. */
   readonly authToken: string;
@@ -67,6 +71,16 @@ function readTarget(value: unknown): LineTarget {
   return { circleId: circleId.toLowerCase(), locale };
 }
 
+/**
+ * The office line is a separate feature from Kin's call about a shift, so the service starts without it:
+ * unset, or blank as an empty line of a `.env` file is, means no numbers. A value that is set is read
+ * exactly as before, so an empty object or a malformed value still refuses to start.
+ */
+function readOfficeLine(text: string | undefined): ReadonlyMap<string, LineTarget> {
+  if (text === undefined || text.trim() === "") return new Map();
+  return readLineNumbers(text);
+}
+
 function required(env: Env, name: string): string {
   const value = env[name]?.trim();
   if (!value) throw new ConfigError(`${name} is not set`);
@@ -85,5 +99,5 @@ export function readVoiceConfig(env: Env): VoiceConfig {
   }
   const port = env[VOICE_ENV.port]?.trim() ? Number(env[VOICE_ENV.port]) : DEFAULT_PORT;
   if (!Number.isInteger(port) || port < 0 || port > 65_535) throw new ConfigError(`${VOICE_ENV.port} is not a port`);
-  return { numbers: readLineNumbers(required(env, VOICE_ENV.numbers)), authToken, stateKey, publicUrl, port };
+  return { numbers: readOfficeLine(env[VOICE_ENV.numbers]), authToken, stateKey, publicUrl, port };
 }

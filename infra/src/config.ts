@@ -62,7 +62,47 @@ export type InfraConfig = {
    * says so. Needs `kin:paypal`, since only the worker pays.
    */
   readonly demoSandboxPayeeEmail: string | null;
+  /**
+   * Whether the phone service (apps/voice) runs on App Runner as KinVoice.
+   * Off unless `kin:voice` is `true`. Switching it on creates the service
+   * and nothing else: Kin places no call until the Twilio credentials are
+   * stored (`twilio:store`) and the worker's call loop is on (below).
+   */
+  readonly voice: boolean;
+  /**
+   * The https address App Runner gave KinVoice, or `null` before the first
+   * deployment has named it (the same two steps as `kin:webOrigins`). Twilio
+   * signs the address it calls, so the service and the worker must both hold
+   * exactly this one. Needs `kin:voice`.
+   */
+  readonly voicePublicUrl: string | null;
+  /**
+   * Kin's own Twilio number, in E.164 form: the caller ID of its call to a
+   * parent. A number is personal data of the account, so it is not committed:
+   * `kin:twilioCallerNumber` or, in the pipeline, KIN_TWILIO_CALLER_NUMBER.
+   * Needs `kin:paypal` (the worker exists only with it) and `kin:voice`.
+   */
+  readonly twilioCallerNumber: string | null;
+  /**
+   * The number, or the messaging service SID (`MG...`), the web app's "Text
+   * it" button sends from: `kin:twilioSmsFrom` or KIN_TWILIO_SMS_FROM. Unset,
+   * the button is not shown.
+   */
+  readonly twilioSmsFrom: string | null;
 };
+
+/**
+ * Kin's call to a parent about a shift is placed by the worker, which needs
+ * the phone service's address and a number to call from. Given only when the
+ * worker, the phone service, the number and the address all exist, so a
+ * half-set deployment places no call it could not have answered
+ * (`readShiftCallConfig` in `@kin/config` refuses the same).
+ */
+export function shiftCallSettings(config: InfraConfig): { readonly callerNumber: string; readonly publicUrl: string } | null {
+  const { paypal, voice, twilioCallerNumber, voicePublicUrl } = config;
+  if (paypal === null || !voice || twilioCallerNumber === null || voicePublicUrl === null) return null;
+  return { callerNumber: twilioCallerNumber, publicUrl: voicePublicUrl };
+}
 
 export class InfraConfigError extends Error {
   constructor(message: string) {
@@ -99,7 +139,49 @@ export function readConfig({ context, env }: Source): InfraConfig {
     speech: flag(context("kin:speech"), "kin:speech"),
     claude: flag(context("kin:claude"), "kin:claude"),
     demoSandboxPayeeEmail: demoSandboxPayee(context("kin:demoSandboxPayeeEmail"), context("kin:paypal")),
+    ...twilio({ context, env }),
   };
+}
+
+function twilio({ context, env }: Source): Pick<InfraConfig, "voice" | "voicePublicUrl" | "twilioCallerNumber" | "twilioSmsFrom"> {
+  const voice = flag(context("kin:voice"), "kin:voice");
+  const voicePublicUrl = optionalVoiceUrl(context("kin:voicePublicUrl"));
+  const twilioCallerNumber = optionalPhoneNumber(context("kin:twilioCallerNumber") ?? env["KIN_TWILIO_CALLER_NUMBER"], CALLER_NUMBER_HINT);
+  const twilioSmsFrom = optionalSmsFrom(context("kin:twilioSmsFrom") ?? env["KIN_TWILIO_SMS_FROM"]);
+  if (voicePublicUrl !== null && !voice) throw new InfraConfigError("kin:voicePublicUrl needs kin:voice: there is no voice service to name");
+  if (twilioCallerNumber !== null && !voice) throw new InfraConfigError("The Twilio caller number needs kin:voice: the call is answered by the voice service");
+  const paypal = context("kin:paypal");
+  if (twilioCallerNumber !== null && (paypal === undefined || paypal === null)) {
+    throw new InfraConfigError("The Twilio caller number needs kin:paypal: only the worker places the call, and it exists only with the PayPal app");
+  }
+  return { voice, voicePublicUrl, twilioCallerNumber, twilioSmsFrom };
+}
+
+const CALLER_NUMBER_HINT = "The Twilio caller number (kin:twilioCallerNumber or KIN_TWILIO_CALLER_NUMBER) must be a phone number in E.164 form such as +15551234567, or unset.";
+const E164 = /^\+[1-9][0-9]{6,14}$/;
+const MESSAGING_SERVICE_SID = /^MG[0-9a-fA-F]{32}$/;
+
+function optionalPhoneNumber(value: unknown, hint: string): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string" || !E164.test(value)) throw new InfraConfigError(hint);
+  return value;
+}
+
+function optionalSmsFrom(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string" || !(E164.test(value) || MESSAGING_SERVICE_SID.test(value))) {
+    throw new InfraConfigError("The text sender (kin:twilioSmsFrom or KIN_TWILIO_SMS_FROM) must be a phone number in E.164 form or a messaging service SID (MG and 32 hex characters), or unset.");
+  }
+  return value;
+}
+
+/** The same shape the worker and the phone service accept: https, a host, no path, no trailing slash, no underscore. */
+function optionalVoiceUrl(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string" || !/^https:\/\/[^\s/?#_@]+$/.test(value)) {
+    throw new InfraConfigError("kin:voicePublicUrl must be the https address App Runner gave KinVoice, with no path and no trailing slash, or unset");
+  }
+  return value;
 }
 
 function demoSandboxPayee(value: unknown, paypal: unknown): string | null {
