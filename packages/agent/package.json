@@ -14,7 +14,8 @@
     "test": "vitest run",
     "eval": "node scripts/eval-visits.ts",
     "eval:documents": "node scripts/eval-documents.ts",
-    "eval:agent": "node scripts/eval-agent.ts"
+    "eval:agent": "node scripts/eval-agent.ts",
+    "eval:shifts": "node scripts/eval-shifts.ts"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "1.1.0",
