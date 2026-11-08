@@ -11,6 +11,7 @@ import {
   type AgreementChange,
   type AgreementTerms,
 } from "@kin/domain";
+import { typedAmount } from "@/lib/typed-amount";
 
 export type AgreementContext = { readonly db: Database; readonly userId: string; readonly circle: CircleSnapshot };
 export type AgreementFailure = AgreementReason | AgreementTermsError["reason"] | "amount" | "unavailable";
@@ -88,7 +89,7 @@ function draftTerms(circle: CircleSnapshot, value: unknown): AgreementTerms | nu
   if (approvals === null || !keys(approvals, ["ceiling", "second", "parent"]) || ![approvals.ceiling, approvals.second, approvals.parent].every((amount) => typeof amount === "string")) return null;
   const care = draft.care === null ? null : record(draft.care);
   if (draft.care !== null && (care === null || !keys(care, ["rate", "paidInCash"]) || typeof care.rate !== "string" || typeof care.paidInCash !== "boolean")) return null;
-  const amount = (text: unknown) => centsFromDecimal(String(text).trim(), currency);
+  const amount = (text: unknown) => centsFromDecimal(typedAmount(String(text)), currency);
   return checkAgreementTerms(
     {
       shares: shares.filter((share) => share !== null),

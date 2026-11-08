@@ -16,6 +16,7 @@ import { InvalidDecimalError, ReceiptError, SettlementProposalError, calendarDay
 import { payoutFeeReserve } from "@kin/paypal";
 
 import { openPeriod } from "@/content/circle/period";
+import { typedAmount } from "@/lib/typed-amount";
 
 export type SettlementContext = { readonly db: Database; readonly userId: string; readonly circle: CircleSnapshot };
 export type SettlementFailure =
@@ -62,7 +63,7 @@ export async function runSettlement(context: SettlementContext, input: unknown):
 async function file(context: SettlementContext, row: Record<string, unknown>): Promise<SettlementResult> {
   if (!keys(row, ["operation", "id", "category", "amount", "description", "spentOn"]) || typeof row.id !== "string" || !UUID.test(row.id) || typeof row.amount !== "string") return refusal("invalid");
   const { currency, now, timezone } = context.circle.circle;
-  const receipt = checkReceipt({ category: row.category, cents: centsFromDecimal(row.amount.trim(), currency), description: row.description, spentOn: row.spentOn }, calendarDay(now, timezone).occurredOn);
+  const receipt = checkReceipt({ category: row.category, cents: centsFromDecimal(typedAmount(row.amount), currency), description: row.description, spentOn: row.spentOn }, calendarDay(now, timezone).occurredOn);
   const id = row.id;
   await asPerson(context.db, context.userId, (tx) => submitReceipt(tx, { circleId: context.circle.circle.id, id, receipt }));
   return { ok: true, id };

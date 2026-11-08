@@ -1,6 +1,7 @@
 import { authorize } from "@kin/auth";
 import { MandateError, asPerson, grantMandate, newMandateId, setMandateStatus, type CircleSnapshot, type Database, type MandateReason } from "@kin/db";
 import { InvalidDecimalError, MANDATE_CADENCES, MandateTermsError, calendarDay, centsFromDecimal, checkMandateTerms, mandateExcessAboveParentLimit, parentMustDecide, type MandateTerms } from "@kin/domain";
+import { typedAmount } from "@/lib/typed-amount";
 
 export type MandateContext = { readonly db: Database; readonly userId: string; readonly circle: CircleSnapshot };
 export type MandateFailure = MandateReason | "amount" | "unavailable";
@@ -96,8 +97,8 @@ function draftTerms(circle: CircleSnapshot, value: unknown): MandateTerms | null
   const today = calendarDay(now, timezone).occurredOn;
   return {
     ruleId,
-    perPurchaseCents: centsFromDecimal(perPurchase.trim(), currency),
-    perPeriodCents: centsFromDecimal(perPeriod.trim(), currency),
+    perPurchaseCents: centsFromDecimal(typedAmount(perPurchase), currency),
+    perPeriodCents: centsFromDecimal(typedAmount(perPeriod), currency),
     cadence: known,
     validFrom: validFrom < today ? today : validFrom,
     expiresOn,

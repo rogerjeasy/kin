@@ -11,6 +11,7 @@ import { isLocale } from "@/i18n/locales";
 
 import { claimRecord } from "./claim-record";
 import { spendUse, type RateLimiter } from "./model";
+import { typedAmount } from "@/lib/typed-amount";
 
 export type LettersContext = {
   readonly db: Database;
@@ -201,7 +202,7 @@ export async function checkDemand(context: LettersContext, input: unknown): Prom
 }
 
 function claimedAmount(text: string, currency: string): number | null | "invalid" {
-  const plain = text.trim();
+  const plain = typedAmount(text);
   if (plain === "") return null;
   try {
     const cents = centsFromDecimal(plain, currency);

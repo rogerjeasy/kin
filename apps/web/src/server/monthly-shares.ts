@@ -4,6 +4,7 @@ import { PayPalError, type Inbox, type PayPalPool } from "@kin/paypal";
 import { randomUUID } from "node:crypto";
 
 import { may } from "./dashboard-context";
+import { typedAmount } from "@/lib/typed-amount";
 
 type Services = { readonly pool: PayPalPool; readonly inbox: Inbox };
 
@@ -56,7 +57,7 @@ export async function runMonthlyShare(context: ShareContext, input: unknown): Pr
 async function start(context: ShareContext, services: Services, row: Record<string, unknown>): Promise<ShareResult> {
   if (!hasOnly(row, ["operation", "amount"]) || typeof row["amount"] !== "string") return refusal("invalid");
   const { circle } = context;
-  const amount = { cents: centsFromDecimal(row["amount"].trim(), circle.circle.currency), currency: circle.circle.currency };
+  const amount = { cents: centsFromDecimal(typedAmount(row["amount"]), circle.circle.currency), currency: circle.circle.currency };
   const check = checkMonthlyShare(amount);
   if (!check.ok) return refusal(check.reason);
   if (circle.monthlyShares.some((share) => share.memberId === circle.viewer.memberId && share.state !== "cancelled" && share.state !== "approval_pending")) return refusal("running");

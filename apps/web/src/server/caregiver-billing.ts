@@ -5,6 +5,7 @@ import { calculateCaregiverBill, CaregiverBillError, calendarDay, centsFromDecim
 import { randomUUID } from "node:crypto";
 
 import { spendUse, type RateLimiter } from "./model";
+import { typedAmount } from "@/lib/typed-amount";
 
 export type BillingContext = {
   readonly db: Database;
@@ -64,7 +65,7 @@ export async function runCaregiverBilling(context: BillingContext, input: unknow
 
 async function configure(context: BillingContext, row: Record<string, unknown>): Promise<BillingResult> {
   if (!keys(row, ["operation", "memberId", "payeeId", "name", "rate"]) || typeof row.memberId !== "string" || typeof row.name !== "string" || typeof row.rate !== "string" || (row.payeeId !== null && typeof row.payeeId !== "string")) return refusal("invalid");
-  const rateCentsPerHour = centsFromDecimal(row.rate.trim(), context.circle.circle.currency);
+  const rateCentsPerHour = centsFromDecimal(typedAmount(row.rate), context.circle.circle.currency);
   const { memberId, name, payeeId } = row;
   const id = await asPerson(context.db, context.userId, (tx) => configureCaregiver(tx, { circleId: context.circle.circle.id, memberId, payeeId, name, rateCentsPerHour }));
   return { ok: true, id };

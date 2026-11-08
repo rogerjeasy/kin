@@ -4,6 +4,7 @@ import { PayPalError, captureRequestId, type Inbox, type Order, type PayPalPool 
 import { randomUUID } from "node:crypto";
 
 import { may } from "./dashboard-context";
+import { typedAmount } from "@/lib/typed-amount";
 
 type Services = { readonly pool: PayPalPool; readonly inbox: Inbox };
 
@@ -22,7 +23,7 @@ export async function startTopUp(services: Services, circle: CircleSnapshot, inp
   if (typeof input.amount !== "string") return { ok: false, reason: "amount" };
   let cents: number;
   try {
-    cents = centsFromDecimal(input.amount.trim(), circle.circle.currency);
+    cents = centsFromDecimal(typedAmount(input.amount), circle.circle.currency);
   } catch (error) {
     if (error instanceof InvalidDecimalError) return { ok: false, reason: "amount" };
     throw error;
