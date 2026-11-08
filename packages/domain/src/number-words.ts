@@ -230,29 +230,59 @@ const JOINS = new Set(["and", "et", "und", "e", "y"]);
 const UNIT_FIRST_JOINS = new Set(["und", "و", "ו"]);
 const PREFIXES = new Set(["و", "ب", "ل", "ك", "ف", "ו", "ב", "ל", "כ", "מ", "ה", "ש"]);
 
-/** One atom per part when the whole word is a compound of the lexicon's words, or null. */
-function split(word: string, lexicon: Lexicon): { atoms: Atom[]; joins: string[] } | null {
-  if (word === "") return { atoms: [], joins: [] };
-  for (let end = word.length; end >= 2; end -= 1) {
-    const head = word.slice(0, end);
-    const rest = word.slice(end);
-    const atom = lexicon.get(head);
-    if (atom === undefined && !(head === "und" && end < word.length)) continue;
-    const tail = split(rest, lexicon);
-    if (tail === null) continue;
-    if (atom === undefined) return tail.atoms.length === 0 ? null : { atoms: tail.atoms, joins: ["und", ...tail.joins.slice(1)] };
-    return { atoms: [atom, ...tail.atoms], joins: ["", ...tail.joins] };
-  }
-  return null;
+/**
+ * The longest letter-only word read as a compound. The longest real number a
+ * guarded text can hold is a German 999,999,999 (about 90 letters); a longer
+ * word is refused outright rather than searched, so no input costs more than
+ * this squared.
+ */
+const MAX_WORD_LENGTH = 100;
+/** Text longer than this, or with more tokens than the cap, is refused whole: no real sentence of Kin's is near it. */
+const MAX_TEXT_LENGTH = 2000;
+const MAX_TOKENS = 1000;
+
+type Split = { atoms: Atom[]; joins: string[] };
+
+/**
+ * One atom per part when the whole word is a compound of the lexicon's words,
+ * or null. The best split of the rest of the word depends only on where it
+ * starts, so each start is solved once: O(n^2) however many atoms overlap.
+ */
+function split(word: string, lexicon: Lexicon): Split | null {
+  const memo = new Map<number, Split | null>();
+  const from = (start: number): Split | null => {
+    if (start === word.length) return { atoms: [], joins: [] };
+    const known = memo.get(start);
+    if (known !== undefined) return known;
+    let result: Split | null = null;
+    for (let end = word.length; end - start >= 2; end -= 1) {
+      const head = word.slice(start, end);
+      const atom = lexicon.get(head);
+      if (atom === undefined && !(head === "und" && end < word.length)) continue;
+      const tail = from(end);
+      if (tail === null) continue;
+      if (atom === undefined) {
+        if (tail.atoms.length === 0) continue;
+        result = { atoms: tail.atoms, joins: ["und", ...tail.joins.slice(1)] };
+      } else {
+        result = { atoms: [atom, ...tail.atoms], joins: ["", ...tail.joins] };
+      }
+      break;
+    }
+    memo.set(start, result);
+    return result;
+  };
+  return from(0);
 }
 
-type Resolved = { readonly atoms: readonly Atom[]; readonly joins: readonly string[] } | { readonly join: string } | null;
+type Resolved = { readonly atoms: readonly Atom[]; readonly joins: readonly string[] } | { readonly join: string } | { readonly tooLong: true } | null;
 
 function resolve(word: string): Resolved {
   const direct = DIRECT.get(word);
   if (direct !== undefined) return { atoms: [direct], joins: [""] };
   if (JOINS.has(word)) return { join: word };
   if (word === "و" || word === "ו") return { join: word };
+  if (word.length > MAX_WORD_LENGTH) return { tooLong: true };
   for (const lexicon of COMPOUND_PARTS) {
     if (word.length < 4) break;
     const parts = split(word, lexicon);
@@ -343,11 +373,17 @@ export type SpokenNumber = {
   readonly readings: readonly string[];
 };
 
-type Token = { readonly word: string } | "break";
+type Token = { readonly word: string } | "digit" | "break";
 
 function tokens(text: string): Token[] {
   const found = text.normalize("NFC").toLowerCase().matchAll(/[\p{L}\p{M}]+|\p{N}+|[^\p{L}\p{M}\p{N}\s\-‐‑‒–—־'’­]/gu);
-  return [...found].map((match) => (/^[\p{L}\p{M}]/u.test(match[0]) ? { word: normalise(match[0]) } : "break"));
+  return [...found].map((match): Token => (/^[\p{L}\p{M}]/u.test(match[0]) ? { word: normalise(match[0]) } : /^\p{N}/u.test(match[0]) ? "digit" : "break"));
+}
+
+/** "thousand", "hundred", "million" and their kin multiply what stands before them; "cent(s)" is also a coin. */
+function startsWithMagnitude(atoms: readonly Atom[]): boolean {
+  const first = atoms[0];
+  return first !== undefined && first.cent !== true && (first.kind === "scale" || first.kind === "hundred" || first.kind === "hundreds");
 }
 
 /**
@@ -357,13 +393,21 @@ function tokens(text: string): Token[] {
  * ending in them reads both ways.
  */
 export function spokenNumbers(text: string): SpokenNumber[] {
+  if (text.length > MAX_TEXT_LENGTH) return [{ words: "", readings: [] }];
+  const all = tokens(text);
+  if (all.length > MAX_TOKENS) return [{ words: "", readings: [] }];
   const found: SpokenNumber[] = [];
   let state = EMPTY;
   let words: string[] = [];
   let pending = "";
+  // A run that digits touch ("64 thousand", "twenty 5") has a value the digit guard cannot see: the whole run is unreadable.
+  let poisoned = false;
 
   const flush = (): void => {
-    if (state.atoms > 0) {
+    if (poisoned) {
+      found.push({ words: words.join(" "), readings: [] });
+      poisoned = false;
+    } else if (state.atoms > 0) {
       const own = String(valueOf(state));
       if (state.withoutCent !== undefined) {
         if (state.withoutCent !== null) found.push({ words: words.join(" "), readings: [state.withoutCent, own] });
@@ -414,16 +458,31 @@ export function spokenNumbers(text: string): SpokenNumber[] {
     add(atom, "", word);
   };
 
-  for (const token of tokens(text)) {
+  let afterDigit = false;
+  for (const token of all) {
+    const touchesDigit = afterDigit;
+    afterDigit = token === "digit";
     if (token === "break") {
       flush();
+      continue;
+    }
+    if (token === "digit") {
+      if (!poisoned && state.atoms > 0 && !state.onlyArticles) poisoned = true;
+      else if (!poisoned) flush();
       continue;
     }
     const resolved = resolve(token.word);
     if (resolved === null) {
       flush();
+    } else if ("tooLong" in resolved) {
+      flush();
+      found.push({ words: token.word.slice(0, MAX_WORD_LENGTH), readings: [] });
     } else if ("join" in resolved) {
-      if (state.atoms > 0) pending = resolved.join;
+      if (state.atoms > 0 && !poisoned) pending = resolved.join;
+    } else if (poisoned || (touchesDigit && startsWithMagnitude(resolved.atoms))) {
+      if (!poisoned) flush();
+      poisoned = true;
+      words.push(token.word);
     } else {
       resolved.atoms.forEach((atom, index) => {
         const inner = resolved.joins[index] ?? "";
@@ -439,9 +498,11 @@ export function spokenNumbers(text: string): SpokenNumber[] {
 
 /**
  * Whether every number the text writes in words has a reading the record
- * supplied. `isAllowed` takes a plain integer string ("64"), the same form
+ * supplied. A run with two readings ("five cents": five, or French 500)
+ * passes only when every reading is held, so a guess is never the one accepted.
+ * `isAllowed` takes a plain integer string ("64"), the same form
  * the digits are compared in.
  */
 export function spokenNumbersAreAllowed(text: string, isAllowed: (value: string) => boolean): boolean {
-  return spokenNumbers(text).every((number) => number.readings.some(isAllowed));
+  return spokenNumbers(text).every((number) => number.readings.length > 0 && number.readings.every(isAllowed));
 }
