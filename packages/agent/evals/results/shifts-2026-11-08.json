@@ -5,7 +5,7 @@
   "api": "invoke",
   "passed": 22,
   "total": 22,
-  "workedByModel": 21,
+  "workedByModel": 22,
   "cases": [
     {
       "name": "en morning with a time and a title",
@@ -54,7 +54,7 @@
       "expect": "model",
       "passed": true,
       "problems": [],
-      "text": "¿Estuvo Amara esta tarde con ustedes hasta las 16:30?",
+      "text": "¿Estuvo Amara con ustedes esta tarde hasta las 16:30?",
       "source": "model"
     },
     {
@@ -74,7 +74,7 @@
       "expect": "model",
       "passed": true,
       "problems": [],
-      "text": "هل زاركم Amara هذا الصباح وغادر في 10:45؟",
+      "text": "هل مرّ Amara عليكم الصباح وغادر الساعة 10:45؟",
       "source": "model"
     },
     {
@@ -94,7 +94,7 @@
       "expect": "model",
       "passed": true,
       "problems": [],
-      "text": "Did O’Brien stop by this morning and leave around 9:05 AM?",
+      "text": "Did O’Brien stop by this morning and leave around 9:05 AM as expected?",
       "source": "model"
     },
     {
@@ -124,8 +124,8 @@
       "expect": "safe",
       "passed": true,
       "problems": [],
-      "text": "War Amara heute Nachmittag da?",
-      "source": "template"
+      "text": "Hat Amara heute Nachmittag wie geplant vorbeigekommen?",
+      "source": "model"
     },
     {
       "name": "a title that tries to close the wrapper",
@@ -134,7 +134,7 @@
       "expect": "safe",
       "passed": true,
       "problems": [],
-      "text": "Est-ce que Amara est bien passé ce matin avant 9:30 AM ?",
+      "text": "Est-ce que Amara est bien passé ce matin et reparti à 9:30 AM ?",
       "source": "model"
     },
     {
@@ -154,7 +154,7 @@
       "expect": "model",
       "passed": true,
       "problems": [],
-      "text": "Ana est libre et a 0 h ce jour (1 h 30 min cette semaine), ce serait une visite. Luc a 1 h ce jour (4 h cette semaine), aussi en visite. Mia a 2 h ce jour (8 h cette semaine), ce serait un quart payé.",
+      "text": "Ana est libre et a 0 h ce jour (1 h 30 min cette semaine), ce serait une visite. Luc est aussi libre (1 h ce jour, 4 h cette semaine), aussi une visite. Mia est disponible (2 h ce jour, 8 h cette semaine), ce serait un quart payé.",
       "source": "model"
     },
     {
@@ -204,7 +204,7 @@
       "expect": "model",
       "passed": true,
       "problems": [],
-      "text": "Ana פנוי/ה באותו זמן עם 0 ש׳ באותו יום ו-0 ש׳ השבוע, והמשמרת תיחשב כמשמרת בתשלום.",
+      "text": "Ana פנוי/ה באותו זמן, עם 0 ש׳ באותו יום ו-0 ש׳ השבוע — מדובר במשמרת בתשלום.",
       "source": "model"
     },
     {
@@ -214,7 +214,7 @@
       "expect": "safe",
       "passed": true,
       "problems": [],
-      "text": "Ana is free and has 0 h that day and 0 h this week, so it would count as a care visit. Bea is also free with 0 h that day and 2 h this week, and it would be a paid shift.",
+      "text": "Ana is free and has 0 h this week, so it would count as a care visit. Bea is also free with 0 h that day and 2 h this week, and it would be a paid shift.",
       "source": "model"
     },
     {

@@ -267,6 +267,13 @@
       "when": 1794161355427,
       "tag": "0037_shift-links-and-calls-access",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1794169864440,
+      "tag": "0038_word-independent",
+      "breakpoints": true
     }
   ]
 }

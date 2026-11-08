@@ -82,9 +82,13 @@ export type CoverNoteData = {
   readonly candidates: readonly { readonly slot: string; readonly kind: "aide" | "visit"; readonly hoursThatDay: string; readonly hoursThisWeek: string }[];
 };
 
-/** The facts as the model is shown them. A closing tag inside a string cannot end the wrapper. */
+/**
+ * The facts as the model is shown them. No tag can form inside the wrapper: every `<` and `>` in the JSON is
+ * written as a JSON escape, which decodes to the same text but is not a tag. (Stripping a closing tag instead
+ * can be beaten by nesting one inside another, so that what is left forms the tag.)
+ */
 export function factsMessage(data: QuestionData | CoverNoteData): string {
-  const json = JSON.stringify(data, (_key, value: unknown) => (typeof value === "string" ? value.replaceAll(new RegExp(`</?${TAG}\\s*>`, "giu"), "") : value), 2);
+  const json = JSON.stringify(data, null, 2).replaceAll("<", "\\u003c").replaceAll(">", "\\u003e");
   return `<${TAG}>\n${json}\n</${TAG}>`;
 }
 
