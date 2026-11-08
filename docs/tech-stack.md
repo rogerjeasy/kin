@@ -16,10 +16,10 @@ This document says what to build with and why. It is not a design or an implemen
 | Web app | Next.js, React, Tailwind CSS, shadcn/ui, installable to the home screen |
 | Data grid | AG Grid Community for the family ledger and audit screens |
 | Checkout | PayPal JavaScript SDK v6 |
-| PayPal server side | PayPal Agent Toolkit and sandbox MCP server, plus direct REST calls |
+| PayPal server side | Direct REST calls from `packages/paypal` (built). The PayPal Agent Toolkit and sandbox MCP server are **Planned, not built** |
 | AI model | Claude through the Anthropic TypeScript SDK on Amazon Bedrock: Opus 4.6 by InvokeModel today, Opus 5.5 when the account is granted it |
-| Speech | A speech-to-text and a text-to-speech service |
-| Phone calls | Twilio voice |
+| Speech | Amazon Transcribe and Amazon Polly (built, switched on; architecture decision 59) |
+| Phone calls | Twilio voice, as a webhook service (`apps/voice`, built and simulated; not connected to a phone number or hosted) |
 | Containers | Docker, one image for all three services, Docker Compose locally |
 | Compute | AWS App Runner for the web app today (architecture decision 35); ECS on Fargate planned for voice and worker |
 | Database | Amazon Aurora Serverless v2, PostgreSQL-compatible |
@@ -111,7 +111,9 @@ Three small services share one codebase:
 | Contesting a wrong charge | Disputes | Agent Toolkit |
 | Signing in with PayPal | Log in with PayPal | Federated through Cognito, see section 9 |
 
-**Packages and endpoints:**
+**Status in this build.** Called by the code today: Orders v2 with the JavaScript SDK v6 (and Pay Later when PayPal offers it), Subscriptions, Payouts, webhooks with signature verification, and the vault-backed Orders request in the demo pharmacy. Everything reached through the "Agent Toolkit" column, and Shipment tracking, Disputes, Transaction Search and Log in with PayPal, is **Planned, not built**; every PayPal call in the code is a direct REST call. Invoicing is covered in `architecture.md` section 8.2.
+
+**Packages and endpoints (the toolkit and MCP lines are Planned, not built):**
 
 - `@paypal/agent-toolkit` for the agent's PayPal tools.
 - The hosted sandbox MCP server at `https://mcp.sandbox.paypal.com`, with `/sse` and `/http` transports. It can also run locally with `npx @paypal/mcp --tools=all`.
@@ -120,7 +122,7 @@ Three small services share one codebase:
 
 **Rules for every PayPal call:**
 
-- **Webhooks are the source of truth.** Kin records a payment as done only when PayPal's webhook says so. Every webhook signature is verified.
+- **PayPal's record is the source of truth.** Kin records a payment as done only when a verified webhook, or a direct read of the resource from PayPal, says so. Every webhook signature is verified. Kin reads payouts back from the batch rather than subscribing to payout-item events.
 - **Every write carries an idempotency key**, so a retry never pays twice.
 - **Every movement of money sits behind an approval record** in Kin's own database. PayPal's toolkit has no built-in confirmation step, so Kin supplies one.
 
@@ -129,7 +131,7 @@ Three small services share one codebase:
 ## 6. AI
 
 - **Model: Claude Opus 5.5 (`claude-opus-5-5`) as the target; the hosted app runs Opus 4.6 until the account is granted 5.5 (see the Bedrock paragraph below).** Used for the agent's reasoning, for reading bills, letters and receipts from photographs, and for writing statements and spoken sentences.
-- **SDK: `@anthropic-ai/sdk`**, using its tool runner with typed tools, so the SDK drives the tool-calling loop and Kin supplies the tools and the approval checks.
+- **SDK: `@anthropic-ai/sdk`**, using its tool runner with typed tools, so the SDK drives the tool-calling loop and Kin supplies the tools and the approval checks. **As built:** Ask Kin (`packages/agent/src/ask-kin`, architecture decision 74) runs a manual tool loop on `@anthropic-ai/bedrock-sdk`, non-streaming, with strict tool schemas; Bedrock's strict mode refuses integer minimum and maximum bounds, so Kin's own gateway enforces them. The tool runner is not used.
 - **Structured outputs** for anything Kin stores, such as the amount, payee and due date read from a bill.
 - **Streaming** for spoken replies, so the parent hears the first words quickly.
 
@@ -216,7 +218,7 @@ A phone call is not a browser session, so Cognito does not sign the parent in th
 
 ### 9.4 Service access
 
-- **Kin's own MCP server**, which makes Kin usable by other AI agents, is protected with Cognito-issued OAuth tokens.
+- **Kin's own MCP server** (**Planned, not built**), which would make Kin usable by other AI agents, would be protected with Cognito-issued OAuth tokens.
 - **Service-to-service calls** inside AWS use IAM roles, not shared keys.
 
 ---
@@ -340,6 +342,7 @@ Each of these should be tried against the real services before the build depends
 - The PayPal Agent Toolkit's tool list, including the absence of a payout tool.
 - The PayPal sandbox MCP server address and transports.
 - The Claude model identifiers and the behavior notes in section 6.
+- Claude in the hosted app: `kin:claude` is `true` and the deployed model is `us.anthropic.claude-opus-4-6-v1` through Bedrock InvokeModel (`infra/src/web-stack.ts`). The fixed evaluation sets (12 visit cases, 6 document cases in `packages/agent/evals`) are run by hand with `pnpm --filter @kin/agent run eval` and `run eval:documents`; the git history shows the document prompt was adjusted for Opus 4.6, but no recorded result is kept in the repository.
 
 **Written from general knowledge and to be confirmed before relying on it:**
 

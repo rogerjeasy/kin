@@ -4,6 +4,8 @@ Architecture of the complete Kin application for the PayPal AI Hackathon 2026. D
 
 Read `project-description.md` for what Kin is and `tech-stack.md` for the tools. This document explains how the system is built: its parts, its data, how money moves, how the AI is contained, and how it runs on AWS.
 
+**Status of this document.** It is the design of the complete application, with notes on what is built. Section 23 is the authority on what has been built, tested and verified. Parts that are **Planned, not built** are marked with that phrase where they appear: the Kin MCP server (13.4), the PayPal Agent Toolkit and its MCP server (8.2, 9.3), and typed agent conversations (9.2, 9.3) other than the read-only "Ask Kin" described in 9.3. Two deployment facts differ from the diagrams in sections 1, 4 and 14: the web app runs on AWS App Runner (not Fargate behind a load balancer), and the `voice` service is built and tested but not hosted anywhere (decision 68).
+
 **Contents**
 
 1. Summary
@@ -34,7 +36,7 @@ Read `project-description.md` for what Kin is and `tech-stack.md` for the tools.
 
 ## 1. Summary
 
-Kin is a TypeScript system of three services on AWS Fargate, one PostgreSQL database on Aurora Serverless v2, and a small set of managed AWS services. It talks to four outside systems: PayPal, Claude, a speech provider and a telephony provider.
+Kin is a TypeScript system of three services (the web app on AWS App Runner, the worker on AWS Fargate, and the voice service, built but not yet hosted), one PostgreSQL database on Aurora Serverless v2, and a small set of managed AWS services. It talks to four outside systems: PayPal, Claude, a speech provider and a telephony provider.
 
 The architecture rests on seven decisions.
 
@@ -71,11 +73,11 @@ flowchart TB
     par["Parent<br/>phone call or phone browser"]
     care["Caregiver<br/>phone browser"]
     pro["Professional or observer<br/>browser"]
-    ext["Other AI agents<br/>through Kin MCP server"]
+    ext["Other AI agents<br/>through Kin MCP server<br/>(planned, not built)"]
 
     kin["Kin"]
 
-    pp["PayPal sandbox<br/>REST APIs, webhooks, MCP server"]
+    pp["PayPal sandbox<br/>REST APIs, webhooks<br/>(MCP server: planned, not built)"]
     claude["Claude API<br/>reasoning, vision, language"]
     speech["Speech provider<br/>speech to text, text to speech"]
     tel["Telephony provider<br/>phone calls"]
@@ -123,7 +125,7 @@ flowchart TB
     alb["Application Load Balancer"]
 
     subgraph compute["ECS Fargate"]
-        web["web<br/>Next.js UI, HTTP API,<br/>webhook intake, Kin MCP server"]
+        web["web<br/>Next.js UI, HTTP API,<br/>webhook intake"]
         voice["voice<br/>live audio sessions"]
         worker["worker<br/>events, executions, documents,<br/>schedules, notifications"]
     end
@@ -157,7 +159,7 @@ flowchart TB
 
 | Part                            | Responsibility                                                                                                                               | Never does                             |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| **web**                   | Serves the app. Exposes the HTTP API. Receives PayPal and telephony webhooks. Hosts the Kin MCP server. Runs typed agent conversations. Captures a top-up the payer has just approved, as PayPal requires while the payer waits. | Send money out of the pool in a request, or write the ledger |
+| **web**                   | Serves the app. Exposes the HTTP API. Receives PayPal and telephony webhooks. Will host the Kin MCP server and run typed agent conversations (**Planned, not built**; section 9.3 describes the read-only Ask Kin that is built). Captures a top-up the payer has just approved, as PayPal requires while the payer waits. | Send money out of the pool in a request, or write the ledger |
 | **voice**                 | Holds live audio connections. Streams speech in and out. Runs spoken agent turns. Records voice approvals.                                   | Execute payments                       |
 | **worker**                | Verifies and applies PayPal events. Executes approved proposals. Reads photographed documents. Runs settlement, schedules and notifications. | Serve user requests                    |
 | **Aurora**                | Ledger, circles, bills, approvals, PayPal events, audit log                                                                                  |                                        |
@@ -180,7 +182,7 @@ One repository with shared packages.
 ```
 kin/
   apps/
-    web/              Next.js app, HTTP API, webhook intake, Kin MCP server
+    web/              Next.js app, HTTP API, webhook intake (Kin MCP server: planned, not built)
     voice/            live audio service
     worker/           queue consumers and scheduled jobs
     demo-merchant/    stand-in pharmacy for the hackathon
@@ -279,6 +281,7 @@ Every table except `users` carries a `circle_id`. Built in `packages/db/src/sche
 | `pool_accounts`   | *Not yet.* PayPal merchant ID, credential reference, webhook ID, mode               |
 | `payees`          | Name, spending category, status, the member it pays, PayPal recipient, auto-pay rule and range; a nullable caregiver hourly rate, distinct from the family care-credit rate. At most one rate-configured payee per caregiver and circle. |
 | `monthly_shares`  | Member, amount in cents and currency, state (`approval_pending`, `active`, `paused`, `cancelled`), PayPal subscription ID and the page where the member approves it (none for a simulated share), simulated, failed charges as PayPal last reported, next billing time. One live share per member. Changed only through the member's own operations and the worker. |
+| `invoice_requests` | A request for money by PayPal invoice (section 8.4): the member asked, the organizer who asked, purpose (`settlement` with its period, or `top_up`), amount in cents and currency, state (`requested`, `sent`, `paid`, `cancelled`, `failed`), simulated, the address PayPal emailed (none when simulated), PayPal's invoice ID, number and payer page, and the capture that paid it. Written by a person only through `request_invoice`, `mark_invoice_sent` and `close_invoice_request`; the worker records payment. |
 | `contributions`   | *Not yet.* Member, kind, amount, period, source reference                            |
 | `care_entries`    | Member, date, minutes, note, approved, the care-credit entry that values it         |
 | `documents`       | S3 key (none for a simulated document), kind, uploader, extraction result, confidence, simulated |
@@ -465,6 +468,23 @@ stateDiagram-v2
     cancelled --> [*]
 ```
 
+**Invoice request** (`INVOICE_REQUEST_TRANSITIONS` in `packages/domain`, enforced by a trigger on `invoice_requests`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> requested
+    requested --> sent
+    requested --> failed
+    requested --> cancelled
+    sent --> paid
+    sent --> cancelled
+    paid --> [*]
+    cancelled --> [*]
+    failed --> [*]
+```
+
+`requested`: Kin holds the row and PayPal has not yet confirmed sending the invoice (an outage leaves it here, and asking again resumes it under the same key). `sent`: the invoice read back from PayPal says it was sent (a simulated request is marked sent with no invoice behind it). `paid`: the worker read the paid invoice and its completed capture back from PayPal and credited the member. `failed`: PayPal refused to make the invoice. `cancelled`: withdrawn by an organizer after PayPal cancelled it, or PayPal's word that it was cancelled.
+
 The `unknown` state matters. If a call to PayPal times out, Kin does not assume success or failure. It asks PayPal for the resource by its idempotency key and waits for the webhook.
 
 **Delivery** (the goods of a purchase, beside its execution; `packages/domain` `DELIVERY_TRANSITIONS`)
@@ -537,9 +557,9 @@ Moving money involves a database and an outside API, which cannot share a transa
 
 ### 8.1 The pool account
 
-Each circle has one PayPal account that holds its shared money. Kin does not hold funds.
+Each circle's shared money should sit in a PayPal account that PayPal, not Kin, holds and licenses. That is the production design. The hackathon build differs, as the next paragraph says, and the custody statement in section 22.3 applies.
 
-**In the hackathon,** every circle's pool is the one sandbox business account (decision 46). Each order Kin creates names its circle and member in `custom_id` (`kin1:<circle>:<member>`), PayPal copies it onto the capture, and Kin trusts it only after reading the capture back from PayPal, so PayPal's own record still says whose money each payment is. The app's client secret is in Secrets Manager (`kin/paypal/client-secret`); its client ID and webhook ID, which are not secret, are in `infra/cdk.json` under `kin:paypal`.
+**In the hackathon,** every circle's pool is the one sandbox business account (decision 46), so Kin's app holds the credentials for the one account that receives every circle's money, and Kin's own ledger attributes each amount to its circle (decision 70). Kin has no bank account of its own. Each order Kin creates names its circle and member in `custom_id` (`kin1:<circle>:<member>`), PayPal copies it onto the capture, and Kin trusts it only after reading the capture back from PayPal, so PayPal's own record still says whose money each payment is. The app's client secret is in Secrets Manager (`kin/paypal/client-secret`); its client ID and webhook ID, which are not secret, are in `infra/cdk.json` under `kin:paypal`.
 
 **In production,** Kin would act on a family's account through PayPal's partner model, with the family's consent and without holding their credentials. The code reaches the pool through one function, `poolFor` in `packages/paypal`, so that change is confined to it. This is the largest open question in the architecture and is listed in section 22.
 
@@ -550,15 +570,17 @@ Each circle has one PayPal account that holds its shared money. Kin does not hol
 | Monthly share                         | Subscriptions, with a Catalog product and one plan per amount | Sibling to pool   | `PAYMENT.SALE.COMPLETED`, `BILLING.SUBSCRIPTION.*` |
 | One-off top-up in the app             | Orders v2 with JavaScript SDK v6, PayPal or Pay Later         | Sibling to pool   | `PAYMENT.CAPTURE.COMPLETED`                          |
 | Top-up or settlement request by email | Invoicing v2, with reminders and QR code                      | Sibling to pool   | `INVOICING.INVOICE.PAID`                             |
-| Caregiver pay                         | Payouts                                                       | Pool to caregiver | `PAYMENT.PAYOUTS-ITEM.SUCCEEDED`                     |
-| Settlement payout                     | Payouts                                                       | Pool to sibling   | `PAYMENT.PAYOUTS-ITEM.SUCCEEDED`                     |
+| Caregiver pay                         | Payouts                                                       | Pool to caregiver | The payout batch read back: item `SUCCESS`            |
+| Settlement payout                     | Payouts                                                       | Pool to sibling   | The payout batch read back: item `SUCCESS`            |
 | Purchases for the parent              | Vault payment token and Orders v2 at a participating merchant | Pool to merchant  | Merchant order status, then reconciliation             |
 | Refund of a contribution              | Refunds                                                       | Pool to sibling   | `PAYMENT.CAPTURE.REFUNDED`                           |
 | Delivery tracking                     | Shipment tracking on the merchant's order                     | Read              | Tracking status                                        |
 | Disputed contribution                 | Disputes                                                      | Read and respond  | `CUSTOMER.DISPUTE.*`                                 |
 | The record of truth                   | Webhooks and Transaction Search                               | Read              |                                                        |
 | Identity of a payer                   | Log in with PayPal                                            | Read              |                                                        |
-| Agent access to PayPal data           | Agent Toolkit and sandbox MCP server                          | Read              |                                                        |
+| Agent access to PayPal data           | Agent Toolkit and sandbox MCP server (**Planned, not built**) | Read              |                                                        |
+
+**What the code calls today.** Orders v2 and the JavaScript SDK v6 (top-ups, with Pay Later when PayPal offers it), Subscriptions with a Catalog product and plans (monthly shares), Payouts (caregiver and settlement payouts), webhooks with the verify-webhook-signature call, and the OAuth token endpoint. The demo pharmacy calls the vault-backed Orders request. Not called anywhere: Refunds, Shipment tracking, Disputes, Transaction Search (the sandbox app's reporting scope answered 403), Log in with PayPal and the Agent Toolkit. Invoicing v2 (create, send, read back, cancel, search by number) is in `packages/paypal` and carries requests by invoice (section 8.4), with the events `INVOICING.INVOICE.PAID` and `INVOICING.INVOICE.CANCELLED` subscribed in code; the live webhook receives them only once `webhook:register` has been run again against it, since it keeps the events it was made with. The webhook events Kin subscribes to are `PAYMENT.CAPTURE.COMPLETED`, the `BILLING.SUBSCRIPTION.*` events and `PAYMENT.SALE.COMPLETED`; Kin does not subscribe to payout-item events, and reads the payout batch instead (section 7.6).
 
 ### 8.3 Three corrections to the earlier documents
 
@@ -597,12 +619,14 @@ Checking the APIs changed three things. The PayPal tables in `project-descriptio
 5. The worker reads the order back from PayPal and records each completed capture (`recordContribution` in `packages/db`): the member is credited the gross, the pool receives the net, and PayPal's fee goes to `fees`. The capture's ID is the entry's source, so the webhook `PAYMENT.CAPTURE.COMPLETED` for the same capture finds the entry there and writes nothing (decision 47).
 6. The sheet asks `GET /api/top-ups/captures/{capture}` until the entry exists, then says the amount is in the pool. If PayPal could not be reached during the capture, whether it happened is unknown: the worker is asked to look anyway, and the sheet says the record will show it once PayPal confirms.
 
-**Requests by invoice**
+**Requests by invoice** (built; on the Fairness page: each of the settlement's collections, and "Ask a member for a top-up", for organizers)
 
-1. Kin creates and sends an invoice from the pool to the sibling's email.
-2. The sibling pays from the email or the QR code.
-3. `INVOICING.INVOICE.PAID` confirms it.
-4. If it stays unpaid, Kin sends a reminder on the schedule in the agreement.
+1. An organizer asks a member who shares the cost (`invoice.request`, organizers only; never themselves) for what the month's settlement collects from them, or for a top-up. `POST /api/invoice-requests` takes no amount for a settlement: it is the money core's collection for that member in the open period (`checkInvoiceRequest`); a top-up keeps a top-up's limits. `request_invoice` records the request (`requested`) and decides where the invoice goes: the member's own PayPal email from their settlement payee, else the email they verified at sign-in. Nothing typed in the browser chooses the address.
+2. The web app makes the draft in the pool (Invoicing v2: one line, due on receipt, no tip, no partial payment; `memo` carries `kin-invoice1:<circle>:<request>`, which the payer never sees), has PayPal email it, reads it back, and records it `sent` with PayPal's invoice ID, number and payer page (`mark_invoice_sent`). The invoice number, `KIN-` and the request's own ID, is the idempotency key: in the sandbox PayPal made a second draft for a repeated `PayPal-Request-Id` but refused a repeated number (`DUPLICATE_INVOICE_NUMBER`), so a lost reply is recovered by searching for the number. PayPal refusing the invoice ends the request `failed`; an outage leaves it `requested`, and asking again resumes it.
+3. The member pays on PayPal's page. The worker reads the invoice back (`invoice_checked` on the inbox queue, sent when it is sent and whenever an organizer or the member presses *Check with PayPal*; `INVOICING.INVOICE.PAID`; or the `PAYMENT.CAPTURE.COMPLETED` of the capture that paid it, which names the invoice). Only when PayPal says `PAID` does it read each PayPal payment on the invoice back as a capture, which must be `COMPLETED`, name this invoice and add up to the amount asked, and credit the member exactly as a top-up (`recordContribution`: once, by the capture's ID, PayPal's fee to `fees`), closing the request `paid` in the same transaction. A payment the invoicer only recorded by hand is never credited. `INVOICING.INVOICE.CANCELLED` ends the request.
+4. An organizer may withdraw a request that waits: PayPal cancels the invoice first, and a paid one cannot be withdrawn.
+5. **Demo circles.** The demo's members are stand-ins, so an invoice goes to Kin's own sandbox personal account named by `KIN_DEMO_INVOICE_RECIPIENT_EMAIL` (only a `…@personal.example.com` address is accepted). Its payment is real sandbox money and recorded as such. Without that setting the request is `simulated`: no PayPal call, labelled Simulated on screen, and the worker records the stand-in's payment at once, labelled simulated, with no fee. It never writes a simulated payment into a circle that is not a demo.
+6. Reminders on the agreement's schedule are not built.
 
 ### 8.5 Payouts
 
@@ -703,7 +727,7 @@ The agent is powerful at understanding and powerless over money. It reads docume
 flowchart LR
     user["Person<br/>typed or spoken"]
     ctx["Context builder<br/>role, circle snapshot"]
-    llm["Claude Opus 5.5"]
+    llm["Claude<br/>(Opus 4.6 deployed)"]
     gw["Tool gateway<br/>authorization and policy"]
 
     read["Read tools<br/>ledger, bills, PayPal data"]
@@ -729,6 +753,8 @@ flowchart LR
 
 ### 9.2 The agent loop
 
+> **Status.** Built today: the one-shot model calls in `packages/agent` (reading a caregiver's visits, reading a letter, wording a verdict and an audit finding), each with no tools, structured output and the number guard. **Planned, not built:** the multi-turn agent loop for every channel, typed agent conversations, and the voice-turn agent. Ask Kin, the read-only tool-using agent, is described in 9.3.
+
 One agent serves every channel. What changes is who it is speaking to.
 
 1. **Build context.** The context builder loads the speaker's role, language and permissions, and a compact snapshot of the circle: balances, open bills, pending approvals and recent events. This snapshot is produced by the money core, not by the model.
@@ -739,7 +765,7 @@ One agent serves every channel. What changes is who it is speaking to.
 
 **Model configuration**
 
-- Model `claude-opus-5-5` through the Anthropic TypeScript SDK and its tool runner.
+- Model: `claude-opus-5-5` is the design target; the hosted app runs `us.anthropic.claude-opus-4-6-v1` through Bedrock's InvokeModel API (decision 67). The SDK is `@anthropic-ai/bedrock-sdk`. The tool runner is used only once the multi-turn loop is built.
 - Effort is set explicitly on every call: low for spoken turns, medium for typed conversation, high for documents and statements.
 - Tool choice is automatic, with strict tool schemas. This model rejects forced tool choice.
 - Structured output for anything Kin stores.
@@ -748,6 +774,8 @@ One agent serves every channel. What changes is who it is speaking to.
 - The system prompt and tool list are stable and cached. The changing circle snapshot comes after the cached part.
 
 ### 9.3 The tool gateway
+
+> **Status.** **Built in this branch (read-only Ask Kin):** the gateway in `packages/agent/src/ask-kin` and its tools in `apps/web/src/server/ask-kin`, behind `/api/ask-kin`. It checks identity, role scope (through `authorize`) and arguments against a schema, bounds the calls, time and result size of a question, and records every call. Its nine read tools cover the pool, bills, fairness, the claim check, proposals, the record, and the status of a payout, a top-up or a subscription read from PayPal through Kin's own adapter (not the Agent Toolkit); one tool only proposes a refill the family's rules already allow, which still waits for the family's yes. The tool names differ from the table below, which is the wider design. The PayPal Agent Toolkit row and the propose, write and approval tools in the table are **Planned, not built.**
 
 Every tool call passes through one gateway, which does four things before any tool runs.
 
@@ -777,7 +805,7 @@ Every tool call passes through one gateway, which does four things before any to
 
 **No tool pays anyone.** The strongest tools create a proposal. The approval engine and a person stand between every proposal and PayPal.
 
-**How the PayPal Agent Toolkit is used.** The agent receives PayPal's read tools, such as listing transactions and reading an order, an invoice, a subscription or a shipment, filtered to an allowed list. PayPal's write tools are not given to the model. Writes go through Kin's proposals and are carried out by the executor through the PayPal adapter.
+**How the PayPal Agent Toolkit would be used (Planned, not built).** The agent would receive PayPal's read tools, such as listing transactions and reading an order, an invoice, a subscription or a shipment, filtered to an allowed list. PayPal's write tools are not given to the model. Writes go through Kin's proposals and are carried out by the executor through the PayPal adapter.
 
 ### 9.4 Reading documents
 
@@ -999,7 +1027,7 @@ sequenceDiagram
     DB->>WK: execution through the outbox
     WK->>PP: create payout with idempotency key
     PP-->>WK: batch accepted
-    PP->>WK: PAYMENT.PAYOUTS-ITEM.SUCCEEDED
+    WK->>PP: read the batch back, item SUCCESS
     WK->>DB: confirm, clear the payable
     WK-->>C: You have been paid
 ```
@@ -1022,9 +1050,9 @@ sequenceDiagram
     A->>M: search catalog, build cart
     A->>DB: propose_purchase with items and total
     DB->>V: call the parent
-    V->>P: Your refill costs 42 dollars. Shall I order it?
+    V->>P: Your refill costs 64 dollars. Shall I order it?
     P->>V: Yes
-    V->>P: I will order it for 42 dollars. Is that right?
+    V->>P: I will order it for 64 dollars. Is that right?
     P->>V: Yes
     V->>DB: record voice approval
     DB->>WK: execution through the outbox
@@ -1099,10 +1127,10 @@ sequenceDiagram
     WK->>DB: create settlement and proposals
     DB-->>F: settlement ready for approval
     F->>DB: approve
-    WK->>PP: send invoices to members who owe
+    F->>PP: an organizer requests each collection by PayPal invoice (built: section 8.4)
     PP->>WK: INVOICING.INVOICE.PAID
     WK->>PP: payouts to members who are owed, within confirmed balance
-    PP->>WK: PAYMENT.PAYOUTS-ITEM.SUCCEEDED
+    WK->>PP: read the batch back, item SUCCESS
     WK->>DB: close the period
     WK-->>F: statement for every member, spoken summary for the parent
 ```
@@ -1179,6 +1207,7 @@ Served by `web`. A person's routes require a verified Cognito session; the isola
 | `/api/bills`          | List, review, approve payees                    |
 | `/api/caregiver-billing` | Built: POST `configure` (rate, and optionally the caregiver's PayPal email), `review`, `submit`, and the family's `send` (raise the payout proposal) and `decline`, for caregiver rates and own bills. Uses the authenticated circle, independent account and role checks, same-origin enforcement and a capped JSON body. Review and submission do not approve or pay. |
 | `/api/agreement`      | Built: POST `review` (check a draft and say what changes, storing nothing), `propose` (organizers) and `accept` (organizers, contributors, the parent), behind the same origin, session and body checks as `/api/caregiver-billing`. The screen is `/dashboard/circle/agreement`. |
+| `/api/invoice-requests` | Built: POST `request` (organizers: a member's settlement collection, or a top-up with an amount), `cancel` (organizers) and `check` (organizers, or the member asked), behind the same origin, session and body checks; section 8.4 |
 | `/api/proposals`      | List, approve, reject, cancel. *Built instead as server actions on the Approvals screen; a yes to real money goes through `POST /auth/step-up` (section 12.1).* |
 | `/api/ledger`         | Entries, balances, fairness positions           |
 | `/api/settlements`    | Preview, approve, history                       |
@@ -1203,6 +1232,8 @@ Served by `web`. A person's routes require a verified Cognito session; the isola
 | `/voice/app`    | In-app voice from the browser          |
 
 ### 13.4 The Kin MCP server
+
+> **Planned, not built.** No MCP server exists in the repository. The design below is kept as the intended shape.
 
 Kin is itself usable by other AI agents. A sibling can connect their own assistant and ask about the circle.
 
@@ -1506,7 +1537,7 @@ The hackathon needs a month of family life to be shown in minutes.
 - **The Demo button, and only the Demo button, opens demo data.** It is on the home page, the site header and the start page (`startDemo` in `apps/web/src/server/demo-actions.ts`). Pressing it creates an anonymous visitor: a `users` row of kind `demo_visitor` whose ID starts `demo:`, so every press can be counted with no account and no personal details. The visitor's session is a token signed with a key from Secrets Manager (`issueDemoSession` in `packages/auth`), in an httpOnly `__Host-` cookie that lasts 14 days. The visitor gets their own copy of Rose's circle (`provisionDemoCircle` in `packages/db`), isolated from every other by row-level security, so one judge's actions never show up in another's. The demo clock is the circle's own (`circles.clock_at`): the moment the visitor pressed the button. Rose's month is written once around the evening of 30 October 2026, and each copy is moved to end at the press (`demoTime` in `packages/db`): every moment moves by the same span, every date by the same number of days in the circle's timezone, and the month's entries count toward the period open on the new clock, so it settles as one month whatever the day. The clock then stays where it was set, so nothing in a visitor's copy expires while they explore it; *Start again* sets it to the new moment. Tests press at the template's own clock, so their dates never depend on the day they run.
 - **Demo and real never mix.** A database trigger seats demo visitors only in demo circles and people who signed in only in real ones. A person who signs in sees their own circles, joins any real circle that invited their verified address, and otherwise is offered to start one (`kin_private.create_circle`): they become its organizer and the parent its first member. Every screen of a circle with no data yet says so in plain words.
 - **Every role, from one seat.** The demo banner's role switcher moves the visitor into another persona's empty seat (`kin_private.take_demo_seat`), so the database then shows exactly what that role may see: a caregiver only their own pay, an observer everything and no buttons.
-- **Real operations on simulated money.** In the demo a visitor approves and declines proposals (the vote is recorded in their seat and role, and the approval engine decides), pauses and lifts the pause, invites someone, downloads the record as CSV, starts again and leaves. Approving a caregiver payout moves it to approved, and the worker then pays it as a simulated payout, labelled so in the record. In a real circle, a yes goes through the fresh multi-factor check of section 12.1, and the payout goes through PayPal's sandbox.
+- **Real operations on simulated money.** In the demo a visitor approves and declines proposals (the vote is recorded in their seat and role, and the approval engine decides), pauses and lifts the pause, invites someone, downloads the record as CSV, starts again and leaves. Approving a caregiver payout moves it to approved, and the worker then pays it as a simulated payout, labelled so in the record, unless `KIN_DEMO_SANDBOX_PAYEE_EMAIL` is set: the payout is then paid through PayPal's sandbox to Kin's own test account and labelled "PayPal sandbox" (decision 73). In a real circle, a yes goes through the fresh multi-factor check of section 12.1, and the payout goes through PayPal's sandbox.
 - **Real sandbox top-ups.** "Add money" works in the demo with a PayPal sandbox buyer account. The circle's history stays simulated; the top-up is a real sandbox transaction, recorded with `simulated` false and tagged "PayPal sandbox" in the record and the activity list, never presented as the same thing as the simulated entries around it.
 - **Start again** archives the visitor's circle and gives them a fresh one; *Leave the demo* clears the visitor's cookie. Nothing is deleted: the old circle's ledger stays.
 - **What each person sees.** The circle-role check of section 12.3 (`authorize` in `packages/auth`) decides which screens a role may open, and a role refused a screen is sent to its first one.
@@ -1576,9 +1607,9 @@ The hackathon needs a month of family life to be shown in minutes.
 | 57 | A version of the agreement governs from its start date once every member it asks has accepted it: every organizer and contributor, and a parent who decides and can sign in, fixed on the version when it is proposed. The organizer proposes, accepting by proposing; only the newest version can be accepted | A status column set when the last acceptance arrives; asking only the members the new version gives a share (built first, and replaced by migration 0012 after a security review: an organizer could write themselves the only share and be the only one asked) | Versions are never changed, so their acceptances, not a flag, say whether they govern, and the list of who must accept is fixed with them, so later joiners and leavers cannot change it. A parent who cannot sign in may still accept by voice once that exists, but cannot block the family until then. The rule is `agreementStanding` in `packages/domain`, mirrored by `kin_private.agreement_in_force`, which `send_caregiver_bill` uses; a test runs both. Caregiver payouts are planned against the version in force, never a proposal. |
 | 58 | Claude is reached through Amazon Bedrock's Messages endpoint (`@anthropic-ai/bedrock-sdk`, `AnthropicBedrockMantle`, model `anthropic.claude-opus-5-5`), configured by `KIN_BEDROCK_REGION` and `KIN_BEDROCK_MODEL` | Anthropic's API directly (`docs/tech-stack.md` section 6 recommended it) | The project owner runs Anthropic's models on Bedrock (26 October 2026). Kin's AWS credentials and IAM reach the model, so no Anthropic key is stored. Refusal fallbacks would use the SDK's client-side middleware on Bedrock; none is configured yet, because the account's entitlements decide which model it could fall back to. |
 | 59 | In-app speech uses Amazon Transcribe streaming and Amazon Polly; the browser records a short clip, converts it to 16 kHz PCM and uploads it, and the server transcribes it | Deepgram and ElevenLabs (`tech-stack.md` section 7); the browser's own speech APIs; streaming the microphone over a WebSocket to `apps/voice` | The owner chose AWS (27 October 2026): one account and bill with Bedrock, no new vendor keys. A clip of at most a minute suits a bill and a yes, needs no long-lived connection (App Runner serves plain HTTP), and keeps every decision on the server. Live streaming belongs to the phone line, still to build. |
-| 60 | Claude in the hosted app is switched on by `kin:claude` and stays on Opus 5.5 through Bedrock's Messages endpoint; while the account is refused that model, the switch stays off | An older model through Bedrock's InvokeModel API; Anthropic's API directly | Bedrock refuses every model its Messages endpoint serves to this account; the older models answer only through InvokeModel, which refuses the SDK's current API version, so using them would pin an old SDK beside a second adapter. Anthropic's API would undo decision 58. Waiting on AWS keeps one adapter and makes switching on a one-line change. |
+| 60 | **Superseded by decision 67.** Claude in the hosted app is switched on by `kin:claude` and stays on Opus 5.5 through Bedrock's Messages endpoint; while the account is refused that model, the switch stays off | An older model through Bedrock's InvokeModel API; Anthropic's API directly | Bedrock refuses every model its Messages endpoint serves to this account; the older models answer only through InvokeModel, which refuses the SDK's current API version, so using them would pin an old SDK beside a second adapter. Anthropic's API would undo decision 58. Waiting on AWS keeps one adapter and makes switching on a one-line change. |
 | 61 | A member's monthly share is a PayPal subscription with its own plan, made by the web app and recorded in `monthly_shares`; a person changes it only through two database operations (`start_my_share`, `move_my_share`), PayPal is asked before the record moves, and the worker records charges from PayPal's transaction listing | One plan for every member with a quantity; a PayPal invoice each month; writing the share and its ledger entry from the web app | A plan per share is the only way to charge an exact amount and keep each member's commitment separate (section 8.4). Reading the listing, not the webhook body, keeps rule 3 (PayPal's record decides) the same for charges as for top-ups, and a sale event that names no circle is placed by asking PayPal. The web app holds no service role (decision 38), so it cannot write the ledger. |
-| 62 | Refills are proposed from a family-set rule (`purchase_rules`: one approved seller, one item, a limit for each purchase, a budget for the month), checked by plain code (`checkPurchase`) and again by the database, and are bought in demo circles only, as simulated purchases through the outbox and worker | A model that composes carts; a real circle's purchase charged to a saved wallet before any screen can save one | Section 8.6's finding and cart are the design, but a real circle needs a saved PayPal wallet and a fresh multi-factor yes, and neither is built (decision 60). The rule bounds what Kin may propose, the approval engine still decides who says yes, and no model touches an amount. The demo shows the whole path; a real circle's refill is refused when proposed and, if one ever reached the worker, marked failed with nothing taken. |
+| 62 | Refills are proposed from a family-set rule (`purchase_rules`: one approved seller, one item, a limit for each purchase, a budget for the month), checked by plain code (`checkPurchase`) and again by the database, and are bought in demo circles only, as simulated purchases through the outbox and worker | A model that composes carts; a real circle's purchase charged to a saved wallet before any screen can save one | Section 8.6's finding and cart are the design, but a real circle needs a saved PayPal wallet and a fresh multi-factor yes, and neither is built (decision 60). The rule bounds what Kin may propose, the approval engine still decides who says yes, and no model touches an amount. The demo shows the whole path, and the seller says how it was paid: a PayPal capture ID when it really charged the sandbox, or an explicit simulated charge with no ID, so the ledger entry is labelled simulated only when nothing real was charged. A real circle's refill is refused when proposed and, if one ever reached the worker, marked failed with nothing taken. |
 | 63 | A letter Kin reads is kept as its reading, not as a file, and a claim check is recorded with the words spoken to each member, both through narrow database operations (`add_letter`, `record_claim_check`) | An S3 bucket and a documents queue (section 9.4's design); the web role writing documents and checks directly | The project owner had no bucket to provision for this milestone, and a photograph is not needed once its checked reading is stored. The web app holds no write grant on the document, bill or claim tables, as with caregiver billing (decision 50). The documents table now accepts a reading in place of a storage key |
 | 64 | The parent's standing permission is a mandate (`mandates`, `mandate_uses`): one refill rule, a limit for each purchase and for each month, a cadence and two dates, granted through `grant_mandate`, sealed with a SHA-256 digest the database computes, and changed only by pausing, resuming or ending it. A refill that fits a live mandate (`checkMandate` in `packages/domain`, asserted again inside `propose_refill`) is approved in the same transaction with the mandate recorded as the approver (approval method `mandate`, plan outcome `mandate`) and then runs through the ordinary outbox and worker path; one that does not fit falls back to asking, with the reason | Approving under the parent's own name with method `voice`; a mandate that covers any purchase of a category; an agent tool that decides whether a cart fits | The approval moves from each purchase to the permission without weakening: the fit is plain code, every limit is hard (the agreement's ceiling bounds it, one purchase can never exceed the month), and the record names the mandate, the grantor and who recorded it. A distinct method keeps the audit honest, and a person cannot label their own answer as a mandate's (policy `app_answer`). Voice capture and the compile of speech into the mandate schema are not built: in the demo the organizer plays the parent's spoken yes and the row says simulated; in a real circle only the parent can grant. The simulated seller refuses a charge above the mandate's allowance, a second enforcement point beside the first. |
 | 65 | The what-if simulator (`simulateScenario` in `packages/domain`) rehearses a hypothetical agreement and a dry-run month by calling `settlePeriod` and `planApprovals` on a copy of the circle's state, and the screen reads the what-if from the address (a GET form), saving and proposing nothing | A compiled policy schema with stored versions; a POST route with its own table; a second implementation of the rules for previews | A second copy of a rule would drift from the real one, so the simulator can only call it. Read-only needs no table or policy, and it is open to the roles that already see the circle's money (`money.view`). The policy compiler, the agent tool, forecasts and voice phrasing in `feature-proposals.md` section 4 are not built. |
@@ -1586,6 +1617,12 @@ The hackathon needs a month of family life to be shown in minutes.
 | 67 | Claude in the hosted app runs on Claude Opus 4.6 through Bedrock Runtime's InvokeModel API (`AnthropicBedrock` from the same SDK; profile `us.anthropic.claude-opus-4-6-v1`), chosen by `KIN_BEDROCK_API=invoke`; the Mantle adapter stays and is the default. Moving to Opus 5.5 is setting `KIN_BEDROCK_API=mantle` and `KIN_BEDROCK_MODEL` once AWS grants it. Replaces decision 60's wait | Waiting on AWS for Opus 5.5; Anthropic's API directly | The account is refused Opus 5.5 on the Mantle endpoint (403) but InvokeModel serves Opus 4.6, and the current SDK's `AnthropicBedrock` accepts the same request body, including `output_config` effort and json_schema output, so no second SDK or prompt change is needed. Anthropic's API would undo decision 58. Opus 4.6 refuses assistant prefill, so structured output is the schema, not a prefill. |
 | 68 | The office line answers the telephone through Twilio's Programmable Voice webhook contract, served by `apps/voice` over plain `node:http`: `<Say>` with a Polly voice for the eight fixed sentences, `<Gather input="speech">` for the answers, and a call conducted a turn at a time by replaying the caller's answers through the one `takeCall` (`replayCall` in `packages/telephony`). The state between turns is a token sealed with HMAC-SHA256 in the address given to Twilio; a small in-memory book of open calls serves only a caller who hangs up mid-question and a Twilio retry. A call is recorded by `kin_private.record_office_line_call` (migration 0027) as the service identity scoped to one circle, never labelled simulated, with actor `service` and origin `phone` in the audit log | The Twilio SDK and a media stream with live transcription; a server-side session keyed by `CallSid`; a model that words the replies; reusing `record_office_call`, which needs a signed-in person | The call logic stays the plain code the simulator already runs, so the phone and the simulator cannot disagree and no model is in the call path. Twilio's signature (HMAC-SHA1 over the URL and sorted fields) is checked with `node:crypto` before anything is read, so no dependency is added. The dialled number, from configuration (`KIN_OFFICE_LINE_NUMBERS`), is the only thing that picks the circle; the caller's number is recorded as data and decides nothing. Sealed state survives a restart and a second task, which a session map would not. The existing operation rechecks a person's role and records a call as the web, so a phone call needed its own narrow operation. The family's alert is worded from fixed sentences kept in `packages/telephony`, which a web test holds equal to the dictionaries. Verified against a Twilio-shaped client, not Twilio: see `apps/voice/README.md`. Neither the Twilio account, the number, the secrets nor an infrastructure stack exist yet. |
 | 69 | Numbers written in words are read by value and held to the record like figures in numerals. The reader lives in `packages/domain` (pure, no dependencies) rather than `packages/agent` because the offline verifier must use the same one and may not depend on the agent package; `packages/agent` therefore depends on `packages/domain`. An unreadable number word is refused. |
+| 70 | **Custody.** In this sandbox build every circle's top-ups land in one PayPal business account that Kin's own app holds (decision 46), and Kin's ledger attributes each amount to its circle. Kin has no bank account of its own. A production launch would use PayPal's multiparty or partner platform (or a licensed partner) so that each circle's funds are held and moved under PayPal's licences, not Kin's | Telling readers that Kin never holds the money (the earlier wording); a separate PayPal account for each family from the first day | The earlier wording was wrong for the code: one business account receives every circle's money, and only the ledger says whose it is. Stating that plainly is accurate and is what a reviewer will ask. The per-family account needs PayPal's partner onboarding and approval, which the hackathon does not have (section 22.2), and `poolFor` in `packages/paypal` is the one function that would change. The ledger's per-circle attribution, the confirmed-balance bound on payouts (invariant 8) and row-level security are what protect one circle's money from another in the meantime. |
+| 71 | Every result the model might have made carries a typed provenance (`Provenance` in `packages/agent`): `claude` with the configured model ID, or `rules` (plain code reading a document) or `template` (Kin's fixed wording) with a typed reason (`FallbackReason`: not configured, not requested, limit reached, model busy, unreachable, refused, unusable, wording rejected by the number guard). It is threaded from `readDocument`, `narrate`, `reviewFindings` and `readVisits` to a badge on each result, and a letter's provenance is kept in its stored extraction JSON. Beside each extracted field the screen shows the words it was found in, marked in the original text by `fieldEvidence` and `highlightSegments` (plain code, `packages/documents`), and says when only Claude's word backs a photograph. A demo circle may preview the caregiver's visit reading (`/api/visit-preview`, gated by `letter.read` and the demo flag, the same limits as the caregiver's own reading) and read a bundled sample letter photo through the ordinary letter route | Showing only a status; a badge decided by the browser; a new column for provenance | A fallback that looks like the model, or the model that looks like a rule, misleads a person about how far to trust a figure, so the source is data on the result, not a string on the screen. No migration: a letter's extraction is already JSON. A claim check's wording provenance is shown on the live result only, because `claim_checks` has no column for it. The preview is read-only and sends the description alone, so the caregiver's rate never reaches the model (section 9). |
+| 72 | A request for money by invoice (a settlement collection or a top-up) is a PayPal Invoicing v2 invoice from the pool, raised by an organizer from the Fairness page through `request_invoice` into `invoice_requests`, sent and read back by the web app, and credited by the worker only from the paid invoice's capture read back from PayPal; the invoice number (`KIN-` and the request's ID) is its idempotency key; a demo's invoice goes to Kin's own sandbox personal account (`KIN_DEMO_INVOICE_RECIPIENT_EMAIL`) or is simulated | The worker sending invoices at period close (section 11.6); trusting `INVOICING.INVOICE.PAID` or the invoice's `PAID` status alone; `PayPal-Request-Id` as the key; sending a demo's invoice to an address a visitor types | The family decides when to ask, so the request is a person's act, recorded with who asked. PayPal's invoice status is not money: the capture it names carries the amount and PayPal's fee and must read `COMPLETED` (rule 3). The sandbox made a second draft for a repeated request ID but refused a repeated number. A sandbox personal address cannot reach a real person. |
+| 73 | **A demo circle's approved caregiver payout may be paid through the PayPal sandbox** to one fixed Kin-owned sandbox account (`KIN_DEMO_SANDBOX_PAYEE_EMAIL`), and is simulated when the setting is absent. `routeDemoPayout` (`packages/domain`) allows it only for a caregiver payout in USD of 1 to 50,000 cents whose proposal is approved with a recorded yes, once per circle and under a daily limit; the worker routes only after `beginPayout` has passed the ledger bound, always pays the configured address (never one a visitor typed), records the route in the audit log (`payout.sandbox`), and reuses the real circle's batch ID, unknown-state handling and read-back, confirming only on `SUCCESS`. A PayPal refusal falls back to a simulated payout, recorded with its reason. The ledger entry is `simulated=false` with PayPal's item ID, shown as "PayPal sandbox, test money" with the batch and item IDs, never as "Simulated" | A visitor-typed payee; deploying the demo pharmacy with a Vault wallet (a deploy, and a buyer's approval in a browser); keeping every demo payout simulated | A judge can then see a real PayPal batch and item ID for money Kin planned and the family approved. **This reads two money invariants differently in demo circles, by owner decision on 8 November 2026.** Invariant 8: the payout is still bounded by the circle's ledger balance, but a demo circle's balance is simulated history, and the sandbox money comes from Kin's own sandbox business account, not from money the family sent. Invariant 9: a demo circle's ledger can now hold both simulated and real sandbox entries, each labelled for what it is. Two limits remain, each needing a migration: the daily count is kept in the worker's memory (a count across circles needs a security-definer function), and an execution row copies the receiver address a visitor typed even though PayPal is paid at Kin's address. |
+| 74 | **Ask Kin is a model-led tool loop bounded by plain code**, in `packages/agent/src/ask-kin`: the model chooses which tools to call and the gateway decides everything else. The gateway checks the role of the person through the one `authorize` function in `packages/auth` (the agent package therefore depends on `packages/auth`), validates each argument against one schema shown to the model and checked again, allows at most 6 calls a question, 1 proposal, 8 seconds a call and 6,000 characters a result, never shows the model an exception's text, and records each call (free text masked) to a structured log. Ten tools: nine only read (the pool, bills, fairness, the record, the claim check with no write, waiting proposals, and the status of a payout, a top-up or a subscription read from PayPal through three read methods of Kin's own adapter), and `propose_refill` raises the refill the family's standing permission already allows, which still waits for the people the agreement names. There is no tool that approves, pays or edits. The answer is checked sentence by sentence by the number guard against every value the tools returned, and any failure, refusal, cut-off or exhausted turn gives fixed wording built from the tools' findings. The loop is manual on `@anthropic-ai/bedrock-sdk` (InvokeModel, non-streaming, adaptive thinking, effort medium) | The PayPal Agent Toolkit and a Kin MCP server (a new dependency and a service, section 12, still planned); the SDK's tool runner; a schema library (a new dependency); an audit table for tool calls (a migration); streaming | The brief asks for an agent that acts, and Kin's rule is that the model never moves money, so the agent leads the reading and the proposing while code bounds every step. Bedrock's strict tool mode refuses integer minimum and maximum, so the gateway enforces those bounds. A fixed evaluation set of 12 cases (tool choice, refusals, injection in a question and in a tool result, role limits, number fidelity) scored 12 of 12 on Opus 4.6 on 8 November 2026 (`packages/agent/evals/results/agent-2026-11-08.json`); the first run scored 9 of 12 and the prompt was then corrected. |
+| 75 | The record, the statement and the audit trail are AG Grid Community grids over the same rows: sort and filters, quick search, column chooser, a pinned totals row, grouping by person, category or month as subtotal rows built by a pure data transformation, selection with a live total, and a CSV export of the filtered and sorted view; below the `md` breakpoint the same grid state drives stacked cards. Sums are integer cents from `movementTotals` in `packages/domain`, so the browser only displays them. The audit trail is the page `/dashboard/record/audit/view`, and `/dashboard/record/audit` stays the CSV route | AG Grid Enterprise row grouping, pivoting and status bars (a licence and a new dependency, section 12); sums computed in the browser; a squeezed table on a phone | A family audits a parent's money by filtering and totalling it, so the grid is the product's own tool. Community has no row grouping, so grouping is Kin's own function, tested with reversals and negative entries. |
 
 ---
 
@@ -1619,6 +1656,7 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 | Document reading is unreliable on poor photographs | Medium     | Wrong bills                 | Confidence thresholds, guided retakes and human review.                                                                                       |
 | A sandbox feature is unavailable                   | Medium     | A flow cannot be shown live | Day-one trials and the fallbacks in section 8.                                                                                                |
 | The demo environment fails during judging          | Low        | Judges cannot test          | Alarms, automatic rollback, a reset script and a recorded walkthrough.                                                                        |
+| Kin is read as holding the family's money           | Medium     | A regulatory or trust objection | **Custody answer.** Kin does not take custody of the family's money in a bank account of its own. In this sandbox build every top-up lands in Kin's PayPal account and a ledger attributes it to the circle. A production launch would use PayPal's multiparty or partner platform (or a licensed partner), so each circle's funds are held and moved under PayPal's licences, not Kin's. Until then the ledger, the confirmed-balance bound on payouts and row-level security keep circles apart. Decision 70. |
 | The scope is large                                 | High       | Unfinished parts            | The money core, one contribution path, caregiver payout, the claim check and settlement form the essential spine. Everything else can follow. |
 
 ---
@@ -1633,7 +1671,7 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - Saving a PayPal wallet for merchant-initiated payments, its steps and its eligibility conditions.
 - The JavaScript SDK v6 setup and its one-time and Pay Later payment sessions.
 - Log in with PayPal's endpoints and its configuration.
-- The Agent Toolkit's tool list and the sandbox MCP server address.
+- The Agent Toolkit's tool list and the sandbox MCP server address (documentation only: the toolkit and the MCP server are Planned, not built).
 
 **Written from general knowledge and to be confirmed**
 
@@ -1661,6 +1699,13 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - The database in sections 6.3 and 12.3, in `packages/db`: the schema, the migrations, the three roles and row-level security, the append-only and balancing triggers, the state-machine guard, the ledger store and the demo provisioner. Tested against a real PostgreSQL 17.9 in Docker: isolation between circles on every table, each role's limits (caregiver and observer first), the provisioner's and the service's bounds, the money rules, and a property test that any ledger the money core builds is read back exactly.
 - The circle-role check (`authorize` in `packages/auth`), and the dashboard reading a visitor's own provisioned circle as that visitor, through every screen at the four viewports (unit and end-to-end tests against a migrated database).
 - The Demo button and the anonymous visitor's signed session, the role switcher (every role's screens), answering, pausing, inviting, the CSV record, starting again and leaving; and, for a person who signs in, starting a real circle, joining by invitation and every screen's empty state. Tested in `packages/db` against PostgreSQL, in `packages/auth`, and end to end.
+
+**Checked against the PayPal sandbox on 8 November 2026: Invoicing v2** (`pnpm --filter @kin/paypal run sandbox:check invoice …`, recorded in `packages/paypal/src/fixtures/invoice-sandbox-2026-11-08.json`)
+
+- The pool's app holds the invoicing scope and makes, sends and reads back invoices with no `invoicer` in the request: PayPal fills it in from the account. A create answers with a link to the draft (or the whole invoice when a representation is asked for).
+- A repeated `PayPal-Request-Id` does not stop a second draft; a repeated `invoice_number` is refused with 422 `DUPLICATE_INVOICE_NUMBER`, and `search-invoices` finds the first. Kin's number is therefore the idempotency key.
+- The private `memo` comes back on every read. A $166.00 invoice (`INV2-YB8W-YH4M-95PN-B53B`, number `KIN-1A0AD39A2FB9439FA9709`) was paid by a sandbox personal account on PayPal's page and read back `PAID`; its payment's `payment_id` is a capture that `GET /v2/payments/captures/{id}` reads as `COMPLETED`, naming the invoice in `invoice_id`, with a $6.28 fee.
+- Not yet seen: a real `INVOICING.INVOICE.PAID` delivery (the live webhook is not subscribed until `webhook:register` is run again). PayPal's webhook simulator answers with the older shape, the invoice as the resource itself; Kin reads that and the Invoicing v2 shape, `resource.invoice`.
 
 **Checked against the PayPal sandbox on 16 October 2026**
 
@@ -1692,7 +1737,7 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 - Review: `planCaregiverPayout` (domain, unit and property tests: it plans exactly what `planApprovals` plans for the evidence's own total, and the caregiver's yes alone can never approve). `send_caregiver_bill` and `decline_caregiver_bill` against disposable PostgreSQL: the plan's places, payee, expiry and outcome are checked against the agreement; retries return one proposal; caregivers, observers and parents are refused; a paused circle raises nothing.
 - Fresh approval: `assessStepUp` unit tests (methods, window, clock skew); the session carries `auth_time`, `amr` and the token ID; real-circle answers in PostgreSQL (a yes without evidence is refused, a no is not); in the browser, against the stand-in identity provider, a yes is recorded only after a step-up with a second factor, not after one without, and the step-up cannot be started from another site.
 - Payouts: the adapter against PayPal's recorded sandbox replies (`fixtures/payout-sandbox-2026-10-26.json`); the worker against PostgreSQL and the fake pool: simulated in a demo, paid once in a real circle on PayPal's record with PayPal's fee, pending then paid, a lost reply and an outage each paid once, a refusal and a returned item failed with the payee still owed, held without an address, without the money or during a pause (and tracked through a pause once at PayPal), a foreign batch refused, the outbox leased only by the service. A scripted rehearsal on the local database then paid $264.00 through the real PayPal sandbox to a sandbox personal account: three reads of PENDING, then SUCCESS; one approval and one payout entry, with PayPal's $0.25 fee. That rehearsal turned a demo circle real and scripted the step-up evidence, because no screen yet makes a real circle's agreement.
-- Not verified: Cognito's ACR and AMR claims on Kin's own user pool (AWS says the feature is "rolling out gradually"; without them every real yes is refused); the payout-item webhook; MFA enrolment in Kin; telling the recipient, the circle or the organizer of a payout's outcome. These migrations have not been applied to shared data, and nothing has been deployed.
+- Not verified: Cognito's ACR and AMR claims on Kin's own user pool (AWS says the feature is "rolling out gradually"; without them every real yes is refused); the payout-item webhook; MFA enrolment in Kin; telling the recipient, the circle or the organizer of a payout's outcome. This was written on 26 October 2026 and the later merges to `main` ran the deploy pipeline, which migrates the database; this document records no direct check that the live database holds every migration, so confirm it before relying on it.
 
 **Built and tested: the family agreement screen (26 October 2026)**
 
@@ -1703,7 +1748,7 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 
 - `monthlyStatement` and `yearInReview` in `packages/domain` read every figure from the ledger (contributions by member, spending by category, caregiver pay, settlement moved, PayPal fees; a reversal counts against its original). The screen at `/dashboard/record/statement` shows them with the settlement the money core proposes and the bills expected next, prints cleanly through a print stylesheet (the browser's print dialog also saves a PDF), and `/dashboard/record/audit` exports every ledger line with its entry ID, source and source reference. Both need `money.view`. Unit tests in `packages/domain` and `apps/web`, and Playwright at the four viewports and 320 pixels, in print media, and for a refused caregiver. Not verified: a real browser's print preview or PDF output, and a real circle's statement (only the demo circle).
 
-**Built and tested: monthly shares (this change; not applied to shared data, not deployed)**
+**Built and tested: monthly shares (merged to `main`; the live deployment of its migrations and webhook events has not been checked here)**
 
 - `packages/domain` (`monthly-share.ts`): the share's state machine and limits. `packages/paypal` (`subscription.ts`): the plan, product and subscription requests, the subscription and transaction readers (completed charges only, in integer cents), the approval link accepted only as a PayPal page over HTTPS, subscription IDs held to PayPal's alphabet, the new webhook events and the `subscription_checked` queue message; all against the in-memory fake pool, which now keeps subscriptions.
 - `packages/db`: migrations 0013 (the table) and 0014 (policies, grants, the forward-only trigger, `start_my_share`, `move_my_share`), tested against PostgreSQL: roles (the observer, parent and caregiver refused, the caregiver reading none), limits, one live share, forward-only moves in both the operations and a service write, only the owner moving a share, the audit trail, isolation between circles, and the ledger writes (a simulated month once and never into a real share; a real charge once by its transaction ID with PayPal's fee).
@@ -1721,14 +1766,14 @@ Each should be confirmed on day one. Section 8.6 gives the fallback if the pool 
 
 - Holding up a letter and checking a demand for money, sections 9.4 and 9.5: `checkClaim` and `sameName` (`packages/domain`), `readDocument`, `narrate` and the number guard (`packages/agent`), `settleReading`, `readLetterText` and `parseStoredReading` (`packages/documents`), `add_letter` and `record_claim_check` (migration 0013), `readLetter`, `checkDemand`, `sayLetter` and `sayClaim` (`apps/web`), and the Letters and calls section of the Bills screen in seven languages.
 - Unit tests for each; PostgreSQL tests (`packages/db/src/letters.test.ts`) for the operations, their roles (a caregiver and an observer are refused), another circle's isolation, duplicates, payees and every refusal; web tests against PostgreSQL and the fakes (`letters.test.ts`, `letter-speech.test.ts`) for the boundary (forged keys, a mislabelled or oversized picture, an amount that is not an amount), the model failing or inventing a number, a letter that hides an instruction, limits, and speaking only from the record; and a browser spec (`e2e/letters.spec.ts`) at the four viewports and at 320 pixels with the model and the voice answered by stand-ins.
-- Not verified: Claude reading a real photograph or wording a real verdict (Bedrock refuses the account every Claude model, and neither evaluation set has run); Polly speaking either in the deployed app; migration 0013 on the shared Aurora database; reviewing a listed bill into a payment (not built); a member hearing a stored verdict in a language other than the one it was written in.
+- Not verified: Claude reading a real photograph or wording a real verdict (the hosted app now serves Claude Opus 4.6 through Bedrock InvokeModel, with `kin:claude` set to `true` since commit 326ee41 on 8 November 2026, but no recorded evaluation result is in the repository: commit 0767a14 says the document prompt was changed for its evaluation set on Opus 4.6, and the scripts `eval` and `eval:documents` print results to the console only); Polly speaking either in the deployed app; migration 0013 on the shared Aurora database; reviewing a listed bill into a payment (not built); a member hearing a stored verdict in a language other than the one it was written in.
 
 **Built and tested: receipts and the paid settlement (demo moment 7)**
 
 - Receipts: a member who shares the cost files a receipt (amount, category, day, words; manual entry, no photo upload yet) in a new `receipts` table with its own row-level security. Another member approves or declines it; nobody decides their own. An approval queues a `receipt.credit` outbox message in the same transaction, and the worker credits it with the money core's `outOfPocketApproved` entry (source `approval`, id `receipt-<id>`, simulated in a demo circle), so a repeat writes nothing. The ledger tables are unchanged.
 - Settlement: an organizer puts the open month to the family (`propose_settlement`): `settlePeriod` and `planSettlementPayouts` (domain) give one `member_payout` proposal for each member the pool can pay now, planned by the approval engine. The database refuses a plan that differs from the agreement, a payee who does not share the cost, a second settlement for a period, and payouts that together exceed the cash in `pool_cash`. An approved member payout is queued and executed by the same worker path as a caregiver's: simulated in a demo circle, through the PayPal sandbox in a real one to the address the member gave (a payee row of category `settlement`, fixed on the execution at approval). Readied payouts count against the pool until PayPal confirms them (`canPayOut`'s `reservedCents`), the entry is `settlement_payout`, and the settlement closes when its last payout is paid.
-- Not built: photographing a receipt, collections (members who owe still pay in through top-ups, which land in the open period), and carrying an unpaid remainder into the next month. Migrations 0013 and 0014 are not applied to shared data.
+- Not built: photographing a receipt, collections (members who owe still pay in through top-ups, which land in the open period), and carrying an unpaid remainder into the next month. The migrations were first written as 0013 and 0014 and renumbered at the merge (0013 to 0019); the live database's state is not checked here.
 
 **Not yet tested**
 
-- Everything else in this document. Executions other than caregiver payouts and the demo's simulated refills are not built. The latency figure is a target. The diagrams describe the intended design.
+- Everything else in this document. Executions other than caregiver and settlement payouts, monthly shares and the demo's simulated refills are not built (a real circle's refill is refused, decision 62). The latency figure is a target. The diagrams describe the intended design.

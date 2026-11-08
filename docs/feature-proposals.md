@@ -52,7 +52,7 @@ Rose grants Kin a bounded standing permission by voice, once: "You may order my 
 ### How it works
 
 1. **Grant.** Rose speaks the permission on a call or in the app. Claude extracts it into a strict schema: payee or category, merchant, maximum per purchase, maximum per period, cadence, start and expiry, and what to do when exceeded. Nothing outside the schema is accepted. Kin reads the compiled mandate back in full. Rose confirms. The voice-approval evidence (call reference, read-back sentence, reply) is attached and the mandate is signed with Kin's key. The agreement can require a sibling co-signature above a limit. A new merchant always needs the family.
-2. **Use.** When the scheduler says a refill is due, the purchasing agent builds a cart. The cart becomes a cart mandate: exact items, merchant, total, currency, time. A pure function in `packages/domain` checks it: mandate active and unexpired, circle not paused, merchant and category in scope, total within the per-purchase cap, period total within the period cap, cadence satisfied. Pass: the proposal is approved with the mandate recorded as the approver and executes through the existing outbox path. Fail: it falls back to a live spoken approval, and Rose hears why ("the price has gone up to 58 dollars, more than you allowed").
+2. **Use.** When the scheduler says a refill is due, the purchasing agent builds a cart. The cart becomes a cart mandate: exact items, merchant, total, currency, time. A pure function in `packages/domain` checks it: mandate active and unexpired, circle not paused, merchant and category in scope, total within the per-purchase cap, period total within the period cap, cadence satisfied. Pass: the proposal is approved with the mandate recorded as the approver and executes through the existing outbox path. Fail: it falls back to a live spoken approval, and Rose hears why ("the price has gone up to 80 dollars, more than you allowed").
 3. **Record.** The PayPal order carries the mandate ID in `custom_id`, so PayPal's own record references the permission. The ledger entry links mandate, cart, approval and PayPal capture.
 4. **Review and revoke.** "What have I allowed you to do?" reads the mandates aloud. "Stop ordering the supplements" revokes one, with read-back and confirmation. The monthly statement lists mandate purchases separately. The family sees every mandate and any member can pause one.
 
@@ -64,7 +64,7 @@ Rose grants Kin a bounded standing permission by voice, once: "You may order my 
 
 ### The demo moment
 
-Day 1: Rose grants the mandate by voice. Day 9: the refill is bought silently and Rose hears "I ordered your refill for 42 dollars under the permission you gave me on the first." Day 23: the pharmacy's price rises to 58 dollars, the check fails, and Kin calls Rose to ask. Thirty seconds that show bounded autonomy.
+Day 1: Rose grants the mandate by voice. Day 9: the refill is bought silently and Rose hears "I ordered your refill for 64 dollars under the permission you gave me on the first." Day 23: the pharmacy's price rises to 80 dollars, the check fails, and Kin calls Rose to ask. Thirty seconds that show bounded autonomy.
 
 ### What to build
 

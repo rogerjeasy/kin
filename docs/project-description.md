@@ -4,7 +4,7 @@
 
 Product description. PayPal AI Hackathon 2026. Draft 1, 13 October 2026.
 
-This document describes the product: the problem, the audience, the features, the business value and the impact. It does not describe the implementation.
+This document describes the product: the problem, the audience, the features, the business value and the impact. It does not describe the implementation. It describes the product Kin aims at, which is larger than what is built: `README.md` has the table of what is live and what is simulated, and `architecture.md` section 23 records what is verified.
 
 ---
 
@@ -114,7 +114,7 @@ These five rules shape every feature.
 
 **Day 6.** Amara finishes her third visit of the week. She says to Kin: "Bill the family for this week, three visits, four hours each." Kin prepares the bill and reads it back. Elena approves it with one tap. Amara's phone confirms the payment before she reaches her car.
 
-**Day 9.** Rose's blood pressure medication is due for refill. Kin tells Rose: "Your refill is ready to order. It costs 42 dollars. Shall I go ahead?" Rose says yes. Kin places the order and tells her when it will arrive.
+**Day 9.** Rose's blood pressure medication is due for refill. Kin tells Rose: "Your refill is ready to order. It costs 64 dollars. Shall I go ahead?" Rose says yes. Kin places the order and tells her when it will arrive.
 
 **Day 12.** A letter arrives. Rose holds it in front of her phone. Kin reads it aloud: "This is from the water company. It says 61 dollars is due on the 30th. I have added it to the family's list. Elena will see it today."
 
@@ -140,7 +140,7 @@ These five rules shape every feature.
 
 ### 6.2 The pool and contributions
 
-- **One family pool.** A dedicated PayPal account that belongs to the family. Kin connects to it. Kin never holds the money itself.
+- **One family pool.** In production, a PayPal account held for the family under PayPal's licences, reached through PayPal's partner platform (or a licensed partner), with Kin acting on it only with the family's consent. In the hackathon sandbox, every circle's top-ups land in one PayPal business account that Kin's app holds, and Kin's ledger attributes each amount to its circle. Kin has no bank account of its own and takes no custody beyond that sandbox arrangement (`architecture.md` decision 70).
 - **Monthly shares.** Each sibling sets a recurring contribution matching their agreed share. They can pause or change it, and the change is visible to all.
 - **One-off top-ups.** For an unexpected cost, Kin requests a top-up from each sibling in proportion to their share.
 - **Out-of-pocket spending counts.** A sibling who pays for something directly photographs the receipt. Kin reads it, categorizes it and credits it to that sibling.
@@ -322,7 +322,7 @@ Kin handles a vulnerable person's money. Trust is the product.
 - **Protection from the family as well as from strangers.** Financial abuse of older people is most often committed by someone close to them. Kin's limits, double approvals, full visibility and pause button exist for that reason.
 - **Minimal data.** Kin keeps financial records and receipts. It does not keep medical records, diagnoses or clinical notes.
 - **The parent's information belongs to the parent.** The parent, or their representative, can see everything held about them and can close the circle.
-- **Honest about what it is.** Kin is not a bank, a law firm or a care provider. It does not hold funds, and it does not give legal, tax or medical advice.
+- **Honest about what it is.** Kin is not a bank, a law firm or a care provider, and it does not give legal, tax or medical advice. It takes no bank account of its own; the sandbox build and the production plan for holding money are described under "One family pool" above.
 - **An AI that admits doubt.** When Kin is not sure what a document says or whether a demand is real, it says so and asks a person.
 
 ---
