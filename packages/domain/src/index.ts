@@ -71,7 +71,9 @@ export { CAREGIVER_BILL_PURPOSE, CaregiverPayoutError, planCaregiverPayout } fro
 export type { CaregiverPayoutPlan, CaregiverPayoutRequest } from "./caregiver-payout.ts";
 export { entryHeadline } from "./entry-headline.ts";
 export type { EntryHeadline } from "./entry-headline.ts";
-export { rosesMonth } from "./examples/roses-month.ts";
+export { movementTotals, poolMovementCents } from "./pool-movement.ts";
+export type { MovementItem, MovementTotals, PoolFlow } from "./pool-movement.ts";
+export { REFILL_PRICE_CENTS, rosesMonth } from "./examples/roses-month.ts";
 export { FairnessError, calculateFairness } from "./fairness.ts";
 export type {
   FairnessInput,
@@ -140,6 +142,8 @@ export type { ConversionStamp, ConvertedMoney, RateTable } from "./currency-conv
 export type { Money } from "./money.ts";
 export { PAUSE_HOURS, isPaused, pauseEndsAt } from "./pause.ts";
 export { canPayOut, cashAvailableForPayouts } from "./payout-cash.ts";
+export { SANDBOX_PAYOUTS_PER_CIRCLE, SANDBOX_PAYOUT_CURRENCY, SANDBOX_PAYOUT_MAX_CENTS, routeDemoPayout } from "./sandbox-payout.ts";
+export type { SandboxPayoutFacts, SandboxPayoutRoute, SandboxSkipReason } from "./sandbox-payout.ts";
 export { PeriodInputError, periodInputs } from "./period-inputs.ts";
 export type { PeriodQuery } from "./period-inputs.ts";
 export {
@@ -163,6 +167,8 @@ export { simulateScenario } from "./simulate.ts";
 export type { BillRehearsal, Scenario, ScenarioQuery, ScenarioResult } from "./simulate.ts";
 export { MONTHLY_SHARE_STATES, MONTHLY_SHARE_TRANSITIONS, checkMonthlyShare, monthlyShareIsLive, monthlyShareMayMove } from "./monthly-share.ts";
 export type { MonthlyShareState } from "./monthly-share.ts";
+export { INVOICE_PURPOSES, INVOICE_REQUEST_STATES, INVOICE_REQUEST_TRANSITIONS, checkInvoiceRequest, invoiceRequestIsOpen, invoiceRequestMayMove } from "./invoice-request.ts";
+export type { InvoicePurpose, InvoiceRequestCheck, InvoiceRequestState } from "./invoice-request.ts";
 export { TOP_UP_LIMITS, checkTopUp } from "./top-up.ts";
 export type { TopUpCheck } from "./top-up.ts";
 export type { Settlement, SettlementQuery } from "./settle-period.ts";

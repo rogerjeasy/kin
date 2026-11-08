@@ -62,7 +62,7 @@ describe("Rose's month", () => {
   it("leaves the pool holding what came in less fees and what went out", () => {
     // 924.00 in, 32.82 in fees on the way in, 508.00 in bills and the refill,
     // and 0.25 to send each of the four bills paid by payout.
-    expect(accountBalance(rosesMonth.ledger, POOL_CASH)).toBe(38218);
+    expect(accountBalance(rosesMonth.ledger, POOL_CASH)).toBe(36018);
   });
 
   it("returns the pool to its earlier balance, less the payout fees, once the settlement is paid", () => {
@@ -86,7 +86,7 @@ describe("Rose's month", () => {
       settlementPaidOut(header("pay-ana"), { memberId: "ana", cents: 4000, feeCents: 25 }),
     ]);
 
-    expect(accountBalance(settled, POOL_CASH)).toBe(38218 - 50);
+    expect(accountBalance(settled, POOL_CASH)).toBe(36018 - 50);
     expect(accountBalance(settled, "member:marcus")).toBe(59000);
     expect(accountBalance(settled, "member:elena")).toBe(35400);
     // Ana's 160.00 of cash plus her 76.00 of care make her 236.00 target.
@@ -96,7 +96,7 @@ describe("Rose's month", () => {
 
   it("releases payouts only from cash not already promised to a bill", () => {
     // The stairlift repair of day 20, approved but not yet paid, leaves
-    // 82.18 of the pool's 382.18 free, and 81.68 once the two payout fees
+    // 60.18 of the pool's 360.18 free, and 59.68 once the two payout fees
     // are held back.
     const withRepair = appendEntries(rosesMonth.ledger, [
       billApproved(
@@ -118,6 +118,6 @@ describe("Rose's month", () => {
     expect(payouts.map((payout) => payout.cents)).toEqual([4000, 12600]);
     expect(
       payouts.reduce((sum, payout) => sum + payout.releasableCents, 0),
-    ).toBe(8168);
+    ).toBe(5968);
   });
 });

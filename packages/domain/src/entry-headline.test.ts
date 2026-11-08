@@ -24,7 +24,7 @@ describe("an entry's headline", () => {
   });
 
   it("names the category of a purchase", () => {
-    expect(entryHeadline(bySource("capture-refill"))).toMatchObject({ subject: "pharmacy", category: "pharmacy", cents: 4200, poolFlow: "out" });
+    expect(entryHeadline(bySource("capture-refill"))).toMatchObject({ subject: "pharmacy", category: "pharmacy", cents: 6400, poolFlow: "out" });
   });
 
   it("values care in its memo account, outside the cash", () => {

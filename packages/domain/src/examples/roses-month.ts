@@ -25,6 +25,14 @@ import {
  * Each bill paid by payout carries PayPal's payout fee, as the sandbox charged.
  */
 
+/**
+ * What Rose's blood pressure refill costs. The marketing pages, the demo
+ * circle's purchase rule and its November bill all read this one figure. It is
+ * above what Rose decides alone, which is why the refill waits for her yes or
+ * her standing permission.
+ */
+export const REFILL_PRICE_CENTS = 6400;
+
 const CIRCLE_ID = "rose";
 const CURRENCY = "USD";
 const PERIOD = "2026-10";
@@ -137,7 +145,7 @@ const entries: LedgerEntry[] = [
   pharmacyReceipt(8, 7200),
   purchaseCaptured(
     header(9, paypal("capture-refill"), "Blood pressure refill"),
-    { category: "pharmacy", cents: 4200 },
+    { category: "pharmacy", cents: REFILL_PRICE_CENTS },
   ),
   ...billPaid(12, 30, {
     payeeId: "water",
