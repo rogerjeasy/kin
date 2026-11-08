@@ -1,0 +1,248 @@
+{
+  "provenance": "DERIVED FROM PAYPAL'S DOCUMENTATION AND FROM THE RECORDED PAYPAL-WALLET PAYOUT (payout-sandbox-2026-10-26.json), 8 November 2026. NOT RECORDED FROM THE SANDBOX OR FROM PRODUCTION: whether PayPal answers a Venmo item exactly like this is unverified. The phone number is the documentation's placeholder.",
+  "created": {
+    "batch_header": {
+      "payout_batch_id": "VENMOBATCH01",
+      "batch_status": "PENDING"
+    },
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/payments/payouts/VENMOBATCH01",
+        "rel": "self",
+        "method": "GET",
+        "encType": "application/json"
+      }
+    ]
+  },
+  "unclaimed": {
+    "batch_header": {
+      "payout_batch_id": "VENMOBATCH01",
+      "batch_status": "PROCESSING",
+      "time_created": "2026-10-26T21:13:57Z",
+      "sender_batch_header": {
+        "sender_batch_id": "kin-payout-venmo-0b6f4c3e",
+        "recipient_type": "PHONE",
+        "email_subject": "You have a payment from Kin",
+        "email_message": "Payment for your care shift, approved by the family in Kin"
+      },
+      "funding_source": "BALANCE",
+      "amount": {
+        "currency": "USD",
+        "value": "48.00"
+      }
+    },
+    "items": [
+      {
+        "payout_item_id": "VENMOITEM001",
+        "transaction_status": "UNCLAIMED",
+        "payout_batch_id": "VENMOBATCH01",
+        "payout_item": {
+          "recipient_type": "PHONE",
+          "amount": {
+            "currency": "USD",
+            "value": "48.00"
+          },
+          "note": "Payment for your care shift, approved by the family in Kin",
+          "receiver": "+15555550123",
+          "sender_item_id": "kin-payout-venmo-0b6f4c3e",
+          "recipient_wallet": "VENMO",
+          "application_context": {
+            "social_feed_privacy": "PRIVATE"
+          }
+        },
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/payments/payouts-item/VENMOITEM001",
+            "rel": "item",
+            "method": "GET",
+            "encType": "application/json"
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/payments/payouts/VENMOBATCH01?page_size=1000&page=1",
+        "rel": "self",
+        "method": "GET",
+        "encType": "application/json"
+      }
+    ]
+  },
+  "succeeded": {
+    "batch_header": {
+      "payout_batch_id": "VENMOBATCH01",
+      "batch_status": "SUCCESS",
+      "time_created": "2026-10-26T21:13:57Z",
+      "sender_batch_header": {
+        "sender_batch_id": "kin-payout-venmo-0b6f4c3e",
+        "recipient_type": "PHONE",
+        "email_subject": "You have a payment from Kin",
+        "email_message": "Payment for your care shift, approved by the family in Kin"
+      },
+      "funding_source": "BALANCE",
+      "amount": {
+        "currency": "USD",
+        "value": "48.00"
+      },
+      "fees": {
+        "currency": "USD",
+        "value": "0.25"
+      }
+    },
+    "items": [
+      {
+        "payout_item_id": "VENMOITEM001",
+        "transaction_id": "VENMOTXN0000000001",
+        "activity_id": "1TA78393A51459643",
+        "transaction_status": "SUCCESS",
+        "payout_item_fee": {
+          "currency": "USD",
+          "value": "0.25"
+        },
+        "payout_batch_id": "VENMOBATCH01",
+        "payout_item": {
+          "recipient_type": "PHONE",
+          "amount": {
+            "currency": "USD",
+            "value": "48.00"
+          },
+          "note": "Payment for your care shift, approved by the family in Kin",
+          "receiver": "+15555550123",
+          "sender_item_id": "kin-payout-venmo-0b6f4c3e",
+          "recipient_wallet": "VENMO",
+          "application_context": {
+            "social_feed_privacy": "PRIVATE"
+          }
+        },
+        "time_processed": "2026-10-26T21:14:12Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/payments/payouts-item/VENMOITEM001",
+            "rel": "item",
+            "method": "GET",
+            "encType": "application/json"
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/payments/payouts/VENMOBATCH01?page_size=1000&page=1",
+        "rel": "self",
+        "method": "GET",
+        "encType": "application/json"
+      }
+    ]
+  },
+  "returned": {
+    "batch_header": {
+      "payout_batch_id": "VENMOBATCH01",
+      "batch_status": "SUCCESS",
+      "time_created": "2026-10-26T21:13:57Z",
+      "sender_batch_header": {
+        "sender_batch_id": "kin-payout-venmo-0b6f4c3e",
+        "recipient_type": "PHONE",
+        "email_subject": "You have a payment from Kin",
+        "email_message": "Payment for your care shift, approved by the family in Kin"
+      },
+      "funding_source": "BALANCE",
+      "amount": {
+        "currency": "USD",
+        "value": "48.00"
+      }
+    },
+    "items": [
+      {
+        "payout_item_id": "VENMOITEM001",
+        "transaction_status": "RETURNED",
+        "payout_batch_id": "VENMOBATCH01",
+        "payout_item": {
+          "recipient_type": "PHONE",
+          "amount": {
+            "currency": "USD",
+            "value": "48.00"
+          },
+          "note": "Payment for your care shift, approved by the family in Kin",
+          "receiver": "+15555550123",
+          "sender_item_id": "kin-payout-venmo-0b6f4c3e",
+          "recipient_wallet": "VENMO",
+          "application_context": {
+            "social_feed_privacy": "PRIVATE"
+          }
+        },
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/payments/payouts-item/VENMOITEM001",
+            "rel": "item",
+            "method": "GET",
+            "encType": "application/json"
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/payments/payouts/VENMOBATCH01?page_size=1000&page=1",
+        "rel": "self",
+        "method": "GET",
+        "encType": "application/json"
+      }
+    ]
+  },
+  "failed": {
+    "batch_header": {
+      "payout_batch_id": "VENMOBATCH01",
+      "batch_status": "DENIED",
+      "time_created": "2026-10-26T21:13:57Z",
+      "sender_batch_header": {
+        "sender_batch_id": "kin-payout-venmo-0b6f4c3e",
+        "recipient_type": "PHONE",
+        "email_subject": "You have a payment from Kin",
+        "email_message": "Payment for your care shift, approved by the family in Kin"
+      },
+      "funding_source": "BALANCE",
+      "amount": {
+        "currency": "USD",
+        "value": "48.00"
+      }
+    },
+    "items": [
+      {
+        "payout_item_id": "VENMOITEM001",
+        "transaction_status": "FAILED",
+        "payout_batch_id": "VENMOBATCH01",
+        "payout_item": {
+          "recipient_type": "PHONE",
+          "amount": {
+            "currency": "USD",
+            "value": "48.00"
+          },
+          "note": "Payment for your care shift, approved by the family in Kin",
+          "receiver": "+15555550123",
+          "sender_item_id": "kin-payout-venmo-0b6f4c3e",
+          "recipient_wallet": "VENMO",
+          "application_context": {
+            "social_feed_privacy": "PRIVATE"
+          }
+        },
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/payments/payouts-item/VENMOITEM001",
+            "rel": "item",
+            "method": "GET",
+            "encType": "application/json"
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v1/payments/payouts/VENMOBATCH01?page_size=1000&page=1",
+        "rel": "self",
+        "method": "GET",
+        "encType": "application/json"
+      }
+    ]
+  }
+}

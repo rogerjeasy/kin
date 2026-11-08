@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "sandbox:check": "node --env-file=../../.env scripts/sandbox-check.ts",
+    "venmo:probe": "node --env-file=../../.env scripts/venmo-sandbox-probe.ts",
     "webhook:register": "node --env-file=../../.env scripts/register-webhook.ts",
     "local:queue:up": "node scripts/local-queue.ts up",
     "local:queue:down": "node scripts/local-queue.ts down"

@@ -1,0 +1,22 @@
+{
+  "recordedOn": "2026-11-08",
+  "refusals": {
+    "venmo-email": {
+      "httpStatus": 400,
+      "body": {
+        "name": "VALIDATION_ERROR",
+        "message": "Invalid request - see details",
+        "debug_id": "DEBUGID",
+        "information_link": "https://developer.paypal.com/docs/api/payments.payouts-batch/#errors",
+        "details": [
+          {
+            "field": "items[0].recipient_wallet",
+            "location": "body",
+            "issue": "Recipient wallet not supported in sandbox."
+          }
+        ],
+        "links": []
+      }
+    }
+  }
+}

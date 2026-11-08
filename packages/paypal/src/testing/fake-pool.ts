@@ -7,7 +7,7 @@ import type { Invoice, InvoicePayment, InvoiceStatus, NewInvoice } from "../invo
 import type { Order } from "../order.ts";
 import { PayPalError } from "../paypal-error.ts";
 import type { PayPalPool } from "../pool.ts";
-import type { NewPayout, PayoutBatch, PayoutItemStatus } from "../payout.ts";
+import { payoutBody, type NewPayout, type PayoutBatch, type PayoutItemStatus } from "../payout.ts";
 import type { Subscription, SubscriptionAction, SubscriptionPayment, SubscriptionStatus } from "../subscription.ts";
 import type { WebhookDelivery } from "../webhook.ts";
 
@@ -36,7 +36,7 @@ export type FakePool = PayPalPool & {
   loseNextReply: keyof PayPalPool | null;
   /** PayPal refuses the next payout with this issue, such as `INSUFFICIENT_FUNDS`, and makes nothing. */
   refuseNextPayout: string | null;
-  /** The status PayPal gives the next payouts' items. */
+  /** The status PayPal gives the next payouts' items, Venmo ones included. */
   payoutStatus: PayoutItemStatus;
   /** PayPal's fee on each successful payout item, in cents. */
   payoutFeeCents: number;
@@ -115,6 +115,7 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
         amount: request.amount,
         fee: status === "SUCCESS" ? { cents: pool.payoutFeeCents, currency: request.amount.currency } : null,
         senderItemId: request.senderBatchId,
+        wallet: request.wallet ?? "PAYPAL",
       },
     ],
   });
@@ -180,6 +181,8 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
     },
     async createPayout(request, requestId) {
       fail("createPayout");
+      // The real pool builds the request first and sends nothing PayPal would refuse for its shape.
+      payoutBody(request);
       pool.requestIds.push(requestId);
       if (pool.refuseNextPayout !== null) {
         const issue = pool.refuseNextPayout;
