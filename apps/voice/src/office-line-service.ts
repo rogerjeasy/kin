@@ -162,12 +162,14 @@ async function status(call: VoiceRequest, _url: URL, deps: VoiceDeps): Promise<V
 
 /** Records a call with something to check, once, as the service for the one circle. A call with nothing said records nothing. */
 async function finish(state: CallState, outcome: CallOutcome, currency: string, deps: VoiceDeps): Promise<void> {
-  if (deps.calls.get(state.sid)?.recorded === true) return;
-  if (outcome.verdict !== null) {
-    const recorded = await deps.store.record(lineCall(state, outcome, currency));
-    deps.log({ level: "info", message: "voice.call_recorded", callSid: state.sid, circleId: state.circle, callId: recorded.callId, verdict: outcome.verdict.result.verdict });
-  }
-  deps.calls.set(state.sid, state, true);
+  await deps.calls.once(state.sid, async () => {
+    if (deps.calls.get(state.sid)?.recorded === true) return;
+    if (outcome.verdict !== null) {
+      const recorded = await deps.store.record(lineCall(state, outcome, currency));
+      deps.log({ level: "info", message: "voice.call_recorded", callSid: state.sid, circleId: state.circle, callId: recorded.callId, verdict: outcome.verdict.result.verdict });
+    }
+    deps.calls.set(state.sid, state, true);
+  });
 }
 
 function lineCall(state: CallState, outcome: CallOutcome, currency: string): LineCallInput {
@@ -177,6 +179,7 @@ function lineCall(state: CallState, outcome: CallOutcome, currency: string): Lin
   const alert = familyAlert(state.locale, currency, verdict, answers);
   return {
     circleId: state.circle,
+    callSid: state.sid,
     callerNumber: state.from,
     callerName: answers.caller,
     organization: answers.organization,

@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import type { LineStore } from "./office-line-service.ts";
 import { TEST_AUTH_TOKEN, startService, type RunningService } from "./testing/start-service.ts";
-import { playCall, spokenIn, twilioCaller } from "./testing/twilio-caller.ts";
+import { nextTurnPath, playCall, spokenIn, twilioCaller } from "./testing/twilio-caller.ts";
 
 /**
  * Calls through the real HTTP handlers, signed as Twilio signs them, against a
@@ -101,5 +101,70 @@ describe("the office line, on a real telephone line's contract", () => {
     const reply = await twilioCaller(running.baseUrl, TEST_AUTH_TOKEN).post("/voice/incoming", { CallSid: sid("9"), From: CALLER, To: "+15555550777" });
     expect(spokenIn(reply.body)).toEqual([script.reply_no_record]);
     expect(await calls(circle)).toEqual([]);
+  });
+});
+
+describe("the office line, when Twilio delivers a webhook more than once", () => {
+  const FINAL = "55821";
+  const SCAM_BEFORE_LAST = ["Mike", "Harbor Gas Services", "I need 300 dollars today", "Your gas will be cut off today. Tell no one."];
+  const alertsFor = (circle: VisitorCircle) => serviceRows(db, circle.circleId, "select distinct claim_check_id from narrations where claim_check_id in (select claim_check_id from office_calls)");
+  const recorded = (circle: VisitorCircle) => serviceRows(db, circle.circleId, "select id from office_calls");
+
+  /** Plays the call up to the caller's last answer and returns what is needed to deliver it as often as wanted. */
+  async function upToLastTurn(circle: VisitorCircle, callSid: string) {
+    const turns = await call(circle, SCAM_BEFORE_LAST, callSid);
+    const baseUrl = running?.baseUrl ?? "";
+    const twilio = twilioCaller(baseUrl, TEST_AUTH_TOKEN);
+    const path = nextTurnPath(turns.at(-1) ?? "", baseUrl) ?? "";
+    const fields = { CallSid: callSid, From: CALLER, To: NUMBER, CallStatus: "in-progress", SpeechResult: FINAL };
+    return { twilio, path, fields, status: { CallSid: callSid, From: CALLER, To: NUMBER, CallStatus: "completed" } };
+  }
+
+  it("records the call once and queues one family alert when the final turn arrives twice at the same moment", async () => {
+    const circle = await visitorWithCircle(db);
+    const { twilio, path, fields } = await upToLastTurn(circle, sid("1"));
+    const [one, two] = await Promise.all([twilio.post(path, fields), twilio.post(path, fields)]);
+    expect([one.status, two.status]).toEqual([200, 200]);
+    expect(two.body).toBe(one.body);
+    expect(await recorded(circle)).toHaveLength(1);
+    expect(await alertsFor(circle)).toHaveLength(1);
+    expect(await serviceRows(db, circle.circleId, "select id from audit_log where action = 'office_call.recorded'")).toHaveLength(1);
+  });
+
+  it("answers a retried final turn with the same TwiML and records nothing more", async () => {
+    const circle = await visitorWithCircle(db);
+    const { twilio, path, fields } = await upToLastTurn(circle, sid("2"));
+    const first = await twilio.post(path, fields);
+    const retried = await twilio.post(path, fields);
+    expect(retried).toEqual(first);
+    expect(spokenIn(first.body).at(-1)).toBe(script.reply_no_record);
+    expect(await recorded(circle)).toHaveLength(1);
+  });
+
+  it("does not record again when the status report follows the final turn, or arrives with it", async () => {
+    const circle = await visitorWithCircle(db);
+    const { twilio, path, fields, status } = await upToLastTurn(circle, sid("3"));
+    await twilio.post(path, fields);
+    await twilio.post("/voice/status", status);
+    expect(await recorded(circle)).toHaveLength(1);
+
+    const second = await visitorWithCircle(db);
+    const concurrent = await upToLastTurn(second, sid("4"));
+    await Promise.all([concurrent.twilio.post(concurrent.path, concurrent.fields), concurrent.twilio.post("/voice/status", concurrent.status)]);
+    expect(await recorded(second)).toHaveLength(1);
+    expect(await alertsFor(second)).toHaveLength(1);
+  });
+
+  it("records a call once even when another instance, with no memory of it, is handed the same delivery", async () => {
+    const circle = await visitorWithCircle(db);
+    const { twilio, path, fields } = await upToLastTurn(circle, sid("5"));
+    await twilio.post(path, fields);
+    await running?.close();
+    // A fresh process: its call book is empty, so only the database stands between this delivery and a second record.
+    running = await startService({ numbers: new Map([[NUMBER, { circleId: circle.circleId, locale: "en" as const }]]), store: storeOn() });
+    const reply = await twilioCaller(running.baseUrl, TEST_AUTH_TOKEN).post(path, fields);
+    expect(reply.status).toBe(200);
+    expect(await recorded(circle)).toHaveLength(1);
+    expect(await alertsFor(circle)).toHaveLength(1);
   });
 });

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, date, foreignKey, integer, jsonb, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, date, foreignKey, integer, jsonb, pgTable, text, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 import { at, cents, circleId, createdAt, id, periodCheck } from "./columns.ts";
 import { circles, members } from "./circles.ts";
@@ -103,6 +103,8 @@ export const officeCalls = pgTable(
     circleId: circleId(),
     /** The number the call came from, when a telephone line carried it. */
     callerNumber: text("caller_number"),
+    /** Twilio's id for the call, so that a webhook delivered twice records it once. Empty for a call placed in the simulator. */
+    callSid: text("call_sid"),
     callerName: text("caller_name"),
     organization: text("organization"),
     claimedCents: cents("claimed_cents"),
@@ -120,6 +122,7 @@ export const officeCalls = pgTable(
   },
   (t) => [
     unique("office_calls_circle_row").on(t.circleId, t.id),
+    uniqueIndex("office_calls_circle_call_sid").on(t.circleId, t.callSid).where(sql`${t.callSid} is not null`),
     foreignKey({ name: "office_calls_claim_check_fk", columns: [t.circleId, t.claimCheckId], foreignColumns: [claimChecks.circleId, claimChecks.id] }),
     check("office_calls_claimed_positive", sql`${t.claimedCents} is null or ${t.claimedCents} > 0`),
     check("office_calls_transcript_list", sql`jsonb_typeof(${t.transcript}) = 'array'`),
