@@ -48,8 +48,15 @@ describe("compounds and irregular forms", () => {
     expect(values("deux cents euros")).toEqual([["2", "200"]]);
     expect(values("sixty-four cents")).toEqual([["64"]]);
     expect(values("one cent")).toEqual([]);
-    expect(allows("Il y a deux cents euros", "200")).toBe(true);
+  });
+
+  it("accepts a two-reading run only when every reading is held, so a guess is never the one accepted", () => {
+    expect(allows("Il y a deux cents euros", "200")).toBe(false);
+    expect(allows("Il y a deux cents euros", "2")).toBe(false);
+    expect(allows("Il y a deux cents euros", "2", "200")).toBe(true);
     expect(allows("Il y a deux cents euros", "7")).toBe(false);
+    expect(allows("It cost five cents", "5")).toBe(false);
+    expect(allows("It cost five cents", "5", "500")).toBe(true);
   });
 });
 
@@ -68,7 +75,7 @@ describe("what is not a number", () => {
 
   it("splits at punctuation, digits and other words", () => {
     expect(values("six, seven")).toEqual([["6"], ["7"]]);
-    expect(values("six 4 seven")).toEqual([["6"], ["7"]]);
+    expect(values("six; seven")).toEqual([["6"], ["7"]]);
     expect(values("twelve and thirty")).toEqual([["12"], ["30"]]);
   });
 
@@ -95,4 +102,79 @@ describe("any number written out in a language reads back as itself", () => {
       }
     });
   }
+});
+
+describe("a long or adversarial input costs bounded time and fails closed", () => {
+  const timed = (text: string) => {
+    const start = Date.now();
+    const result = spokenNumbers(text);
+    return { result, ms: Date.now() - start };
+  };
+
+  it.each(["sechs", "drei", "ein", "und", "einund", "dreihundert", "zig", "zehn", "achtzehn", "neunzehn"])("finds no number in 400 characters of %s without exponential search", (atom) => {
+    const { result, ms } = timed(atom.repeat(Math.ceil(400 / atom.length)).slice(0, 400));
+    expect(ms).toBeLessThan(100);
+    // Too long to be one number: refused, never read.
+    expect(result.every((number) => number.readings.length === 0)).toBe(true);
+    expect(spokenNumbersAreAllowed(atom.repeat(80), () => true)).toBe(false);
+  });
+
+  it("does not search every split of a word that cannot be read (achtzehn splits two ways; 50 of them then a stray letter)", () => {
+    const { result, ms } = timed(`${"achtzehn".repeat(49)}x`);
+    expect(ms).toBeLessThan(100);
+    expect(result.every((number) => number.readings.length === 0)).toBe(true);
+    // Short enough to search, and still exact.
+    expect(timed(`${"achtzehn".repeat(10)}x`).result).toEqual([]);
+  });
+
+  it("still reads the longest real German number", () => {
+    expect(values("neunhundertneunundneunzigmillionenneunhundertneunundneunzigtausendneunhundertneunundneunzig")).toEqual([["999999999"]]);
+  });
+
+  it("refuses 10,000 characters whole, quickly", () => {
+    const { result, ms } = timed("sechs und drei ".repeat(700));
+    expect(ms).toBeLessThan(100);
+    expect(result).toEqual([{ words: "", readings: [] }]);
+    expect(spokenNumbersAreAllowed("sechs ".repeat(2000), () => true)).toBe(false);
+  });
+
+  it("refuses more tokens than any real sentence holds", () => {
+    expect(spokenNumbers("a ".repeat(1001))).toEqual([{ words: "", readings: [] }]);
+  });
+});
+
+describe("digits joined to number words are a value the digit guard cannot see", () => {
+  const refused = [
+    ["en", "64 thousand dollars", "5 million", "3 hundred", "twenty 5", "ten 000"],
+    ["fr", "64 mille euros", "5 millions", "3 mille trois", "vingt 5", "dix 000"],
+    ["de", "64 tausend Euro", "5 Millionen", "3 hundert", "zwanzig 5", "zehn 000"],
+    ["it", "64 mila euro", "5 milioni", "3 cento", "venti 5", "dieci 000"],
+    ["es", "64 mil euros", "5 millones", "3 cien", "veinte 5", "diez 000"],
+    ["ar", "64 ألف دولار", "5 مليون", "3 مئة", "عشرون 5", "عشرة 000"],
+    ["he", "64 אלף דולר", "5 מיליון", "3 מאות", "עשרים 5", "עשרה 000"],
+  ] as const;
+  for (const [language, ...texts] of refused) {
+    it(`${language}: refuses ${texts.join(" | ")} even when the digits are held`, () => {
+      for (const text of texts) {
+        const held = ["64", "5", "3", "20", "10", "0", "000", "100", "1000", "1000000", "64000"];
+        expect(allows(text, ...held), text).toBe(false);
+        expect(values(text).flat().length, text).toBe(0);
+        expect(values(text).length, text).toBeGreaterThan(0);
+      }
+    });
+  }
+
+  it("swallows the rest of the run, so '64 thousand five hundred' is not read as 500", () => {
+    expect(values("64 thousand five hundred")).toEqual([[]]);
+  });
+
+  it("leaves a digit beside an ordinary word alone, and a number in words beside digits after a break", () => {
+    expect(values("64 dollars")).toEqual([]);
+    expect(values("7 nov")).toEqual([]);
+    expect(values("64 cents")).toEqual([]);
+    expect(values("64 dollars, sixty-four")).toEqual([["64"]]);
+    expect(allows("64 dollars, sixty-four", "64")).toBe(true);
+    expect(allows("64 dollars (sixty-four)", "64")).toBe(true);
+    expect(allows("a 5 un", "5")).toBe(true);
+  });
 });

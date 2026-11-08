@@ -127,6 +127,25 @@ describe("the number guard and numbers written in words", () => {
     expect(words("64 dollars, sixty-five.", "$64.00")).toBe(false);
   });
 
+  it("refuses digits joined to a magnitude word, whose value the digits alone do not show", () => {
+    for (const text of ["They want 64 thousand dollars.", "Ils demandent 64 mille dollars.", "Sie verlangen 64 tausend Dollar.", "Chiedono 64 mila dollari.", "Piden 64 mil dólares.", "يطلبون 64 ألف دولار.", "הם מבקשים 64 אלף דולר."]) {
+      expect(words(text, "$64.00"), text).toBe(false);
+    }
+    expect(words("They want 3 hundred dollars.", "3")).toBe(false);
+    expect(words("They want 64 dollars on 7 Nov.", "$64.00", "7 Nov.")).toBe(true);
+  });
+
+  it("refuses a run with two readings unless the record holds both", () => {
+    expect(words("Il y a deux cents euros.", "200 euros")).toBe(false);
+    expect(words("Il y a deux cents euros.", "2 euros", "200 euros")).toBe(true);
+  });
+
+  it("refuses an input too long to be a sentence of Kin's without searching it", () => {
+    const start = performance.now();
+    expect(words("achtzehn".repeat(48), "$64.00")).toBe(false);
+    expect(performance.now() - start).toBeLessThan(100);
+  });
+
   it("takes a number in words from a figure that is itself a name", () => {
     expect(words("Seven Oaks Pharmacy wants $64.00.", "$64.00", "Seven Oaks Pharmacy")).toBe(true);
     expect(words("Seven Oaks Pharmacy wants $64.00.", "$64.00")).toBe(false);
