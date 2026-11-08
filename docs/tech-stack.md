@@ -299,7 +299,7 @@ A project can win one sponsor prize, so the aim is one strong fit.
 | **Postman** | Sandbox testing, and a published collection for judges | Use |
 | **Channel3** | Product search inside the purchasing agent | Use if the purchasing agent searches real catalogs |
 | **Render** | Hosting | Not used, because hosting is on AWS |
-| **Bryntum** | The care calendar: a week of shifts with a row for each person (`apps/web`, `components/dashboard/shifts`). The trial build, approved by the owner on 8 November 2026, is read-only and loaded only on the calendar page. Its install script is off, and a licensed build is a change of the npm alias | Use |
+| **Bryntum** | The care calendar: a week of shifts with a row for each person (`apps/web`, `components/dashboard/shifts`). The trial build, approved by the owner on 8 November 2026, is read-only and loaded only on the calendar page, as a static file the browser fetches at runtime and the bundler never reads (architecture decision 84). Its install script is off, and a licensed build is a change of the npm alias | Use |
 | **Elastic, KERNEL, Zapier, Astropods** | No natural role | Skip |
 
 ---

@@ -275,6 +275,34 @@ test.describe("the calendar", () => {
     });
   }
 
+  // The Scheduler's script is 4 MB, so it is served as a static file named by version and loaded at runtime, never bundled.
+  test("loads the Scheduler's script as a static, immutable file", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await startDemo(page);
+    const served = page.waitForResponse(/\/vendor\/bryntum\/scheduler-[\d.]+\.module\.js$/);
+    await page.goto(SHIFTS);
+    const response = await served;
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("javascript");
+    expect(response.headers()["cache-control"]).toBe("public, max-age=31536000, immutable");
+    await expect(page.locator(".b-scheduler").first()).toBeVisible({ timeout: 20_000 });
+  });
+
+  test("moves to another week without building the Scheduler again", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await startDemo(page);
+    await page.goto(SHIFTS);
+    const scheduler = page.locator(".b-scheduler").first();
+    await expect(scheduler).toBeVisible({ timeout: 20_000 });
+    const firstDay = () => scheduler.locator(".b-sch-header-text").first().innerText();
+    const thisWeek = await firstDay();
+    await scheduler.evaluate((element) => element.setAttribute("data-built", "once"));
+    await page.getByRole("navigation", { name: copy.week.navLabel }).getByRole("link", { name: copy.week.previous }).click();
+    await expect(page.getByRole("heading", { level: 2, name: /^Week of / })).toBeVisible();
+    await expect.poll(firstDay).not.toBe(thisWeek);
+    await expect(page.locator(".b-scheduler[data-built='once']")).toHaveCount(1);
+  });
+
   test("puts Shifts in the sidebar and on a phone's bottom bar, for every role", async ({ page }) => {
     await startDemo(page);
     await expect(page.getByRole("navigation", { name: english.dashboard.shell.navLabel }).getByRole("link", { name: english.dashboard.shell.nav.shifts })).toBeVisible();

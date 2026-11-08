@@ -28,6 +28,9 @@ WORKDIR /app
 # Next's standalone output: the server and only the files it needs.
 COPY --from=build --chown=node:node /repo/apps/web/.next/standalone ./
 COPY --from=build --chown=node:node /repo/apps/web/.next/static ./apps/web/.next/static
+# The scripts the browser loads at runtime, which the build put there: Next's
+# standalone output leaves the public folder out.
+COPY --from=build --chown=node:node /repo/apps/web/public ./apps/web/public
 # sharp, which optimises images, is the one native module. Fetch its binary
 # for this image's platform, then load it so a mismatch fails the build, not
 # the running site.

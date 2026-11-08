@@ -216,9 +216,6 @@ importers:
       '@bryntum/scheduler':
         specifier: npm:@bryntum/scheduler-trial@7.3.8
         version: '@bryntum/scheduler-trial@7.3.8'
-      '@bryntum/scheduler-react':
-        specifier: 7.3.8
-        version: 7.3.8
       '@kin/agent':
         specifier: workspace:*
         version: link:../../packages/agent
@@ -915,10 +912,6 @@ packages:
   '@babel/types@7.29.8':
     resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
-
-  '@bryntum/scheduler-react@7.3.8':
-    resolution: {integrity: sha512-PTzGFzsCrRoqLbbVqHlJ4sO8BSEEPzIkpVsCEwVy4Ci9hQlbVD62dTKcU35kTp81NhuDPw85l9Jj0xeQfCpZGg==}
-    engines: {node: '>=0.10.0'}
 
   '@bryntum/scheduler-trial-lib@1.0.1':
     resolution: {integrity: sha512-gTrNKz2O7JdNalEU9hma0fYyZ1mGhXXb6yCn/+E+SPjRyg/qFad1bQ7vfBUFitw3S3eB66IdtAZLD+QCtiIUKw==}
@@ -5757,8 +5750,6 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
-
-  '@bryntum/scheduler-react@7.3.8': {}
 
   '@bryntum/scheduler-trial-lib@1.0.1': {}
 

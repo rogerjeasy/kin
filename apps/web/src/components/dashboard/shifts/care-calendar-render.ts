@@ -1,10 +1,9 @@
-import type { EventTooltipConfig } from "@bryntum/scheduler";
-import type { BryntumSchedulerProps } from "@bryntum/scheduler-react";
+import type { EventTooltipConfig, SchedulerConfig } from "@bryntum/scheduler";
 
 import { eventAccessibleName, TONE_ICON } from "./care-calendar-model.ts";
 import type { CalendarEvent } from "./care-calendar-types.ts";
 
-type EventContext = Parameters<NonNullable<BryntumSchedulerProps["eventRenderer"]>>[0];
+type EventContext = Parameters<NonNullable<SchedulerConfig["eventRenderer"]>>[0];
 type TooltipContext = Parameters<NonNullable<EventTooltipConfig["template"]>>[0];
 
 /** The shifts by id: the scheduler's records hold only what it draws, and the words come from here. */

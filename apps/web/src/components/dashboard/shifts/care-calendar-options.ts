@@ -1,4 +1,4 @@
-import type { BryntumSchedulerProps } from "@bryntum/scheduler-react";
+import type { SchedulerConfig } from "@bryntum/scheduler";
 
 import { TICK_HOURS } from "./care-calendar-model.ts";
 
@@ -12,42 +12,41 @@ const HEADER_HEIGHT_PX = 64;
 const SCROLLBAR_HEIGHT_PX = 16;
 const NAME_COLUMN_WIDTH_PX = 132;
 
-/**
- * The calendar is a view: the family changes a shift through Kin's own forms,
- * never here. The wrapper takes each feature as its own prop.
- */
+type Features = NonNullable<SchedulerConfig["features"]>;
+
+/** The calendar is a view: the family changes a shift through Kin's own forms, never here. */
 const NO_EDITING = {
-  eventDragFeature: false,
-  eventDragCreateFeature: false,
-  eventDragSelectFeature: false,
-  eventResizeFeature: false,
-  eventEditFeature: false,
-  simpleEventEditFeature: false,
-  eventMenuFeature: false,
-  scheduleMenuFeature: false,
-  cellMenuFeature: false,
-  headerMenuFeature: false,
-  timeAxisHeaderMenuFeature: false,
-  cellEditFeature: false,
-  columnResizeFeature: false,
-  columnReorderFeature: false,
-  columnPickerFeature: false,
-  columnRenameFeature: false,
-  resourceColumnReorderFeature: false,
-  rowReorderFeature: false,
-  rowResizeFeature: false,
-  sortFeature: false,
-  filterFeature: false,
-  filterBarFeature: false,
-  groupFeature: false,
-  aiFeature: false,
-  aiFilterFeature: false,
-  eventCopyPasteFeature: false,
-  cellCopyPasteFeature: false,
-  panFeature: false,
-  quickFindFeature: false,
-  searchFeature: false,
-} satisfies BryntumSchedulerProps;
+  eventDrag: false,
+  eventDragCreate: false,
+  eventDragSelect: false,
+  eventResize: false,
+  eventEdit: false,
+  simpleEventEdit: false,
+  eventMenu: false,
+  scheduleMenu: false,
+  cellMenu: false,
+  headerMenu: false,
+  timeAxisHeaderMenu: false,
+  cellEdit: false,
+  columnResize: false,
+  columnReorder: false,
+  columnPicker: false,
+  columnRename: false,
+  resourceColumnReorder: false,
+  rowReorder: false,
+  rowResize: false,
+  sort: false,
+  filter: false,
+  filterBar: false,
+  group: false,
+  ai: false,
+  aiFilter: false,
+  eventCopyPaste: false,
+  cellCopyPaste: false,
+  pan: false,
+  quickFind: false,
+  search: false,
+} satisfies Features;
 
 /** A week, one column group per day, a tick every few hours: a shift of a few hours reads at a glance. */
 const CARE_WEEK_PRESET = {
@@ -58,15 +57,18 @@ const CARE_WEEK_PRESET = {
     { unit: "day", dateFormat: "ddd D MMM" },
     { unit: "hour", increment: TICK_HOURS, dateFormat: "HH" },
   ],
-} satisfies BryntumSchedulerProps["viewPreset"];
+} satisfies NonNullable<SchedulerConfig["viewPreset"]>;
 
+/** What the widget is built with, whatever the data: read-only, with no editing, no motion and one week preset. */
 export const staticOptions = {
   readOnly: true,
-  ...NO_EDITING,
-  // Stripes, column lines and the "now" line help the eye along a long week.
-  columnLinesFeature: true,
-  stripeFeature: true,
-  timeRangesFeature: true,
+  features: {
+    ...NO_EDITING,
+    // Stripes, column lines and the "now" line help the eye along a long week.
+    columnLines: true,
+    stripe: true,
+    timeRanges: true,
+  } satisfies Features,
   // No motion at all: nothing slides or fades, so reduced-motion is always honoured.
   useInitialAnimation: false,
   transition: { removeRecord: false, changeEvent: false },
@@ -79,7 +81,7 @@ export const staticOptions = {
   barMargin: BAR_MARGIN_PX,
   zoomOnMouseWheel: false,
   zoomOnTimeAxisDoubleClick: false,
-} satisfies BryntumSchedulerProps;
+} satisfies SchedulerConfig;
 
 /**
  * The height that shows every person's row in full, up to the cap. A row grows
@@ -92,6 +94,6 @@ export function calendarHeight(depths: readonly number[]): number {
 }
 
 /** The one column, the person's name. Its header has no words of Kin's own, so a screen reader hears the calendar's name. */
-export function nameColumn(label: string): BryntumSchedulerProps["columns"] {
+export function nameColumn(label: string): SchedulerConfig["columns"] {
   return [{ field: "name", ariaLabel: label, width: NAME_COLUMN_WIDTH_PX, minWidth: NAME_COLUMN_WIDTH_PX, htmlEncode: true, cellCls: "care-person", enableHeaderContextMenu: false }];
 }

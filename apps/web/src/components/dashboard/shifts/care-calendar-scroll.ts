@@ -1,11 +1,13 @@
-import { EventModel, Store, TimeRangeModel, type Scheduler } from "@bryntum/scheduler";
+import type { Scheduler } from "@bryntum/scheduler";
+
+import type { BryntumModule } from "./bryntum-runtime.ts";
 
 export const NOW_ID = "now";
 
 const asDate = (value: unknown): Date | undefined => (value instanceof Date ? value : undefined);
 
 /** Opens the week at the "now" line when it is in the week, otherwise at the first shift. */
-export function scrollToWhatMatters(scheduler: Scheduler): void {
+export function scrollToWhatMatters({ EventModel, Store, TimeRangeModel }: BryntumModule, scheduler: Scheduler): void {
   // The data loads after the widget is painted.
   scheduler.whenProjectReady(() => {
     const store = scheduler.timeRangeStore;

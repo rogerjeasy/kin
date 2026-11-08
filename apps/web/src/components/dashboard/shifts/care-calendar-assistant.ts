@@ -1,7 +1,8 @@
-import { AnthropicPlugin } from "@bryntum/scheduler";
-import type { BryntumSchedulerProps } from "@bryntum/scheduler-react";
+import type { SchedulerConfig } from "@bryntum/scheduler";
 
 import { ASSISTANT_LOCALE_HEADER, ASSISTANT_URL } from "@/content/circle/shift-assistant-protocol";
+
+import type { BryntumModule } from "./bryntum-runtime.ts";
 
 /**
  * The calendar's experimental assistant. It only answers and filters what the
@@ -13,9 +14,9 @@ import { ASSISTANT_LOCALE_HEADER, ASSISTANT_URL } from "@/content/circle/shift-a
  * which swaps in data from the server (the calendar is rebuilt from the
  * server on every refresh anyway).
  */
-export function assistantFeature(locale: string): NonNullable<BryntumSchedulerProps["aiFeature"]> {
+export function assistantFeature(bryntum: BryntumModule, locale: string): NonNullable<NonNullable<SchedulerConfig["features"]>["ai"]> {
   return {
-    apiPlugin: AnthropicPlugin,
+    apiPlugin: bryntum.AnthropicPlugin,
     promptUrl: ASSISTANT_URL,
     // The browser sends only what the user typed and what the calendar shows; the server holds the model's settings and keys.
     fetchOptions: { credentials: "same-origin", headers: { [ASSISTANT_LOCALE_HEADER]: locale } },
@@ -37,4 +38,4 @@ const VETO = { beforeAdd: () => false, beforeRemove: () => false, beforeUpdate: 
  * these, so the calendar still follows the server while nothing the widget
  * is asked to do can change a shift or a person.
  */
-export const READ_ONLY_STORES = { eventStore: { listeners: VETO }, resourceStore: { listeners: VETO } } satisfies Pick<BryntumSchedulerProps, "eventStore" | "resourceStore">;
+export const READ_ONLY_STORES = { eventStore: { listeners: VETO }, resourceStore: { listeners: VETO } } satisfies Pick<SchedulerConfig, "eventStore" | "resourceStore">;
