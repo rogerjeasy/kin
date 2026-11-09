@@ -379,6 +379,20 @@
       "when": 1794258961165,
       "tag": "0053_payment-app-marker",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1794265207875,
+      "tag": "0054_open-kin-delegations-and-agencies",
+      "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1794265214487,
+      "tag": "0055_open-kin-access",
+      "breakpoints": true
     }
   ]
 }

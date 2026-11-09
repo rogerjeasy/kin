@@ -171,3 +171,22 @@ export type {
 } from "./presence.ts";
 export { proposeHelp } from "./presence-help.ts";
 export type { ProposeHelpInput } from "./presence-help.ts";
+// Open Kin: members' assistants under delegations, and agencies' visit reports.
+export {
+  AGENCY_REPORTS_SHOWN,
+  DELEGATION_CALLS_SHOWN,
+  OpenKinError,
+  createAgencyKey,
+  grantDelegation,
+  readAgencyKeys,
+  readAgencyReports,
+  readDelegations,
+  receiveAgencyVisit,
+  recordDelegationCalls,
+  resolveDelegation,
+  revokeAgencyKey,
+  revokeDelegation,
+} from "./open-kin.ts";
+export { DELEGATION_CALL_OUTCOMES } from "./schema/open-kin.ts";
+export type { DelegationCallOutcome } from "./schema/open-kin.ts";
+export type { AgencyKeyRecord, AgencyReportRecord, DelegationCallInput, DelegationCallRecord, DelegationRecord, GrantDelegation, OpenKinReason, ReceivedVisit, ResolvedDelegation } from "./open-kin.ts";
