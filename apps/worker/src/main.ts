@@ -15,6 +15,7 @@ import { runReceiptBatch } from "./receipts/run-receipts.ts";
 import { runCallBatch } from "./shifts/run-calls.ts";
 import { runCreditBatch } from "./shifts/run-credits.ts";
 import { runSettleBatch } from "./shifts/run-settles.ts";
+import { runWishSubscriptionBatch } from "./wishes/run-subscriptions.ts";
 
 /**
  * Kin's worker: it applies PayPal's events to the ledger as Kin's service
@@ -37,6 +38,8 @@ const SETTLE_POLL_MS = 5_000;
 const CALL_POLL_MS = 5_000;
 /** The same, for "is it really you?" texts: a person is waiting on the line for the answer, so it is looked at often. */
 const PRESENCE_POLL_MS = 2_000;
+/** The same, for the subscriptions the parent's wishes suspend and resume through PayPal. */
+const WISH_SUBSCRIPTION_POLL_MS = 15_000;
 
 const log: InboxLog = (line) => console.log(JSON.stringify({ at: new Date().toISOString(), ...line }));
 
@@ -203,6 +206,19 @@ async function presenceCallLoop(config: Extract<typeof shiftCalls, { enabled: tr
   }
 }
 
+// The subscriptions a trigger suspends, and resumes when the parent is home, through PayPal. A demo circle's never queue.
+async function wishSubscriptionLoop(): Promise<void> {
+  const subscriptions = { db: deps.db, pool: deps.pool, now: () => new Date() };
+  while (running) {
+    try {
+      if ((await runWishSubscriptionBatch(subscriptions, log)) === 0) await pause(WISH_SUBSCRIPTION_POLL_MS);
+    } catch (error) {
+      log({ level: "error", message: "wish_subscription.claim_failed", error: error instanceof Error ? error.name : "unknown" });
+      await pause(PAUSE_AFTER_ERROR_MS);
+    }
+  }
+}
+
 log({ level: "info", message: "worker.started" });
 if (!shiftCalls.enabled) log({ level: "info", message: "shift_call.disabled", missing: shiftCalls.missing.join(",") });
 if (!presenceTexts.enabled) log({ level: "info", message: "presence_text.disabled", missing: presenceTexts.missing.join(",") });
@@ -214,6 +230,7 @@ await Promise.all([
   creditLoop(),
   settleLoop(),
   presenceSweepLoop(),
+  wishSubscriptionLoop(),
   ...(shiftCalls.enabled ? [callLoop(shiftCalls), presenceCallLoop(shiftCalls)] : []),
   ...(presenceTexts.enabled ? [presenceTextLoop(presenceTexts)] : []),
 ]);

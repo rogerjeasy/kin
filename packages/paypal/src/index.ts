@@ -22,7 +22,7 @@ export { encodeInvoiceReference, invoiceBody, invoiceNumberFor, isInvoiceId, par
 export type { Invoice, InvoicePayment, InvoiceReference, InvoiceStatus, NewInvoice } from "./invoice.ts";
 export { CAPTURE_COMPLETED, INVOICE_EVENTS, SUBSCRIPTION_EVENTS, WEBHOOK_EVENT_TYPES, WEBHOOK_HEADERS, parseWebhookEnvelope, verificationBody, webhookHeaders } from "./webhook.ts";
 export type { WebhookDelivery, WebhookEnvelope, WebhookHeaders } from "./webhook.ts";
-export { SUBSCRIPTION_ACTIONS, isSubscriptionId, shareStateOf } from "./subscription.ts";
+export { SUBSCRIPTION_ACTIONS, isSubscriptionId, shareStateOf, subscriptionChangeRequestId, subscriptionMoveOutcome } from "./subscription.ts";
 export type { NewSubscription, Subscription, SubscriptionAction, SubscriptionPayment, SubscriptionStatus } from "./subscription.ts";
 export { leftThePool, maskEmail, parsePayoutItemTransactionId, parseTransactionSearch, searchTransaction, transactionSearchPath } from "./transaction-search.ts";
 export type { TransactionRecord } from "./transaction-search.ts";

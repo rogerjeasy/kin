@@ -35,3 +35,6 @@ export { bedrockAssistantModel, messagesAssistantModel } from "./shift-assistant
 export { ACCOUNT_PROMPT_VERSION } from "./account-prompt.ts";
 export { readAccount } from "./read-account.ts";
 export type { ReadAccountResult } from "./read-account.ts";
+export { WISH_DRAFT_KINDS, WISH_PROMPT_VERSION } from "./wish-prompt.ts";
+export { MAX_WISHES_SAID_CHARS, draftWishes } from "./draft-wishes.ts";
+export type { DraftWishesResult, DraftedWish, FlagReason, WishRecordNames } from "./draft-wishes.ts";
