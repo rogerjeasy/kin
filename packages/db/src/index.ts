@@ -47,6 +47,8 @@ export { AgreementError, acceptAgreement, proposeAgreement, readAgreementVersion
 export type { AgreementReason } from "./agreements.ts";
 export { CareAgreementError, endCareAgreement, proposeCareAgreement, readCareAgreements, signCareAgreement, withdrawCareAgreement } from "./care-agreements.ts";
 export type { CareAgreementReason } from "./care-agreements.ts";
+export { QuietShareError, acceptMyQuietSharePart, raiseQuietShare, readQuietShares, recordMyQuietShareAction, sealMyOffer, spreadQuietShare, takeQuietShareGap, withdrawQuietShare } from "./quiet-shares.ts";
+export type { OfferTerms, OwnOfferRecord, OwnPartRecord, QuietShareReason, QuietShareRecord } from "./quiet-shares.ts";
 export {
   PAYOUT_TOPIC,
   beginPayout,

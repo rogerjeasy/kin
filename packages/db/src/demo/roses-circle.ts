@@ -163,6 +163,23 @@ export const BILLS: readonly DemoBill[] = [
   { key: "stairlift", payee: "stairlift", cents: 90000, receivedOn: "2026-10-29", dueOn: "2026-11-12", state: "proposed", document: "stairlift-quote" },
 ];
 
+/**
+ * The stairlift repair the pool cannot pay alone ($900, the bill of 29
+ * October), asked of the family with quiet shares. Elena has answered that she
+ * can give $300. With the agreed shares (Marcus 50 %, Elena 30 %, Ana 20 %),
+ * Marcus offering up to $600 and Ana $60, the mediator's plan is Marcus $540,
+ * Elena $300 and Ana $60 (packages/domain quiet-share.test.ts).
+ */
+export const QUIET_SHARE_ASK = {
+  title: "Stairlift repair",
+  kind: "one_off",
+  costCents: 90000,
+  bill: "stairlift",
+  raisedBy: "elena",
+  raisedAt: new Date("2026-10-30T15:00:00Z"),
+  offers: [{ member: "elena", monthlyCents: 30000, sealedAt: new Date("2026-10-30T15:20:00Z") }],
+} as const satisfies { title: string; kind: "one_off" | "monthly"; costCents: number; bill: string; raisedBy: PersonaKey; raisedAt: Date; offers: readonly { member: PersonaKey; monthlyCents: number; sealedAt: Date }[] };
+
 export type DemoVote = { readonly member: PersonaKey; readonly method: ApprovalMethod; readonly at: Date };
 
 export type DemoProposal = {

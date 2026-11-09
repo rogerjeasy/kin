@@ -40,6 +40,8 @@ import {
   payees,
   proposals,
   purchaseRules,
+  quietShareAsks,
+  sealedOffers,
   settlements,
   trustedVoices,
 } from "../schema/index.ts";
@@ -59,6 +61,7 @@ import {
   PERSONAS,
   PROPOSALS,
   PURCHASE_RULES,
+  QUIET_SHARE_ASK,
   ROSES_CIRCLE,
   SETTLED_AT,
   type PayeeKey,
@@ -111,6 +114,7 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     const ledger = rekeyLedger(ids);
     await writeEntries(tx, ledger, new Map());
     await writeBills(tx, ids, ledger);
+    await writeQuietShare(tx, ids);
     await writeProposals(tx, ids, agreement, ledger);
     const ruleIds = await writePurchaseRules(tx, ids);
     await writeMandates(tx, ids, ruleIds);
@@ -129,6 +133,42 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     });
     return { circleId: ids.circleId, members: ids.members, payees: ids.payees };
   });
+}
+
+/**
+ * The stairlift the pool cannot pay alone, asked of the family with quiet
+ * shares. Elena has sealed her offer; Marcus and Ana have not answered, so the
+ * plan lands the moment they do. Her offer is hers alone to read, here as in
+ * any circle.
+ */
+async function writeQuietShare(tx: Transaction, ids: Ids): Promise<void> {
+  const askId = randomUUID();
+  const ask = QUIET_SHARE_ASK;
+  await tx.insert(quietShareAsks).values({
+    id: askId,
+    circleId: ids.circleId,
+    title: ask.title,
+    kind: ask.kind,
+    costCents: ask.costCents,
+    billId: ids.bills.get(ask.bill) ?? null,
+    agreementId: ids.agreementId,
+    asked: rosesMonth.agreement.shares.map((share) => rowOf(ids.members, share.memberId)),
+    startMonth: ids.time.period,
+    answeredCount: ask.offers.length,
+    simulated: true,
+    raisedBy: ids.members[ask.raisedBy],
+    createdAt: ids.time.at(ask.raisedAt),
+  });
+  await tx.insert(sealedOffers).values(
+    ask.offers.map((offer) => ({
+      id: randomUUID(),
+      circleId: ids.circleId,
+      askId,
+      memberId: ids.members[offer.member],
+      monthlyCents: offer.monthlyCents,
+      sealedAt: ids.time.at(offer.sealedAt),
+    })),
+  );
 }
 
 /** The family members Kin may ask, confirmed from the start: stand-ins, so nothing is texted. */
