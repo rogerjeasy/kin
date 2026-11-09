@@ -365,3 +365,29 @@ export { RATE_BENCHMARKS, RATE_HIGH_BPS, RATE_LOW_BPS, judgeRate } from "./rate-
 export type { RateBenchmark, RateJudgement } from "./rate-benchmark.ts";
 export { LACKING_REASONS, LOOKBACK_MONTHS, OUTFLOW_CLASSES, OUTFLOW_MARKS, classifyOutflows, lookbackStart } from "./lookback.ts";
 export type { LackingReason, LookbackContext, LookbackSummary, OutflowClass, OutflowMark, OutflowRow, OutflowStatus, WorkFacts } from "./lookback.ts";
+export {
+  MAX_ASK_CENTS,
+  MAX_ASK_TITLE,
+  MAX_CARE_MINUTES,
+  MAX_CARE_TRIPS,
+  MAX_OFFER_CENTS,
+  MAX_OFFER_SEALS,
+  MediationError,
+  QUIET_PART_METHODS,
+  QUIET_SHARE_KINDS,
+  QUIET_SHARE_STATES,
+  QUIET_SHARE_TRANSITIONS,
+  SPREAD_MONTHS,
+  SealedOfferError,
+  addMonths,
+  checkSealedOffer,
+  isMonth,
+  limitsCanBeDeduced,
+  mediateQuietShare,
+  offerInMonth,
+  offersAreOpen,
+  partMethods,
+  quietShareMayMove,
+  spreadWouldCover,
+} from "./quiet-share.ts";
+export type { MediationInput, MediationResult, Month, QuietPart, QuietPartMethod, QuietShareKind, QuietShareState, SealedOffer } from "./quiet-share.ts";

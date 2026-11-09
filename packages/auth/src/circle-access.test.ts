@@ -8,7 +8,7 @@ const active = (role: CircleRole) => ({ role, status: "active" as const });
 describe("what a member may do in a circle", () => {
   // Least-privileged roles first (AGENTS.md section 6).
   it("lets an observer see everything and change nothing", () => {
-    expect(allowedActions(active("observer"))).toEqual(["circle.view", "money.view", "own_payments.view", "safety.view", "shift.view", "care_agreement.view"]);
+    expect(allowedActions(active("observer"))).toEqual(["circle.view", "money.view", "own_payments.view", "safety.view", "shift.view", "care_agreement.view", "quiet_share.view"]);
   });
 
   it("lets a caregiver see only their own payments, and pull the pause switch", () => {
@@ -85,6 +85,14 @@ describe("what a member may do in a circle", () => {
       expect(authorize(active(role), "care_agreement.propose").allowed).toBe(role === "organizer");
       expect(authorize(active(role), "care_agreement.manage").allowed).toBe(role === "organizer");
       expect(authorize(active(role), "care_agreement.sign").allowed).toBe(role === "organizer" || role === "parent" || role === "caregiver");
+    }
+  });
+
+  it("lets only the members who share the cost seal an offer, only the organizer raise an ask, and never a caregiver see one", () => {
+    for (const role of CIRCLE_ROLES) {
+      expect(authorize(active(role), "quiet_share.view").allowed).toBe(role !== "caregiver");
+      expect(authorize(active(role), "quiet_share.raise").allowed).toBe(role === "organizer");
+      expect(authorize(active(role), "quiet_share.offer").allowed).toBe(role === "organizer" || role === "contributor");
     }
   });
 

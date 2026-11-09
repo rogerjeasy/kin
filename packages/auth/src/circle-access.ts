@@ -104,6 +104,12 @@ export const CIRCLE_ACTIONS = {
   "invoice.request": ["organizer"],
   /** Say where one's own settlement payout goes. Nobody else may, so nobody can redirect it. */
   "settlement_receiver.set": ["organizer", "contributor", "parent"],
+  /** See the costs the family covers with quiet shares: what each costs, where it stands and the family's total. Never anyone's limit. */
+  "quiet_share.view": ["organizer", "contributor", "parent", "observer"],
+  /** Ask the family to cover a cost with quiet shares, spread a short one over months, or withdraw it. */
+  "quiet_share.raise": ["organizer"],
+  /** Talk privately to one's own Kin agent, seal one's own offer, take the gap on with Pay Later and say yes to one's own part: the members who share the cost. */
+  "quiet_share.offer": ["organizer", "contributor"],
 } as const satisfies Record<string, readonly CircleRole[]>;
 
 export type CircleAction = keyof typeof CIRCLE_ACTIONS;
