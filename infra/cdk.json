@@ -38,6 +38,7 @@
     "kin:speech": true,
     "kin:claude": true,
     "kin:voice": true,
+    "kin:voicePublicUrl": "https://cvtt7m6dmj.us-east-1.awsapprunner.com",
     "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
     "@aws-cdk/aws-apigateway:authorizerChangeDeploymentLogicalId": true,
     "@aws-cdk/aws-apigateway:disableCloudWatchRole": true,
