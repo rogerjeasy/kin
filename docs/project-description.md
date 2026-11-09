@@ -153,6 +153,7 @@ These five rules shape every feature.
 - **Explained in words.** Kin does not show only a balance. It says why: "You are 126 dollars ahead this month because you paid three pharmacy bills directly."
 - **Monthly settlement.** Kin proposes the smallest set of payments that brings everyone back to their agreed share, and on approval sends them.
 - **No surprises.** Any sibling can question any line. The receipt, the approval and the payment record are attached to it.
+- **Quiet shares.** When a cost is too big for the pool, such as Rose's $900 stairlift, nobody has to say out loud what they cannot afford. Each person tells their own Kin, privately, what they can give ("honestly I can only manage 60, more after my December bonus, and I can drive Mum to her appointments"). Kin turns it into an offer they confirm and seal; only they can ever read it. Plain code then shares the cost out by the agreed shares, never above anyone's offer, and spreads what is left over those with room. Each person sees their own part and the family's total, never anyone else's limit; if the offers fall short Kin says only by how much, and offers to spread the cost over three months or to let one person take the gap on with PayPal Pay Later. Everyone still sees, in the record, what everyone gave. With only two people sharing, Kin says plainly that privacy cannot be total.
 
 ### 6.4 Bills and caregiver pay
 
@@ -249,6 +250,7 @@ For the hackathon, all of this runs in the PayPal sandbox with test money.
 - Spots what looks wrong: duplicate bills, unusual amounts, unfamiliar payees, demands that match nothing on record.
 - Drafts the family agreement, the monthly statement and the audit summary.
 - Plans recurring purchases inside the family's rules.
+- Listens to one person, privately, say what they can give toward a cost, and turns it into an offer they confirm. It never sees anyone else's offer, and never shares a cost out.
 
 **AI does not do the work that needs certainty:**
 
