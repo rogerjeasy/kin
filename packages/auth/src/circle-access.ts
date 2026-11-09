@@ -77,6 +77,10 @@ export const CIRCLE_ACTIONS = {
   "claim.check": ["organizer", "contributor", "parent"],
   /** Place a call to the family office line, or try it from the simulator, and have its verdict recorded and the family told. */
   "office_line.try": ["organizer", "contributor", "parent"],
+  /** Ask Kin "is it really you?": tell it what a caller who said they were family asked for, so the real person is asked. */
+  "presence.check": ["organizer", "contributor", "parent"],
+  /** Add or remove the family members Kin may ask. The organizer and the parent: it is their family's list. */
+  "presence.manage": ["organizer", "parent"],
   /** Send a caregiver's bill for the family's approval, or decline it: the members who share the cost. */
   "caregiver_bill.review": ["organizer", "contributor"],
   /** File a receipt for money spent from one's own pocket: the members who share the cost. */
