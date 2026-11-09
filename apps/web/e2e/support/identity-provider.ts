@@ -3,7 +3,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 
 import { cognitoClaims, createTokenSigner } from "@kin/auth/testing";
 
-import { E2E_APP_ORIGIN, E2E_PORTS } from "./ports";
+import { E2E_APP_ORIGIN, E2E_PORTS } from "./ports.ts";
 
 /**
  * A stand-in for Cognito, for the end-to-end tests only. It speaks the same

@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage } from "node:http";
 
-import { E2E_PORTS } from "./ports";
+import { E2E_PORTS } from "./ports.ts";
 
 /**
  * A stand-in for Claude on Amazon Bedrock's Messages endpoint, for the
