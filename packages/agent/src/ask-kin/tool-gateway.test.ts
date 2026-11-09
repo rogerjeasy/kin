@@ -146,3 +146,26 @@ describe("the tool gateway", () => {
     expect(records[0]?.at).toEqual(new Date(1_000));
   });
 });
+
+describe("the tool gateway under a member's delegation", () => {
+  const delegated = (role: CircleRole, scope: "read" | "propose", run = vi.fn(async () => ok())) =>
+    toolGateway({ context: { circleId: "circle-1", memberId: "member-1", role, delegation: { id: "delegation-1", scope } }, implementations: implementations({ propose_refill: run }), recorder: () => undefined, clock: () => 1_000 });
+
+  it("offers a read scope every reading tool of the role and no proposing one", () => {
+    expect(delegated("contributor", "read").tools.map((tool) => tool.name)).toEqual(ASK_KIN_TOOL_NAMES.filter((name) => name !== "propose_refill"));
+    expect(toolsForRole("contributor", "propose").map((tool) => tool.name)).toEqual(ASK_KIN_TOOL_NAMES);
+  });
+
+  it("refuses what the scope does not allow, and runs nothing", async () => {
+    const run = vi.fn(async () => ok());
+    expect((await delegated("contributor", "read", run).call(use("propose_refill"))).record.outcome).toBe("refused");
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it("never widens the role: an observer's assistant with a propose scope still cannot propose", async () => {
+    const run = vi.fn(async () => ok());
+    expect(delegated("observer", "propose", run).tools.map((tool) => tool.name)).toEqual(OFFERED.observer);
+    expect((await delegated("observer", "propose", run).call(use("propose_refill"))).record.outcome).toBe("refused");
+    expect(run).not.toHaveBeenCalled();
+  });
+});

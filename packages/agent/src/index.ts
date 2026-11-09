@@ -35,3 +35,5 @@ export { bedrockAssistantModel, messagesAssistantModel } from "./shift-assistant
 export { ACCOUNT_PROMPT_VERSION } from "./account-prompt.ts";
 export { readAccount } from "./read-account.ts";
 export type { ReadAccountResult } from "./read-account.ts";
+// Kin's MCP server: the same tools and gateway, for a member's own assistant under a delegation.
+export * from "./mcp/index.ts";
