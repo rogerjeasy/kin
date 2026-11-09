@@ -365,3 +365,57 @@ export { RATE_BENCHMARKS, RATE_HIGH_BPS, RATE_LOW_BPS, judgeRate } from "./rate-
 export type { RateBenchmark, RateJudgement } from "./rate-benchmark.ts";
 export { LACKING_REASONS, LOOKBACK_MONTHS, OUTFLOW_CLASSES, OUTFLOW_MARKS, classifyOutflows, lookbackStart } from "./lookback.ts";
 export type { LackingReason, LookbackContext, LookbackSummary, OutflowClass, OutflowMark, OutflowRow, OutflowStatus, WorkFacts } from "./lookback.ts";
+export {
+  DECIDING_ROLES,
+  MAX_WISH_CHARS,
+  MAX_WISH_SUBSCRIPTIONS,
+  SPEND_KINDS,
+  TRIGGER_EVENTS,
+  WISH_RULE_KINDS,
+  WISH_STATES,
+  WISH_TRANSITIONS,
+  WISH_TRIGGERS,
+  WISH_WITNESSES,
+  WITNESS_ROLES,
+  WishRuleError,
+  checkWishDraft,
+  cleanQuote,
+  discretionaryPause,
+  wishApplies,
+  wishApprovalFor,
+  wishApprovalMet,
+  wishEffects,
+  wishHoldFor,
+  wishMoveAllowed,
+  witnessed,
+} from "./wishes.ts";
+export type {
+  ActiveTrigger,
+  DiscretionaryPause,
+  InForceWish,
+  SpendKind,
+  TriggerEvent,
+  WishApproval,
+  WishContext,
+  WishDraft,
+  WishEffects,
+  WishHold,
+  WishRule,
+  WishRuleKind,
+  WishRuleReason,
+  WishSignature,
+  WishState,
+  WishTrigger,
+} from "./wishes.ts";
+export {
+  ATTESTATIONS_NEEDED,
+  ATTESTATION_STANCES,
+  FAMILY_ATTESTERS,
+  WISH_TRIGGER_STATES,
+  WISH_TRIGGER_TRANSITIONS,
+  attestationMet,
+  attestationStillNeeded,
+  mayAttest,
+  wishTriggerMoveAllowed,
+} from "./wish-trigger.ts";
+export type { Attestation, AttestationStance, WishTriggerState } from "./wish-trigger.ts";

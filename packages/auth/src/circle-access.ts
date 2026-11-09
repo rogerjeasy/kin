@@ -71,6 +71,20 @@ export const CIRCLE_ACTIONS = {
   "care_agreement.sign": ["organizer", "parent", "caregiver"],
   /** Withdraw a draft that is not yet signed by both sides, or end one that is. */
   "care_agreement.manage": ["organizer"],
+  /** Read the parent's wishes, her words and their recordings: the family. A caregiver may be paid under them and does not read them; the database enforces it again. */
+  "wish.view": ["organizer", "contributor", "parent", "observer"],
+  /** Say, confirm, change or withdraw a wish: the parent only, in her own seat, while no trigger is open. */
+  "wish.record": ["parent"],
+  /** Witness a wish she confirmed: the family members who share the cost, never the parent herself. */
+  "wish.witness": ["organizer", "contributor"],
+  /** See whether a trigger is reported or active, and who said so: everyone in the circle, the caregiver included, since she may attest one. */
+  "wish_trigger.view": ["organizer", "contributor", "parent", "caregiver", "observer"],
+  /** Say the parent went into hospital or a care home, or that she is home: the family, and the caregiver for a hospital admission, which the database decides. */
+  "wish_trigger.attest": ["organizer", "contributor", "caregiver"],
+  /** Take back a report nobody confirmed: the one who made it, or the organizer, which the database decides. */
+  "wish_trigger.dismiss": ["organizer", "contributor", "caregiver"],
+  /** Tell Kin about a subscription the parent pays, so a wish can name it. */
+  "parent_subscription.manage": ["organizer"],
   "audit.view": ["organizer"],
   /** Have Kin keep the head of the record's hash chain when the record is checked or exported. An observer reads and never writes. */
   "audit_head.keep": ["organizer", "contributor", "parent"],

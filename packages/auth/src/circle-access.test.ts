@@ -8,11 +8,11 @@ const active = (role: CircleRole) => ({ role, status: "active" as const });
 describe("what a member may do in a circle", () => {
   // Least-privileged roles first (AGENTS.md section 6).
   it("lets an observer see everything and change nothing", () => {
-    expect(allowedActions(active("observer"))).toEqual(["circle.view", "money.view", "own_payments.view", "safety.view", "shift.view", "care_agreement.view"]);
+    expect(allowedActions(active("observer"))).toEqual(["circle.view", "money.view", "own_payments.view", "safety.view", "shift.view", "care_agreement.view", "wish.view", "wish_trigger.view"]);
   });
 
   it("lets a caregiver see only their own payments, and pull the pause switch", () => {
-    expect(allowedActions(active("caregiver"))).toEqual(["circle.view", "own_payments.view", "shift.view", "shift.check", "shift.link", "shift.cancel", "circle.pause", "care_agreement.view", "care_agreement.sign", "caregiver_bill.submit", "caregiver_receiver.set", "payout_target.set"]);
+    expect(allowedActions(active("caregiver"))).toEqual(["circle.view", "own_payments.view", "shift.view", "shift.check", "shift.link", "shift.cancel", "circle.pause", "care_agreement.view", "care_agreement.sign", "wish_trigger.view", "wish_trigger.attest", "wish_trigger.dismiss", "caregiver_bill.submit", "caregiver_receiver.set", "payout_target.set"]);
     expect(authorize(active("caregiver"), "money.view")).toEqual({ allowed: false, reason: "role" });
     expect(authorize(active("caregiver"), "proposal.answer")).toEqual({ allowed: false, reason: "role" });
   });
@@ -59,8 +59,8 @@ describe("what a member may do in a circle", () => {
     }
   });
 
-  it("lets an organizer run the circle but not submit a caregiver's own bill", () => {
-    expect(allowedActions(active("organizer"))).toEqual(Object.keys(CIRCLE_ACTIONS).filter((action) => action !== "caregiver_bill.submit" && action !== "caregiver_receiver.set" && action !== "payout_target.set"));
+  it("lets an organizer run the circle but not submit a caregiver's own bill, nor say the parent's wishes for her", () => {
+    expect(allowedActions(active("organizer"))).toEqual(Object.keys(CIRCLE_ACTIONS).filter((action) => action !== "caregiver_bill.submit" && action !== "caregiver_receiver.set" && action !== "payout_target.set" && action !== "wish.record"));
   });
 
   it("lets only the family confirm a visit, only the parent or organizer grant its standing permission, and only the caregiver choose their wallet", () => {
@@ -85,6 +85,18 @@ describe("what a member may do in a circle", () => {
       expect(authorize(active(role), "care_agreement.propose").allowed).toBe(role === "organizer");
       expect(authorize(active(role), "care_agreement.manage").allowed).toBe(role === "organizer");
       expect(authorize(active(role), "care_agreement.sign").allowed).toBe(role === "organizer" || role === "parent" || role === "caregiver");
+    }
+  });
+
+  it("lets only the parent say her wishes, the family who share the cost witness them, and never a caregiver read them", () => {
+    for (const role of CIRCLE_ROLES) {
+      expect(authorize(active(role), "wish.record").allowed).toBe(role === "parent");
+      expect(authorize(active(role), "wish.witness").allowed).toBe(role === "organizer" || role === "contributor");
+      expect(authorize(active(role), "wish.view").allowed).toBe(role !== "caregiver");
+      // A trigger is attested by the family, and by the caregiver for a hospital admission; never by the parent or an observer.
+      expect(authorize(active(role), "wish_trigger.attest").allowed).toBe(role === "organizer" || role === "contributor" || role === "caregiver");
+      expect(authorize(active(role), "wish_trigger.view").allowed).toBe(true);
+      expect(authorize(active(role), "parent_subscription.manage").allowed).toBe(role === "organizer");
     }
   });
 
