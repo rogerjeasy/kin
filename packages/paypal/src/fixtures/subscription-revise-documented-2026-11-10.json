@@ -1,0 +1,20 @@
+{
+  "request": {
+    "plan": {
+      "billing_cycles": [{ "sequence": 1, "total_cycles": 0, "pricing_scheme": { "fixed_price": { "value": "390.00", "currency_code": "USD" } } }]
+    },
+    "application_context": { "brand_name": "Kin", "shipping_preference": "NO_SHIPPING", "return_url": "https://kin.example/dashboard/fairness/quiet-shares", "cancel_url": "https://kin.example/dashboard/fairness/quiet-shares" }
+  },
+  "revised": {
+    "plan_id": "P-5ML4271244454362WXNWU5NQ",
+    "plan_overridden": true,
+    "plan": {
+      "billing_cycles": [{ "sequence": 1, "total_cycles": 0, "pricing_scheme": { "fixed_price": { "value": "390.00", "currency_code": "USD" } } }]
+    },
+    "links": [
+      { "href": "https://www.sandbox.paypal.com/webapps/billing/subscriptions/update?ba_token=BA-2M539689T3856352J", "rel": "approve", "method": "GET" },
+      { "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-BW452GLLEP1G", "rel": "edit", "method": "PATCH" },
+      { "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-BW452GLLEP1G", "rel": "self", "method": "GET" }
+    ]
+  }
+}

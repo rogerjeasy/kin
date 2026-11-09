@@ -1,3 +1,5 @@
+import type { Money } from "@kin/domain";
+
 import { parseCapture, type Capture } from "./capture.ts";
 import type { PayPalClient } from "./client.ts";
 import { contributionOrderBody, parseOrder, type NewContributionOrder, type Order } from "./order.ts";
@@ -12,8 +14,10 @@ import {
   parseSubscription,
   parseSubscriptionCreated,
   parseSubscriptionPayments,
+  parseSubscriptionRevised,
   planBody,
   productBody,
+  reviseBody,
   subscriptionBody,
   type NewSubscription,
   type Subscription,
@@ -62,6 +66,12 @@ export type PayPalPool = {
   readonly listSubscriptionPayments: (subscriptionId: string, from: Date, until: Date) => Promise<readonly SubscriptionPayment[]>;
   /** Pauses, resumes or ends a subscription, with the same request ID never twice. */
   readonly changeSubscription: (subscriptionId: string, action: SubscriptionAction, reason: string, requestId: string) => Promise<void>;
+  /**
+   * Revises a live subscription to a new monthly amount. PayPal asks the
+   * payer to approve the new price on the page it returns; the old amount
+   * runs until they do. `requestId` makes a repeat harmless.
+   */
+  readonly reviseSubscription: (subscriptionId: string, amount: Money, returnUrl: string, requestId: string) => Promise<{ readonly approvalUrl: string | null }>;
   /**
    * Makes a draft invoice from the pool to a member. It asks nothing of
    * anyone until it is sent. The invoice's number is its idempotency key: a
@@ -138,6 +148,12 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
     },
     async changeSubscription(subscriptionId, action, reason, requestId) {
       await client.send({ method: "POST", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}/${action}`, body: actionBody(reason), requestId, operation: `subscriptions.${action}` });
+    },
+    async reviseSubscription(subscriptionId, amount, returnUrl, requestId) {
+      const revised = parseSubscriptionRevised(
+        await client.send({ method: "POST", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}/revise`, body: reviseBody(amount, returnUrl), requestId, operation: "subscriptions.revise" }),
+      );
+      return { approvalUrl: revised.approvalUrl };
     },
     async createInvoice(invoice, requestId) {
       try {

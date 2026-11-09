@@ -25,7 +25,7 @@ export { DEFAULT_LIMITS, maskArgs, mayUseTool, toolGateway, toolsForRole } from 
 export type { GatewayLimits, JsonValue, ToolCallRecord, ToolContext, ToolGateway, ToolImplementation, ToolImplementations, ToolOutcome, ToolOutput, ToolRecorder } from "./ask-kin/tool-gateway.ts";
 export type { ToolModel, ToolRequest, ToolSpec, ToolTurn, ToolUse } from "./ask-kin/tool-model.ts";
 export { MAX_COVER_CANDIDATES, MAX_TITLE_CHARACTERS, SHIFT_WORDS_PROMPT_VERSION } from "./shift-words-prompt.ts";
-export { COVER_NOTE_TEMPLATES, DAY_PARTS, QUESTION_TEMPLATES, SHIFT_LANGUAGES } from "./shift-templates.ts";
+export { COVER_NOTE_TEMPLATES, DAY_PARTS, QUESTION_TEMPLATES, SHIFT_LANGUAGES, SHIFT_LANGUAGE_NAMES } from "./shift-templates.ts";
 export type { DayPart, ShiftLanguage } from "./shift-templates.ts";
 export { wordCoverNote, wordShiftQuestion } from "./shift-words.ts";
 export type { CoverNoteCandidate, CoverNoteFacts, ShiftQuestionFacts, ShiftWording } from "./shift-words.ts";
@@ -35,3 +35,7 @@ export { bedrockAssistantModel, messagesAssistantModel } from "./shift-assistant
 export { ACCOUNT_PROMPT_VERSION } from "./account-prompt.ts";
 export { readAccount } from "./read-account.ts";
 export type { ReadAccountResult } from "./read-account.ts";
+export { SEALED_OFFER_PROMPT_VERSION } from "./sealed-offer-prompt.ts";
+export type { OfferContext } from "./sealed-offer-prompt.ts";
+export { MAX_OFFER_MESSAGES, MAX_OFFER_MESSAGE_CHARS, MAX_OFFER_REPLY_CHARS, readOffer } from "./read-offer.ts";
+export type { DraftOffer, ReadOfferResult } from "./read-offer.ts";

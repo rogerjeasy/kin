@@ -108,6 +108,29 @@ export function subscriptionBody(planId: string, subscription: NewSubscription):
   });
 }
 
+/**
+ * A revision of a live subscription to a new monthly amount: the plan's one
+ * regular cycle priced again (Subscriptions v1 `revise`, a plan override). A
+ * new price needs the payer's consent, so PayPal answers with a page they
+ * approve it on; the old amount runs until they do.
+ */
+export function reviseBody(amount: Money, returnUrl: string): string {
+  return JSON.stringify({
+    plan: { billing_cycles: [{ sequence: 1, total_cycles: 0, pricing_scheme: { fixed_price: { value: decimalAmount(amount), currency_code: amount.currency } } }] },
+    application_context: { brand_name: "Kin", shipping_preference: "NO_SHIPPING", return_url: returnUrl, cancel_url: returnUrl },
+  });
+}
+
+/** What PayPal answers a revision with: whether the plan is now overridden, and the page the payer approves it on. */
+export function parseSubscriptionRevised(value: unknown): { readonly planOverridden: boolean; readonly approvalUrl: string | null } {
+  const record = asRecord(value, "subscription revision");
+  const approve = recordList(record["links"]).find((link) => link["rel"] === "approve");
+  const href = approve === undefined ? null : optionalText(approve, "href");
+  const approvalUrl = href === null ? null : paypalPage(href);
+  if (href !== null && approvalUrl === null) throw new PayPalShapeError("approval link");
+  return { planOverridden: record["plan_overridden"] === true, approvalUrl };
+}
+
 /** The body of a suspend, activate or cancel call: PayPal wants a reason, which the payer sees. */
 export function actionBody(reason: string): string {
   return JSON.stringify({ reason: reason.slice(0, 128) });

@@ -15,7 +15,7 @@ import type { WebhookDelivery } from "../webhook.ts";
 type StoredOrder = { id: string; status: string; reference: ContributionReference; amount: Money; captures: Capture[]; requestIds: Set<string> };
 type StoredPayout = { batch: PayoutBatch; request: NewPayout };
 type StoredInvoice = { id: string; number: string; status: InvoiceStatus; request: NewInvoice; payments: InvoicePayment[]; requestIds: Set<string> };
-type StoredSubscription = { id: string; key: string; status: SubscriptionStatus; reference: ContributionReference; amount: Money; payments: SubscriptionPayment[]; failedPayments: number; requestIds: Set<string> };
+type StoredSubscription = { id: string; key: string; status: SubscriptionStatus; reference: ContributionReference; amount: Money; payments: SubscriptionPayment[]; failedPayments: number; requestIds: Set<string>; revisions?: Money[] };
 
 export type FakePool = PayPalPool & {
   /** The payer approves the order on PayPal's page. */
@@ -247,6 +247,15 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
       if (!allowed) throw new PayPalError({ outcome: "rejected", status: 422, issue: "SUBSCRIPTION_STATUS_INVALID", debugId: "fake", operation: `subscriptions.${action}` });
       stored.status = next;
       stored.requestIds.add(requestId);
+    },
+    async reviseSubscription(subscriptionId, amount, _returnUrl, requestId) {
+      fail("reviseSubscription");
+      pool.requestIds.push(requestId);
+      const stored = findSubscription(subscriptionId);
+      if (stored.status !== "ACTIVE" && stored.status !== "SUSPENDED") throw new PayPalError({ outcome: "rejected", status: 422, issue: "SUBSCRIPTION_STATUS_INVALID", debugId: "fake", operation: "subscriptions.revise" });
+      if (!stored.requestIds.has(requestId)) (stored.revisions ??= []).push(amount);
+      stored.requestIds.add(requestId);
+      return { approvalUrl: `https://www.sandbox.paypal.com/webapps/billing/subscriptions/update?ba_token=BA-${stored.id.slice(2)}` };
     },
     approveSubscription(subscriptionId) {
       const stored = findSubscription(subscriptionId);
