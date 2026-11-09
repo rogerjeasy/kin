@@ -6,6 +6,7 @@ import { callBook } from "./call-book.ts";
 import { readVoiceConfig } from "./config.ts";
 import { type VoiceLog } from "./office-line-service.ts";
 import { voiceServer } from "./server.ts";
+import { presenceLineStoreOn } from "./presence/presence-line-store.ts";
 import { shiftCallStoreOn } from "./shift/shift-call-store.ts";
 
 /**
@@ -33,11 +34,13 @@ const server = voiceServer({
   calls: callBook(Date.now, CALL_STATE_TTL_MS),
   // Kin's call to a parent about a shift: the circle comes from a sealed token, so one service answers for many circles.
   shiftCalls: shiftCallStoreOn(db),
+  // The line a parent rings to ask "is it really you?": its own numbers, its own circle each. Off when none is set.
+  ...(config.presenceNumbers.size > 0 ? { presence: { numbers: config.presenceNumbers, store: presenceLineStoreOn(db) } } : {}),
   now: Date.now,
   log,
 });
 
-server.listen(config.port, () => log({ level: "info", message: "voice.listening", port: config.port, numbers: config.numbers.size }));
+server.listen(config.port, () => log({ level: "info", message: "voice.listening", port: config.port, numbers: config.numbers.size, presenceNumbers: config.presenceNumbers.size }));
 
 for (const signal of ["SIGTERM", "SIGINT"] as const) {
   process.on(signal, () => {

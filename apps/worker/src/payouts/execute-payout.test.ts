@@ -1,16 +1,21 @@
 import {
   PAYOUT_TOPIC,
+  answerPresenceCheck,
   answerProposal,
   asPerson,
   asService,
   claimOutbox,
   configureCaregiver,
+  newCheckToken,
+  openPresenceCheck,
+  proposeHelp,
   readLedger,
+  readTrustedVoices,
   sendCaregiverBill,
   submitCaregiverBill,
   takeDemoSeat,
 } from "@kin/db";
-import { personQuery, seatPerson, serviceRows, testDatabases, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
+import { adminRun, personQuery, seatPerson, serviceRows, testDatabases, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
 import { accountBalance, cashAvailableForPayouts, payableAccount } from "@kin/domain";
 import { fakePool, type FakePool } from "@kin/paypal/testing";
 import { randomUUID } from "node:crypto";
@@ -207,6 +212,109 @@ describe("an approved caregiver payout", () => {
 
     await pause(null);
     expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
+  });
+
+  it("sends nothing while an \"is it really you?\" check is open or after a \"not me\", without touching the pause switch, and pays once the person says it was them", async () => {
+    const payout = await approvedPayout({ real: true });
+    const [voice] = await asPerson(db.app, payout.circle.userId, (tx) => readTrustedVoices(tx, payout.circle.circleId));
+    const token = newCheckToken();
+    await asPerson(db.app, payout.circle.userId, (tx) =>
+      openPresenceCheck(tx, {
+        circleId: payout.circle.circleId,
+        voiceId: voice?.id ?? null,
+        claimedName: "Theo",
+        claimedRelationship: "grandson",
+        claimedCents: 200_000,
+        markers: ["urgency"],
+        said: ["It's Theo, I need money today."],
+        locale: "en",
+        token,
+        alerts: { denied: "Denied.", unreachable: "Unreachable.", confirmed: "Confirmed.", unknown: "Unknown." },
+      }),
+    );
+    expect(await step(payout)).toMatchObject({ next: "later", result: "held" });
+    expect(payout.pool.payouts.size).toBe(0);
+    expect(await serviceRows(db, payout.circle.circleId, "select details from audit_log where subject_id = $1 and action = 'payout.held'", [payout.executionId])).toEqual([{ details: { reason: "paused" } }]);
+    // The switch a person presses is untouched: the check holds the money by itself.
+    expect(await serviceRows(db, payout.circle.circleId, "select paused_until from circles where id = $1", [payout.circle.circleId])).toEqual([{ paused_until: null }]);
+
+    await answerPresenceCheck(db.app, { token, answer: "me" });
+    expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
+  });
+
+  it("stays held for a day after the person says it was not them", async () => {
+    const payout = await approvedPayout({ real: true });
+    const [voice] = await asPerson(db.app, payout.circle.userId, (tx) => readTrustedVoices(tx, payout.circle.circleId));
+    const token = newCheckToken();
+    await asPerson(db.app, payout.circle.userId, (tx) =>
+      openPresenceCheck(tx, {
+        circleId: payout.circle.circleId,
+        voiceId: voice?.id ?? null,
+        claimedName: "Theo",
+        claimedRelationship: "grandson",
+        claimedCents: 200_000,
+        markers: [],
+        said: ["It's Theo."],
+        locale: "en",
+        token,
+        alerts: { denied: "Denied.", unreachable: "Unreachable.", confirmed: "Confirmed.", unknown: "Unknown." },
+      }),
+    );
+    await answerPresenceCheck(db.app, { token, answer: "not_me" });
+    expect(await step(payout)).toMatchObject({ next: "later", result: "held" });
+    expect(payout.pool.payouts.size).toBe(0);
+  });
+
+  describe("help for a family member who said it was really them", () => {
+    const ALERTS = { denied: "Denied.", unreachable: "Unreachable.", confirmed: "Confirmed.", unknown: "Unknown." };
+
+    /** Theo says it was him; Elena raises help; Rose approves it. The demo circle's stand-in has confirmed his account. */
+    async function approvedHelp(options: { answer?: "me" | "not_me" } = {}): Promise<Payout & { token: string }> {
+      const circle = await visitorWithCircle(db);
+      const [voice] = await asPerson(db.app, circle.userId, (tx) => readTrustedVoices(tx, circle.circleId));
+      const token = newCheckToken();
+      const { checkId } = await asPerson(db.app, circle.userId, (tx) =>
+        openPresenceCheck(tx, { circleId: circle.circleId, voiceId: voice?.id ?? null, claimedName: "Theo", claimedRelationship: "grandson", claimedCents: 200_000, markers: [], said: ["It's Theo, I need $200."], locale: "en", token, alerts: ALERTS }),
+      );
+      await answerPresenceCheck(db.app, { token, answer: "me" });
+      const proposalId = await asPerson(db.app, circle.userId, (tx) => proposeHelp(tx, { circleId: circle.circleId, checkId, cents: 20_000, note: "Help for Theo.", now: CLOCK }));
+      await asPerson(db.app, circle.userId, (tx) => takeDemoSeat(tx, circle.circleId, circle.members.rose));
+      const decision = await asPerson(db.app, circle.userId, (tx) =>
+        answerProposal(tx, { circleId: circle.circleId, memberId: circle.members.rose, role: "parent" }, { proposalId, decision: "approve", method: "app", now: CLOCK, pausedUntil: null, evidenceRef: null }),
+      );
+      expect(decision).toBe("approved");
+      const pool = fakePool();
+      const executionId = await executionOf(circle.circleId, proposalId);
+      const payout = { circle, pool, deps: { db: db.service, pool, now: () => CLOCK, feeReserve: () => FEE }, proposalId, billId: "", executionId, token };
+      if (options.answer === "not_me") await answerPresenceCheck(db.app, { token, answer: "not_me" });
+      return payout;
+    }
+
+    it("is paid, once approved, to the account the person confirmed, and recorded as help, not as a caregiver's pay", async () => {
+      const payout = await approvedHelp();
+      expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
+      expect(await row(payout.circle.circleId, "select state from executions where id = $1", payout.executionId)).toEqual({ state: "confirmed" });
+      const descriptions = (await ledgerOf(payout.circle.circleId)).entries.filter((entry) => entry.source.id === payout.proposalId || entry.source.id.startsWith("simulated-payout-")).map((entry) => entry.description);
+      expect(descriptions).toEqual(expect.arrayContaining(["Help for a family member approved by the family", "Family member helped (simulated)"]));
+    });
+
+    it("is held, and never paid, if the account it was approved for is no longer the one the person confirmed", async () => {
+      const payout = await approvedHelp();
+      // A payout is fixed to the address the family approved. If the person's confirmed account is anything else by the time it
+      // would be sent (the database refuses the change while help is moving; a row set by the owner is still stopped here), it waits.
+      await adminRun(db, "update trusted_voices set paypal_receiver = 'someone.else@personal.example.com' where circle_id = $1 and paypal_receiver is not null", [payout.circle.circleId]);
+      expect(await step(payout)).toMatchObject({ next: "later", result: "held" });
+      expect(await serviceRows(db, payout.circle.circleId, "select details from audit_log where subject_id = $1 and action = 'payout.held'", [payout.executionId])).toEqual([{ details: { reason: "not_verified" } }]);
+      expect(await row(payout.circle.circleId, "select state from executions where id = $1", payout.executionId)).toEqual({ state: "created" });
+      expect(payout.pool.payouts.size).toBe(0);
+    });
+
+    it("is held when the person says it was not them after it was approved, even once the day's hold has passed", async () => {
+      const payout = await approvedHelp({ answer: "not_me" });
+      await adminRun(db, "update presence_checks set hold_until = null where circle_id = $1", [payout.circle.circleId]);
+      expect(await step(payout)).toMatchObject({ next: "later", result: "held" });
+      expect(payout.pool.payouts.size).toBe(0);
+    });
   });
 
   it("keeps tracking a payout already at PayPal through a pause", async () => {

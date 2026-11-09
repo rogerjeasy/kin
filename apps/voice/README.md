@@ -33,6 +33,22 @@ Every POST is checked against `X-Twilio-Signature` (HMAC-SHA1 of the full URL pl
 
 **What is recorded.** When the intake ends, or the caller hangs up having said something, the call is recorded once: the `office_calls` row (never labelled simulated, even in a demo circle), the claim check, a queued alert for every member who sees the circle's money, and an audit entry by the `service` with origin `phone`. The call then appears in the dashboard's recent calls. A call where the caller said nothing records nothing.
 
+## "Is it really you?": the presence line, and Kin's call to the real person
+
+A second number, `KIN_PRESENCE_LINE_NUMBERS` (never one of the office line's), is the line a parent rings when a voice that says it is family has asked her for money (architecture decision 86). Unset, none of these routes is served (404).
+
+| Route | Does |
+|---|---|
+| `POST /voice/presence/incoming` | The presence number's "A call comes in" webhook: says what Kin is and listens to what the caller asked for |
+| `POST /voice/presence/turn?s=<sealed>` | Reads the account with plain code (`planPresenceCheck`), opens a check for the trusted person it matches (texting their real phone), and keeps the parent on the line |
+| `POST /voice/presence/wait?s=<sealed>` | Every five seconds for about two minutes: says the one fixed sentence the person's answer calls for, or waits |
+| `POST /voice/presence/code?s=<sealed>` | When the person could not be reached or the caller matches nobody: takes what the parent says the caller answered to the weekly family code and says whether it matches |
+| `POST /voice/presence/ask/answer?s=<sealed>` | **Kin's call to the real person**, placed by the worker thirty seconds after an unanswered text: tells them what was asked and listens for yes or no (nothing is said to a machine) |
+| `POST /voice/presence/ask/turn?s=<sealed>` | Reads yes or no (keypad first, a doubtful answer changes nothing) and records it through the very call the worker recorded for that check |
+| `POST /voice/presence/ask/status?s=<sealed>` | Twilio's progress report on that call: acknowledged, nothing changed |
+
+Configure the presence number in the Twilio console: "A call comes in" is a Webhook, `POST`, `https://<voice host>/voice/presence/incoming`. The calls the worker places carry their own addresses. The tokens are sealed under `KIN_VOICE_STATE_KEY`, like the shift call's, and hold identifiers only. The service uses no model: plain rules read what the parent says, so the line works with the model down.
+
 ## Kin's call to the parent about a shift
 
 When a caregiver ends a visit and the family's word on it is still missing, Kin can phone the parent and ask one question: "Was Amara with you this morning?" Her yes, by voice or by pressing 1, is the family's second key on the shift, recorded as the parent's word with the call's ID as its evidence; the shift is then confirmed and its settling is queued for the worker (`shift.settle`). A no records a declined call and pays nothing. Silence or an answer Kin cannot understand, twice, records nothing: the family decides.
@@ -100,7 +116,7 @@ The public address takes two deployments, because App Runner names the service o
 2. **Store the credentials.** Put `KIN_TWILIO_ACCOUNT_SID` and `KIN_TWILIO_AUTH_TOKEN` in the root `.env` and run `AWS_PROFILE=wick-dev pnpm --filter @kin/infra run twilio:store`. Do this before step 4: the worker stops with a configuration error if it is given a number and an address while the account SID is still the placeholder.
 3. **Deploy KinVoice, then name it.** Merge to main (or deploy by hand), read the `Url` output of `KinVoice`, set `kin:voicePublicUrl` to it in `infra/cdk.json` and deploy again.
 4. **Give the worker the number.** Set the GitHub secret `KIN_TWILIO_CALLER_NUMBER` (or `kin:twilioCallerNumber` locally) and deploy. With the number and the address set, KinWorker's call loop starts.
-5. **For the office line only:** point a number at the service. In the Twilio console, under the number's Voice configuration: "A call comes in" is a Webhook, `POST`, `https://<voice host>/voice/incoming`; "Call status changes" is `POST`, `https://<voice host>/voice/status`. Nothing is configured on the number for the shift call, which names its own addresses. Then set `KIN_OFFICE_LINE_NUMBERS` on the service, which no stack does yet (the office line is still unconfigured and needs numbers).
+5. **For the office line only:** point a number at the service. In the Twilio console, under the number's Voice configuration: "A call comes in" is a Webhook, `POST`, `https://<voice host>/voice/incoming`; "Call status changes" is `POST`, `https://<voice host>/voice/status`. Nothing is configured on the number for the shift call, which names its own addresses. Then set `KIN_OFFICE_LINE_NUMBERS` on the service, which no stack does yet (the office line is still unconfigured and needs numbers). **For "is it really you?":** a second number, its webhook `POST https://<voice host>/voice/presence/incoming`, the GitHub secret `KIN_PRESENCE_LINE_NUMBERS` (or `kin:presenceLineNumbers`), and, for the texts, `KIN_TWILIO_SMS_FROM` (a text sender): the worker sends the texts and places Kin's call to the real person once its Twilio settings are in.
 6. **Place a real call and check** the items below.
 
 Until step 6 nothing in this repository has spoken to Twilio: the shift call is built and tested against stand-ins, and the hosting is configured but not yet proven by a live call.
@@ -114,6 +130,8 @@ Everything here is proven against a stand-in that signs requests the way Twilio'
 - The quality of Twilio's speech recognition on names, amounts and references. The amount is read from digits in the transcript (`spokenAmountCents`), so "three hundred" in words is read as no amount, which the verdict treats as unclear.
 - The signature under your host's real URL (a proxy that rewrites the scheme, host or port changes the signed URL). `KIN_VOICE_PUBLIC_URL` is what the service signs against.
 - That the recording notice in the disclosure satisfies the law where your callers are. Kin keeps a text transcript and no audio.
+
+What only a live account proves about the presence line and Kin's call to the real person, beyond the above: that Twilio recognizes a family member's name (Latin letters, or the spelling the family wrote down) and an amount in the parent's speech; that the text's link is delivered intact by carriers, in Arabic and Hebrew too; that Kin's call reaches the person's phone and a "yes" or "no" by voice or keypad is heard; and that a 25-second ring is long enough.
 
 What only a live account proves about the shift call (the list is the header of `packages/telephony/src/shift-call/shift-call-twiml.ts`, with one more):
 

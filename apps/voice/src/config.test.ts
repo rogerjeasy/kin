@@ -72,3 +72,16 @@ describe("the voice settings", () => {
     }
   });
 });
+
+describe("the presence line's numbers", () => {
+  it("are read like the office line's, name the setting in their errors, and are empty when unset", () => {
+    expect(readVoiceConfig(ENV).presenceNumbers.size).toBe(0);
+    const config = readVoiceConfig({ ...ENV, KIN_PRESENCE_LINE_NUMBERS: JSON.stringify({ "+15555550200": { circleId: CIRCLE, locale: "he" } }) });
+    expect(config.presenceNumbers.get("+15555550200")).toEqual({ circleId: CIRCLE, locale: "he" });
+    expect(() => readVoiceConfig({ ...ENV, KIN_PRESENCE_LINE_NUMBERS: "not json" })).toThrow("KIN_PRESENCE_LINE_NUMBERS is not JSON");
+  });
+
+  it("refuse a number that the office line already answers, so no call is taken twice over", () => {
+    expect(() => readVoiceConfig({ ...ENV, KIN_PRESENCE_LINE_NUMBERS: JSON.stringify({ "+15555550100": OTHER }) })).toThrow(ConfigError);
+  });
+});

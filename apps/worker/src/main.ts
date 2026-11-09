@@ -1,9 +1,12 @@
-import { readDatabaseConfig, readInboxConfig, readPayPalConfig, readSandboxPayoutConfig, readShiftCallConfig } from "@kin/config";
+import { readDatabaseConfig, readInboxConfig, readPayPalConfig, readPresenceTextConfig, readSandboxPayoutConfig, readShiftCallConfig } from "@kin/config";
 import { connect } from "@kin/db";
 import { payoutFeeReserve, poolFor, sqsInbox } from "@kin/paypal";
+import { createTwilioTextSender } from "@kin/notify";
 import { createTwilioOutboundCaller } from "@kin/telephony";
 
 import { runInboxBatch, type InboxLog } from "./paypal-inbox/run-inbox.ts";
+import { runPresenceCalls } from "./presence/place-presence-call.ts";
+import { runPresenceBatch, runPresenceSweep } from "./presence/run-presence.ts";
 import { runPayoutBatch } from "./payouts/run-payouts.ts";
 import { dailyBudget } from "./payouts/sandbox-route.ts";
 import { httpMerchant, simulatedMerchant } from "./purchases/merchant.ts";
@@ -32,6 +35,8 @@ const CREDIT_POLL_MS = 5_000;
 /** The same, for confirmed shifts to be settled and for the parent's call to be placed. */
 const SETTLE_POLL_MS = 5_000;
 const CALL_POLL_MS = 5_000;
+/** The same, for "is it really you?" texts: a person is waiting on the line for the answer, so it is looked at often. */
+const PRESENCE_POLL_MS = 2_000;
 
 const log: InboxLog = (line) => console.log(JSON.stringify({ at: new Date().toISOString(), ...line }));
 
@@ -41,6 +46,8 @@ const inboxConfig = readInboxConfig(process.env);
 const sandboxPayouts = readSandboxPayoutConfig(process.env);
 // Kin's call to the parent needs a Twilio account and the phone service's address; without them it stays off.
 const shiftCalls = readShiftCallConfig(process.env);
+// The "is it really you?" texts need a Twilio account, a sender and the web app's address; without them they stay queued.
+const presenceTexts = readPresenceTextConfig(process.env);
 if (!paypal.enabled || inboxConfig === null) throw new Error("The worker needs the PayPal settings and the inbox queue");
 
 const deps = {
@@ -156,8 +163,59 @@ async function callLoop(config: Extract<typeof shiftCalls, { enabled: true }>): 
   }
 }
 
+// Texts to a family member: "is this you?" for a pressured call, and the link that confirms their number.
+async function presenceTextLoop(config: Extract<typeof presenceTexts, { enabled: true }>): Promise<void> {
+  const texts = createTwilioTextSender({ accountSid: config.accountSid, authToken: config.authToken, sender: config.sender });
+  const presence = { db: deps.db, texts, webUrl: config.webUrl };
+  while (running) {
+    try {
+      if ((await runPresenceBatch(presence, log)) === 0) await pause(PRESENCE_POLL_MS);
+    } catch (error) {
+      log({ level: "error", message: "presence.claim_failed", error: error instanceof Error ? error.name : "unknown" });
+      await pause(PAUSE_AFTER_ERROR_MS);
+    }
+  }
+}
+
+// Checks whose ninety seconds ran out, or whose link did: the family is told, and the hold on outgoing money ends.
+async function presenceSweepLoop(): Promise<void> {
+  while (running) {
+    try {
+      await runPresenceSweep(deps.db, log);
+    } catch (error) {
+      log({ level: "error", message: "presence.sweep_failed", error: error instanceof Error ? error.name : "unknown" });
+    }
+    await pause(PRESENCE_POLL_MS);
+  }
+}
+
+// Kin's call to the real person when their text went unanswered for thirty seconds. It needs the shift call's Twilio settings.
+async function presenceCallLoop(config: Extract<typeof shiftCalls, { enabled: true }>): Promise<void> {
+  const caller = createTwilioOutboundCaller({ accountSid: config.accountSid, authToken: config.authToken, from: config.callerNumber });
+  const calls = { db: deps.db, caller, publicUrl: config.publicUrl, tokenKey: config.tokenKey, now: () => new Date() };
+  while (running) {
+    try {
+      await runPresenceCalls(calls, log);
+    } catch (error) {
+      log({ level: "error", message: "presence.call_loop_failed", error: error instanceof Error ? error.name : "unknown" });
+    }
+    await pause(PRESENCE_POLL_MS);
+  }
+}
+
 log({ level: "info", message: "worker.started" });
 if (!shiftCalls.enabled) log({ level: "info", message: "shift_call.disabled", missing: shiftCalls.missing.join(",") });
-await Promise.all([inboxLoop(), payoutLoop(), purchaseLoop(), receiptLoop(), creditLoop(), settleLoop(), ...(shiftCalls.enabled ? [callLoop(shiftCalls)] : [])]);
+if (!presenceTexts.enabled) log({ level: "info", message: "presence_text.disabled", missing: presenceTexts.missing.join(",") });
+await Promise.all([
+  inboxLoop(),
+  payoutLoop(),
+  purchaseLoop(),
+  receiptLoop(),
+  creditLoop(),
+  settleLoop(),
+  presenceSweepLoop(),
+  ...(shiftCalls.enabled ? [callLoop(shiftCalls), presenceCallLoop(shiftCalls)] : []),
+  ...(presenceTexts.enabled ? [presenceTextLoop(presenceTexts)] : []),
+]);
 await deps.db.$client.end();
 log({ level: "info", message: "worker.stopped" });

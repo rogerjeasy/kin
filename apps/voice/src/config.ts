@@ -4,6 +4,7 @@ import { isOfficeLocale, type OfficeLocale } from "@kin/telephony";
 /** The settings of the office line. Secrets come from the environment, which the task fills from Secrets Manager. */
 export const VOICE_ENV = {
   numbers: "KIN_OFFICE_LINE_NUMBERS",
+  presenceNumbers: "KIN_PRESENCE_LINE_NUMBERS",
   authToken: "KIN_TWILIO_AUTH_TOKEN",
   stateKey: "KIN_VOICE_STATE_KEY",
   publicUrl: "KIN_VOICE_PUBLIC_URL",
@@ -20,6 +21,12 @@ export type VoiceConfig = {
    * answer, and the shift-call routes (which take their circle from a sealed token) work as usual.
    */
   readonly numbers: ReadonlyMap<string, LineTarget>;
+  /**
+   * The numbers of the "is it really you?" line, to the circle each answers for, in the same form as the office line's.
+   * A separate number: the office line answers a caller who wants money, this one answers the parent who was asked.
+   * Empty when `KIN_PRESENCE_LINE_NUMBERS` is unset, and the line is then not served (404).
+   */
+  readonly presenceNumbers: ReadonlyMap<string, LineTarget>;
   /** Twilio's auth token: signs every webhook Twilio sends. */
   readonly authToken: string;
   /** Seals the state carried between turns. Not Twilio's token, so neither leak reveals the other. */
@@ -44,30 +51,30 @@ const isObject = (value: unknown): value is Record<string, unknown> => value !==
  * `{"circleId": "<uuid>", "locale": "fr"}` to answer in another language than
  * English. Anything else refuses to start: a wrong line must not take calls.
  */
-export function readLineNumbers(text: string): ReadonlyMap<string, LineTarget> {
+export function readLineNumbers(text: string, name: string = VOICE_ENV.numbers): ReadonlyMap<string, LineTarget> {
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
   } catch {
-    throw new ConfigError(`${VOICE_ENV.numbers} is not JSON`);
+    throw new ConfigError(`${name} is not JSON`);
   }
-  if (!isObject(parsed) || Object.keys(parsed).length === 0) throw new ConfigError(`${VOICE_ENV.numbers} must map phone numbers to circles`);
+  if (!isObject(parsed) || Object.keys(parsed).length === 0) throw new ConfigError(`${name} must map phone numbers to circles`);
   const numbers = new Map<string, LineTarget>();
   for (const [number, value] of Object.entries(parsed)) {
-    if (!E164.test(number)) throw new ConfigError(`${VOICE_ENV.numbers} holds a number that is not in E.164 form`);
-    numbers.set(number, readTarget(value));
+    if (!E164.test(number)) throw new ConfigError(`${name} holds a number that is not in E.164 form`);
+    numbers.set(number, readTarget(value, name));
   }
   const circles = [...numbers.values()].map((target) => target.circleId.toLowerCase());
-  if (new Set(circles).size !== circles.length) throw new ConfigError(`${VOICE_ENV.numbers} gives one circle two numbers`);
+  if (new Set(circles).size !== circles.length) throw new ConfigError(`${name} gives one circle two numbers`);
   return numbers;
 }
 
-function readTarget(value: unknown): LineTarget {
-  if (typeof value === "string") return readTarget({ circleId: value });
-  if (!isObject(value) || !Object.keys(value).every((key) => key === "circleId" || key === "locale")) throw new ConfigError(`${VOICE_ENV.numbers} holds a circle it cannot read`);
+function readTarget(value: unknown, name: string): LineTarget {
+  if (typeof value === "string") return readTarget({ circleId: value }, name);
+  if (!isObject(value) || !Object.keys(value).every((key) => key === "circleId" || key === "locale")) throw new ConfigError(`${name} holds a circle it cannot read`);
   const { circleId, locale = "en" } = value;
-  if (typeof circleId !== "string" || !UUID.test(circleId)) throw new ConfigError(`${VOICE_ENV.numbers} holds a circle ID that is not a UUID`);
-  if (typeof locale !== "string" || !isOfficeLocale(locale)) throw new ConfigError(`${VOICE_ENV.numbers} names a language Kin does not speak`);
+  if (typeof circleId !== "string" || !UUID.test(circleId)) throw new ConfigError(`${name} holds a circle ID that is not a UUID`);
+  if (typeof locale !== "string" || !isOfficeLocale(locale)) throw new ConfigError(`${name} names a language Kin does not speak`);
   return { circleId: circleId.toLowerCase(), locale };
 }
 
@@ -76,9 +83,9 @@ function readTarget(value: unknown): LineTarget {
  * unset, or blank as an empty line of a `.env` file is, means no numbers. A value that is set is read
  * exactly as before, so an empty object or a malformed value still refuses to start.
  */
-function readOfficeLine(text: string | undefined): ReadonlyMap<string, LineTarget> {
+function readOfficeLine(text: string | undefined, name: string = VOICE_ENV.numbers): ReadonlyMap<string, LineTarget> {
   if (text === undefined || text.trim() === "") return new Map();
-  return readLineNumbers(text);
+  return readLineNumbers(text, name);
 }
 
 function required(env: Env, name: string): string {
@@ -99,5 +106,9 @@ export function readVoiceConfig(env: Env): VoiceConfig {
   }
   const port = env[VOICE_ENV.port]?.trim() ? Number(env[VOICE_ENV.port]) : DEFAULT_PORT;
   if (!Number.isInteger(port) || port < 0 || port > 65_535) throw new ConfigError(`${VOICE_ENV.port} is not a port`);
-  return { numbers: readOfficeLine(env[VOICE_ENV.numbers]), authToken, stateKey, publicUrl, port };
+  const numbers = readOfficeLine(env[VOICE_ENV.numbers]);
+  const presenceNumbers = readOfficeLine(env[VOICE_ENV.presenceNumbers], VOICE_ENV.presenceNumbers);
+  // A number answers one line only: the same number on the office line and the presence line would take every call twice over.
+  if ([...presenceNumbers.keys()].some((number) => numbers.has(number))) throw new ConfigError(`${VOICE_ENV.presenceNumbers} repeats a number of ${VOICE_ENV.numbers}`);
+  return { numbers, presenceNumbers, authToken, stateKey, publicUrl, port };
 }

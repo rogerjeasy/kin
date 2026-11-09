@@ -22,6 +22,8 @@ import {
 
 import type { CallBook } from "./call-book.ts";
 import type { LineTarget, VoiceConfig } from "./config.ts";
+import { PRESENCE_ASK_ROUTE_PATHS, handlePresenceAskRoute, type PresenceAskRoute } from "./presence/presence-ask-service.ts";
+import { PRESENCE_ROUTE_PATHS, handlePresenceRoute, type PresenceLineDeps, type PresenceRoute } from "./presence/presence-line-service.ts";
 import { handleShiftCallRoute, type ShiftCallRoute } from "./shift/shift-call-service.ts";
 import type { ShiftCallStore } from "./shift/shift-call-store.ts";
 
@@ -36,6 +38,8 @@ export type VoiceLog = (line: Readonly<Record<string, string | number | boolean 
 
 export type VoiceDeps = {
   readonly config: Pick<VoiceConfig, "numbers" | "authToken" | "stateKey" | "publicUrl">;
+  /** The "is it really you?" line: the numbers it answers for and what it reads from the database. Without it those routes are not served (404). */
+  readonly presence?: PresenceLineDeps;
   readonly store: LineStore;
   readonly calls: CallBook;
   /** What the shift call's webhooks need from the database. Without it those routes are not served (404), and the office line is unchanged. */
@@ -76,7 +80,9 @@ export async function handleVoice(request: VoiceHttpRequest, deps: VoiceDeps): P
   if (url.pathname === "/health") return { status: 200, type: "text", body: "ok" };
   const route = ROUTES[url.pathname];
   const shiftRoute = deps.shiftCalls === undefined ? undefined : SHIFT_ROUTES.get(url.pathname);
-  if (route === undefined && shiftRoute === undefined) return refuse(404, "Not found");
+  const presenceRoute: PresenceRoute | undefined = deps.presence === undefined ? undefined : PRESENCE_ROUTE_PATHS.get(url.pathname);
+  const askRoute: PresenceAskRoute | undefined = deps.presence === undefined ? undefined : PRESENCE_ASK_ROUTE_PATHS.get(url.pathname);
+  if (route === undefined && shiftRoute === undefined && presenceRoute === undefined && askRoute === undefined) return refuse(404, "Not found");
   if (request.method !== "POST") return refuse(405, "Method not allowed");
   if (request.body.length > MAX_FORM_BYTES) return refuse(413, "Too large");
 
@@ -89,6 +95,10 @@ export async function handleVoice(request: VoiceHttpRequest, deps: VoiceDeps): P
   try {
     // A shift call is not the office line: it reads its own fields and takes its circle from a sealed token, never from a number.
     if (shiftRoute !== undefined && deps.shiftCalls !== undefined) return await handleShiftCallRoute(shiftRoute, params, url, deps, deps.shiftCalls);
+    // The "is it really you?" line picks its circle from its own numbers, and never from the caller's.
+    if (presenceRoute !== undefined && deps.presence !== undefined) return await handlePresenceRoute(presenceRoute, params, url, deps, deps.presence);
+    // Kin's call to the real person is placed by the worker and answered here; its circle comes from a sealed token, as a shift call's does.
+    if (askRoute !== undefined && deps.presence !== undefined) return await handlePresenceAskRoute(askRoute, params, url, deps, deps.presence.store);
     const call = parseVoiceRequest(params);
     if (call === null || route === undefined) {
       deps.log({ level: "warn", message: "voice.malformed_request", path: url.pathname });
