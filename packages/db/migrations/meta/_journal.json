@@ -323,6 +323,20 @@
       "when": 1794234472273,
       "tag": "0045_presence-line-trust",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1794247594019,
+      "tag": "0046_presence-may-hold",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1794247594387,
+      "tag": "0047_presence-hold-trust",
+      "breakpoints": true
     }
   ]
 }

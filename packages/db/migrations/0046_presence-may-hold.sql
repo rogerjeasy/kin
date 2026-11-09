@@ -1,0 +1,1 @@
+ALTER TABLE "presence_checks" ADD COLUMN "may_hold" boolean DEFAULT true NOT NULL;

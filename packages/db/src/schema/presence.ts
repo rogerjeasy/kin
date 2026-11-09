@@ -98,6 +98,11 @@ export const presenceChecks = pgTable(
     askCallSid: text("ask_call_sid"),
     /** How the real person answered: from the link in the text, or on Kin's call. */
     answeredVia: text("answered_via"),
+    /**
+     * Whether this check may hold outgoing money, now or after a "not me". True for a check a signed-in member opened and
+     * for a call from the parent's own number; false for any other caller on the phone line. Never turned back on.
+     */
+    mayHold: boolean("may_hold").notNull().default(true),
     /** How many times the weekly family code has been put to this check's caller. A few at most, so it cannot be found by asking. */
     codeAttempts: integer("code_attempts").notNull().default(0),
     /** The help payment the family raised after a "yes, it was me". At most one per check. Its foreign key is in the access migration. */

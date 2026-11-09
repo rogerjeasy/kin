@@ -448,8 +448,8 @@ describe("what a stranger can make the presence line do", () => {
     await enableCalls(db, circle);
     const added = await asPerson(db.app, circle.userId, (tx) => addTrustedVoice(tx, { circleId: circle.circleId, name: "Theo", relationship: "grandson", phone: "+15555550123", locale: "en", token: newCheckToken() }));
     await adminRun(db, "update trusted_voices set confirmed_at = now() where id = $1", [added.id]);
-    const call = (n: number, from: string | null) =>
-      asService(db.service, circle.circleId, (tx) => openPresenceCheckByLine(tx, { ...input(circle, added.id), callSid: `CA${String(n).padStart(32, "0")}`, from }));
+    const call = (n: number, from: string | null, token = newCheckToken()) =>
+      asService(db.service, circle.circleId, (tx) => openPresenceCheckByLine(tx, { ...input(circle, added.id, { token }), callSid: `CA${String(n).padStart(32, "0")}`, from }));
     const held = () => asService(db.service, circle.circleId, (tx) => presenceHoldUntil(tx, circle.circleId, new Date()));
     return { circle, call, held };
   }
@@ -464,6 +464,24 @@ describe("what a stranger can make the presence line do", () => {
     const parent = await lineCircle();
     expect(await parent.call(1, PARENT_PHONE)).toMatchObject({ fromParent: true });
     expect(await parent.held()).not.toBeNull();
+  });
+
+  it("never lets a stranger's check freeze the pool, even when the real person later says it was not them, and counts strangers apart from the parent", async () => {
+    const { circle, call, held } = await lineCircle();
+    const token = newCheckToken();
+    const stranger = await call(1, "+15555550999", token);
+    // The real person says "not me": the family is told, the check is closed, and no hold is made.
+    await answerPresenceCheck(db.app, { token, answer: "not_me" });
+    expect(await held()).toBeNull();
+    expect(await serviceRows(db, circle.circleId, "select state, may_hold from presence_checks where id = $1", [stranger.checkId])).toEqual([{ state: "denied", may_hold: false }]);
+    // Three strangers use up the strangers' calls; the parent's own are still taken.
+    await call(2, "+15555550998");
+    await call(3, "+15555550997");
+    await expect(call(4, "+15555550996")).rejects.toMatchObject({ reason: "rate_limited" });
+    expect(await call(5, PARENT_PHONE)).toMatchObject({ fromParent: true });
+    expect(await held()).not.toBeNull();
+    // A flag that says a check may not hold can never be turned back on.
+    expect(await errorCode(adminRun(db, "update presence_checks set may_hold = true where id = $1", [stranger.checkId]))).toBe(REFUSED.restrict);
   });
 
   it("answers a call Twilio delivers twice with the same check and counts it once, and opens at most three an hour", async () => {
