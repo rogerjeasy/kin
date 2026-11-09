@@ -3480,6 +3480,193 @@
         "overlap": "A signed agreement for this caregiver already covers the day this one would begin. Start this one after it, or end that one first."
       },
       "summary": "{count} on file."
+    },
+    "quietShares": {
+      "meta": {
+        "title": "Quiet shares · Kin",
+        "description": "Cover a cost together, fairly, without anyone saying out loud what they cannot afford."
+      },
+      "title": "Quiet shares",
+      "lede": "Cover a cost together, fairly. Each of you tells your own Kin, privately, what you can give. Kin shares the cost out by your agreed shares and never shows anyone your limit.",
+      "link": "Quiet shares",
+      "card": {
+        "title": "Quiet shares",
+        "text": "A cost too big for the pool? Cover it fairly, without anyone saying out loud what they can't afford.",
+        "gathering": "{title}, {cost}: {answered} of {asked} have answered.",
+        "short": "{title}, {cost}: the offers are {shortfall} short.",
+        "planned": "{title}, {cost}: the plan is ready. {accepted} of {parts} have said yes.",
+        "agreed": "{title}, {cost}: covered.",
+        "open": "Open quiet shares"
+      },
+      "privacy": {
+        "title": "How your limit stays private",
+        "items": [
+          "You tell your own Kin what you can give. Your words are never stored, and nobody else's Kin reads them.",
+          "Kin seals your offer. Only you can read it: not the organizer, not an observer, not Kin's own service.",
+          "Plain code, not AI, shares the cost out by your agreed shares, and never asks anyone for more than they offered.",
+          "Everyone sees the family's total and, in the record, what each person gave. Nobody sees anyone's limit."
+        ]
+      },
+      "caveat": "Two of you share this cost, so privacy cannot be total: when one of you is at your limit, the other can work it out from the total and their own part.",
+      "raise": {
+        "title": "Ask the family",
+        "text": "For a cost the pool cannot carry alone, such as a repair or a rise in the care budget. Everyone who shares the cost is asked privately.",
+        "titleLabel": "What it is for",
+        "titleHint": "Everyone in the circle sees this.",
+        "amountLabel": "Amount",
+        "kindLabel": "How often",
+        "kinds": {
+          "one_off": "Once",
+          "monthly": "Every month"
+        },
+        "submit": "Ask the family",
+        "submitting": "Asking…",
+        "done": "Asked. Everyone who shares the cost can now answer, privately."
+      },
+      "asks": {
+        "title": "What the family is covering",
+        "empty": "Nothing is being covered with quiet shares yet."
+      },
+      "states": {
+        "gathering": "Waiting for offers",
+        "short": "Short",
+        "planned": "Waiting for yeses",
+        "agreed": "Covered",
+        "withdrawn": "Withdrawn"
+      },
+      "kinds": {
+        "one_off": "{cost}, once",
+        "monthly": "{cost} a month",
+        "spread": "{cost}, over {months} months"
+      },
+      "raisedBy": "Asked by {name}",
+      "simulated": "Simulated",
+      "answered": "{answered} of {asked} have answered",
+      "accepted": "{accepted} of {parts} have said yes to their part",
+      "familyTotal": "Family total",
+      "payLaterUsed": "Part of it is paid with PayPal Pay Later.",
+      "readOnly": "Only the people who share the cost answer. You see the family's total, never anyone's part or limit.",
+      "chat": {
+        "title": "Talk to your Kin",
+        "private": "Private. Only you see this conversation, and Kin keeps none of it.",
+        "intro": "What could you give toward {title}? Say it however it comes: an amount, a larger amount later, or help instead of money.",
+        "label": "Your words",
+        "examplesLabel": "Try saying",
+        "examples": [
+          "Honestly I can only manage 60.",
+          "I can cover more this time, up to 600.",
+          "I can do about 60 this month, and I can drive {parent} to her two appointments."
+        ],
+        "send": "Tell Kin",
+        "sending": "Kin is reading…",
+        "speak": "Say it instead",
+        "you": "You",
+        "kin": "Your Kin",
+        "heard": "I've written that down below. Check it, change anything, then seal it.",
+        "noAmount": "I've noted that. How much could you give at most? Tell me, or put it below.",
+        "noModel": "Kin cannot read words here right now. Fill in your offer below."
+      },
+      "offer": {
+        "title": "Your offer",
+        "text": "Only you will ever see this. Change anything before you seal it.",
+        "monthly": "What I can give now",
+        "monthlyHint": "Leave it empty if money is not possible this time.",
+        "stepUp": "Later, I could give",
+        "stepUpMonth": "From",
+        "stepUpHint": "Optional: a larger amount from a later month, after a bonus, say.",
+        "earliest": "I can't give anything before",
+        "anyMonth": "Any month",
+        "careTrips": "Drives or visits I can do",
+        "careHours": "Hours of help, about",
+        "careHint": "Hands-on help counts toward fairness at the family's care rate once it is done. It never pays the bill itself.",
+        "seal": "Seal my offer",
+        "sealing": "Sealing…",
+        "sealsLeft": "You can change it {count} more times.",
+        "sealedTitle": "Your offer is sealed",
+        "sealed": "Only you can read it: {summary}.",
+        "change": "Change my offer",
+        "cancel": "Keep my offer",
+        "waiting": "Kin shares the cost out the moment everyone has answered.",
+        "summary": {
+          "monthly": "{amount} now",
+          "stepUp": "{amount} a month from {month}",
+          "earliest": "nothing before {month}",
+          "trips": "{count} drives or visits",
+          "hours": "about {hours} hours of help",
+          "nothing": "nothing in money this time"
+        }
+      },
+      "short": {
+        "title": "The offers fall {shortfall} short",
+        "text": "That is all Kin says: not whose offer, not by how much each. Here are the ways to close the gap.",
+        "spread": "Spread it over {months} months",
+        "spreadCovers": "Spreading it over {months} months would cover it.",
+        "spreadShort": "Spreading it would still leave a gap.",
+        "spreadOrganizer": "The organizer can choose this.",
+        "payLater": "I'll take the gap on with Pay Later",
+        "payLaterText": "Pay {shortfall} more with PayPal Pay Later, where PayPal offers it, and PayPal splits it into payments for you. Nobody is told it was you.",
+        "raise": "Or raise your own offer, if you can."
+      },
+      "part": {
+        "title": "Your part",
+        "of": "of {total} for the family",
+        "months": "{month}: {amount}",
+        "care": "plus {count} drives or visits",
+        "careValue": "Your help counts as {value} toward fairness, at the family's care rate, once it is done.",
+        "share": "Your agreed share alone would be {share}.",
+        "private": "Your limit stayed private.",
+        "privateText": "Nobody else sees your part or what you offered. The record will show what you give, like any payment.",
+        "payLater": "{amount} of it is the gap you took on with Pay Later.",
+        "nothing": "Nothing is asked of you this time.",
+        "methodLabel": "How you will pay",
+        "methods": {
+          "checkout": "PayPal checkout",
+          "pay_later": "PayPal Pay Later, where PayPal offers it",
+          "invoice": "A PayPal invoice by email",
+          "monthly_share": "Add it to my monthly share"
+        },
+        "accept": "Yes, that's my part",
+        "accepting": "Saving…",
+        "accepted": "You said yes. Waiting for the others.",
+        "agreedTitle": "Covered. Your PayPal step is ready",
+        "agreedText": "Everyone said yes to their own part, so the family's {total} is covered.",
+        "simulated": {
+          "checkout": "In a real circle, Kin opens PayPal checkout for {amount} here.",
+          "pay_later": "In a real circle, Kin opens PayPal checkout for {amount} here, with Pay Later where PayPal offers it.",
+          "invoice": "In a real circle, PayPal emails you an invoice for {amount}.",
+          "monthly_share": "In a real circle, Kin raises your monthly share by {amount}, and PayPal asks you to approve the new amount."
+        },
+        "pay": "Pay my part with PayPal",
+        "revise": "Approve the new amount on PayPal",
+        "prepare": "Raise my monthly share",
+        "preparing": "Asking PayPal…",
+        "invoiceReal": "An organizer can send you the PayPal invoice for {amount} from the Fairness page.",
+        "nothingToPay": "Nothing to pay. Thank you for your help."
+      },
+      "withdraw": "Withdraw this ask",
+      "withdrawn": "Withdrawn. Nothing was asked of anyone.",
+      "errors": {
+        "refused": "You cannot do that here.",
+        "invalid": "Kin could not read that. Check the amounts and months.",
+        "closed": "This has moved on. The screen now shows where it stands.",
+        "sealed_out": "You've changed your offer as many times as Kin allows for this cost.",
+        "unavailable": "Kin could not do that just now. Please try again.",
+        "unreadable": "Kin could not read that. Fill in your offer below, or say it another way.",
+        "paypal": "PayPal did not answer. Please try again.",
+        "limit": "That's a lot of messages for now. Fill in your offer below."
+      },
+      "family": {
+        "meta": {
+          "title": "The family, side by side · Kin",
+          "description": "Each person's own quiet-share screen, side by side, in the demo."
+        },
+        "title": "The family, side by side",
+        "lede": "Demo only. Each phone shows only what that person's own Kin shows them, read in their own seat. In a real family these are different people's phones, and none of them sees anything from the others.",
+        "link": "See the family side by side",
+        "phone": "{name}'s phone",
+        "back": "Back to quiet shares",
+        "none": "Nothing is being covered right now. Start again from the demo banner to bring the stairlift back."
+      }
     }
   },
   "aiProvenance": {

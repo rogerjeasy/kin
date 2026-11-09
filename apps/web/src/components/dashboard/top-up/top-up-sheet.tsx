@@ -26,15 +26,19 @@ type TopUpSheetProps = {
   presets: readonly { value: string; label: string }[];
   /** The smallest and largest top-up, formatted. */
   limits: { min: string; max: string };
+  /** An amount to open at, as a plain decimal, such as a person's part of a quiet share. */
+  initialAmount?: string;
+  /** The button's words, when the sheet is opened for something other than adding money. */
+  triggerLabel?: string;
 };
 
 /**
  * A member adds money to the pool through PayPal. The amount is checked here
  * for quick feedback and again on the server, which alone opens the order.
  */
-export function TopUpSheet({ locale, copy, circle, clientId, sdkUrl, currency, presets, limits }: TopUpSheetProps) {
+export function TopUpSheet({ locale, copy, circle, clientId, sdkUrl, currency, presets, limits, initialAmount, triggerLabel }: TopUpSheetProps) {
   const [open, setOpen] = useState(false);
-  const [amount, setAmount] = useState(presets[1]?.value ?? "");
+  const [amount, setAmount] = useState(initialAmount ?? presets[1]?.value ?? "");
   const [invalid, setInvalid] = useState(false);
   const sdk = usePayPalSdk({ enabled: open, src: sdkUrl, clientId, currency });
   const { phase, pay, sessionOf, reset } = useTopUp({ locale, currency });
@@ -60,7 +64,7 @@ export function TopUpSheet({ locale, copy, circle, clientId, sdkUrl, currency, p
       <SheetTrigger asChild>
         <Button type="button" size="sm" className="min-h-11">
           <WalletIcon aria-hidden="true" />
-          {copy.trigger}
+          {triggerLabel ?? copy.trigger}
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full gap-0 overflow-y-auto p-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:max-w-md">

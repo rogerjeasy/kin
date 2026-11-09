@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage } from "node:http";
 
-import { E2E_PORTS } from "./ports";
+import { E2E_PORTS } from "./ports.ts";
 
 /**
  * A stand-in for Claude on Amazon Bedrock's Messages endpoint, for the
@@ -46,8 +46,32 @@ function shiftWords(user: string): string {
   return (facts.candidates ?? []).map((candidate) => `${candidate.slot} is free and has ${candidate.hoursThisWeek} this week.`).join(" ");
 }
 
+/**
+ * A person's own agent for quiet shares, read the way the real model is asked
+ * to: the amount after "up to", or the first amount they said; the drives or
+ * appointments they counted; the hours they said. Nothing is guessed.
+ */
+function offerReading(user: string): string {
+  const words = /<person_words>\n([\s\S]*)\n<\/person_words>/.exec(user)?.[1] ?? "";
+  const counts: Record<string, number> = { one: 1, two: 2, three: 3 };
+  const trips = /\b(one|two|three|\d+) (?:appointments?|drives?|visits?)\b/i.exec(words)?.[1]?.toLowerCase();
+  const hours = /(\d+(?:\.\d+)?) hours?/i.exec(words)?.[1] ?? null;
+  const amounts = [...words.matchAll(/\d+(?:\.\d+)?/g)].map((match) => match[0]).filter((amount) => amount !== hours);
+  const monthly = /up to (\d+(?:\.\d+)?)/i.exec(words)?.[1] ?? amounts[0] ?? null;
+  return JSON.stringify({
+    monthly,
+    stepUpAmount: null,
+    stepUpMonth: null,
+    earliestMonth: null,
+    careTrips: trips === undefined ? null : (counts[trips] ?? Number(trips)),
+    careHours: hours,
+    reply: monthly === null ? "Thank you. How much could you give at most?" : "Thank you. I have written that down for you to check.",
+  });
+}
+
 function answer(system: string, user: string): { stop_reason: string; text: string } {
   if (/decline/i.test(user)) return { stop_reason: "refusal", text: "" };
+  if (/own private Kin agent/.test(system)) return { stop_reason: "end_turn", text: offerReading(user) };
   if (/You read one letter/.test(system)) return { stop_reason: "end_turn", text: reading(user) };
   if (/You put facts that Kin already decided into one calm/.test(system)) return { stop_reason: "end_turn", text: JSON.stringify({ text: shiftWords(user) }) };
   if (/You put a result into/.test(system)) return { stop_reason: "end_turn", text: JSON.stringify({ text: /<statement>\n([\s\S]*)\n<\/statement>/.exec(user)?.[1] ?? "" }) };

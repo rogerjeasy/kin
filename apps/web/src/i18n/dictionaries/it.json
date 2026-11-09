@@ -3480,6 +3480,193 @@
         "overlap": "Un accordo firmato per questa persona copre già il giorno in cui inizierebbe questo. Fatelo iniziare dopo, oppure chiudete prima l’altro."
       },
       "summary": "{count} agli atti."
+    },
+    "quietShares": {
+      "meta": {
+        "title": "Quote discrete · Kin",
+        "description": "Coprire una spesa insieme, in modo equo, senza che nessuno debba dire ad alta voce cosa non può permettersi."
+      },
+      "title": "Quote discrete",
+      "lede": "Coprite una spesa insieme, in modo equo. Ognuno dice al proprio Kin, in privato, quanto può dare. Kin ripartisce la spesa secondo le quote concordate e non mostra mai a nessuno il limite di ciascuno.",
+      "link": "Quote discrete",
+      "card": {
+        "title": "Quote discrete",
+        "text": "Una spesa troppo grande per il fondo? Copritela in modo equo, senza che nessuno debba dire ad alta voce cosa non può permettersi.",
+        "gathering": "{title}, {cost}: hanno risposto {answered} su {asked}.",
+        "short": "{title}, {cost}: alle offerte mancano {shortfall}.",
+        "planned": "{title}, {cost}: il piano è pronto. {accepted} su {parts} hanno detto sì.",
+        "agreed": "{title}, {cost}: coperto.",
+        "open": "Apri le quote discrete"
+      },
+      "privacy": {
+        "title": "Come il tuo limite resta privato",
+        "items": [
+          "Dici al tuo Kin quanto puoi dare. Le tue parole non vengono mai conservate, e nessun altro Kin le legge.",
+          "Kin sigilla la tua offerta. Puoi leggerla solo tu: non il referente, non chi ha accesso in sola lettura, nemmeno il servizio di Kin.",
+          "Un semplice codice, non l’IA, ripartisce la spesa secondo le vostre quote concordate, e non chiede mai a nessuno più di quanto ha offerto.",
+          "Tutti vedono il totale della famiglia e, nel registro, quanto ha dato ciascuno. Nessuno vede il limite di nessuno."
+        ]
+      },
+      "caveat": "Questa spesa la condividete in due, quindi la riservatezza non può essere totale: quando uno di voi è al proprio limite, l’altro può dedurlo dal totale e dalla propria parte.",
+      "raise": {
+        "title": "Chiedi alla famiglia",
+        "text": "Per una spesa che il fondo non può sostenere da solo, come una riparazione o un aumento del budget per le cure. Chi condivide la spesa viene interpellato in privato.",
+        "titleLabel": "A cosa serve",
+        "titleHint": "Tutti nella cerchia lo vedono.",
+        "amountLabel": "Importo",
+        "kindLabel": "Ogni quanto",
+        "kinds": {
+          "one_off": "Una volta",
+          "monthly": "Ogni mese"
+        },
+        "submit": "Chiedi alla famiglia",
+        "submitting": "Richiesta in corso…",
+        "done": "Fatto. Chi condivide la spesa ora può rispondere, in privato."
+      },
+      "asks": {
+        "title": "Cosa sta coprendo la famiglia",
+        "empty": "Ancora niente viene coperto con le quote discrete."
+      },
+      "states": {
+        "gathering": "In attesa delle offerte",
+        "short": "Mancano fondi",
+        "planned": "In attesa dei sì",
+        "agreed": "Coperto",
+        "withdrawn": "Ritirato"
+      },
+      "kinds": {
+        "one_off": "{cost}, una volta",
+        "monthly": "{cost} al mese",
+        "spread": "{cost}, in {months} mesi"
+      },
+      "raisedBy": "Chiesto da {name}",
+      "simulated": "Simulato",
+      "answered": "Hanno risposto {answered} su {asked}",
+      "accepted": "{accepted} su {parts} hanno accettato la propria parte",
+      "familyTotal": "Totale della famiglia",
+      "payLaterUsed": "Una parte è pagata con PayPal Pay Later.",
+      "readOnly": "Rispondono solo le persone che condividono la spesa. Tu vedi il totale della famiglia, mai la parte o il limite di qualcuno.",
+      "chat": {
+        "title": "Parla con il tuo Kin",
+        "private": "Privato. Solo tu vedi questa conversazione, e Kin non ne conserva nulla.",
+        "intro": "Cosa potresti dare per {title}? Dillo come ti viene: un importo, un importo più alto in seguito, o un aiuto al posto del denaro.",
+        "label": "Le tue parole",
+        "examplesLabel": "Prova a dire",
+        "examples": [
+          "Sinceramente posso mettere solo 60.",
+          "Questa volta posso coprire di più, fino a 600.",
+          "Questo mese posso dare circa 60, e posso accompagnare {parent} in macchina ai suoi due appuntamenti."
+        ],
+        "send": "Dillo a Kin",
+        "sending": "Kin sta leggendo…",
+        "speak": "Dillo a voce",
+        "you": "Tu",
+        "kin": "Il tuo Kin",
+        "heard": "L’ho scritto qui sotto. Controlla, cambia quello che vuoi, poi sigillalo.",
+        "noAmount": "Ne ho preso nota. Quanto potresti dare al massimo? Dimmelo, o scrivilo qui sotto.",
+        "noModel": "Kin al momento non può leggere testo qui. Compila la tua offerta qui sotto."
+      },
+      "offer": {
+        "title": "La tua offerta",
+        "text": "La vedrai solo tu. Cambia quello che vuoi prima di sigillarla.",
+        "monthly": "Quanto posso dare ora",
+        "monthlyHint": "Lascia vuoto se questa volta non è possibile dare denaro.",
+        "stepUp": "Più avanti potrei dare",
+        "stepUpMonth": "Da",
+        "stepUpHint": "Facoltativo: un importo più alto da un mese successivo, per esempio dopo un premio.",
+        "earliest": "Non posso dare nulla prima di",
+        "anyMonth": "Qualsiasi mese",
+        "careTrips": "Accompagnamenti o visite che posso fare",
+        "careHours": "Ore di aiuto, circa",
+        "careHint": "L’aiuto concreto conta per l’equità alla tariffa delle cure della famiglia, una volta svolto. Non paga mai la fattura in sé.",
+        "seal": "Sigilla la mia offerta",
+        "sealing": "Sigillo in corso…",
+        "sealsLeft": "Puoi cambiarla ancora {count} volte.",
+        "sealedTitle": "La tua offerta è sigillata",
+        "sealed": "Puoi leggerla solo tu: {summary}.",
+        "change": "Cambia la mia offerta",
+        "cancel": "Tieni la mia offerta",
+        "waiting": "Kin ripartisce la spesa appena tutti hanno risposto.",
+        "summary": {
+          "monthly": "{amount} ora",
+          "stepUp": "{amount} al mese da {month}",
+          "earliest": "niente prima di {month}",
+          "trips": "{count} accompagnamenti o visite",
+          "hours": "circa {hours} ore di aiuto",
+          "nothing": "niente in denaro questa volta"
+        }
+      },
+      "short": {
+        "title": "Alle offerte mancano {shortfall}",
+        "text": "Kin non dice altro: né di chi è l’offerta, né di quanto per ciascuno. Ecco i modi per colmare la differenza.",
+        "spread": "Distribuiscila su {months} mesi",
+        "spreadCovers": "Distribuirla su {months} mesi basterebbe a coprirla.",
+        "spreadShort": "Anche distribuendola resterebbe una differenza.",
+        "spreadOrganizer": "Il referente può sceglierlo.",
+        "payLater": "Copro io la differenza con Pay Later",
+        "payLaterText": "Paga {shortfall} in più con PayPal Pay Later, dove PayPal lo offre, e PayPal lo divide in rate per te. Nessuno viene a sapere che si tratta di te.",
+        "raise": "Oppure aumenta la tua offerta, se puoi."
+      },
+      "part": {
+        "title": "La tua parte",
+        "of": "su {total} per la famiglia",
+        "months": "{month}: {amount}",
+        "care": "più {count} accompagnamenti o visite",
+        "careValue": "Il tuo aiuto conta {value} per l’equità, alla tariffa delle cure della famiglia, una volta svolto.",
+        "share": "La tua quota concordata, da sola, sarebbe {share}.",
+        "private": "Il tuo limite è rimasto privato.",
+        "privateText": "Nessun altro vede la tua parte o quello che hai offerto. Il registro mostrerà quanto dai, come per qualsiasi pagamento.",
+        "payLater": "Di questi, {amount} sono la differenza che copri con Pay Later.",
+        "nothing": "Questa volta non ti viene chiesto nulla.",
+        "methodLabel": "Come pagherai",
+        "methods": {
+          "checkout": "Checkout PayPal",
+          "pay_later": "PayPal Pay Later, dove PayPal lo offre",
+          "invoice": "Una fattura PayPal via e-mail",
+          "monthly_share": "Aggiungila alla mia quota mensile"
+        },
+        "accept": "Sì, questa è la mia parte",
+        "accepting": "Salvataggio…",
+        "accepted": "Hai detto sì. In attesa degli altri.",
+        "agreedTitle": "Coperto. Il tuo passaggio su PayPal è pronto",
+        "agreedText": "Tutti hanno accettato la propria parte, quindi i {total} della famiglia sono coperti.",
+        "simulated": {
+          "checkout": "In una cerchia reale, Kin qui apre il checkout PayPal per {amount}.",
+          "pay_later": "In una cerchia reale, Kin qui apre il checkout PayPal per {amount}, con Pay Later dove PayPal lo offre.",
+          "invoice": "In una cerchia reale, PayPal ti invia via e-mail una fattura di {amount}.",
+          "monthly_share": "In una cerchia reale, Kin aumenta la tua quota mensile di {amount}, e PayPal ti chiede di approvare il nuovo importo."
+        },
+        "pay": "Paga la mia parte con PayPal",
+        "revise": "Approva il nuovo importo su PayPal",
+        "prepare": "Aumenta la mia quota mensile",
+        "preparing": "Richiesta a PayPal…",
+        "invoiceReal": "Un referente può inviarti la fattura PayPal di {amount} dalla pagina Equità.",
+        "nothingToPay": "Niente da pagare. Grazie per il tuo aiuto."
+      },
+      "withdraw": "Ritira questa richiesta",
+      "withdrawn": "Ritirata. Non è stato chiesto nulla a nessuno.",
+      "errors": {
+        "refused": "Qui non puoi farlo.",
+        "invalid": "Kin non è riuscito a leggerlo. Controlla gli importi e i mesi.",
+        "closed": "La situazione è andata avanti. Ora la schermata mostra a che punto è.",
+        "sealed_out": "Hai cambiato la tua offerta tante volte quante Kin consente per questa spesa.",
+        "unavailable": "Kin non è riuscito a farlo in questo momento. Riprova.",
+        "unreadable": "Kin non è riuscito a leggerlo. Compila la tua offerta qui sotto, o dillo in un altro modo.",
+        "paypal": "PayPal non ha risposto. Riprova.",
+        "limit": "Sono molti messaggi per ora. Compila la tua offerta qui sotto."
+      },
+      "family": {
+        "meta": {
+          "title": "La famiglia, fianco a fianco · Kin",
+          "description": "La schermata delle quote discrete di ogni persona, fianco a fianco, nella demo."
+        },
+        "title": "La famiglia, fianco a fianco",
+        "lede": "Solo nella demo. Ogni telefono mostra solo ciò che il Kin di quella persona le mostra, visto dal suo posto. In una famiglia vera sono i telefoni di persone diverse, e nessuna vede niente delle altre.",
+        "link": "Vedi la famiglia fianco a fianco",
+        "phone": "Il telefono di {name}",
+        "back": "Torna alle quote discrete",
+        "none": "Al momento non si sta coprendo nulla. Ricomincia dal banner della demo per riportare il montascale."
+      }
     }
   },
   "aiProvenance": {

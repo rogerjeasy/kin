@@ -68,6 +68,10 @@ export const visitReadingBudget = createRateLimiter(200, 60 * 60 * 1000);
 export const letterLimiter = createRateLimiter(20, 60 * 60 * 1000);
 export const letterBudget = createRateLimiter(200, 60 * 60 * 1000);
 
+/** Each person may talk to their own agent about a quiet share thirty times an hour; each server 300 for demo visitors and 300 for people. */
+export const quietWordsLimiter = createRateLimiter(30, 60 * 60 * 1000);
+export const quietWordsBudget = createRateLimiter(300, 60 * 60 * 1000);
+
 /**
  * Spends one use of a paid service, if the person and the pool both still
  * have one. Every limit is asked before any is used, so a refused request

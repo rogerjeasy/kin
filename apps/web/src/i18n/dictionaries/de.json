@@ -3480,6 +3480,193 @@
         "overlap": "Eine unterschriebene Vereinbarung für diese Pflegekraft deckt den Tag schon ab, an dem diese beginnen würde. Lassen Sie diese später beginnen oder beenden Sie zuerst die andere."
       },
       "summary": "{count} vorhanden."
+    },
+    "quietShares": {
+      "meta": {
+        "title": "Stille Anteile · Kin",
+        "description": "Gemeinsam und fair für eine Ausgabe aufkommen, ohne dass jemand laut sagen muss, was er sich nicht leisten kann."
+      },
+      "title": "Stille Anteile",
+      "lede": "Kommen Sie gemeinsam und fair für eine Ausgabe auf. Alle sagen ihrem eigenen Kin vertraulich, was sie geben können. Kin teilt die Kosten nach Ihren vereinbarten Anteilen auf und zeigt niemandem Ihre Grenze.",
+      "link": "Stille Anteile",
+      "card": {
+        "title": "Stille Anteile",
+        "text": "Eine Ausgabe, die zu groß für den Topf ist? Tragen Sie sie fair gemeinsam, ohne dass jemand laut sagen muss, was er sich nicht leisten kann.",
+        "gathering": "{title}, {cost}: {answered} von {asked} haben geantwortet.",
+        "short": "{title}, {cost}: Den Angeboten fehlen {shortfall}.",
+        "planned": "{title}, {cost}: Der Plan steht. {accepted} von {parts} haben zugestimmt.",
+        "agreed": "{title}, {cost}: gedeckt.",
+        "open": "Stille Anteile öffnen"
+      },
+      "privacy": {
+        "title": "So bleibt Ihre Grenze privat",
+        "items": [
+          "Sie sagen Ihrem eigenen Kin, was Sie geben können. Ihre Worte werden nie gespeichert, und kein anderes Kin liest sie.",
+          "Kin versiegelt Ihr Angebot. Nur Sie können es lesen: nicht die Kreisleitung, niemand mit Nur-Lese-Zugang, nicht einmal der Dienst von Kin selbst.",
+          "Einfacher Code, keine KI, teilt die Kosten nach Ihren vereinbarten Anteilen auf und verlangt von niemandem mehr, als er angeboten hat.",
+          "Alle sehen die Summe der Familie und im Kassenbuch, was jede Person gegeben hat. Niemand sieht die Grenze eines anderen."
+        ]
+      },
+      "caveat": "Sie teilen sich diese Kosten zu zweit, deshalb kann die Privatsphäre nicht vollständig sein: Ist einer von Ihnen an seiner Grenze, kann der andere das aus der Summe und dem eigenen Anteil ableiten.",
+      "raise": {
+        "title": "Die Familie fragen",
+        "text": "Für Kosten, die der Topf nicht allein tragen kann, etwa eine Reparatur oder ein höheres Pflegebudget. Alle, die sich die Kosten teilen, werden vertraulich gefragt.",
+        "titleLabel": "Wofür es ist",
+        "titleHint": "Alle im Kreis sehen das.",
+        "amountLabel": "Betrag",
+        "kindLabel": "Wie oft",
+        "kinds": {
+          "one_off": "Einmal",
+          "monthly": "Jeden Monat"
+        },
+        "submit": "Die Familie fragen",
+        "submitting": "Wird gefragt…",
+        "done": "Gefragt. Alle, die sich die Kosten teilen, können jetzt antworten, vertraulich."
+      },
+      "asks": {
+        "title": "Wofür die Familie aufkommt",
+        "empty": "Noch wird nichts mit stillen Anteilen gedeckt."
+      },
+      "states": {
+        "gathering": "Wartet auf Angebote",
+        "short": "Fehlbetrag",
+        "planned": "Wartet auf Zusagen",
+        "agreed": "Gedeckt",
+        "withdrawn": "Zurückgezogen"
+      },
+      "kinds": {
+        "one_off": "{cost}, einmalig",
+        "monthly": "{cost} im Monat",
+        "spread": "{cost}, über {months} Monate"
+      },
+      "raisedBy": "Gefragt von {name}",
+      "simulated": "Simuliert",
+      "answered": "{answered} von {asked} haben geantwortet",
+      "accepted": "{accepted} von {parts} haben ihrem Anteil zugestimmt",
+      "familyTotal": "Summe der Familie",
+      "payLaterUsed": "Ein Teil wird mit PayPal Pay Later bezahlt.",
+      "readOnly": "Nur wer sich die Kosten teilt, antwortet. Sie sehen die Summe der Familie, nie den Anteil oder die Grenze einer Person.",
+      "chat": {
+        "title": "Sprechen Sie mit Ihrem Kin",
+        "private": "Privat. Nur Sie sehen dieses Gespräch, und Kin behält nichts davon.",
+        "intro": "Was könnten Sie zu {title} beitragen? Sagen Sie es, wie es Ihnen in den Sinn kommt: einen Betrag, später einen höheren Betrag oder Hilfe statt Geld.",
+        "label": "Ihre Worte",
+        "examplesLabel": "Sagen Sie zum Beispiel",
+        "examples": [
+          "Ehrlich gesagt schaffe ich nur 60.",
+          "Diesmal kann ich mehr übernehmen, bis zu 600.",
+          "Diesen Monat schaffe ich etwa 60, und ich kann {parent} zu ihren zwei Terminen fahren."
+        ],
+        "send": "Kin sagen",
+        "sending": "Kin liest…",
+        "speak": "Lieber sprechen",
+        "you": "Sie",
+        "kin": "Ihr Kin",
+        "heard": "Ich habe das unten festgehalten. Prüfen Sie es, ändern Sie, was Sie möchten, und versiegeln Sie es dann.",
+        "noAmount": "Notiert. Wie viel könnten Sie höchstens geben? Sagen Sie es mir oder tragen Sie es unten ein.",
+        "noModel": "Kin kann hier gerade keine Worte lesen. Füllen Sie Ihr Angebot unten aus."
+      },
+      "offer": {
+        "title": "Ihr Angebot",
+        "text": "Nur Sie werden das je sehen. Ändern Sie, was Sie möchten, bevor Sie es versiegeln.",
+        "monthly": "Was ich jetzt geben kann",
+        "monthlyHint": "Lassen Sie es leer, wenn diesmal kein Geld möglich ist.",
+        "stepUp": "Später könnte ich geben",
+        "stepUpMonth": "Ab",
+        "stepUpHint": "Optional: ein höherer Betrag ab einem späteren Monat, etwa nach einer Prämie.",
+        "earliest": "Ich kann frühestens etwas geben ab",
+        "anyMonth": "Jeder Monat",
+        "careTrips": "Fahrten oder Besuche, die ich übernehmen kann",
+        "careHours": "Stunden Hilfe, ungefähr",
+        "careHint": "Praktische Hilfe zählt für die Fairness zum Pflegesatz der Familie, sobald sie geleistet ist. Die Rechnung selbst bezahlt sie nie.",
+        "seal": "Mein Angebot versiegeln",
+        "sealing": "Wird versiegelt…",
+        "sealsLeft": "Sie können es noch {count}-mal ändern.",
+        "sealedTitle": "Ihr Angebot ist versiegelt",
+        "sealed": "Nur Sie können es lesen: {summary}.",
+        "change": "Mein Angebot ändern",
+        "cancel": "Mein Angebot behalten",
+        "waiting": "Kin teilt die Kosten auf, sobald alle geantwortet haben.",
+        "summary": {
+          "monthly": "{amount} jetzt",
+          "stepUp": "{amount} im Monat ab {month}",
+          "earliest": "nichts vor {month}",
+          "trips": "{count} Fahrten oder Besuche",
+          "hours": "etwa {hours} Stunden Hilfe",
+          "nothing": "diesmal kein Geld"
+        }
+      },
+      "short": {
+        "title": "Den Angeboten fehlen {shortfall}",
+        "text": "Mehr sagt Kin nicht: nicht, wessen Angebot, und nicht, um wie viel bei jedem. So lässt sich die Lücke schließen.",
+        "spread": "Auf {months} Monate verteilen",
+        "spreadCovers": "Auf {months} Monate verteilt wären die Kosten gedeckt.",
+        "spreadShort": "Auch verteilt bliebe eine Lücke.",
+        "spreadOrganizer": "Die Kreisleitung kann das wählen.",
+        "payLater": "Ich übernehme die Lücke mit Pay Later",
+        "payLaterText": "Zahlen Sie {shortfall} mehr mit PayPal Pay Later, wo PayPal es anbietet, und PayPal teilt den Betrag für Sie in Raten auf. Niemand erfährt, dass Sie es waren.",
+        "raise": "Oder erhöhen Sie Ihr eigenes Angebot, wenn Sie können."
+      },
+      "part": {
+        "title": "Ihr Anteil",
+        "of": "von {total} für die Familie",
+        "months": "{month}: {amount}",
+        "care": "plus {count} Fahrten oder Besuche",
+        "careValue": "Ihre Hilfe zählt für die Fairness mit {value}, zum Pflegesatz der Familie, sobald sie geleistet ist.",
+        "share": "Ihr vereinbarter Anteil allein wäre {share}.",
+        "private": "Ihre Grenze ist privat geblieben.",
+        "privateText": "Niemand sonst sieht Ihren Anteil oder Ihr Angebot. Im Kassenbuch steht, was Sie geben, wie bei jeder Zahlung.",
+        "payLater": "Davon sind {amount} die Lücke, die Sie mit Pay Later übernommen haben.",
+        "nothing": "Diesmal wird nichts von Ihnen verlangt.",
+        "methodLabel": "Wie Sie zahlen",
+        "methods": {
+          "checkout": "PayPal-Checkout",
+          "pay_later": "PayPal Pay Later, wo PayPal es anbietet",
+          "invoice": "Eine PayPal-Rechnung per E-Mail",
+          "monthly_share": "Zu meinem monatlichen Beitrag hinzufügen"
+        },
+        "accept": "Ja, das ist mein Anteil",
+        "accepting": "Wird gespeichert…",
+        "accepted": "Sie haben zugestimmt. Warten auf die anderen.",
+        "agreedTitle": "Gedeckt. Ihr PayPal-Schritt ist bereit",
+        "agreedText": "Alle haben ihrem eigenen Anteil zugestimmt, damit sind die {total} der Familie gedeckt.",
+        "simulated": {
+          "checkout": "In einem echten Kreis öffnet Kin hier den PayPal-Checkout über {amount}.",
+          "pay_later": "In einem echten Kreis öffnet Kin hier den PayPal-Checkout über {amount}, mit Pay Later, wo PayPal es anbietet.",
+          "invoice": "In einem echten Kreis schickt PayPal Ihnen eine Rechnung über {amount} per E-Mail.",
+          "monthly_share": "In einem echten Kreis erhöht Kin Ihren monatlichen Beitrag um {amount}, und PayPal bittet Sie, den neuen Betrag freizugeben."
+        },
+        "pay": "Meinen Anteil mit PayPal zahlen",
+        "revise": "Den neuen Betrag bei PayPal freigeben",
+        "prepare": "Meinen monatlichen Beitrag erhöhen",
+        "preparing": "PayPal wird gefragt…",
+        "invoiceReal": "Die Kreisleitung kann Ihnen die PayPal-Rechnung über {amount} von der Seite „Fairness“ aus schicken.",
+        "nothingToPay": "Nichts zu zahlen. Danke für Ihre Hilfe."
+      },
+      "withdraw": "Diese Anfrage zurückziehen",
+      "withdrawn": "Zurückgezogen. Von niemandem wurde etwas verlangt.",
+      "errors": {
+        "refused": "Das können Sie hier nicht tun.",
+        "invalid": "Kin konnte das nicht lesen. Prüfen Sie die Beträge und Monate.",
+        "closed": "Das ist inzwischen weiter. Der Bildschirm zeigt jetzt den aktuellen Stand.",
+        "sealed_out": "Sie haben Ihr Angebot so oft geändert, wie Kin es für diese Kosten erlaubt.",
+        "unavailable": "Kin konnte das gerade nicht erledigen. Bitte versuchen Sie es erneut.",
+        "unreadable": "Kin konnte das nicht lesen. Füllen Sie Ihr Angebot unten aus oder sagen Sie es anders.",
+        "paypal": "PayPal hat nicht geantwortet. Bitte versuchen Sie es erneut.",
+        "limit": "Das sind gerade sehr viele Nachrichten. Füllen Sie Ihr Angebot unten aus."
+      },
+      "family": {
+        "meta": {
+          "title": "Die Familie nebeneinander · Kin",
+          "description": "Der eigene Bildschirm jeder Person für stille Anteile, nebeneinander, in der Demo."
+        },
+        "title": "Die Familie nebeneinander",
+        "lede": "Nur in der Demo. Jedes Telefon zeigt nur, was das eigene Kin dieser Person ihr zeigt, von ihrem eigenen Platz aus gesehen. In einer echten Familie sind das die Telefone verschiedener Menschen, und niemand sieht etwas von den anderen.",
+        "link": "Die Familie nebeneinander ansehen",
+        "phone": "Telefon von {name}",
+        "back": "Zurück zu den stillen Anteilen",
+        "none": "Gerade wird nichts gedeckt. Beginnen Sie über das Demo-Banner neu, um den Treppenlift zurückzuholen."
+      }
     }
   },
   "aiProvenance": {

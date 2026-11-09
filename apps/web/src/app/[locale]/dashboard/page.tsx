@@ -5,6 +5,7 @@ import { sumCents } from "@kin/domain";
 
 import { AskKinCard } from "@/components/dashboard/ask-kin/ask-kin-card";
 import { PresenceCard } from "@/components/dashboard/presence/presence-card";
+import { QuietShareCard } from "@/components/dashboard/quiet-shares/quiet-share-card";
 import { ActivityPanel } from "@/components/dashboard/overview/activity-panel";
 import { AgreementPrompt } from "@/components/dashboard/overview/agreement-prompt";
 import { AttentionPanel } from "@/components/dashboard/overview/attention-panel";
@@ -26,7 +27,7 @@ import { givenRows } from "@/components/dashboard/words/given-rows";
 import { planLabel } from "@/components/dashboard/words/plan-words";
 import { ButtonLink } from "@/components/shared/button-link";
 import { Button } from "@/components/ui/button";
-import { agreementRoute, askRoute, dashboardRoutes, listenRoute, presenceRoute } from "@/content/dashboard-routes";
+import { agreementRoute, askRoute, dashboardRoutes, listenRoute, presenceRoute, quietSharesRoute } from "@/content/dashboard-routes";
 import { askKinSuggestions } from "@/content/circle/ask-kin-suggestions";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
@@ -43,6 +44,8 @@ import { dashboardMetadata } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
 import { dashboardContext, may } from "@/server/dashboard-context";
+import { databases } from "@/server/database";
+import { quietShareViews } from "@/server/quiet-shares";
 
 const RECENT_ENTRIES = 8;
 
@@ -75,6 +78,8 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
   // The newest version, when it waits for this viewer: they share its cost and have not accepted.
   const newest = circle.agreementVersions.at(-1);
   const awaitsMe = newest?.status === "awaiting" && newest.waitingFor.includes(circle.viewer.memberId) ? newest : null;
+  // The newest cost the family is covering with quiet shares, while it is still moving.
+  const quietAsk = (await quietShareViews({ db: databases().app, userId: viewer.userId, circle })).find((ask) => ask.state !== "withdrawn") ?? null;
 
   return (
     <>
@@ -131,6 +136,7 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
         <AgreementPrompt href={path(agreementRoute)} text={fill(dictionary.dashboard.agreement.attention, { version: format.count(awaitsMe.version) })} label={dictionary.dashboard.agreement.open} />
       ) : null}
       {may(circle, "presence.check") ? <PresenceCard copy={dictionary.dashboard.presence.link} href={path(presenceRoute)} /> : null}
+      {may(circle, "quiet_share.view") && quietAsk !== null ? <QuietShareCard copy={dictionary.dashboard.quietShares.card} ask={quietAsk} href={path(quietSharesRoute)} format={format} /> : null}
       <AskKinCard copy={dictionary.askKin} suggestions={askKinSuggestions(circle, dictionary.askKin.suggestions, format, names)} href={path(askRoute)} />
       <div className="grid gap-6 lg:grid-cols-3">
         {waiting.length > 0 ? (

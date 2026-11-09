@@ -15,7 +15,7 @@ import { Panel } from "@/components/dashboard/ui/panel";
 import { givenRows, positionStatus } from "@/components/dashboard/words/given-rows";
 import { ShareBar } from "@/components/shared/share-bar";
 import { ShareLegend } from "@/components/shared/share-legend";
-import { agreementRoute, dashboardRoutes } from "@/content/dashboard-routes";
+import { agreementRoute, dashboardRoutes, quietSharesRoute } from "@/content/dashboard-routes";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
@@ -61,9 +61,14 @@ export default async function FairnessPage({ params }: PageProps<"/[locale]/dash
         title={fairness.title}
         lede={fairness.lede}
         actions={
-          <Button asChild variant="outline" className="min-h-11">
-            <Link href={localizedPath(locale, `${agreementRoute}/simulate`)}>{dictionary.dashboard.simulator.link}</Link>
-          </Button>
+          <>
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href={localizedPath(locale, quietSharesRoute)}>{dictionary.dashboard.quietShares.link}</Link>
+            </Button>
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href={localizedPath(locale, `${agreementRoute}/simulate`)}>{dictionary.dashboard.simulator.link}</Link>
+            </Button>
+          </>
         }
       />
       <div className="grid gap-6 lg:grid-cols-3">
