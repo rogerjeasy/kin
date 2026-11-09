@@ -1,10 +1,11 @@
-import { SHIFT_PURPOSE, billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, settlementPaidOut, type ExecutionState } from "@kin/domain";
+import { HELP_PURPOSE, SHIFT_PURPOSE, billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, settlementPaidOut, type ExecutionState } from "@kin/domain";
 import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
 import type { Database, Transaction } from "./connection.ts";
 import { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";
-import { auditLog, bills, circles, executions, ledgerEntries, outbox, payees, proposals, settlements } from "./schema/index.ts";
+import { laterOf, outgoingMoneyHeldByPresence } from "./presence.ts";
+import { auditLog, bills, circles, executions, ledgerEntries, outbox, payees, presenceChecks, proposals, settlements, trustedVoices } from "./schema/index.ts";
 import { markShiftPaid } from "./shifts.ts";
 import type { PayoutWallet } from "./values.ts";
 
@@ -36,6 +37,8 @@ export type PayoutJob = {
   readonly wallet: PayoutWallet;
   /** The payee's address now, used only to fix a receiver the execution does not have yet. */
   readonly payeeReceiver: string | null;
+  /** The family member this payee is, for help raised after "is it really you?": the money may go only to the account they confirmed. */
+  readonly voiceId: string | null;
   readonly cents: number;
   readonly currency: string;
   /** PayPal sees this as the batch ID, so the payout is made at most once. */
@@ -92,6 +95,7 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
       receiver: executions.receiver,
       wallet: executions.wallet,
       payeeReceiver: payees.paypalReceiver,
+      voiceId: payees.voiceId,
       currency: circles.currency,
       demo: circles.demo,
       clockAt: circles.clockAt,
@@ -110,6 +114,7 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
   if (kind === "caregiver_payout" ? row.payeeId === null || row.category === null : row.memberId === null) return null;
   // A member's address is the one they gave for settlements, a payee row of its own category.
   const memberReceiver = kind === "member_payout" && row.memberId !== null ? await settlementReceiver(tx, row.circleId, row.memberId) : null;
+  const now = row.clockAt ?? realNow;
   return {
     executionId: row.executionId,
     circleId: row.circleId,
@@ -124,15 +129,16 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
     receiver: row.receiver,
     wallet: row.wallet,
     payeeReceiver: kind === "member_payout" ? memberReceiver : row.payeeReceiver,
+    voiceId: row.voiceId,
     cents: row.cents,
     currency: row.currency,
     idempotencyKey: row.idempotencyKey,
     state: row.state,
     batchId: row.batchId,
     simulated: row.demo,
-    now: row.clockAt ?? realNow,
+    now,
     timezone: row.timezone,
-    pausedUntil: row.pausedUntil,
+    pausedUntil: laterOf(row.pausedUntil, await outgoingMoneyHeldByPresence(tx, row.circleId, realNow, now)),
   };
 }
 
@@ -141,7 +147,7 @@ async function settlementReceiver(tx: Transaction, circleId: string, memberId: s
   return payee?.receiver ?? null;
 }
 
-export type BeginOutcome = "ready" | "paused" | "no_receiver" | "waiting_for_funds";
+export type BeginOutcome = "ready" | "paused" | "no_receiver" | "waiting_for_funds" | "not_verified";
 
 /** The address a ready payout is sent to: the one fixed on its execution. */
 export function payoutReceiver(job: PayoutJob): string | null {
@@ -157,6 +163,8 @@ export function payoutReceiver(job: PayoutJob): string | null {
  */
 export async function beginPayout(tx: Transaction, job: PayoutJob, feeReserveCents: number): Promise<BeginOutcome> {
   if (isPaused(job.pausedUntil, job.now)) return "paused";
+  // Help for a family member goes only to the account they confirmed, and only while they stand by it.
+  if (job.voiceId !== null && !(await helpIsVerified(tx, job))) return "not_verified";
   if (job.receiver === null && !job.simulated) {
     // The caregiver gave no address before the family approved. Their first
     // one is fixed now, once; the database refuses to change it after.
@@ -171,13 +179,31 @@ export async function beginPayout(tx: Transaction, job: PayoutJob, feeReserveCen
   if (!canPayOut(ledger, { cents: job.cents, feeCents: feeReserveCents, alreadyOwed: owed, reservedCents })) return "waiting_for_funds";
   if (!settlement && job.payeeId !== null && !owed) {
     const entry = billApproved(
-      { ...header(job, `approval`, job.proposalId), description: job.purpose === SHIFT_PURPOSE ? "Care shift approved by the family" : "Caregiver bill approved by the family" },
+      { ...header(job, `approval`, job.proposalId), description: job.purpose === SHIFT_PURPOSE ? "Care shift approved by the family" : job.purpose === HELP_PURPOSE ? "Help for a family member approved by the family" : "Caregiver bill approved by the family" },
       { payeeId: job.payeeId, category: job.category, cents: job.cents },
     );
     await writeEntries(tx, [entry], await readAccountIds(tx, job.circleId));
   }
   await tx.update(proposals).set({ state: "executing" }).where(and(eq(proposals.id, job.proposalId), eq(proposals.state, "approved")));
   return "ready";
+}
+
+/**
+ * The last check before help for a family member is readied: the payee is that person, who still stands on the list and
+ * still has the account they confirmed; the address this payout would go to (the one fixed on it, or the payee's) is that
+ * account and no other; and the check the help came from still stands as "yes, it was me". A "not me" said later, a
+ * person removed, or an address changed by any means stops it here, whatever approved it.
+ */
+async function helpIsVerified(tx: Transaction, job: PayoutJob): Promise<boolean> {
+  if (job.voiceId === null) return true;
+  const [row] = await tx
+    .select({ receiver: trustedVoices.paypalReceiver, confirmedAt: trustedVoices.receiverConfirmedAt, removedAt: trustedVoices.removedAt, checkState: presenceChecks.state })
+    .from(trustedVoices)
+    .leftJoin(presenceChecks, and(eq(presenceChecks.circleId, trustedVoices.circleId), eq(presenceChecks.helpProposalId, job.proposalId), eq(presenceChecks.voiceId, trustedVoices.id)))
+    .where(and(eq(trustedVoices.circleId, job.circleId), eq(trustedVoices.id, job.voiceId)));
+  if (!row || row.removedAt !== null || row.confirmedAt === null || row.receiver === null || row.checkState !== "confirmed") return false;
+  const goesTo = job.receiver ?? job.payeeReceiver;
+  return goesTo === row.receiver;
 }
 
 // Settlement payouts already readied but not yet confirmed draw on the same cash, and the ledger
@@ -237,7 +263,7 @@ function paidEntry(job: PayoutJob, paid: { readonly itemId: string; readonly fee
   }
   if (job.payeeId === null) throw new Error(`Payout ${job.executionId} has no one to pay`);
   return payoutConfirmed(
-    { ...entryHeader, description: job.simulated ? "Caregiver paid (simulated)" : "Caregiver paid through PayPal" },
+    { ...entryHeader, description: job.purpose === HELP_PURPOSE ? (job.simulated ? "Family member helped (simulated)" : "Family member helped through PayPal") : job.simulated ? "Caregiver paid (simulated)" : "Caregiver paid through PayPal" },
     { payeeId: job.payeeId, cents: job.cents, feeCents: paid.feeCents },
   );
 }

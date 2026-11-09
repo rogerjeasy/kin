@@ -22,6 +22,7 @@ import type { Transaction } from "./connection.ts";
 import { readMandateCandidates } from "./mandates.ts";
 import { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";
 import { audit, entryExists, header, moveExecution } from "./payouts.ts";
+import { laterOf, outgoingMoneyHeldByPresence } from "./presence.ts";
 import { auditLog, circles, executions, mandateUses, mandates, members, outbox, payees, proposals, purchaseRules, purchases } from "./schema/index.ts";
 
 /** The outbox topics: buy an approved refill, and follow an order to the door. */
@@ -247,6 +248,7 @@ export async function readPurchaseJob(tx: Transaction, executionId: string, real
     .where(eq(executions.id, executionId))
     .for("update", { of: executions });
   if (!row || row.kind !== "purchase") return null;
+  const now = row.clockAt ?? realNow;
   return {
     executionId: row.executionId,
     circleId: row.circleId,
@@ -260,9 +262,9 @@ export async function readPurchaseJob(tx: Transaction, executionId: string, real
     state: row.state,
     mandate: row.mandateId === null || row.allowanceCents === null ? null : { id: row.mandateId, allowanceCents: row.allowanceCents },
     simulated: row.demo,
-    now: row.clockAt ?? realNow,
+    now,
     timezone: row.timezone,
-    pausedUntil: row.pausedUntil,
+    pausedUntil: laterOf(row.pausedUntil, await outgoingMoneyHeldByPresence(tx, row.circleId, realNow, now)),
   };
 }
 

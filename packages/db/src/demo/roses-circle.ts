@@ -46,6 +46,25 @@ export const PERSONAS: readonly Persona[] = [
   { key: "daniel", name: "Daniel", role: "observer", parentLevel: null, relationship: "family lawyer", joinedAt: new Date("2026-09-10T16:00:00Z") },
 ];
 
+/**
+ * The family members Kin may ask "is it really you?" in the demo: Elena's son Theo, Rose's grandson. They are stand-ins in a
+ * demo circle: confirmed from the start, with a number that is Kin's own placeholder (a reserved fictional range), so
+ * nothing is ever texted. The demo's example call names Theo, so the whole moment can be watched on one screen.
+ */
+export const DEMO_TRUSTED_VOICES = [
+  {
+    name: "Theo",
+    relationship: "grandson",
+    phone: "+15555550177",
+    locale: "en",
+    /** The name in the other scripts the demo speaks, so a call in Hebrew or Arabic still finds him. */
+    aliases: ["תיאו", "ثيو"],
+    /** The account he confirmed as his own, so the demo can show help that can go only there. Never a real address. */
+    paypalReceiver: "theo@personal.example.com",
+    addedBy: "elena",
+  },
+] as const satisfies readonly { name: string; relationship: string; phone: string; locale: string; aliases: readonly string[]; paypalReceiver: string; addedBy: PersonaKey }[];
+
 export type PayeeKey = "electricity" | "gas" | "water" | "pharmacy" | "amara" | "stairlift";
 
 export type DemoPayee = {

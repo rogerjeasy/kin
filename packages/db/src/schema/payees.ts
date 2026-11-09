@@ -35,6 +35,11 @@ export const payees = pgTable(
     autoPayRuleId: text("auto_pay_rule_id"),
     autoPayMinCents: cents("auto_pay_min_cents"),
     autoPayMaxCents: cents("auto_pay_max_cents"),
+    /**
+     * The family member this payee is, when it is help for someone Kin checked really asked for it: the money can go only to the
+     * account that person confirmed. Its foreign key and the rule are in the access migration.
+     */
+    voiceId: uuid("voice_id"),
     createdAt: createdAt(),
   },
   (t) => [

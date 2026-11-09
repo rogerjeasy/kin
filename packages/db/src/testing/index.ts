@@ -84,3 +84,11 @@ export async function endMandates(db: TestDatabases, circleId: string): Promise<
 export async function pauseMandates(db: TestDatabases, circleId: string): Promise<void> {
   await db.admin.execute(sql`update mandates set status = 'paused' where circle_id = ${circleId}`);
 }
+
+/**
+ * Runs one statement as the database's owner, to put a row in a state no operation of the app reaches (a person whose number
+ * was confirmed, a message already sent). `$1`, `$2`... are bound to `params`. Only tests use it.
+ */
+export async function adminRun(db: TestDatabases, text: string, params: readonly unknown[] = []): Promise<void> {
+  await db.admin.$client.query(text, [...params]);
+}

@@ -39,6 +39,7 @@ import {
   proposals,
   purchaseRules,
   settlements,
+  trustedVoices,
 } from "../schema/index.ts";
 import {
   ACCEPTANCES,
@@ -46,6 +47,7 @@ import {
   BILLS,
   CARE,
   CLAIM_CHECK,
+  DEMO_TRUSTED_VOICES,
   DOCUMENTS,
   EXPECTED_BILLS,
   MANDATES,
@@ -110,6 +112,7 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     await writeMandates(tx, ids, ruleIds);
     await writeShifts(tx, ids, agreement.version);
     await writeNews(tx, ids, ledger);
+    await writeTrustedVoices(tx, ids);
     await tx.insert(auditLog).values({
       id: randomUUID(),
       circleId: ids.circleId,
@@ -122,6 +125,26 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     });
     return { circleId: ids.circleId, members: ids.members, payees: ids.payees };
   });
+}
+
+/** The family members Kin may ask, confirmed from the start: stand-ins, so nothing is texted. */
+async function writeTrustedVoices(tx: Transaction, ids: Ids): Promise<void> {
+  await tx.insert(trustedVoices).values(
+    DEMO_TRUSTED_VOICES.map((voice) => ({
+      id: randomUUID(),
+      circleId: ids.circleId,
+      name: voice.name,
+      relationship: voice.relationship,
+      phone: voice.phone,
+      locale: voice.locale,
+      aliases: [...voice.aliases],
+      paypalReceiver: voice.paypalReceiver,
+      receiverConfirmedAt: ids.time.now,
+      confirmedAt: ids.time.now,
+      addedBy: ids.members[voice.addedBy],
+      simulated: true,
+    })),
+  );
 }
 
 async function writePeople(tx: Transaction, ids: Ids, userId: string | null): Promise<void> {

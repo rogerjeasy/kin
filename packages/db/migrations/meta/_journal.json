@@ -274,6 +274,41 @@
       "when": 1794169864440,
       "tag": "0038_word-independent",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1794229391959,
+      "tag": "0039_presence-checks",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794229397622,
+      "tag": "0040_presence-access",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794232346924,
+      "tag": "0041_presence-help-and-family-code",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1794232353029,
+      "tag": "0042_presence-help-access",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794232788339,
+      "tag": "0043_presence-answer-from-opened",
+      "breakpoints": true
     }
   ]
 }
