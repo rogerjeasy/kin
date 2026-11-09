@@ -1,5 +1,6 @@
 import { monthlyStatement, yearInReview } from "@kin/domain";
-import { DownloadIcon, HandHeartIcon, ReceiptIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react";
+import { asPerson, readPresenceSummary } from "@kin/db";
+import { DownloadIcon, HandHeartIcon, ReceiptIcon, ShieldCheckIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import type { Metadata } from "next";
 
 import { RecordList } from "@/components/dashboard/record/record-list";
@@ -25,6 +26,7 @@ import { fill } from "@/i18n/template";
 import { circleToday } from "@/content/circle/today";
 import { directionOf } from "@/i18n/locales";
 import { dashboardContext } from "@/server/dashboard-context";
+import { databases } from "@/server/database";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/dashboard/record/statement">): Promise<Metadata> {
   const { dictionary } = await pageContext(params);
@@ -33,7 +35,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/dashboar
 }
 
 export default async function StatementPage({ params, searchParams }: PageProps<"/[locale]/dashboard/record/statement">) {
-  const { locale, dictionary, circle } = await dashboardContext(params, "record");
+  const { locale, dictionary, circle, viewer } = await dashboardContext(params, "record");
   const copy = dictionary.dashboard.statement;
   const format = circleFormatters(locale, circle);
   const names = circleNames(circle, dictionary);
@@ -51,6 +53,8 @@ export default async function StatementPage({ params, searchParams }: PageProps<
   const grid = dictionary.dataGrid;
   const generatedOn = circleToday(circle);
   const periodEntries = ledgerRows(circle, dictionary, names, format).filter((row) => row.period === period);
+  // What "is it really you?" stopped this month: the amounts asked for in checks where the real person said it was not them. Not money in the ledger, so it is read apart from it.
+  const stopped = await asPerson(databases().app, viewer.userId, (tx) => readPresenceSummary(tx, circle.circle.id, period));
 
   return (
     <>
@@ -81,6 +85,16 @@ export default async function StatementPage({ params, searchParams }: PageProps<
         <StatTile label={copy.glance.caregiver} value={format.money(statement.caregiverPayCents)} note={format.month(period)} icon={HandHeartIcon} />
         <StatTile label={copy.glance.fees} value={format.money(statement.feesCents)} note={format.month(period)} icon={ReceiptIcon} />
       </dl>
+      {stopped.checks > 0 ? (
+        <dl className="grid grid-cols-1 gap-4" aria-label={dictionary.dashboard.presence.statement.label}>
+          <StatTile
+            label={dictionary.dashboard.presence.statement.label}
+            value={format.money(stopped.stoppedCents)}
+            note={fill(dictionary.dashboard.presence.statement.note, { denied: String(stopped.denied), checks: String(stopped.checks) })}
+            icon={ShieldCheckIcon}
+          />
+        </dl>
+      ) : null}
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title={copy.contributions.title}>
           <AmountList

@@ -1281,7 +1281,8 @@
         "groceries": "Groceries",
         "medical": "Medical care",
         "household": "Household",
-        "transport": "Transport"
+        "transport": "Transport",
+        "family_help": "Family help"
       },
       "entryKinds": {
         "contribution": "Contribution",
@@ -3073,6 +3074,161 @@
       "addressLabel": "Or open this address",
       "nfc": "For an NFC tag, write the address above as a web link (URL) record.",
       "noSecret": "Nothing secret is on the tag. Each person still signs in to see their shifts."
+    },
+    "presence": {
+      "meta": {
+        "title": "Is it really you? · Kin",
+        "description": "When a caller says they are family and asks for money, Kin asks the real person on their real phone."
+      },
+      "title": "Is it really you?",
+      "lede": "When someone on the phone says they are family and asks for money, tell Kin. Kin asks the real person, on their real phone, within seconds, and tells you what they said.",
+      "askTitle": "Someone is asking for money",
+      "askText": "Type or paste what the caller said: who they claimed to be, what they asked for and how they wanted to be paid. Kin never joins the call and never decides from a voice.",
+      "accountLabel": "What did the caller say?",
+      "accountHint": "In your own words. Kin reads it as information and never as instructions.",
+      "examplesLabel": "Try an example",
+      "examples": {
+        "grandson": {
+          "label": "A grandson in trouble",
+          "text": "Grandma, it's Theo. I've been arrested and I need $2,000 for bail today. Please don't tell Mum. Buy gift cards and a man will come to pick them up."
+        },
+        "stranger": {
+          "label": "Someone not on the list",
+          "text": "Hi auntie, this is Mike, your nephew. I'm stuck abroad and need 900 dollars by wire right now. Don't tell anyone."
+        }
+      },
+      "submit": "Is this real?",
+      "submitting": "Asking…",
+      "readOnly": "Your role can read these checks but cannot start one.",
+      "waiting": "Kin is checking with {name} now.",
+      "kinSays": "What Kin tells the parent",
+      "states": {
+        "opened": "Texting the real person",
+        "asked": "Waiting for the real person",
+        "confirmed": "Says it was them",
+        "denied": "Says it was not them",
+        "unanswered": "Could not be reached",
+        "expired": "Closed"
+      },
+      "unknownPerson": "Nobody on the list goes by that name, so Kin could not ask anyone.",
+      "markersTitle": "Scam signs in the words",
+      "markers": {
+        "secrecy": "Asked to keep it secret",
+        "urgency": "Pressed for hurry",
+        "gift_cards": "Gift cards",
+        "crypto_atm": "Crypto or a bitcoin machine",
+        "courier_pickup": "Someone to collect the money",
+        "wire": "A wire transfer"
+      },
+      "noMarkers": "No scam signs in the words.",
+      "amountLabel": "Asked for",
+      "noAmount": "No amount named",
+      "hold": "Outgoing money is on hold until {time}.",
+      "phone": {
+        "title": "{name}’s phone",
+        "demoNote": "This is a demo circle, so no real text is sent. This is what {name}’s own phone would show.",
+        "open": "Open the page {name} would see",
+        "yes": "Yes, it’s me",
+        "no": "No, it’s not me",
+        "sent": "Answered. The screen on the left will change in a moment."
+      },
+      "voices": {
+        "title": "People Kin may ask",
+        "text": "Children and grandchildren with a phone number they confirm by text. They need no Kin account.",
+        "empty": "Nobody yet. Add someone below.",
+        "addTitle": "Add a family member",
+        "nameLabel": "Name",
+        "relationshipLabel": "How they are related",
+        "relationshipHint": "For example grandson or daughter.",
+        "phoneLabel": "Mobile number",
+        "phoneHint": "With the country code, such as +15551234567.",
+        "languageLabel": "Language Kin uses with them",
+        "submit": "Add and text a confirmation",
+        "adding": "Adding…",
+        "remove": "Remove",
+        "removeFor": "Remove {name}",
+        "confirmed": "Number confirmed",
+        "waiting": "Waiting for them to confirm",
+        "standIn": "Demo stand-in",
+        "added": "Added.",
+        "addedWaiting": "Added. Kin texted them a link to confirm this is their number.",
+        "aliasesLabel": "Other spellings of the name",
+        "aliasesHint": "For example the name in Hebrew or Arabic letters, separated by commas.",
+        "aliasesLine": "Also written: {aliases}",
+        "accountOn": "PayPal account confirmed",
+        "accountOff": "No PayPal account yet",
+        "reconfirm": "Text a new link",
+        "reconfirmFor": "Text {name} a new link",
+        "reconfirmed": "Sent. They can confirm their number and give a PayPal account."
+      },
+      "recent": {
+        "title": "Recent checks",
+        "empty": "No checks yet.",
+        "row": "{name}: {amount}",
+        "noName": "Unknown caller",
+        "simulated": "Demo"
+      },
+      "never": {
+        "title": "What Kin will never do",
+        "items": [
+          "Kin never joins or records the call.",
+          "Kin never decides from how a voice sounds.",
+          "Money goes only to the person’s own account, and only when the family approves it.",
+          "Outgoing money is held while a check is open, and for a day after a “not me”."
+        ]
+      },
+      "errors": {
+        "refused": "You may not do that here.",
+        "invalid": "Check what you entered and try again.",
+        "rate_limited": "Too many checks this hour. Please call the person yourself.",
+        "cannot_ask": "That person can no longer be asked. Reload and try again.",
+        "duplicate": "That number is already on the list.",
+        "too_many_voices": "The list is full.",
+        "unavailable": "Kin could not do that now. Try again in a moment.",
+        "above_asked": "Help cannot be more than the caller asked for.",
+        "no_account": "That person has not confirmed a PayPal account, so help for them has nowhere safe to go. Text them a new link.",
+        "not_confirmed": "Help needs that person to have said it was really them, and is raised once.",
+        "above_ceiling": "That is above what the agreement lets the family pay.",
+        "paused": "Payments are paused. Lift the pause first.",
+        "no_agreement": "The circle has no agreement in force yet.",
+        "in_progress": "Help for that person is already moving, so their account cannot change now."
+      },
+      "link": {
+        "title": "Is it really you?",
+        "text": "A caller says they are family and asks for money? Ask Kin to check with the real person.",
+        "label": "Ask Kin"
+      },
+      "statement": {
+        "label": "Kin stopped",
+        "note": "{denied} of {checks} checks said not me"
+      },
+      "code": {
+        "title": "This week’s family code",
+        "text": "Three words that change every Monday. Real family know them and a cloned voice cannot. Share them with the family, never with a caller.",
+        "week": "For the week {week}",
+        "askTitle": "Ask the caller for the family code",
+        "askText": "Kin could not settle it with the real person. Put the code to the caller and type what they say.",
+        "label": "What the caller said",
+        "submit": "Check the code",
+        "checking": "Checking…",
+        "unavailable": "Only the organizer, a contributor and the parent can see the code."
+      },
+      "help": {
+        "title": "Help {name}",
+        "text": "{name} said it was really them and confirmed a PayPal account. Help goes only to that account, and only after the family approves it.",
+        "amountLabel": "Amount",
+        "amountHint": "No more than {max}.",
+        "amountAny": "Type the amount the family agrees to.",
+        "submit": "Ask the family to approve",
+        "sending": "Sending…",
+        "raised": "Raised. The family can approve it in Approvals.",
+        "open": "Open approvals",
+        "already": "Help has already been put to the family for this call."
+      },
+      "via": {
+        "link": "Answered from the text",
+        "call": "Answered on Kin’s call"
+      }
     }
   },
   "aiProvenance": {
@@ -3187,5 +3343,51 @@
       "busy": "Too many tries. Wait a minute, then tap again.",
       "unavailable": "Kin could not do that now. Try again in a moment."
     }
+  },
+  "presenceLink": {
+    "meta": {
+      "title": "Is this you? · Kin"
+    },
+    "brand": "Kin, your family’s care app",
+    "title": "Is this you?",
+    "lede": "Someone phoned a member of your family and said they were you. Kin is asking you, on your own phone, because only you can say.",
+    "question": "{parent} was just asked for {amount} by someone saying they were you.",
+    "questionNoAmount": "{parent} was just asked for money by someone saying they were you.",
+    "yes": "Yes, it’s me",
+    "yesHint": "I phoned and asked.",
+    "no": "No, it’s not me",
+    "noHint": "It was someone pretending.",
+    "working": "One moment…",
+    "thanksYes": "Thank you. Kin has told the family it was you. No money has moved, and any help still needs the family’s approval.",
+    "thanksNo": "Thank you. Kin has told the family it was not you, and is holding outgoing money. Please call {parent} now if you can.",
+    "closed": "This question has run out, so your answer can no longer be counted. If it matters, call {parent} yourself.",
+    "demo": "This is a demo: nothing real was asked.",
+    "problems": {
+      "link": "This link is not valid, or it has expired.",
+      "busy": "Too many tries. Wait a minute, then tap again.",
+      "state": "That answer cannot be changed now.",
+      "unavailable": "Kin could not do that now. Try again in a moment."
+    },
+    "privacy": "This link is only for you. Please do not share it."
+  },
+  "trustedVoiceLink": {
+    "meta": {
+      "title": "Confirm your number · Kin"
+    },
+    "brand": "Kin, your family’s care app",
+    "title": "Be someone Kin can check with",
+    "lede": "{parent}’s family would like Kin to be able to ask you, on this phone, whether it is really you when a caller says they are you.",
+    "body": "Kin only ever sends you a question like “Is this you?”. It never calls you at night, never asks for money and never shares your number.",
+    "confirm": "Yes, this is my number",
+    "working": "One moment…",
+    "done": "Thank you, {name}. You are on the list.",
+    "problems": {
+      "link": "This link is not valid, or it has expired. Ask the family for a new one.",
+      "busy": "Too many tries. Wait a minute, then tap again.",
+      "unavailable": "Kin could not do that now. Try again in a moment."
+    },
+    "privacy": "This link is only for you. Please do not share it.",
+    "accountLabel": "PayPal email (optional)",
+    "accountHint": "If a real emergency ever needs help, it can go only to this account, and only after the family approves. Leave it empty to be asked but never sent money."
   }
 }

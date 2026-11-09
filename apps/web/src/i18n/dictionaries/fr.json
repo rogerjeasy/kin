@@ -1281,7 +1281,8 @@
         "groceries": "Courses",
         "medical": "Soins médicaux",
         "household": "Maison",
-        "transport": "Transport"
+        "transport": "Transport",
+        "family_help": "Aide à la famille"
       },
       "entryKinds": {
         "contribution": "Contribution",
@@ -3073,6 +3074,161 @@
       "addressLabel": "Ou ouvrez cette adresse",
       "nfc": "Pour une étiquette NFC, écrivez l’adresse ci-dessus comme un enregistrement de lien web (URL).",
       "noSecret": "Aucun secret ne figure sur l’étiquette. Chaque personne se connecte toujours pour voir ses visites."
+    },
+    "presence": {
+      "meta": {
+        "title": "C’est vraiment vous ? · Kin",
+        "description": "Quand un appelant se dit de la famille et demande de l’argent, Kin interroge la vraie personne sur son vrai téléphone."
+      },
+      "title": "C’est vraiment vous ?",
+      "lede": "Quand quelqu’un au téléphone se dit de la famille et demande de l’argent, dites-le à Kin. Kin interroge la vraie personne, sur son vrai téléphone, en quelques secondes, et vous dit ce qu’elle a répondu.",
+      "askTitle": "Quelqu’un demande de l’argent",
+      "askText": "Tapez ou collez ce que l’appelant a dit : qui il prétendait être, ce qu’il demandait et comment il voulait être payé. Kin ne rejoint jamais l’appel et ne décide jamais d’après une voix.",
+      "accountLabel": "Qu’a dit l’appelant ?",
+      "accountHint": "Avec vos propres mots. Kin le lit comme une information, jamais comme des instructions.",
+      "examplesLabel": "Essayer un exemple",
+      "examples": {
+        "grandson": {
+          "label": "Un petit-fils en difficulté",
+          "text": "Mamie, c’est Theo. J’ai été arrêté et il me faut 2 000 $ pour la caution aujourd’hui. Ne le dis pas à maman. Achète des cartes cadeaux et un homme viendra les chercher."
+        },
+        "stranger": {
+          "label": "Quelqu’un hors de la liste",
+          "text": "Bonjour ma tante, c’est Mike, ton neveu. Je suis bloqué à l’étranger et j’ai besoin de 900 dollars par virement tout de suite. Ne le dis à personne."
+        }
+      },
+      "submit": "Est-ce vrai ?",
+      "submitting": "Demande en cours…",
+      "readOnly": "Votre rôle peut lire ces vérifications mais pas en lancer.",
+      "waiting": "Kin vérifie auprès de {name} en ce moment.",
+      "kinSays": "Ce que Kin dit au parent",
+      "states": {
+        "opened": "SMS en cours d’envoi",
+        "asked": "En attente de la vraie personne",
+        "confirmed": "Dit que c’était bien elle",
+        "denied": "Dit que ce n’était pas elle",
+        "unanswered": "Injoignable",
+        "expired": "Clos"
+      },
+      "unknownPerson": "Personne sur la liste ne porte ce nom, donc Kin n’a pu interroger personne.",
+      "markersTitle": "Signes d’arnaque dans les mots",
+      "markers": {
+        "secrecy": "A demandé de garder le secret",
+        "urgency": "A pressé d’agir vite",
+        "gift_cards": "Cartes cadeaux",
+        "crypto_atm": "Cryptomonnaie ou distributeur de bitcoin",
+        "courier_pickup": "Quelqu’un pour récupérer l’argent",
+        "wire": "Un virement"
+      },
+      "noMarkers": "Aucun signe d’arnaque dans les mots.",
+      "amountLabel": "Montant demandé",
+      "noAmount": "Aucun montant cité",
+      "hold": "Les paiements sortants sont suspendus jusqu’à {time}.",
+      "phone": {
+        "title": "Téléphone de {name}",
+        "demoNote": "C’est un cercle de démonstration : aucun vrai SMS n’est envoyé. Voici ce que le propre téléphone de {name} afficherait.",
+        "open": "Ouvrir la page que verrait {name}",
+        "yes": "Oui, c’est moi",
+        "no": "Non, ce n’est pas moi",
+        "sent": "Réponse envoyée. L’écran de gauche va changer dans un instant."
+      },
+      "voices": {
+        "title": "Personnes que Kin peut interroger",
+        "text": "Enfants et petits-enfants avec un numéro de téléphone qu’ils confirment par SMS. Ils n’ont pas besoin de compte Kin.",
+        "empty": "Personne pour l’instant. Ajoutez quelqu’un ci-dessous.",
+        "addTitle": "Ajouter un membre de la famille",
+        "nameLabel": "Nom",
+        "relationshipLabel": "Lien de parenté",
+        "relationshipHint": "Par exemple petit-fils ou fille.",
+        "phoneLabel": "Numéro de mobile",
+        "phoneHint": "Avec l’indicatif du pays, par exemple +15551234567.",
+        "languageLabel": "Langue de Kin avec cette personne",
+        "submit": "Ajouter et envoyer un SMS de confirmation",
+        "adding": "Ajout en cours…",
+        "remove": "Retirer",
+        "removeFor": "Retirer {name}",
+        "confirmed": "Numéro confirmé",
+        "waiting": "En attente de sa confirmation",
+        "standIn": "Figurant de démonstration",
+        "added": "Ajouté.",
+        "addedWaiting": "Ajouté. Kin lui a envoyé un lien pour confirmer que ce numéro est le sien.",
+        "aliasesLabel": "Autres graphies du nom",
+        "aliasesHint": "Par exemple le nom en lettres hébraïques ou arabes, séparées par des virgules.",
+        "aliasesLine": "Écrit aussi : {aliases}",
+        "accountOn": "Compte PayPal confirmé",
+        "accountOff": "Pas encore de compte PayPal",
+        "reconfirm": "Envoyer un nouveau lien",
+        "reconfirmFor": "Envoyer un nouveau lien à {name}",
+        "reconfirmed": "Envoyé. La personne peut confirmer son numéro et donner un compte PayPal."
+      },
+      "recent": {
+        "title": "Vérifications récentes",
+        "empty": "Aucune vérification pour l’instant.",
+        "row": "{name} : {amount}",
+        "noName": "Appelant inconnu",
+        "simulated": "Démo"
+      },
+      "never": {
+        "title": "Ce que Kin ne fera jamais",
+        "items": [
+          "Kin ne rejoint ni n’enregistre jamais l’appel.",
+          "Kin ne décide jamais d’après le son d’une voix.",
+          "L’argent va uniquement sur le propre compte de la personne, et seulement si la famille l’approuve.",
+          "Les paiements sortants sont suspendus tant qu’une vérification est ouverte, et un jour après un « ce n’est pas moi »."
+        ]
+      },
+      "errors": {
+        "refused": "Vous ne pouvez pas faire cela ici.",
+        "invalid": "Vérifiez ce que vous avez saisi et réessayez.",
+        "rate_limited": "Trop de vérifications cette heure. Appelez la personne vous-même.",
+        "cannot_ask": "Cette personne ne peut plus être interrogée. Rechargez et réessayez.",
+        "duplicate": "Ce numéro est déjà sur la liste.",
+        "too_many_voices": "La liste est pleine.",
+        "unavailable": "Kin n’a pas pu le faire pour l’instant. Réessayez dans un moment.",
+        "above_asked": "L’aide ne peut pas dépasser ce que l’appelant a demandé.",
+        "no_account": "Cette personne n’a pas confirmé de compte PayPal : l’aide n’a nulle part où aller en sécurité. Envoyez-lui un nouveau lien.",
+        "not_confirmed": "L’aide suppose que la personne ait dit que c’était bien elle, et ne se demande qu’une fois.",
+        "above_ceiling": "C’est au-dessus de ce que l’accord permet à la famille de payer.",
+        "paused": "Les paiements sont suspendus. Levez d’abord la pause.",
+        "no_agreement": "Le cercle n’a pas encore d’accord en vigueur.",
+        "in_progress": "Une aide pour cette personne est déjà en cours : son compte ne peut pas changer maintenant."
+      },
+      "link": {
+        "title": "C’est vraiment vous ?",
+        "text": "Un appelant se dit de la famille et demande de l’argent ? Demandez à Kin de vérifier auprès de la vraie personne.",
+        "label": "Demander à Kin"
+      },
+      "statement": {
+        "label": "Kin a arrêté",
+        "note": "{denied} vérifications sur {checks} : « ce n’est pas moi »"
+      },
+      "code": {
+        "title": "Le code de famille de cette semaine",
+        "text": "Trois mots qui changent chaque lundi. Un vrai proche les connaît, une voix clonée non. Partagez-les avec la famille, jamais avec un appelant.",
+        "week": "Pour la semaine {week}",
+        "askTitle": "Demander le code de famille à l’appelant",
+        "askText": "Kin n’a pas pu trancher avec la vraie personne. Posez le code à l’appelant et saisissez ce qu’il répond.",
+        "label": "Ce qu’a dit l’appelant",
+        "submit": "Vérifier le code",
+        "checking": "Vérification…",
+        "unavailable": "Seuls l’organisateur, un contributeur et le parent peuvent voir le code."
+      },
+      "help": {
+        "title": "Aider {name}",
+        "text": "{name} a dit que c’était bien lui ou elle et a confirmé un compte PayPal. L’aide ira uniquement sur ce compte, et seulement après l’accord de la famille.",
+        "amountLabel": "Montant",
+        "amountHint": "Pas plus de {max}.",
+        "amountAny": "Saisissez le montant sur lequel la famille s’accorde.",
+        "submit": "Demander l’accord de la famille",
+        "sending": "Envoi…",
+        "raised": "C’est fait. La famille peut approuver dans Approbations.",
+        "open": "Ouvrir les approbations",
+        "already": "Une aide a déjà été soumise à la famille pour cet appel."
+      },
+      "via": {
+        "link": "Réponse depuis le SMS",
+        "call": "Réponse pendant l’appel de Kin"
+      }
     }
   },
   "aiProvenance": {
@@ -3187,5 +3343,51 @@
       "busy": "Trop d’essais. Attendez une minute, puis appuyez de nouveau.",
       "unavailable": "Kin n’a pas pu le faire pour l’instant. Réessayez dans un moment."
     }
+  },
+  "presenceLink": {
+    "meta": {
+      "title": "C’est vous ? · Kin"
+    },
+    "brand": "Kin, l’application de soins de votre famille",
+    "title": "C’est vous ?",
+    "lede": "Quelqu’un a téléphoné à un membre de votre famille en se faisant passer pour vous. Kin vous le demande, sur votre propre téléphone, parce que vous seul pouvez répondre.",
+    "question": "On vient de demander {amount} à {parent} en se faisant passer pour vous.",
+    "questionNoAmount": "On vient de demander de l’argent à {parent} en se faisant passer pour vous.",
+    "yes": "Oui, c’est moi",
+    "yesHint": "J’ai téléphoné et demandé.",
+    "no": "Non, ce n’est pas moi",
+    "noHint": "C’était quelqu’un qui se faisait passer pour moi.",
+    "working": "Un instant…",
+    "thanksYes": "Merci. Kin a dit à la famille que c’était vous. Aucun argent n’a bougé, et toute aide demande encore l’accord de la famille.",
+    "thanksNo": "Merci. Kin a dit à la famille que ce n’était pas vous et suspend les paiements sortants. Appelez {parent} maintenant si vous le pouvez.",
+    "closed": "Cette question a expiré, votre réponse ne peut plus être prise en compte. Si c’est important, appelez {parent} vous-même.",
+    "demo": "Ceci est une démonstration : rien de réel n’a été demandé.",
+    "problems": {
+      "link": "Ce lien n’est pas valide ou a expiré.",
+      "busy": "Trop d’essais. Attendez une minute, puis touchez à nouveau.",
+      "state": "Cette réponse ne peut plus être modifiée.",
+      "unavailable": "Kin n’a pas pu le faire pour l’instant. Réessayez dans un moment."
+    },
+    "privacy": "Ce lien est réservé à vous seul. Merci de ne pas le partager."
+  },
+  "trustedVoiceLink": {
+    "meta": {
+      "title": "Confirmez votre numéro · Kin"
+    },
+    "brand": "Kin, l’application de soins de votre famille",
+    "title": "Soyez quelqu’un que Kin peut joindre",
+    "lede": "La famille de {parent} aimerait que Kin puisse vous demander, sur ce téléphone, si c’est vraiment vous quand un appelant dit être vous.",
+    "body": "Kin vous envoie seulement une question comme « C’est vous ? ». Il ne vous appelle jamais la nuit, ne demande jamais d’argent et ne partage jamais votre numéro.",
+    "confirm": "Oui, c’est mon numéro",
+    "working": "Un instant…",
+    "done": "Merci, {name}. Vous êtes sur la liste.",
+    "problems": {
+      "link": "Ce lien n’est pas valide ou a expiré. Demandez-en un nouveau à la famille.",
+      "busy": "Trop d’essais. Attendez une minute, puis touchez à nouveau.",
+      "unavailable": "Kin n’a pas pu le faire pour l’instant. Réessayez dans un moment."
+    },
+    "privacy": "Ce lien est réservé à vous seul. Merci de ne pas le partager.",
+    "accountLabel": "E-mail PayPal (facultatif)",
+    "accountHint": "Si une vraie urgence demandait de l’aide, elle ne pourrait aller que sur ce compte, et seulement après l’accord de la famille. Laissez vide pour être interrogé sans jamais recevoir d’argent."
   }
 }

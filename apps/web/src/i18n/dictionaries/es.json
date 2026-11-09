@@ -1281,7 +1281,8 @@
         "groceries": "Compra",
         "medical": "Atención médica",
         "household": "Hogar",
-        "transport": "Transporte"
+        "transport": "Transporte",
+        "family_help": "Ayuda familiar"
       },
       "entryKinds": {
         "contribution": "Aporte",
@@ -3073,6 +3074,161 @@
       "addressLabel": "O abra esta dirección",
       "nfc": "Para una etiqueta NFC, escriba la dirección de arriba como un registro de enlace web (URL).",
       "noSecret": "En la etiqueta no hay nada secreto. Cada persona sigue iniciando sesión para ver sus turnos."
+    },
+    "presence": {
+      "meta": {
+        "title": "¿Es usted de verdad? · Kin",
+        "description": "Cuando alguien que llama dice ser de la familia y pide dinero, Kin pregunta a la persona real en su teléfono real."
+      },
+      "title": "¿Es usted de verdad?",
+      "lede": "Cuando alguien por teléfono dice ser de la familia y pide dinero, avise a Kin. Kin pregunta a la persona real, en su teléfono real, en segundos, y le cuenta qué respondió.",
+      "askTitle": "Alguien pide dinero",
+      "askText": "Escriba o pegue lo que dijo quien llamó: quién decía ser, qué pedía y cómo quería cobrar. Kin nunca se une a la llamada y nunca decide por una voz.",
+      "accountLabel": "¿Qué dijo quien llamó?",
+      "accountHint": "Con sus propias palabras. Kin lo lee como información, nunca como instrucciones.",
+      "examplesLabel": "Probar un ejemplo",
+      "examples": {
+        "grandson": {
+          "label": "Un nieto en apuros",
+          "text": "Abuela, soy Theo. Me han detenido y necesito 2.000 $ de fianza hoy. No se lo digas a mamá. Compra tarjetas de regalo y un hombre vendrá a recogerlas."
+        },
+        "stranger": {
+          "label": "Alguien que no está en la lista",
+          "text": "Hola tía, soy Mike, tu sobrino. Estoy atascado en el extranjero y necesito 900 dólares por transferencia ahora mismo. No se lo digas a nadie."
+        }
+      },
+      "submit": "¿Es real?",
+      "submitting": "Preguntando…",
+      "readOnly": "Su rol puede leer estas comprobaciones pero no iniciar una.",
+      "waiting": "Kin está comprobándolo con {name}.",
+      "kinSays": "Lo que Kin le dice al padre o la madre",
+      "states": {
+        "opened": "Enviando el mensaje",
+        "asked": "Esperando a la persona real",
+        "confirmed": "Dice que fue ella",
+        "denied": "Dice que no fue ella",
+        "unanswered": "No se pudo localizar",
+        "expired": "Cerrada"
+      },
+      "unknownPerson": "Nadie de la lista se llama así, por lo que Kin no pudo preguntar a nadie.",
+      "markersTitle": "Señales de estafa en las palabras",
+      "markers": {
+        "secrecy": "Pidió guardar el secreto",
+        "urgency": "Metió prisa",
+        "gift_cards": "Tarjetas de regalo",
+        "crypto_atm": "Criptomonedas o un cajero de bitcoin",
+        "courier_pickup": "Alguien que recoja el dinero",
+        "wire": "Una transferencia"
+      },
+      "noMarkers": "Ninguna señal de estafa en las palabras.",
+      "amountLabel": "Pidió",
+      "noAmount": "No se mencionó importe",
+      "hold": "Los pagos salientes quedan retenidos hasta {time}.",
+      "phone": {
+        "title": "Teléfono de {name}",
+        "demoNote": "Este es un círculo de demostración, así que no se envía ningún mensaje real. Esto es lo que mostraría el propio teléfono de {name}.",
+        "open": "Abrir la página que vería {name}",
+        "yes": "Sí, soy yo",
+        "no": "No, no soy yo",
+        "sent": "Respondido. La pantalla de la izquierda cambiará en un momento."
+      },
+      "voices": {
+        "title": "Personas a las que Kin puede preguntar",
+        "text": "Hijos y nietos con un número de teléfono que confirman por mensaje. No necesitan cuenta de Kin.",
+        "empty": "Nadie todavía. Añada a alguien abajo.",
+        "addTitle": "Añadir a un familiar",
+        "nameLabel": "Nombre",
+        "relationshipLabel": "Parentesco",
+        "relationshipHint": "Por ejemplo nieto o hija.",
+        "phoneLabel": "Número de móvil",
+        "phoneHint": "Con el prefijo del país, como +15551234567.",
+        "languageLabel": "Idioma en que Kin habla con esa persona",
+        "submit": "Añadir y enviar un mensaje de confirmación",
+        "adding": "Añadiendo…",
+        "remove": "Quitar",
+        "removeFor": "Quitar a {name}",
+        "confirmed": "Número confirmado",
+        "waiting": "Esperando su confirmación",
+        "standIn": "Figurante de demostración",
+        "added": "Añadido.",
+        "addedWaiting": "Añadido. Kin le envió un enlace para confirmar que este es su número.",
+        "aliasesLabel": "Otras formas de escribir el nombre",
+        "aliasesHint": "Por ejemplo el nombre en letras hebreas o árabes, separadas por comas.",
+        "aliasesLine": "También escrito: {aliases}",
+        "accountOn": "Cuenta de PayPal confirmada",
+        "accountOff": "Aún sin cuenta de PayPal",
+        "reconfirm": "Enviar un enlace nuevo",
+        "reconfirmFor": "Enviar a {name} un enlace nuevo",
+        "reconfirmed": "Enviado. La persona puede confirmar su número y dar una cuenta de PayPal."
+      },
+      "recent": {
+        "title": "Comprobaciones recientes",
+        "empty": "Aún no hay comprobaciones.",
+        "row": "{name}: {amount}",
+        "noName": "Persona desconocida",
+        "simulated": "Demo"
+      },
+      "never": {
+        "title": "Lo que Kin nunca hará",
+        "items": [
+          "Kin nunca se une a la llamada ni la graba.",
+          "Kin nunca decide por cómo suena una voz.",
+          "El dinero va solo a la cuenta propia de la persona, y solo si la familia lo aprueba.",
+          "Los pagos salientes quedan retenidos mientras haya una comprobación abierta, y un día después de un «no soy yo»."
+        ]
+      },
+      "errors": {
+        "refused": "No puede hacer eso aquí.",
+        "invalid": "Revise lo que escribió e inténtelo de nuevo.",
+        "rate_limited": "Demasiadas comprobaciones esta hora. Llame usted a la persona.",
+        "cannot_ask": "Ya no se puede preguntar a esa persona. Recargue e inténtelo de nuevo.",
+        "duplicate": "Ese número ya está en la lista.",
+        "too_many_voices": "La lista está llena.",
+        "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento.",
+        "above_asked": "La ayuda no puede ser más de lo que pidió quien llamó.",
+        "no_account": "Esa persona no ha confirmado una cuenta de PayPal, así que la ayuda no tendría adónde ir con seguridad. Envíele un enlace nuevo.",
+        "not_confirmed": "La ayuda exige que la persona haya dicho que de verdad era ella, y se pide una sola vez.",
+        "above_ceiling": "Es más de lo que el acuerdo permite pagar a la familia.",
+        "paused": "Los pagos están en pausa. Levante antes la pausa.",
+        "no_agreement": "El círculo aún no tiene un acuerdo en vigor.",
+        "in_progress": "Ya hay una ayuda en marcha para esa persona, así que su cuenta no puede cambiar ahora."
+      },
+      "link": {
+        "title": "¿Es usted de verdad?",
+        "text": "¿Alguien dice ser de la familia y pide dinero? Pida a Kin que lo compruebe con la persona real.",
+        "label": "Preguntar a Kin"
+      },
+      "statement": {
+        "label": "Kin detuvo",
+        "note": "{denied} de {checks} comprobaciones: «no soy yo»"
+      },
+      "code": {
+        "title": "El código de familia de esta semana",
+        "text": "Tres palabras que cambian cada lunes. Un familiar de verdad las conoce y una voz clonada no. Compártalas con la familia, nunca con quien llama.",
+        "week": "Para la semana {week}",
+        "askTitle": "Pedir el código de familia a quien llamó",
+        "askText": "Kin no pudo aclararlo con la persona real. Pida el código a quien llamó y escriba lo que responde.",
+        "label": "Lo que dijo quien llamó",
+        "submit": "Comprobar el código",
+        "checking": "Comprobando…",
+        "unavailable": "Solo el organizador, quien contribuye y el padre o la madre pueden ver el código."
+      },
+      "help": {
+        "title": "Ayudar a {name}",
+        "text": "{name} dijo que de verdad era esa persona y confirmó una cuenta de PayPal. La ayuda irá solo a esa cuenta, y solo cuando la familia lo apruebe.",
+        "amountLabel": "Importe",
+        "amountHint": "No más de {max}.",
+        "amountAny": "Escriba el importe que la familia acuerde.",
+        "submit": "Pedir la aprobación de la familia",
+        "sending": "Enviando…",
+        "raised": "Hecho. La familia puede aprobarlo en Aprobaciones.",
+        "open": "Abrir aprobaciones",
+        "already": "Ya se propuso una ayuda a la familia por esta llamada."
+      },
+      "via": {
+        "link": "Respondió desde el mensaje",
+        "call": "Respondió en la llamada de Kin"
+      }
     }
   },
   "aiProvenance": {
@@ -3187,5 +3343,51 @@
       "busy": "Demasiados intentos. Espere un minuto y vuelva a tocar.",
       "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
     }
+  },
+  "presenceLink": {
+    "meta": {
+      "title": "¿Es usted? · Kin"
+    },
+    "brand": "Kin, la app de cuidados de su familia",
+    "title": "¿Es usted?",
+    "lede": "Alguien llamó a un miembro de su familia diciendo ser usted. Kin se lo pregunta a usted, en su propio teléfono, porque solo usted puede decirlo.",
+    "question": "Alguien que decía ser usted acaba de pedir {amount} a {parent}.",
+    "questionNoAmount": "Alguien que decía ser usted acaba de pedir dinero a {parent}.",
+    "yes": "Sí, soy yo",
+    "yesHint": "Yo llamé y lo pedí.",
+    "no": "No, no soy yo",
+    "noHint": "Era alguien que se hacía pasar por mí.",
+    "working": "Un momento…",
+    "thanksYes": "Gracias. Kin ha dicho a la familia que fue usted. No se ha movido dinero, y cualquier ayuda sigue necesitando la aprobación de la familia.",
+    "thanksNo": "Gracias. Kin ha dicho a la familia que no fue usted y retiene los pagos salientes. Llame ahora a {parent}, si puede.",
+    "closed": "Esta pregunta ha caducado, así que su respuesta ya no puede contarse. Si es importante, llame usted a {parent}.",
+    "demo": "Esto es una demostración: no se preguntó nada real.",
+    "problems": {
+      "link": "Este enlace no es válido o ha caducado.",
+      "busy": "Demasiados intentos. Espere un minuto y toque de nuevo.",
+      "state": "Esa respuesta ya no se puede cambiar.",
+      "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
+    },
+    "privacy": "Este enlace es solo para usted. Por favor, no lo comparta."
+  },
+  "trustedVoiceLink": {
+    "meta": {
+      "title": "Confirme su número · Kin"
+    },
+    "brand": "Kin, la app de cuidados de su familia",
+    "title": "Una persona a la que Kin puede preguntar",
+    "lede": "La familia de {parent} quiere que Kin pueda preguntarle, en este teléfono, si de verdad es usted cuando alguien que llama dice ser usted.",
+    "body": "Kin solo le envía una pregunta como «¿Es usted?». Nunca le llama de noche, nunca pide dinero y nunca comparte su número.",
+    "confirm": "Sí, este es mi número",
+    "working": "Un momento…",
+    "done": "Gracias, {name}. Está en la lista.",
+    "problems": {
+      "link": "Este enlace no es válido o ha caducado. Pida uno nuevo a la familia.",
+      "busy": "Demasiados intentos. Espere un minuto y toque de nuevo.",
+      "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
+    },
+    "privacy": "Este enlace es solo para usted. Por favor, no lo comparta.",
+    "accountLabel": "Correo de PayPal (opcional)",
+    "accountHint": "Si una emergencia real necesitara ayuda, solo podría ir a esta cuenta y solo cuando la familia lo apruebe. Déjelo vacío para que le pregunten pero nunca le envíen dinero."
   }
 }
