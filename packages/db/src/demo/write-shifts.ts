@@ -1,4 +1,4 @@
-import { SHIFT_PURPOSE, priceShift, shiftDay, type ShiftPermissionTerms } from "@kin/domain";
+import { SHIFT_PURPOSE, calendarDay, priceShift, shiftDay, type ShiftPermissionTerms } from "@kin/domain";
 import { randomUUID } from "node:crypto";
 
 import type { Transaction } from "../connection.ts";
@@ -7,6 +7,7 @@ import { approvals, executions, proposals, shiftPermissionUses, shiftPermissions
 import type { DemoTime } from "./demo-time.ts";
 import { ROSES_CIRCLE, type PayeeKey, type PersonaKey } from "./roses-circle.ts";
 import { AMARA_PAY, PAID_SHIFTS, SCHEDULED_SHIFTS, SHIFT_PERMISSION } from "./roses-shifts.ts";
+import { todaysShiftWindow } from "./shift-window.ts";
 
 type Rows = {
   readonly circleId: string;
@@ -123,17 +124,23 @@ export async function writeShifts(tx: Transaction, rows: Rows, agreementVersion:
     });
   }
 
+  const templateToday = calendarDay(ROSES_CIRCLE.clockAt, ROSES_CIRCLE.timezone).occurredOn;
   await tx.insert(shifts).values(
-    SCHEDULED_SHIFTS.map((shift) => ({
-      id: randomUUID(),
-      circleId,
-      kind: shift.kind,
-      title: shift.title,
-      memberId: members[shift.member],
-      payeeId: shift.kind === "aide" ? payees.amara : null,
-      startsAt: time.at(shift.startsAt),
-      endsAt: time.at(shift.endsAt),
-      createdBy: members.elena,
-    })),
+    SCHEDULED_SHIFTS.map((shift) => {
+      const mapped = { startsAt: time.at(shift.startsAt), endsAt: time.at(shift.endsAt) };
+      // Today's shift is kept on the clock's own day: see todaysShiftWindow.
+      const window = calendarDay(shift.startsAt, ROSES_CIRCLE.timezone).occurredOn === templateToday ? todaysShiftWindow(mapped, time.now, ROSES_CIRCLE.timezone) : mapped;
+      return {
+        id: randomUUID(),
+        circleId,
+        kind: shift.kind,
+        title: shift.title,
+        memberId: members[shift.member],
+        payeeId: shift.kind === "aide" ? payees.amara : null,
+        startsAt: window.startsAt,
+        endsAt: window.endsAt,
+        createdBy: members.elena,
+      };
+    }),
   );
 }

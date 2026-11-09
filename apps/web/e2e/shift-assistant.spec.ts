@@ -89,7 +89,8 @@ test("is open to a caregiver, who has only their own shift on it, and to an obse
   await seatAs(page, "Amara");
   await openCalendar(page);
   await expect(dayCare(page)).toBeVisible();
-  await expect(cards(page)).toHaveCount(1);
+  // Only her own: how many aide shifts she has this week depends on the weekday, so ask for what she must not see.
+  await expect(cards(page).filter({ hasText: /Ana visits Rose|Drive to physiotherapy|Hearing check/ })).toHaveCount(0);
   await ask(page, "Who else is on this week?");
   await expect(popup(page).getByText("Amara is on the calendar.")).toBeVisible({ timeout: 20_000 });
   await seatAs(page, "Daniel");

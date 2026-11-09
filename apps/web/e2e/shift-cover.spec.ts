@@ -65,7 +65,12 @@ test("offers cover when an aide calls off, and puts the chosen person on the cal
   const first = people.first();
   const name = (await first.locator("p").first().innerText()).trim();
   await first.getByRole("button", { name: `Ask ${name} to cover` }).click();
-  await expect(section.getByRole("status")).toContainText(`${name} is now on the calendar for this shift.`);
+  // The page refreshes as soon as the shift is booked and the card goes with it, so the confirmation may be
+  // gone before it is read: either the words are there or the card already is not.
+  await expect(async () => {
+    if ((await section.count()) === 0) return;
+    await expect(section.getByRole("status")).toContainText(`${name} is now on the calendar for this shift.`, { timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
   await page.reload();
   await expect(page.getByRole("region", { name: cover.title })).toHaveCount(0);
   await page.goto(week);
