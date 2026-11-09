@@ -16,4 +16,5 @@ export * from "./care-agreements.ts";
 export * from "./shift-calls.ts";
 export * from "./audit-heads.ts";
 export * from "./presence.ts";
+export * from "./wishes.ts";
 export * from "./system.ts";

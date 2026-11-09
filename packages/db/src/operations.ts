@@ -1,4 +1,4 @@
-import { decideApprovals, type ApprovalDecision, type CircleRole } from "@kin/domain";
+import { decideApprovals, wishApprovalFor, type ApprovalDecision, type CircleRole } from "@kin/domain";
 import { and, eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
@@ -6,6 +6,7 @@ import type { Transaction } from "./connection.ts";
 import { parseApprovalPlan } from "./plan-json.ts";
 import { approvals, auditLog, circles, invitations, proposals } from "./schema/index.ts";
 import type { ApprovalMethod } from "./values.ts";
+import { readWishEffects } from "./wishes.ts";
 
 /** The proposal has already been decided, or is not one the person can answer. */
 export class ProposalClosedError extends Error {
@@ -37,8 +38,9 @@ type Answer = {
  * row-level security checks the member answers in their own seat and role.
  */
 export async function answerProposal(tx: Transaction, seat: Seat, answer: Answer): Promise<ApprovalDecision> {
-  const locked = await tx.execute<{ state: string; plan: unknown }>(
-    sql`select state, plan from proposals where id = ${answer.proposalId} and circle_id = ${seat.circleId} for update`,
+  const locked = await tx.execute<{ state: string; plan: unknown; cents: string; payee_status: "approved" | "new" | null }>(
+    sql`select p.state, p.plan, p.cents, (select status from payees where circle_id = p.circle_id and id = p.payee_id) as payee_status
+        from proposals p where p.id = ${answer.proposalId} and p.circle_id = ${seat.circleId} for update of p`,
   );
   const row = locked.rows[0];
   if (!row || row.state !== "pending_approval") throw new ProposalClosedError(answer.proposalId);
@@ -57,11 +59,13 @@ export async function answerProposal(tx: Transaction, seat: Seat, answer: Answer
     evidenceRef: answer.evidenceRef ?? null,
     decidedAt: answer.now,
   });
-  const decision = decideApprovals({ plan, votes: [...given, { memberId: seat.memberId, role: seat.role, decision: answer.decision }], pausedUntil: answer.pausedUntil, now: answer.now });
+  // While a trigger is active, the parent's wishes may ask more people before a new payee is paid.
+  const wishApproval = wishApprovalFor(await readWishEffects(tx, seat.circleId), { cents: Number(row.cents), payeeStatus: row.payee_status });
+  const decision = decideApprovals({ plan, votes: [...given, { memberId: seat.memberId, role: seat.role, decision: answer.decision }], pausedUntil: answer.pausedUntil, now: answer.now, wishApproval });
   if (decision === "approved" || decision === "rejected" || decision === "expired") {
     await tx.update(proposals).set({ state: decision }).where(and(eq(proposals.id, answer.proposalId), eq(proposals.circleId, seat.circleId)));
   }
-  await record(tx, seat, "proposal.answered", "proposal", answer.proposalId, { decision: answer.decision, outcome: decision, method: answer.method });
+  await record(tx, seat, "proposal.answered", "proposal", answer.proposalId, { decision: answer.decision, outcome: decision, method: answer.method, ...(wishApproval === null ? {} : { wishIds: wishApproval.wishIds }) });
   return decision;
 }
 

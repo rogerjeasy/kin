@@ -24,12 +24,13 @@ import { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";
 import { audit, entryExists, header, moveExecution } from "./payouts.ts";
 import { laterOf, outgoingMoneyHeldByPresence } from "./presence.ts";
 import { auditLog, circles, executions, mandateUses, mandates, members, outbox, payees, proposals, purchaseRules, purchases } from "./schema/index.ts";
+import { readDiscretionaryPause } from "./wishes.ts";
 
 /** The outbox topics: buy an approved refill, and follow an order to the door. */
 export const PURCHASE_TOPIC = "purchase.execute";
 export const DELIVERY_TOPIC = "purchase.deliver";
 
-export type RefillReason = "refused" | "invalid" | "demo_only" | "above_limit" | "over_budget" | "seller_not_approved" | "above_ceiling" | "paused" | "no_agreement";
+export type RefillReason = "refused" | "invalid" | "demo_only" | "above_limit" | "over_budget" | "seller_not_approved" | "above_ceiling" | "paused" | "no_agreement" | "wish_hold";
 
 /** A refill cannot be proposed. Asking again cannot help until what blocks it changes. */
 export class RefillError extends Error {
@@ -83,6 +84,8 @@ export async function proposeRefill(tx: Transaction, input: { readonly circleId:
     .innerJoin(circles, eq(circles.id, purchaseRules.circleId))
     .where(and(eq(purchaseRules.circleId, circleId), eq(purchaseRules.id, ruleId)));
   if (!row) throw new RefillError("refused");
+  // While the parent's wishes pause discretionary spending, nothing is raised to buy.
+  if ((await readDiscretionaryPause(tx, circleId)).paused) throw new RefillError("wish_hold");
   const { versions } = await readAgreementVersions(tx, circleId, calendarDay(now, row.timezone).occurredOn);
   const agreement = versions.find((version) => version.status === "in_force");
   // No agreement can mean none exists or that this person may not read it: the database tells the two apart.
@@ -271,7 +274,7 @@ export async function readPurchaseJob(tx: Transaction, executionId: string, real
   };
 }
 
-export type PurchaseBegin = "ready" | "paused" | "waiting_for_funds";
+export type PurchaseBegin = "ready" | "paused" | "waiting_for_funds" | "wish_hold";
 
 /**
  * Readies an approved refill to be bought: the proposal moves to executing.
@@ -280,6 +283,8 @@ export type PurchaseBegin = "ready" | "paused" | "waiting_for_funds";
  */
 export async function beginPurchase(tx: Transaction, job: PurchaseJob): Promise<PurchaseBegin> {
   if (isPaused(job.pausedUntil, job.now)) return "paused";
+  // A refill is discretionary: while the parent's wishes pause discretionary spending, it waits.
+  if ((await readDiscretionaryPause(tx, job.circleId)).paused) return "wish_hold";
   const ledger = await readLedger(tx, { id: job.circleId, currency: job.currency });
   if (!canPayOut(ledger, { cents: job.cents, feeCents: 0, alreadyOwed: false })) return "waiting_for_funds";
   await tx.update(proposals).set({ state: "executing" }).where(and(eq(proposals.id, job.proposalId), eq(proposals.state, "approved")));

@@ -171,3 +171,29 @@ export type {
 } from "./presence.ts";
 export { proposeHelp } from "./presence-help.ts";
 export type { ProposeHelpInput } from "./presence-help.ts";
+export {
+  StoredWishError,
+  WISH_SUBSCRIPTION_TOPIC,
+  WishError,
+  addParentSubscription,
+  attestWishTrigger,
+  confirmWish,
+  dismissWishTrigger,
+  isWishTrigger,
+  jsonbText,
+  parseWishRule,
+  readDiscretionaryPause,
+  readSubscriptionJob,
+  readWishEffects,
+  readWishRecording,
+  readWishes,
+  recordSubscriptionMoved,
+  recordWish,
+  storeWishRecording,
+  withdrawWish,
+  wishChainHolds,
+  wishDigest,
+  witnessWish,
+} from "./wishes.ts";
+export type { ParentSubscriptionRecord, SubscriptionJob, SubscriptionOutcome, WishReason, WishRecord, WishTriggerRecord, WishesSnapshot } from "./wishes.ts";
+export { MAX_RECORDING_STORED_BYTES, PARENT_SUBSCRIPTION_TRANSITIONS } from "./schema/wishes.ts";
