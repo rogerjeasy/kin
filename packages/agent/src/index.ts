@@ -30,3 +30,6 @@ export type { CoverNoteCandidate, CoverNoteFacts, ShiftQuestionFacts, ShiftWordi
 export { MAX_ASSISTANT_TEXT, MAX_TOOL_ROUNDS, SHIFT_ASSISTANT_PROMPT_VERSION, assistantSystem, figuresOfConversation, shiftAssistantTurn, toolRounds, widgetNotes } from "./shift-assistant.ts";
 export type { AssistantBlock, AssistantFallback, AssistantMessage, AssistantModel, AssistantModelTurn, AssistantReply, AssistantRequest, AssistantTool } from "./shift-assistant.ts";
 export { bedrockAssistantModel, messagesAssistantModel } from "./shift-assistant-model.ts";
+export { ACCOUNT_PROMPT_VERSION } from "./account-prompt.ts";
+export { readAccount } from "./read-account.ts";
+export type { ReadAccountResult } from "./read-account.ts";

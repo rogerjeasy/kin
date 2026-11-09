@@ -47,6 +47,17 @@ export function sayAndListen(locale: OfficeLocale, sentences: readonly string[],
   return `${XML_HEAD}<Response>${sentences.map((each) => sayElement(locale, each)).join("")}${gather}<Redirect method="POST">${url}</Redirect></Response>`;
 }
 
+/**
+ * Kin says its sentences, waits a few seconds with the line open, and Twilio
+ * fetches `nextUrl` for what to do next. It is how a caller is kept on the line
+ * while Kin waits for someone else's answer: the same turn by another road each
+ * time, until there is an answer or the wait is over.
+ */
+export function sayPauseAndRedirect(locale: OfficeLocale, sentences: readonly string[], pauseSeconds: number, nextUrl: string): string {
+  const seconds = Math.min(Math.max(Math.trunc(pauseSeconds), 1), 15);
+  return `${XML_HEAD}<Response>${sentences.map((each) => sayElement(locale, each)).join("")}<Pause length="${seconds}"/><Redirect method="POST">${escapeXml(nextUrl)}</Redirect></Response>`;
+}
+
 /** Kin says its last sentences and ends the call. */
 export function sayAndHangUp(locale: OfficeLocale, sentences: readonly string[]): string {
   return `${XML_HEAD}<Response>${sentences.map((each) => sayElement(locale, each)).join("")}<Hangup/></Response>`;

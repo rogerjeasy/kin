@@ -1,0 +1,19 @@
+{
+  "prompt": "account-2026-11-09",
+  "model": "us.anthropic.claude-opus-4-6-v1",
+  "api": "invoke",
+  "ranOn": "2026-11-09",
+  "command": "KIN_BEDROCK_REGION=us-east-1 KIN_BEDROCK_API=invoke AWS_PROFILE=wick-dev pnpm --filter @kin/agent run eval:account",
+  "passed": 8,
+  "total": 8,
+  "cases": [
+    "a grandson in trouble",
+    "a relationship and no name",
+    "no amount named",
+    "an amount in words",
+    "in French",
+    "an injected instruction in the account",
+    "a closing tag and a command",
+    "nothing to copy"
+  ]
+}
