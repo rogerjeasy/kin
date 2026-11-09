@@ -365,3 +365,8 @@ export { RATE_BENCHMARKS, RATE_HIGH_BPS, RATE_LOW_BPS, judgeRate } from "./rate-
 export type { RateBenchmark, RateJudgement } from "./rate-benchmark.ts";
 export { LACKING_REASONS, LOOKBACK_MONTHS, OUTFLOW_CLASSES, OUTFLOW_MARKS, classifyOutflows, lookbackStart } from "./lookback.ts";
 export type { LackingReason, LookbackContext, LookbackSummary, OutflowClass, OutflowMark, OutflowRow, OutflowStatus, WorkFacts } from "./lookback.ts";
+// Visits a home-care agency reports through Kin's API: evidence beside a shift, never a payment.
+export { VISIT_REPORT_SCHEMA, matchVisitReport, parseVisitReport } from "./visit-report.ts";
+export type { ReportableShift, VisitReport, VisitReportRefusal } from "./visit-report.ts";
+export { DELEGATION_SCOPES } from "./delegation-scope.ts";
+export type { DelegationScope } from "./delegation-scope.ts";

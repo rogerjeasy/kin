@@ -20,3 +20,4 @@ export { SHIFT_CALL_ENV, readShiftCallConfig } from "./shift-call-config.ts";
 export type { ShiftCallConfig } from "./shift-call-config.ts";
 export { SPEECH_ENV, readSpeechConfig } from "./speech-config.ts";
 export type { SpeechConfig } from "./speech-config.ts";
+export { AGENCY_ENV, readAgencySigningKey } from "./agency-config.ts";
