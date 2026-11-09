@@ -3,6 +3,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 
 import { cognitoClaims, createTokenSigner } from "@kin/auth/testing";
 
+import { E2E_APP_ORIGIN, E2E_PORTS } from "./ports";
+
 /**
  * A stand-in for Cognito, for the end-to-end tests only. It speaks the same
  * authorization code flow with PKCE, signs tokens shaped like Cognito's and
@@ -11,14 +13,14 @@ import { cognitoClaims, createTokenSigner } from "@kin/auth/testing";
  */
 
 export const IDENTITY_PROVIDER = {
-  port: 3101,
+  port: E2E_PORTS.identityProvider,
   clientId: "kin-e2e",
   person: { sub: "e2e-person", email: "sam@example.com", name: "Sam Rivera" },
 } as const;
 
 const issuer = `http://localhost:${IDENTITY_PROVIDER.port}`;
-const redirectUri = "http://localhost:3100/auth/callback";
-const logoutUri = "http://localhost:3100/";
+const redirectUri = `${E2E_APP_ORIGIN}/auth/callback`;
+const logoutUri = `${E2E_APP_ORIGIN}/`;
 const signer = createTokenSigner("e2e-key");
 
 /** What Cognito's step-up returns: a password and an authenticator code. */

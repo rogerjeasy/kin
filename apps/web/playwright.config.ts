@@ -5,9 +5,10 @@ import { defineConfig, devices } from "@playwright/test";
 import { E2E_DATABASE, e2eDatabaseEnv } from "./e2e/support/database-settings";
 import { IDENTITY_PROVIDER } from "./e2e/support/identity-provider";
 import { MODEL_STAND_IN } from "./e2e/support/model-stand-in";
+import { E2E_PORTS } from "./e2e/support/ports";
 import { SIGNED_IN_STATE } from "./e2e/support/signed-in-state";
 
-const port = 3100;
+const port = E2E_PORTS.app;
 const baseURL = `http://localhost:${port}`;
 const identityProvider = `http://localhost:${IDENTITY_PROVIDER.port}`;
 // Read once, in the process that starts the servers, so both get the same

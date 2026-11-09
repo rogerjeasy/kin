@@ -6,6 +6,7 @@ import english from "../src/i18n/dictionaries/en.json" with { type: "json" };
 import hebrew from "../src/i18n/dictionaries/he.json" with { type: "json" };
 import { seatAs, startDemo } from "./support/demo";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
+import { E2E_APP_ORIGIN } from "./support/ports";
 import { maybeScreenshot } from "./support/screenshot";
 import { phone, viewports } from "./support/viewports";
 
@@ -26,7 +27,7 @@ const problem = (page: Page, words: string): Locator => page.getByRole("alert").
 
 /** A browser with no cookies and no sign-in: a caregiver's phone, opening a link from a text. */
 async function strangersPhone(browser: Browser): Promise<{ context: BrowserContext; page: Page }> {
-  const context = await browser.newContext({ baseURL: "http://localhost:3100", extraHTTPHeaders: callerHeaders() });
+  const context = await browser.newContext({ baseURL: E2E_APP_ORIGIN, extraHTTPHeaders: callerHeaders() });
   expect(await context.cookies()).toEqual([]);
   return { context, page: await context.newPage() };
 }
@@ -41,7 +42,7 @@ async function makeLink(page: Page): Promise<string> {
   const panel = card.getByRole("group", { name: /^Check-in link for Amara/ });
   await panel.getByRole("button", { name: links.make }).click();
   const address = await panel.getByLabel(links.linkLabel).inputValue();
-  expect(address).toMatch(/^http:\/\/localhost:3100\/c\/[A-Za-z0-9_-]{43}$/);
+  expect(address).toMatch(new RegExp(`^${E2E_APP_ORIGIN}/c/[A-Za-z0-9_-]{43}$`));
   return address;
 }
 
@@ -108,7 +109,7 @@ test.describe("a check-in link, opened with nobody signed in", () => {
   });
 
   test("tells the page's first look the same for a token that never existed as for one that cannot be one, and slows one address", async ({ playwright }) => {
-    const caller = await playwright.request.newContext({ baseURL: "http://localhost:3100", extraHTTPHeaders: callerHeaders() });
+    const caller = await playwright.request.newContext({ baseURL: E2E_APP_ORIGIN, extraHTTPHeaders: callerHeaders() });
     const words = async (path: string) => (await (await caller.get(path)).text()).includes(check.problems.link);
     expect([await words(`/c/${"Y".repeat(43)}`), await words("/c/short")]).toEqual([true, true]);
     let last = "";
@@ -119,7 +120,7 @@ test.describe("a check-in link, opened with nobody signed in", () => {
   });
 
   test("answers the route the same way for a token that never existed and for a body that is no tap, and slows one address", async ({ playwright }) => {
-    const caller = await playwright.request.newContext({ baseURL: "http://localhost:3100", extraHTTPHeaders: { ...callerHeaders(), origin: "https://elsewhere.example" } });
+    const caller = await playwright.request.newContext({ baseURL: E2E_APP_ORIGIN, extraHTTPHeaders: { ...callerHeaders(), origin: "https://elsewhere.example" } });
     const made = await caller.post("/api/check-link", { data: { token: "Y".repeat(43), action: "in" } });
     const malformed = await caller.post("/api/check-link", { data: { token: "short", action: "in" } });
     expect([made.status(), malformed.status()]).toEqual([403, 400]);
@@ -143,7 +144,7 @@ test.describe("the door tag", () => {
     await expect(page.getByRole("heading", { level: 1, name: door.title })).toBeVisible();
     const card = page.getByRole("article");
     await expect(card.getByRole("img", { name: door.qrLabel })).toBeVisible();
-    await expect(card).toContainText("http://localhost:3100/dashboard/shifts");
+    await expect(card).toContainText(`${E2E_APP_ORIGIN}/dashboard/shifts`);
     // Nothing secret and nothing about money or people.
     await expect(card).not.toContainText(/\/c\/|Rose|Amara|\$/);
     await maybeScreenshot(page, "shift-door");
@@ -319,7 +320,7 @@ for (const viewport of viewports) {
         await expectNoHorizontalOverflow(page);
       }
 
-      const stranger = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, baseURL: "http://localhost:3100", extraHTTPHeaders: callerHeaders() });
+      const stranger = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, baseURL: E2E_APP_ORIGIN, extraHTTPHeaders: callerHeaders() });
       const phonePage = await stranger.newPage();
       for (const [path, copy] of [
         ["", check],

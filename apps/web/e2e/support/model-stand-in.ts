@@ -1,5 +1,7 @@
 import { createServer, type IncomingMessage } from "node:http";
 
+import { E2E_PORTS } from "./ports";
+
 /**
  * A stand-in for Claude on Amazon Bedrock's Messages endpoint, for the
  * end-to-end tests only, so the app's real SDK client runs unchanged. It
@@ -9,7 +11,7 @@ import { createServer, type IncomingMessage } from "node:http";
  * always a 120.00 bill from Hillside Clinic), and words a verdict by
  * repeating the statement it is given.
  */
-export const MODEL_STAND_IN = { port: 3103 } as const;
+export const MODEL_STAND_IN = { port: E2E_PORTS.modelStandIn } as const;
 
 async function body(request: IncomingMessage): Promise<string> {
   let text = "";
