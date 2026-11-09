@@ -43,6 +43,9 @@ export const officeLineRoute = "/dashboard/office-line";
 /** Where the circle's record is checked again; its `/export` is the file anyone can check offline with `kin-verify`. */
 export const verifyRoute = "/dashboard/record/verify";
 
+/** Connected assistants: a member's own AI assistant and an agency's software, which read and propose and never approve. A screen within the circle's section. */
+export const connectionsRoute = "/dashboard/circle/connections";
+
 /** The sidebar, in order. */
 export const dashboardNav = ["overview", "shifts", "approvals", "bills", "fairness", "record", "circle"] as const satisfies readonly DashboardSection[];
 

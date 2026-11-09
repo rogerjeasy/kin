@@ -25,7 +25,7 @@ export function SiteFooter({ locale, common }: SiteFooterProps) {
           </div>
           <FooterLinks
             title={footer.product}
-            links={[link("howItWorks", nav.howItWorks), link("safety", nav.safety), link("pricing", nav.pricing)]}
+            links={[link("howItWorks", nav.howItWorks), link("safety", nav.safety), link("pricing", nav.pricing), link("developers", nav.developers)]}
           />
           <FooterLinks
             title={footer.people}

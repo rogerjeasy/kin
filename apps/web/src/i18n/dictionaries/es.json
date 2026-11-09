@@ -136,6 +136,10 @@
     "signIn": {
       "title": "Iniciar sesión · Kin",
       "description": "Los miembros de la familia y las personas cuidadoras inician sesión en la página segura de Kin, gestionada por Amazon Cognito. El padre o la madre nunca inicia sesión."
+    },
+    "developers": {
+      "title": "Desarrolladores · Kin",
+      "description": "Conecte su propio asistente de IA al círculo de una familia mediante el servidor MCP de Kin, o informe de visitas desde el software de una agencia. Ninguno de ellos puede aprobar."
     }
   },
   "common": {
@@ -155,7 +159,8 @@
       "seeMonth": "Ver un mes con Kin",
       "menuOpen": "Abrir menú",
       "menuClose": "Cerrar el menú",
-      "menuTitle": "Menú"
+      "menuTitle": "Menú",
+      "developers": "Desarrolladores"
     },
     "language": {
       "label": "Idioma"
@@ -3640,5 +3645,249 @@
     "privacy": "Este enlace es solo para usted. Por favor, no lo comparta.",
     "accountLabel": "Correo de PayPal (opcional)",
     "accountHint": "Si una emergencia real necesitara ayuda, solo podría ir a esta cuenta y solo cuando la familia lo apruebe. Déjelo vacío para que le pregunten pero nunca le envíen dinero."
+  },
+  "openKin": {
+    "meta": {
+      "title": "Asistentes conectados · Kin",
+      "description": "Su propio asistente de IA puede leer el círculo y proponer. Nunca puede aprobar."
+    },
+    "title": "Asistentes conectados",
+    "lede": "Su propio asistente de IA, ya sea Claude, ChatGPT u otro que hable MCP, puede leer el registro verificado del círculo y proponer qué hacer. Nunca puede aprobar, pagar ni firmar. Eso sigue en manos de una persona, en Kin.",
+    "developersLink": "Cómo conectarlo",
+    "card": {
+      "title": "Asistentes conectados",
+      "text": "Deje que su propio asistente de IA lea el registro y proponga. Nunca puede aprobar.",
+      "open": "Ver asistentes conectados"
+    },
+    "boundary": {
+      "label": "Qué puede hacer un asistente externo",
+      "read": {
+        "title": "Lee el registro verificado",
+        "text": "Las mismas herramientas que Preguntar a Kin, tal como su puesto ve el círculo, y nada más."
+      },
+      "propose": {
+        "title": "Puede proponer, si usted lo permite",
+        "text": "Una reposición que proponga espera los síes que nombra el acuerdo familiar."
+      },
+      "never": {
+        "title": "Nunca aprueba ni paga",
+        "text": "Ninguna herramienta aprueba. Pagar exige a una persona en Kin y una verificación multifactor nueva."
+      }
+    },
+    "console": {
+      "title": "Consola en vivo",
+      "lede": "Vea cómo un asistente se conecta al servidor MCP de Kin como lo haría Claude o ChatGPT. Cada paso es una petición real al punto de acceso de abajo, desde este navegador, con un token de corta duración que Kin emite para su puesto en la demo.",
+      "seat": "Se reproduce como {name}. Elija otro puesto en el banner para verlo desde el suyo.",
+      "endpoint": "Punto de acceso",
+      "play": "Reproducir la sesión",
+      "again": "Reproducir de nuevo",
+      "playing": "Reproduciendo la sesión",
+      "steps": {
+        "connect": {
+          "title": "Se conecta",
+          "done": "Kin respondió con el protocolo {version}."
+        },
+        "list": {
+          "title": "Pregunta qué herramientas puede usar",
+          "done": "{count} herramientas ofrecidas. Ninguna aprueba, paga ni mueve dinero."
+        },
+        "ask": {
+          "title": "Pregunta: “¿Qué debo este mes?”",
+          "done": "Según el registro:"
+        },
+        "approve": {
+          "title": "Intenta aprobar el pago que está esperando",
+          "done": "Rechazado. Kin respondió {code}: no existe ninguna herramienta que apruebe."
+        }
+      },
+      "states": {
+        "waiting": "En espera",
+        "running": "En curso",
+        "done": "Respondido",
+        "refused": "Rechazado",
+        "failed": "Sin respuesta"
+      },
+      "raw": "Mostrar el JSON-RPC",
+      "request": "Petición",
+      "response": "Respuesta",
+      "error": "La consola no pudo contactar con el servidor MCP de Kin. No se cambió nada. Inténtelo de nuevo.",
+      "demoOnly": "La consola en vivo solo existe en la demo. En un círculo real, conecte su propio asistente con un token, más abajo.",
+      "refreshed": "Sus llamadas ya están en la lista de abajo."
+    },
+    "list": {
+      "title": "Asistentes con acceso",
+      "lede": "Cada uno lee como el miembro que lo conectó, dentro de lo que permite el rol de ese miembro.",
+      "empty": "Aún no hay ningún asistente conectado.",
+      "grantedBy": "Conectado por {name}",
+      "scope": {
+        "read": "Solo lee",
+        "propose": "Puede proponer"
+      },
+      "live": "Hasta el {date}",
+      "revoked": "Revocado",
+      "expired": "Caducado",
+      "sample": "Ejemplo para la demo",
+      "console": "Consola en vivo",
+      "token": "Token que termina en {hint}",
+      "lastUsed": "Último uso: {date}",
+      "neverUsed": "Aún sin usar",
+      "revoke": "Revocar",
+      "revokeFor": "Revocar {label}",
+      "revoking": "Revocando",
+      "revokeFailed": "Kin no pudo revocarlo ahora mismo. Inténtelo de nuevo.",
+      "calls": "Qué hizo",
+      "noCalls": "Aún no hay llamadas.",
+      "asked": "Pidió “{tool}”",
+      "outcomes": {
+        "ok": "Respondido",
+        "unknown_tool": "Rechazado: no existe esa herramienta",
+        "refused": "Rechazado: fuera de su permiso",
+        "invalid": "Rechazado: la petición no encajaba",
+        "limit": "Omitido: se alcanzó el límite",
+        "failed": "No se pudo leer",
+        "timeout": "Sin respuesta a tiempo",
+        "too_large": "Demasiado grande para devolverlo"
+      },
+      "proposed": "Presentó una propuesta. Espera en la pantalla de aprobaciones."
+    },
+    "grant": {
+      "title": "Conecte su asistente",
+      "lede": "Kin crea un token para su puesto. Péguelo en los ajustes de su asistente. Puede revocarlo aquí en cualquier momento, y la siguiente llamada será rechazada.",
+      "label": "Póngale un nombre",
+      "labelHint": "Para distinguirlo, por ejemplo “Mi Claude”.",
+      "labelDefault": "Mi asistente",
+      "scope": "Qué puede hacer",
+      "scopes": {
+        "read": {
+          "title": "Solo lectura",
+          "text": "Saldos, facturas, equidad, el registro y las comprobaciones."
+        },
+        "propose": {
+          "title": "Leer y proponer",
+          "text": "También proponer una reposición que permitan las reglas de la familia. Sigue esperando un sí."
+        }
+      },
+      "lifetime": "Durante cuánto tiempo",
+      "days": "{count} días",
+      "day": "1 día",
+      "submit": "Crear el token",
+      "creating": "Creando el token",
+      "observer": "Un observador lee y nunca escribe, así que no conecta ningún asistente.",
+      "errors": {
+        "invalid": "Póngale un nombre de hasta 60 caracteres, sin < ni >.",
+        "too_many": "Ya tiene cinco asistentes activos. Revoque uno primero.",
+        "refused": "Su puesto no puede conectar un asistente.",
+        "unavailable": "Kin no pudo crear el token ahora mismo. Inténtelo de nuevo."
+      }
+    },
+    "token": {
+      "title": "Su token, que se muestra una sola vez",
+      "text": "Cópielo ahora. Kin solo guarda una huella y no puede volver a mostrarlo. Quien lo tenga podrá leer lo mismo que usted, hasta que caduque o usted lo revoque.",
+      "label": "Token de delegación",
+      "claudeCode": "Claude Code",
+      "config": "Ajustes del cliente MCP (.mcp.json)",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "failed": "Su navegador no quiso copiarlo. Seleccione el texto y cópielo a mano.",
+      "done": "Ya lo he copiado"
+    },
+    "agency": {
+      "title": "Agencias",
+      "lede": "El software de gestión de turnos de una agencia de cuidados a domicilio puede informar de las visitas de su personal. Un informe es una prueba junto al turno del calendario. No paga nada, y la familia sigue dando su palabra.",
+      "keys": "Agencias conectadas",
+      "noKeys": "No hay ninguna agencia conectada.",
+      "created": "Conectada el {date}",
+      "lastReport": "Último informe: {date}",
+      "noReport": "Aún sin informes",
+      "revoke": "Revocar",
+      "revokeFor": "Revocar la clave de {label}",
+      "revoked": "Revocada",
+      "readOnly": "Solo el organizador conecta una agencia.",
+      "create": {
+        "title": "Conectar una agencia",
+        "label": "El nombre de la agencia",
+        "submit": "Crear una clave",
+        "creating": "Creando la clave",
+        "secretTitle": "La clave de la agencia, que se muestra una sola vez",
+        "secretText": "Entregue el ID de clave y el secreto al software de la agencia. Kin solo guarda una huella del secreto.",
+        "keyId": "ID de clave",
+        "secret": "Secreto",
+        "errors": {
+          "invalid": "Indique el nombre de la agencia, de hasta 80 caracteres, sin < ni >.",
+          "too_many_keys": "Ya hay cinco agencias conectadas. Revoque una primero.",
+          "refused": "Solo el organizador conecta una agencia.",
+          "unavailable": "Aquí no está activado el informe de agencias."
+        }
+      },
+      "reports": "Visitas informadas",
+      "noReports": "Aún no se ha informado de ninguna visita.",
+      "report": "{agency} informa de {caregiver}",
+      "when": "{kind}, de {from} a {to}",
+      "checkedIn": "Entrada registrada a las {time}",
+      "checkedOut": "Salida registrada a las {time}",
+      "minutes": "{count} minutos",
+      "matched": "Coincide con el turno del calendario de Kin",
+      "unmatched": "Ningún turno del calendario de Kin coincide",
+      "unknownCaregiver": "No es uno de los cuidadores del círculo",
+      "evidence": "Solo una prueba: un informe no paga nada.",
+      "note": "La agencia escribió: “{note}”",
+      "refused": "Un contenido que Kin no pudo leer, guardado tal como se envió.",
+      "shiftsLink": "Dar la palabra de la familia sobre el turno"
+    }
+  },
+  "developers": {
+    "hero": {
+      "eyebrow": "Para desarrolladores",
+      "title": "Trabaje con el círculo de una familia. Nunca apruebe.",
+      "lede": "El asistente de IA de un miembro de la familia se conecta al servidor MCP de Kin con un token que el miembro concede. El software de una agencia de cuidados a domicilio informa de las visitas mediante una API firmada. Ambos leen y proponen; una persona en Kin aprueba."
+    },
+    "mcp": {
+      "eyebrow": "Servidor MCP",
+      "title": "Conectar un asistente",
+      "lede": "HTTP transmitible, un mensaje JSON-RPC por petición, sin sesión. Versiones del protocolo {versions}. El miembro crea el token en la pantalla Asistentes conectados.",
+      "endpoint": "Punto de acceso",
+      "claudeCode": "Claude Code",
+      "config": "Ajustes del cliente MCP (.mcp.json)",
+      "curl": "Cualquier cliente HTTP",
+      "tools": "Las herramientas",
+      "toolsLede": "Las mismas herramientas y la misma pasarela que Preguntar a Kin. tools/list muestra solo las que permiten el rol del miembro y el alcance del token.",
+      "kinds": {
+        "read": "Lee",
+        "propose": "Propone"
+      }
+    },
+    "boundary": {
+      "eyebrow": "El límite",
+      "title": "Lo que ningún llamante externo puede hacer",
+      "items": [
+        "Ninguna herramienta aprueba, paga, firma ni mueve dinero. Una herramienta que propone devuelve el ID de la propuesta y la pantalla donde una persona la aprueba.",
+        "Las herramientas propias de PayPal, incluidas las de escritura, se quedan en el servidor de Kin y nunca se ofrecen aquí.",
+        "El alcance del token solo reduce el rol del propio miembro. Revocarlo hace que se rechace la llamada siguiente.",
+        "El texto del registro (nombres, notas, cartas) vuelve etiquetado como dato, dentro de una etiqueta que no puede cerrar.",
+        "Una petición sin un token activo recibe 401 y una cabecera WWW-Authenticate que apunta a los metadatos del recurso protegido."
+      ]
+    },
+    "agency": {
+      "eyebrow": "API de agencias",
+      "title": "Informar de una visita",
+      "lede": "Envíe con POST una visita a /api/v1/visits, firmada con la clave que creó el organizador del círculo. Kin la guarda como prueba junto al turno. No paga nada.",
+      "sign": "Firme el cuerpo sin procesar",
+      "responses": "201 guardada · 200 ya guardada · 401 clave o firma · 409 mismo ID, otro cuerpo · 422 guardada pero ilegible"
+    },
+    "openapi": {
+      "eyebrow": "OpenAPI",
+      "title": "El documento publicado",
+      "lede": "Se genera a partir de los esquemas con los que el servidor comprueba las peticiones, así que no puede desfasarse.",
+      "link": "Abrir el documento OpenAPI"
+    },
+    "next": {
+      "eyebrow": "Próximamente",
+      "title": "Aún sin construir",
+      "items": [
+        "Iniciar sesión con OAuth 2.1 y PKCE, para autorizar a un cliente sin copiar un token.",
+        "SDK generados a partir del documento OpenAPI, por ejemplo con APIMatic.",
+        "Facturas de agencias a través de la misma API firmada."
+      ]
+    }
   }
 }

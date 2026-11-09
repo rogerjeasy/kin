@@ -136,6 +136,10 @@
     "signIn": {
       "title": "Sign in · Kin",
       "description": "Family members and caregivers sign in on Kin’s secure page, run by Amazon Cognito. The parent never signs in at all."
+    },
+    "developers": {
+      "title": "Developers · Kin",
+      "description": "Connect your own AI assistant to a family's circle through Kin's MCP server, or report visits from an agency's software. None of them can approve."
     }
   },
   "common": {
@@ -155,7 +159,8 @@
       "seeMonth": "See a month with Kin",
       "menuOpen": "Open menu",
       "menuClose": "Close menu",
-      "menuTitle": "Menu"
+      "menuTitle": "Menu",
+      "developers": "Developers"
     },
     "language": {
       "label": "Language"
@@ -3640,5 +3645,249 @@
     "privacy": "This link is only for you. Please do not share it.",
     "accountLabel": "PayPal email (optional)",
     "accountHint": "If a real emergency ever needs help, it can go only to this account, and only after the family approves. Leave it empty to be asked but never sent money."
+  },
+  "openKin": {
+    "meta": {
+      "title": "Connected assistants · Kin",
+      "description": "Your own AI assistant can read the circle and propose. It can never approve."
+    },
+    "title": "Connected assistants",
+    "lede": "Your own AI assistant, whether Claude, ChatGPT or any other that speaks MCP, can read the circle's verified record and propose what to do. It can never approve, pay or sign. Those stay with a person, in Kin.",
+    "developersLink": "How to connect",
+    "card": {
+      "title": "Connected assistants",
+      "text": "Let your own AI assistant read the record and propose. It can never approve.",
+      "open": "See connected assistants"
+    },
+    "boundary": {
+      "label": "What an outside assistant may do",
+      "read": {
+        "title": "Reads the verified record",
+        "text": "The same tools as Ask Kin, as your own seat sees the circle, and no more."
+      },
+      "propose": {
+        "title": "May propose, if you allow it",
+        "text": "A refill it proposes waits for the yeses the family agreement names."
+      },
+      "never": {
+        "title": "Never approves or pays",
+        "text": "No tool approves. Paying takes a person in Kin and a fresh multi-factor check."
+      }
+    },
+    "console": {
+      "title": "Live console",
+      "lede": "Watch an assistant connect to Kin's MCP server the way Claude or ChatGPT would. Each step is a real request to the endpoint below, from this browser, with a short-lived token Kin issues for your seat in the demo.",
+      "seat": "Playing it as {name}. Take another seat in the banner to play it from theirs.",
+      "endpoint": "Endpoint",
+      "play": "Play the session",
+      "again": "Play it again",
+      "playing": "Playing the session",
+      "steps": {
+        "connect": {
+          "title": "Connects",
+          "done": "Kin answered with protocol {version}."
+        },
+        "list": {
+          "title": "Asks which tools it may use",
+          "done": "{count} tools offered. None approves, pays or moves money."
+        },
+        "ask": {
+          "title": "Asks: “What do I owe this month?”",
+          "done": "From the record:"
+        },
+        "approve": {
+          "title": "Tries to approve the waiting payment",
+          "done": "Refused. Kin answered {code}: there is no tool that approves."
+        }
+      },
+      "states": {
+        "waiting": "Waiting",
+        "running": "Running",
+        "done": "Answered",
+        "refused": "Refused",
+        "failed": "No answer"
+      },
+      "raw": "Show the JSON-RPC",
+      "request": "Request",
+      "response": "Response",
+      "error": "The console could not reach Kin's MCP server. Nothing was changed. Try again.",
+      "demoOnly": "The live console exists only in the demo. In a real circle, connect your own assistant with a token below.",
+      "refreshed": "Its calls are now on the list below."
+    },
+    "list": {
+      "title": "Assistants with access",
+      "lede": "Each one reads as the member who connected it, within what that member's role allows.",
+      "empty": "No assistant is connected yet.",
+      "grantedBy": "Connected by {name}",
+      "scope": {
+        "read": "Reads only",
+        "propose": "May propose"
+      },
+      "live": "Until {date}",
+      "revoked": "Revoked",
+      "expired": "Expired",
+      "sample": "Sample for the demo",
+      "console": "Live console",
+      "token": "Token ending {hint}",
+      "lastUsed": "Last used {date}",
+      "neverUsed": "Not used yet",
+      "revoke": "Revoke",
+      "revokeFor": "Revoke {label}",
+      "revoking": "Revoking",
+      "revokeFailed": "Kin could not revoke it just now. Try again.",
+      "calls": "What it did",
+      "noCalls": "No calls yet.",
+      "asked": "Asked for “{tool}”",
+      "outcomes": {
+        "ok": "Answered",
+        "unknown_tool": "Refused: no such tool",
+        "refused": "Refused: outside its permission",
+        "invalid": "Refused: the request did not fit",
+        "limit": "Skipped: limit reached",
+        "failed": "Could not be read",
+        "timeout": "No answer in time",
+        "too_large": "Too large to hand back"
+      },
+      "proposed": "Raised a proposal. It waits on the approvals screen."
+    },
+    "grant": {
+      "title": "Connect your assistant",
+      "lede": "Kin makes a token for your seat. Paste it into your assistant's settings. You can revoke it here at any time, and the next call is refused.",
+      "label": "Name it",
+      "labelHint": "So you can tell it apart, like “My Claude”.",
+      "labelDefault": "My assistant",
+      "scope": "What it may do",
+      "scopes": {
+        "read": {
+          "title": "Read only",
+          "text": "Balances, bills, fairness, the record and the checks."
+        },
+        "propose": {
+          "title": "Read and propose",
+          "text": "Also propose a refill the family's rules allow. It still waits for a yes."
+        }
+      },
+      "lifetime": "For how long",
+      "days": "{count} days",
+      "day": "1 day",
+      "submit": "Create the token",
+      "creating": "Creating the token",
+      "observer": "An observer reads and never writes, so connects no assistant.",
+      "errors": {
+        "invalid": "Give it a name of up to 60 characters, without < or >.",
+        "too_many": "You already have five live assistants. Revoke one first.",
+        "refused": "Your seat cannot connect an assistant.",
+        "unavailable": "Kin could not create the token just now. Try again."
+      }
+    },
+    "token": {
+      "title": "Your token, shown once",
+      "text": "Copy it now. Kin keeps only a fingerprint of it and cannot show it again. Whoever holds it can read what you can read, until it expires or you revoke it.",
+      "label": "Delegation token",
+      "claudeCode": "Claude Code",
+      "config": "MCP client settings (.mcp.json)",
+      "copy": "Copy",
+      "copied": "Copied",
+      "failed": "Your browser would not copy. Select the text and copy it yourself.",
+      "done": "I have copied it"
+    },
+    "agency": {
+      "title": "Agencies",
+      "lede": "A home-care agency's scheduling software can report its aides' visits. A report is evidence beside the shift on the calendar. It pays nothing, and the family still gives its word.",
+      "keys": "Connected agencies",
+      "noKeys": "No agency is connected.",
+      "created": "Connected {date}",
+      "lastReport": "Last report {date}",
+      "noReport": "No report yet",
+      "revoke": "Revoke",
+      "revokeFor": "Revoke {label}'s key",
+      "revoked": "Revoked",
+      "readOnly": "Only the organizer connects an agency.",
+      "create": {
+        "title": "Connect an agency",
+        "label": "The agency's name",
+        "submit": "Create a key",
+        "creating": "Creating the key",
+        "secretTitle": "The agency's key, shown once",
+        "secretText": "Give the key ID and the secret to the agency's software. Kin keeps only a fingerprint of the secret.",
+        "keyId": "Key ID",
+        "secret": "Secret",
+        "errors": {
+          "invalid": "Give the agency's name, up to 80 characters, without < or >.",
+          "too_many_keys": "Five agencies are connected already. Revoke one first.",
+          "refused": "Only the organizer connects an agency.",
+          "unavailable": "Agency reporting is not switched on here."
+        }
+      },
+      "reports": "Visits reported",
+      "noReports": "No visits reported yet.",
+      "report": "{agency} reports {caregiver}",
+      "when": "{kind}, {from} to {to}",
+      "checkedIn": "Checked in at {time}",
+      "checkedOut": "Checked out at {time}",
+      "minutes": "{count} minutes",
+      "matched": "Matches the shift on Kin's calendar",
+      "unmatched": "No shift on Kin's calendar matches",
+      "unknownCaregiver": "Not one of the circle's caregivers",
+      "evidence": "Evidence only: nothing is paid from a report.",
+      "note": "The agency wrote: “{note}”",
+      "refused": "A body Kin could not read, kept as it was sent.",
+      "shiftsLink": "Give the family's word on the shift"
+    }
+  },
+  "developers": {
+    "hero": {
+      "eyebrow": "For developers",
+      "title": "Work with a family's circle. Never approve.",
+      "lede": "A family member's own AI assistant connects to Kin's MCP server with a token the member grants. A home-care agency's software reports visits through a signed API. Both read and propose; a person in Kin approves."
+    },
+    "mcp": {
+      "eyebrow": "MCP server",
+      "title": "Connect an assistant",
+      "lede": "Streamable HTTP, one JSON-RPC message per request, no session. Protocol versions {versions}. The member creates the token on the Connected assistants screen.",
+      "endpoint": "Endpoint",
+      "claudeCode": "Claude Code",
+      "config": "MCP client settings (.mcp.json)",
+      "curl": "Any HTTP client",
+      "tools": "The tools",
+      "toolsLede": "The same tools and the same gateway as Ask Kin. tools/list shows only those the member's role and the token's scope allow.",
+      "kinds": {
+        "read": "Reads",
+        "propose": "Proposes"
+      }
+    },
+    "boundary": {
+      "eyebrow": "The boundary",
+      "title": "What no outside caller can do",
+      "items": [
+        "No tool approves, pays, signs or moves money. A tool that proposes returns the proposal's ID and the screen where a person approves it.",
+        "PayPal's own tools, writes included, stay on Kin's server and are never offered here.",
+        "The token's scope only narrows the member's own role. Revoking it refuses the very next call.",
+        "Text from the record (names, notes, letters) comes back labelled as data, inside a tag it cannot close.",
+        "A request without a live token gets 401 and a WWW-Authenticate header that points at the protected resource metadata."
+      ]
+    },
+    "agency": {
+      "eyebrow": "Agency API",
+      "title": "Report a visit",
+      "lede": "POST one visit to /api/v1/visits, signed with the key the circle's organizer created. Kin keeps it as evidence beside the shift. It pays nothing.",
+      "sign": "Sign the raw body",
+      "responses": "201 kept · 200 already kept · 401 key or signature · 409 same ID, other body · 422 kept but unreadable"
+    },
+    "openapi": {
+      "eyebrow": "OpenAPI",
+      "title": "The published document",
+      "lede": "Built from the schemas the server checks requests against, so it cannot drift.",
+      "link": "Open the OpenAPI document"
+    },
+    "next": {
+      "eyebrow": "Next",
+      "title": "Not built yet",
+      "items": [
+        "Signing in through OAuth 2.1 with PKCE, so a client is authorized without copying a token.",
+        "SDKs generated from the OpenAPI document, for example with APIMatic.",
+        "Agency invoices through the same signed API."
+      ]
+    }
   }
 }
