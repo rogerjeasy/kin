@@ -14,13 +14,13 @@ import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { circleFormatters } from "@/content/circle/format";
-import { activeMembers, parentOf } from "@/content/circle/members";
+import { activeMembers, parentNameOf, parentOf } from "@/content/circle/members";
 import { circleNames } from "@/content/circle/names";
 import { demoPayeeNote } from "@/content/circle/payout-proof";
 import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
-import { agreementRoute, careAgreementsRoute } from "@/content/dashboard-routes";
+import { agreementRoute, careAgreementsRoute, wishesRoute } from "@/content/dashboard-routes";
 import { localizedPath } from "@/i18n/routing";
 import { dashboardContext, may } from "@/server/dashboard-context";
 import { demoPayeeOf } from "@/server/sandbox-payout";
@@ -94,6 +94,15 @@ export default async function CirclePage({ params, searchParams }: PageProps<"/[
       {may(circle, "care_agreement.view") ? (
         <Panel title={dictionary.dashboard.careAgreements.title} description={dictionary.dashboard.careAgreements.lede} link={{ href: localizedPath(locale, careAgreementsRoute), label: dictionary.dashboard.careAgreements.link }}>
           <p className="text-sm text-muted-foreground">{fill(dictionary.dashboard.careAgreements.summary, { count: format.count(circle.careAgreements.filter((each) => each.status !== "withdrawn").length) })}</p>
+        </Panel>
+      ) : null}
+      {may(circle, "wish_trigger.view") ? (
+        <Panel
+          title={fill(dictionary.dashboard.wishes.link.title, { parent: parentNameOf(circle) })}
+          description={may(circle, "wish.view") ? dictionary.dashboard.wishes.link.text : dictionary.dashboard.wishes.trigger.text}
+          link={{ href: localizedPath(locale, wishesRoute), label: dictionary.dashboard.wishes.link.label }}
+        >
+          <p className="sr-only">{fill(dictionary.dashboard.wishes.link.title, { parent: parentNameOf(circle) })}</p>
         </Panel>
       ) : null}
       <MonthlySharePanel locale={locale} dictionary={dictionary} circle={circle} checkOnLoad={backFromPayPal} />

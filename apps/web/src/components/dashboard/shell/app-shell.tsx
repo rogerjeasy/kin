@@ -9,6 +9,7 @@ import { PresenceHoldBanner } from "./presence-hold-banner";
 import type { ShellContext } from "./shell-context";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
+import { WishesBanner } from "./wishes-banner";
 
 type AppShellProps = ShellContext & { children: ReactNode };
 
@@ -31,6 +32,7 @@ export function AppShell({ children, ...context }: AppShellProps) {
               </div>
             ) : null}
             {context.presenceHold ? <PresenceHoldBanner hold={context.presenceHold} /> : null}
+            {context.wishesNotice ? <WishesBanner notice={context.wishesNotice} /> : null}
             <Suspense fallback={null}>
               <NoticeBanner notices={context.dictionary.dashboard.notices} dismiss={context.dictionary.dashboard.notices.dismiss} />
             </Suspense>

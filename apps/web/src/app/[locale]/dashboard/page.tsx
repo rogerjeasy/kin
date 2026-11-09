@@ -26,7 +26,8 @@ import { givenRows } from "@/components/dashboard/words/given-rows";
 import { planLabel } from "@/components/dashboard/words/plan-words";
 import { ButtonLink } from "@/components/shared/button-link";
 import { Button } from "@/components/ui/button";
-import { agreementRoute, askRoute, dashboardRoutes, listenRoute, presenceRoute } from "@/content/dashboard-routes";
+import { agreementRoute, askRoute, dashboardRoutes, listenRoute, presenceRoute, wishesRoute } from "@/content/dashboard-routes";
+import { WishesCard } from "@/components/dashboard/wishes/wishes-card";
 import { askKinSuggestions } from "@/content/circle/ask-kin-suggestions";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
@@ -131,6 +132,15 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
         <AgreementPrompt href={path(agreementRoute)} text={fill(dictionary.dashboard.agreement.attention, { version: format.count(awaitsMe.version) })} label={dictionary.dashboard.agreement.open} />
       ) : null}
       {may(circle, "presence.check") ? <PresenceCard copy={dictionary.dashboard.presence.link} href={path(presenceRoute)} /> : null}
+      {may(circle, "wish.view") ? (
+        <WishesCard
+          title={fill(dictionary.dashboard.wishes.link.title, slots)}
+          text={dictionary.dashboard.wishes.link.text}
+          label={dictionary.dashboard.wishes.link.label}
+          href={path(wishesRoute)}
+          quote={circle.wishes.wishes.find((wish) => wish.state === "in_force")?.quote ?? null}
+        />
+      ) : null}
       <AskKinCard copy={dictionary.askKin} suggestions={askKinSuggestions(circle, dictionary.askKin.suggestions, format, names)} href={path(askRoute)} />
       <div className="grid gap-6 lg:grid-cols-3">
         {waiting.length > 0 ? (

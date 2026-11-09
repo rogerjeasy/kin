@@ -1212,6 +1212,10 @@
       "careAgreements": {
         "title": "Pflegevereinbarungen · Kin",
         "description": "Schriftliche Pflegevereinbarungen mit Unterschriften und was jede abdeckt."
+      },
+      "wishes": {
+        "title": "Wünsche · Kin",
+        "description": "Was der Elternteil in eigenen Worten für den Fall festgelegt hat, dass sie ins Krankenhaus oder in ein Pflegeheim kommt, und was Kin dann tut."
       }
     },
     "shell": {
@@ -2336,7 +2340,8 @@
         "above_ceiling": "Diese Nachbestellung liegt über der Obergrenze des Familienvertrags.",
         "paused": "Zahlungen sind pausiert. Versuchen Sie es nach der Pause erneut.",
         "no_agreement": "Die Familie hat noch keinen gültigen Familienvertrag.",
-        "unavailable": "Kin konnte das jetzt nicht tun. Versuchen Sie es gleich noch einmal."
+        "unavailable": "Kin konnte das jetzt nicht tun. Versuchen Sie es gleich noch einmal.",
+        "wish_hold": "Solange sie nicht zu Hause ist, halten ihre Wünsche Nachbestellungen und Einkäufe an. Es wurde nichts bestellt."
       },
       "mandatesLink": "Dauerhafte Erlaubnisse",
       "underMandate": "Unter der dauerhaften Erlaubnis gekauft. Niemand musste gefragt werden.",
@@ -3480,6 +3485,231 @@
         "overlap": "Eine unterschriebene Vereinbarung für diese Pflegekraft deckt den Tag schon ab, an dem diese beginnen würde. Lassen Sie diese später beginnen oder beenden Sie zuerst die andere."
       },
       "summary": "{count} vorhanden."
+    },
+    "wishes": {
+      "title": "Die Wünsche von {parent}",
+      "titleOwn": "Meine Wünsche",
+      "lede": "Solange {parent} selbst entscheiden konnte, hat sie gesagt, was mit ihrem Geld geschehen soll, wenn sie es eines Tages nicht mehr kann. Kin bewahrt ihre Worte und setzt sie so um, wie sie sie gesagt hat: mit klaren Regeln, nie mit Vermutungen.",
+      "ledeOwn": "Sagen Sie, was mit Ihrem Geld geschehen soll, wenn Sie ins Krankenhaus oder in ein Pflegeheim kommen. Kin liest es Ihnen vor, Sie bestätigen es, und zwei Menschen aus Ihrer Familie bezeugen es. Sie können es jederzeit ändern.",
+      "legal": "Diese Wünsche helfen der Familie, umzusetzen, was sie wollte. Sie ersetzen keine Vollmacht, keine Patientenverfügung und kein Testament. Kin ist keine Anwaltskanzlei, und dies ist keine Rechtsberatung.",
+      "simulated": "Simuliert",
+      "packetLink": "Unterlagen für Ihre Anwältin oder Ihren Anwalt",
+      "link": {
+        "title": "Die Wünsche von {parent}",
+        "text": "Was sie in eigenen Worten für den Fall festgelegt hat, dass sie ins Krankenhaus oder in ein Pflegeheim kommt.",
+        "label": "Zu ihren Wünschen"
+      },
+      "list": {
+        "title": "Was sie sich wünscht",
+        "titleOwn": "Ihre Wünsche",
+        "empty": "{parent} hat noch keine Wünsche geäußert.",
+        "emptyOwn": "Sie haben noch keine Wünsche geäußert."
+      },
+      "said": "{parent} sagte am {day}",
+      "saidOwn": "Sie sagten am {day}",
+      "play": {
+        "recording": "Aufnahme von {parent} abspielen",
+        "readByKin": "Die Worte von {parent} hören, von Kin vorgelesen",
+        "playing": "Wird abgespielt",
+        "stop": "Stopp",
+        "voiceOwn": "Mit ihrer eigenen Stimme",
+        "voiceKin": "Von Kins Stimme vorgelesen, nicht von ihrer eigenen",
+        "unavailable": "Kin kann das gerade nicht abspielen. Was sie gesagt hat, steht oben."
+      },
+      "states": {
+        "draft": "Vorgelesen, noch nicht bestätigt",
+        "confirmed": "Wartet auf Zeugen",
+        "in_force": "Gültig",
+        "superseded": "Ersetzt",
+        "withdrawn": "Zurückgezogen"
+      },
+      "when": {
+        "she": {
+          "hospital": "Wenn {parent} im Krankenhaus ist",
+          "care_home": "Wenn {parent} in ein Pflegeheim zieht",
+          "either": "Wenn {parent} im Krankenhaus oder in einem Pflegeheim ist"
+        },
+        "you": {
+          "hospital": "Wenn Sie im Krankenhaus sind",
+          "care_home": "Wenn Sie in ein Pflegeheim ziehen",
+          "either": "Wenn Sie im Krankenhaus oder in einem Pflegeheim sind"
+        }
+      },
+      "does": {
+        "she": {
+          "keep_paying": "Kin bezahlt {payee} weiter, was auch immer ihre anderen Wünsche sagen.",
+          "pause_discretionary": "Kin hält Nachbestellungen, Einkäufe und alles andere, was keine Pflege ist, an, bis sie wieder zu Hause ist.",
+          "suspend_subscriptions": "Kin pausiert {subscriptions} und setzt sie fort, wenn sie wieder zu Hause ist.",
+          "new_payee_approvals": "Eine Zahlung über {amount} an jemand Neuen wartet, bis {approvers} zustimmen.",
+          "successor": "{member} führt den Kreis für die Familie, bis sie wieder zu Hause ist."
+        },
+        "you": {
+          "keep_paying": "Kin bezahlt {payee} weiter, was auch immer Ihre anderen Wünsche sagen.",
+          "pause_discretionary": "Kin hält Nachbestellungen, Einkäufe und alles andere, was keine Pflege ist, an, bis Sie wieder zu Hause sind.",
+          "suspend_subscriptions": "Kin pausiert {subscriptions} und setzt sie fort, wenn Sie wieder zu Hause sind.",
+          "new_payee_approvals": "Eine Zahlung über {amount} an jemand Neuen wartet, bis {approvers} zustimmen.",
+          "successor": "{member} führt den Kreis für die Familie, bis Sie wieder zu Hause sind."
+        }
+      },
+      "signed": "Bestätigt von {parent}, bezeugt von {names}",
+      "waitingWitnesses": "Bestätigt von {parent}. Bisher {count} von 2 Zeugen.",
+      "notConfirmed": "Noch nicht bestätigt",
+      "seal": "Siegel {digest}",
+      "version": "Version {version}",
+      "history": "Frühere Versionen",
+      "actions": {
+        "witness": "Ich bezeuge diesen Wunsch",
+        "witnessHint": "Sie haben {parent} das sagen hören, und es ist das, was sie will.",
+        "witnessed": "Sie haben diesen Wunsch bezeugt.",
+        "withdraw": "Zurückziehen",
+        "withdrawConfirm": "Diesen Wunsch zurückziehen? Er bleibt im Verlauf erhalten, gilt aber nicht mehr.",
+        "withdrawYes": "Ja, zurückziehen",
+        "keepIt": "Behalten",
+        "change": "Anders sagen",
+        "done": "Erledigt."
+      },
+      "frozen": "Solange jemand gemeldet hat, dass {parent} im Krankenhaus oder in einem Pflegeheim ist, bleiben ihre Wünsche genau so, wie sie sind. Niemand kann einen hinzufügen, ändern oder zurückziehen, bis sie wieder zu Hause ist.",
+      "record": {
+        "title": "Einen Wunsch äußern",
+        "text": "Sprechen Sie so, wie Sie mit Ihrer Familie sprechen würden. Kin schreibt Ihre Worte auf und liest sie Ihnen dann als Regel zum Bestätigen vor.",
+        "speak": "Wunsch sprechen",
+        "stop": "Ich bin fertig",
+        "listening": "Kin hört zu. Sagen Sie Ihren Wunsch und tippen Sie dann auf „Ich bin fertig“.",
+        "transcribing": "Kin schreibt Ihre Worte auf …",
+        "or": "Oder schreiben Sie ihn",
+        "label": "Ihr Wunsch, in Ihren eigenen Worten",
+        "placeholder": "Zahlt Amara bitte immer weiter, auch wenn ich im Krankenhaus bin.",
+        "readBack": "Bitte vorlesen",
+        "reading": "Kin liest Ihre Worte …",
+        "readBackTitle": "Das hat Kin verstanden",
+        "keep": "Ja, das will ich",
+        "notThis": "Nein, weglassen",
+        "kept": "Gespeichert. Zwei Menschen aus Ihrer Familie werden gebeten, ihn zu bezeugen.",
+        "recordingKept": "Ihre Aufnahme wird mit Ihrer eigenen Stimme dazu aufbewahrt.",
+        "flagged": "Diesen Wunsch kann Kin nicht als Regel umsetzen, deshalb wird er nicht gespeichert. Sagen Sie es Ihrer Familie, oder nehmen Sie es in Ihre Patientenverfügung auf.",
+        "changing": "Sie ändern: „{quote}“",
+        "cancelChange": "Nicht ändern",
+        "micDenied": "Kin konnte das Mikrofon nicht nutzen. Sie können Ihren Wunsch stattdessen schreiben.",
+        "noSpeech": "Kin kann hier keine Sprache aufschreiben. Ihre Aufnahme bleibt erhalten; schreiben Sie Ihren Wunsch unten.",
+        "modelOff": "Kin kann Ihre Worte gerade nicht vorlesen. Bitte versuchen Sie es später noch einmal.",
+        "flagReasons": {
+          "not_a_rule": "Das ist nichts, was Kin umsetzt.",
+          "not_her_words": "Kin hat diese Worte in dem, was Sie gesagt haben, nicht gefunden.",
+          "unknown_slot": "Er nennt jemanden oder etwas, das Kin nicht kennt.",
+          "quote": "Die Worte sind zu lang oder fehlen.",
+          "trigger": "Kin konnte nicht erkennen, wann er gelten soll.",
+          "kind": "Das ist nichts, was Kin umsetzt.",
+          "payee": "Er nennt jemanden, der nicht Ihre Pflegekraft ist.",
+          "subscriptions": "Er nennt ein Abonnement, das Kin nicht kennt.",
+          "amount": "Kin hat den Betrag in Ihren Worten nicht gefunden.",
+          "approvers": "Er braucht mindestens zwei Menschen aus Ihrer Familie, die sich die Kosten teilen.",
+          "successor": "Er nennt jemanden, der den Kreis nicht führen kann."
+        }
+      },
+      "trigger": {
+        "title": "Wenn {parent} etwas zustößt",
+        "text": "Die Wünsche gelten erst, wenn Menschen es melden: zwei aus der Familie, oder bei einem Krankenhausaufenthalt eine Person aus der Familie und ihre Pflegekraft. Kin entscheidet das nie anhand ihrer Stimme oder ihres Schweigens.",
+        "report": {
+          "hospital": "{parent} ist im Krankenhaus",
+          "care_home": "{parent} ist in ein Pflegeheim gezogen"
+        },
+        "home": "{parent} ist wieder zu Hause",
+        "where": {
+          "hospital": "im Krankenhaus",
+          "care_home": "in einem Pflegeheim"
+        },
+        "reported": "{name} hat gemeldet, dass {parent} {where} ist. Sobald jemand anderes es ebenfalls meldet, gelten ihre Wünsche.",
+        "reportedFamily": "{name} hat gemeldet, dass {parent} {where} ist. Sobald jemand aus der Familie es ebenfalls meldet, gelten ihre Wünsche.",
+        "active": "{parent} ist {where}. Seit {when} gelten ihre Wünsche.",
+        "endWaiting": "{name} hat gemeldet, dass {parent} wieder zu Hause ist. Sobald jemand anderes es ebenfalls meldet, läuft alles wieder an, was ihre Wünsche angehalten haben.",
+        "youSaid": "Sie haben es gemeldet.",
+        "attestedBy": "Gemeldet von {names}",
+        "dismiss": "Das war ein Irrtum",
+        "ended": "{parent} ist am {day} nach Hause gekommen. Alles, was ihre Wünsche angehalten hatten, läuft wieder.",
+        "observer": "Sie sehen hier, was sich ändert, und die Familie meldet, wann es so weit ist.",
+        "parentNote": "Ihre Familie meldet, wann es so weit ist. Sie können es nicht selbst auslösen, und Kin rät nie.",
+        "caregiverHospital": "Als Pflegekraft von {parent} können Sie melden, dass sie ins Krankenhaus gekommen ist; eine Person aus der Familie muss es ebenfalls melden."
+      },
+      "changed": {
+        "title": "Was sich geändert hat, und warum",
+        "text": "Jede Änderung ist einfacher Code, der ihren Wunsch so liest, wie sie ihn gesagt hat. Tippen Sie, um ihre Worte zu hören.",
+        "kept": "{payee} wird weiter bezahlt.",
+        "nextShift": "Nächster Einsatz: {title}, {day}.",
+        "paid": "{amount} an {payee} am {day} bezahlt.",
+        "onItsWay": "{amount} an {payee} sind unterwegs.",
+        "discretionary": "Nachbestellungen, Einkäufe und andere Ausgaben, die keine Pflege sind, sind angehalten.",
+        "subscription": {
+          "active": "{name} ({amount} im Monat) läuft.",
+          "suspending": "{name} wird über PayPal pausiert.",
+          "suspended": "{name} ({amount} im Monat) ist pausiert.",
+          "resuming": "{name} wird über PayPal fortgesetzt."
+        },
+        "newPayees": "Eine Zahlung über {amount} an jemand Neuen braucht jetzt die Zustimmung von {approvers}.",
+        "successor": "{member} führt den Kreis, bis {parent} wieder zu Hause ist.",
+        "none": "Keiner ihrer Wünsche betrifft das. Alles läuft wie gewohnt weiter."
+      },
+      "subscriptions": {
+        "title": "Was {parent} jeden Monat bezahlt",
+        "text": "Abonnements, die ihre Wünsche pausieren können. Ein echtes wird über PayPal pausiert, und Kin vermerkt es erst, wenn PayPal es bestätigt.",
+        "empty": "Noch keine Abonnements.",
+        "monthly": "{amount} im Monat",
+        "states": {
+          "active": "Läuft",
+          "suspending": "Wird pausiert",
+          "suspended": "Pausiert",
+          "resuming": "Wird fortgesetzt"
+        },
+        "add": {
+          "title": "Abonnement hinzufügen",
+          "name": "Name",
+          "monthly": "Pro Monat",
+          "paypal": "PayPal-Abonnement-ID",
+          "paypalHint": "Beginnt mit I-. Kin pausiert es über PayPal.",
+          "submit": "Hinzufügen",
+          "added": "Hinzugefügt."
+        }
+      },
+      "citation": "{parent} sagte am {day}: „{quote}“",
+      "approvalNeeds": "Laut ihrem Wunsch müssen {names} zustimmen, bevor das ausgeführt wird.",
+      "banner": {
+        "reported": "{name} hat gemeldet, dass {parent} {where} ist. Sobald jemand anderes es ebenfalls meldet, gelten ihre Wünsche.",
+        "active": "{parent} ist {where}, und ihre Wünsche gelten: Kin setzt sie so um, wie sie sie gesagt hat.",
+        "link": "Was sich geändert hat"
+      },
+      "reasons": {
+        "refused": "Das dürfen Sie von Ihrem Platz aus nicht tun.",
+        "invalid": "Kin konnte das nicht lesen.",
+        "frozen": "Solange sie nicht zu Hause ist, bleiben ihre Wünsche unverändert.",
+        "waiting": "Eine Änderung dieses Wunsches wartet bereits.",
+        "closed": "Dieser Wunsch hat sich geändert, seit Sie diese Seite geöffnet haben.",
+        "active": "Das gilt bereits.",
+        "other_event": "Es ist bereits etwas anderes gemeldet. Melden Sie zuerst, dass sie wieder zu Hause ist.",
+        "nothing_active": "Es gilt nichts, das beendet werden könnte.",
+        "busy": "Das ist genug für jetzt. Versuchen Sie es später noch einmal.",
+        "unavailable": "Kin konnte das jetzt nicht tun. Versuchen Sie es gleich noch einmal.",
+        "model_unavailable": "Kin kann Ihre Worte gerade nicht vorlesen. Bitte versuchen Sie es später noch einmal.",
+        "speech_unavailable": "Kin kann hier keine Sprache hören. Schreiben Sie Ihren Wunsch stattdessen.",
+        "recording": "Diese Aufnahme konnte nicht verwendet werden. Versuchen Sie es noch einmal.",
+        "unreadable": "Kin konnte diese Worte nicht lesen. Versuchen Sie, es einfacher zu sagen.",
+        "quote": "Die Worte sind zu lang oder fehlen.",
+        "trigger": "Kin konnte nicht erkennen, wann er gelten soll.",
+        "kind": "Das ist nichts, was Kin umsetzt.",
+        "payee": "Er nennt jemanden, der keine Pflegekraft ist.",
+        "subscriptions": "Er nennt ein Abonnement, das Kin nicht kennt.",
+        "amount": "Dieser Betrag konnte nicht gelesen werden.",
+        "approvers": "Er braucht mindestens zwei aus der Familie, die sich die Kosten teilen.",
+        "successor": "Er nennt jemanden, der den Kreis nicht führen kann."
+      },
+      "packet": {
+        "title": "Die Wünsche im Einzelnen",
+        "text": "Jeder gültige Wunsch, so wie sie ihn gesagt hat, mit der Regel, die Kin liest, den Zeugen und seinem Siegel. Der vollständige Verlauf steht in wishes.csv.",
+        "chain": "Jedes Siegel stimmt: Der Verlauf ihrer Wünsche wurde nicht umgeschrieben.",
+        "chainBroken": "Ein Siegel stimmt nicht. Wenden Sie sich an den Kin-Support, bevor Sie sich auf diesen Verlauf verlassen."
+      },
+      "card": {
+        "when": "Wann",
+        "does": "Was Kin tut"
+      }
     }
   },
   "aiProvenance": {

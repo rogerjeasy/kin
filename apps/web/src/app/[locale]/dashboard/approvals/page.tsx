@@ -26,6 +26,8 @@ import { refillViews } from "@/content/circle/refills";
 import { monthTotals, recordEntries } from "@/content/circle/record";
 import { voteLine } from "@/content/circle/vote-words";
 import { circleSlots } from "@/content/circle/words";
+import { wishesAsking, wishNameBook } from "@/content/circle/wishes";
+import { wishCitation } from "@/components/dashboard/words/wish-words";
 import { mandatesRoute, shiftPermissionsRoute } from "@/content/dashboard-routes";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
@@ -63,6 +65,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
     receiverOf: (payeeId) => circle.payees.find((payee) => payee.id === payeeId)?.receiver ?? null,
     demoPayee: demoPayeeOf(circle),
   };
+  const wishBook = wishNameBook(circle);
   const waiting = waitingProposals(circle).toSorted((a, b) => Number(b.viewerCanAnswer) - Number(a.viewerCanAnswer));
   const answered = circle.proposals.filter((proposal) => DECIDED.some((state) => state === proposal.state)).toReversed();
   const decided = recordEntries(circle).filter((view) => view.entry.source.type === "approval");
@@ -91,10 +94,21 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
         {waiting.length === 0 ? <EmptyState text={approvals.waitingEmpty} /> : null}
         {waiting.map((view) => {
           const status = proposalStatus(dictionary, names, format, view);
+          const card = proposalCardProps(dictionary, context, view);
+          // Her wishes, while a trigger is active, cite her on the payment they hold to more yeses.
+          const asking = wishesAsking(circle, view.proposal);
+          const wishNotes =
+            asking === null
+              ? []
+              : [
+                  fill(dictionary.dashboard.wishes.approvalNeeds, { names: format.allOf(asking.memberIds.map((id) => names.member(id))) }),
+                  ...asking.wishes.map((wish) => wishCitation(dictionary.dashboard.wishes, wishBook, format, wish)),
+                ];
           return (
             <ProposalCard
               key={view.proposal.id}
-              {...proposalCardProps(dictionary, context, view)}
+              {...card}
+              notes={[...card.notes, ...wishNotes]}
               action={
                 view.viewerCanAnswer ? (
                   <AnswerButtons

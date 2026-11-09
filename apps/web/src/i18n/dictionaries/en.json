@@ -1212,6 +1212,10 @@
       "careAgreements": {
         "title": "Care agreements · Kin",
         "description": "Written care agreements with signatures, and what each one covers."
+      },
+      "wishes": {
+        "title": "Wishes · Kin",
+        "description": "What the parent asked for, in her own words, if she goes into hospital or a care home, and what Kin does when she does."
       }
     },
     "shell": {
@@ -2336,7 +2340,8 @@
         "above_ceiling": "This refill is above the agreement's ceiling.",
         "paused": "Payments are paused. Try again when the pause ends.",
         "no_agreement": "The family has no agreement in force yet.",
-        "unavailable": "Kin could not do that now. Try again in a moment."
+        "unavailable": "Kin could not do that now. Try again in a moment.",
+        "wish_hold": "Her wishes pause refills and purchases while she is away. Nothing was ordered."
       },
       "mandatesLink": "Standing permissions",
       "underMandate": "Bought under the standing permission. Nobody had to be asked.",
@@ -3480,6 +3485,231 @@
         "overlap": "A signed agreement for this caregiver already covers the day this one would begin. Start this one after it, or end that one first."
       },
       "summary": "{count} on file."
+    },
+    "wishes": {
+      "title": "{parent}’s wishes",
+      "titleOwn": "My wishes",
+      "lede": "While {parent} could decide, she said what should happen to her money on a day she cannot. Kin keeps her words and carries them out as she said them: plain rules, never a guess.",
+      "ledeOwn": "Say what should happen to your money if you go into hospital or a care home. Kin reads it back, you confirm it, and two of your family witness it. You can change it whenever you like.",
+      "legal": "These wishes help the family carry out what she wanted. They do not replace a power of attorney, an advance directive or a will. Kin is not a law firm, and this is not legal advice.",
+      "simulated": "Simulated",
+      "packetLink": "Packet for your attorney",
+      "link": {
+        "title": "{parent}’s wishes",
+        "text": "What she asked for, in her own words, if she goes into hospital or a care home.",
+        "label": "Read her wishes"
+      },
+      "list": {
+        "title": "Her wishes",
+        "titleOwn": "Your wishes",
+        "empty": "{parent} has not said any wishes yet.",
+        "emptyOwn": "You have not said any wishes yet."
+      },
+      "said": "{parent} said on {day}",
+      "saidOwn": "You said on {day}",
+      "play": {
+        "recording": "Play {parent}’s recording",
+        "readByKin": "Hear {parent}’s words, read by Kin",
+        "playing": "Playing",
+        "stop": "Stop",
+        "voiceOwn": "Her own voice",
+        "voiceKin": "Read aloud by Kin’s voice, not her own",
+        "unavailable": "Kin cannot play this now. Her words are written above."
+      },
+      "states": {
+        "draft": "Read back, not yet confirmed",
+        "confirmed": "Waiting for witnesses",
+        "in_force": "In force",
+        "superseded": "Replaced",
+        "withdrawn": "Withdrawn"
+      },
+      "when": {
+        "she": {
+          "hospital": "If {parent} is in hospital",
+          "care_home": "If {parent} moves into a care home",
+          "either": "If {parent} is in hospital or a care home"
+        },
+        "you": {
+          "hospital": "If you are in hospital",
+          "care_home": "If you move into a care home",
+          "either": "If you are in hospital or a care home"
+        }
+      },
+      "does": {
+        "she": {
+          "keep_paying": "Kin keeps paying {payee}, whatever else her wishes say.",
+          "pause_discretionary": "Kin holds refills, purchases and anything else that is not care until she is home.",
+          "suspend_subscriptions": "Kin pauses {subscriptions}, and starts them again when she is home.",
+          "new_payee_approvals": "A payment over {amount} to anyone new waits until {approvers} agree.",
+          "successor": "{member} runs the circle for the family until she is home."
+        },
+        "you": {
+          "keep_paying": "Kin keeps paying {payee}, whatever else your wishes say.",
+          "pause_discretionary": "Kin holds refills, purchases and anything else that is not care until you are home.",
+          "suspend_subscriptions": "Kin pauses {subscriptions}, and starts them again when you are home.",
+          "new_payee_approvals": "A payment over {amount} to anyone new waits until {approvers} agree.",
+          "successor": "{member} runs the circle for the family until you are home."
+        }
+      },
+      "signed": "Confirmed by {parent}, witnessed by {names}",
+      "waitingWitnesses": "Confirmed by {parent}. {count} of 2 witnesses so far.",
+      "notConfirmed": "Not confirmed yet",
+      "seal": "Seal {digest}",
+      "version": "Version {version}",
+      "history": "Earlier versions",
+      "actions": {
+        "witness": "I witness this wish",
+        "witnessHint": "You heard {parent} say it, and it is what she wants.",
+        "witnessed": "You witnessed this wish.",
+        "withdraw": "Withdraw",
+        "withdrawConfirm": "Withdraw this wish? It stays on the record, and no longer applies.",
+        "withdrawYes": "Yes, withdraw it",
+        "keepIt": "Keep it",
+        "change": "Say it differently",
+        "done": "Done."
+      },
+      "frozen": "While someone has said {parent} is in hospital or a care home, her wishes stay exactly as they are. Nobody can add, change or withdraw one until she is home.",
+      "record": {
+        "title": "Say a wish",
+        "text": "Speak as you would to your family. Kin writes your words down, then reads them back as a rule for you to confirm.",
+        "speak": "Speak a wish",
+        "stop": "I have finished",
+        "listening": "Kin is listening. Say your wish, then press “I have finished”.",
+        "transcribing": "Kin is writing down your words…",
+        "or": "Or type it",
+        "label": "Your wish, in your own words",
+        "placeholder": "Always keep paying Amara, even if I’m in hospital.",
+        "readBack": "Read it back to me",
+        "reading": "Kin is reading your words…",
+        "readBackTitle": "This is what Kin heard",
+        "keep": "Yes, that is what I want",
+        "notThis": "No, leave it out",
+        "kept": "Kept. Two of your family will be asked to witness it.",
+        "recordingKept": "Your recording is kept with it, in your own voice.",
+        "flagged": "Kin cannot carry this one out as a rule, so it is not kept. Tell your family, or put it in your advance directive.",
+        "changing": "You are changing: “{quote}”",
+        "cancelChange": "Do not change it",
+        "micDenied": "Kin could not use the microphone. You can type your wish instead.",
+        "noSpeech": "Kin cannot write down speech here. Your recording is kept; type your wish below.",
+        "modelOff": "Kin cannot read your words back right now. Please try again later.",
+        "flagReasons": {
+          "not_a_rule": "It is not something Kin carries out.",
+          "not_her_words": "Kin could not find these words in what you said.",
+          "unknown_slot": "It names someone or something Kin does not know.",
+          "quote": "The words are too long, or empty.",
+          "trigger": "Kin could not tell when it should apply.",
+          "kind": "It is not something Kin carries out.",
+          "payee": "It names someone who is not your caregiver.",
+          "subscriptions": "It names a subscription Kin does not know.",
+          "amount": "Kin could not find the amount in your words.",
+          "approvers": "It needs at least two of your family who share the cost.",
+          "successor": "It names someone who cannot run the circle."
+        }
+      },
+      "trigger": {
+        "title": "If something happens to {parent}",
+        "text": "Her wishes apply only when people say so: two of the family, or one of the family and her caregiver for a hospital stay. Kin never decides this from her voice or her silence.",
+        "report": {
+          "hospital": "{parent} is in hospital",
+          "care_home": "{parent} moved into a care home"
+        },
+        "home": "{parent} is home",
+        "where": {
+          "hospital": "in hospital",
+          "care_home": "in a care home"
+        },
+        "reported": "{name} said {parent} is {where}. Her wishes apply once someone else says so too.",
+        "reportedFamily": "{name} said {parent} is {where}. Her wishes apply once someone from the family says so too.",
+        "active": "{parent} is {where}. Her wishes have been in effect since {when}.",
+        "endWaiting": "{name} said {parent} is home. Once someone else says so too, everything her wishes paused starts again.",
+        "youSaid": "You said so.",
+        "attestedBy": "Said by {names}",
+        "dismiss": "That was a mistake",
+        "ended": "{parent} came home on {day}. Everything her wishes paused started again.",
+        "observer": "You can see what changes here, and the family says when it happens.",
+        "parentNote": "Your family says when this happens. You cannot set it off yourself, and Kin never guesses.",
+        "caregiverHospital": "As {parent}’s caregiver you can say she went into hospital; a family member must say so too."
+      },
+      "changed": {
+        "title": "What changed, and why",
+        "text": "Each change is plain code reading her wish as she said it. Tap to hear her words.",
+        "kept": "{payee} stays paid.",
+        "nextShift": "Next shift: {title}, {day}.",
+        "paid": "Paid {amount} to {payee} on {day}.",
+        "onItsWay": "{amount} to {payee} is on its way.",
+        "discretionary": "Refills, purchases and other spending that is not care are paused.",
+        "subscription": {
+          "active": "{name} ({amount} a month) is running.",
+          "suspending": "{name} is being paused through PayPal.",
+          "suspended": "{name} ({amount} a month) is paused.",
+          "resuming": "{name} is being started again through PayPal."
+        },
+        "newPayees": "A payment over {amount} to anyone new now needs {approvers}.",
+        "successor": "{member} runs the circle until {parent} is home.",
+        "none": "None of her wishes apply to this. Everything goes on as usual."
+      },
+      "subscriptions": {
+        "title": "What {parent} pays each month",
+        "text": "Subscriptions her wishes can pause. A real one is paused through PayPal and Kin records it only once PayPal says so.",
+        "empty": "No subscriptions yet.",
+        "monthly": "{amount} a month",
+        "states": {
+          "active": "Running",
+          "suspending": "Pausing",
+          "suspended": "Paused",
+          "resuming": "Starting again"
+        },
+        "add": {
+          "title": "Add a subscription",
+          "name": "Name",
+          "monthly": "Each month",
+          "paypal": "PayPal subscription ID",
+          "paypalHint": "Starts with I-. Kin pauses it through PayPal.",
+          "submit": "Add",
+          "added": "Added."
+        }
+      },
+      "citation": "{parent} said on {day}: “{quote}”",
+      "approvalNeeds": "Her wish asks {names} to agree before this goes.",
+      "banner": {
+        "reported": "{name} said {parent} is {where}. Her wishes apply once someone else says so too.",
+        "active": "{parent} is {where}, and her wishes are in effect: Kin is carrying them out as she said them.",
+        "link": "What changed"
+      },
+      "reasons": {
+        "refused": "You may not do that from your seat.",
+        "invalid": "Kin could not read that.",
+        "frozen": "Her wishes stay as they are while she is away.",
+        "waiting": "A change of this wish is already waiting.",
+        "closed": "That wish has moved on since you opened this screen.",
+        "active": "That is already in effect.",
+        "other_event": "Something else is already reported. Say she is home first.",
+        "nothing_active": "Nothing is in effect to end.",
+        "busy": "That is enough for now. Try again later.",
+        "unavailable": "Kin could not do that now. Try again in a moment.",
+        "model_unavailable": "Kin cannot read your words back right now. Please try again later.",
+        "speech_unavailable": "Kin cannot hear speech here. Type your wish instead.",
+        "recording": "That recording could not be used. Try again.",
+        "unreadable": "Kin could not read those words. Try saying it more simply.",
+        "quote": "The words are too long, or empty.",
+        "trigger": "Kin could not tell when it should apply.",
+        "kind": "It is not something Kin carries out.",
+        "payee": "It names someone who is not a caregiver.",
+        "subscriptions": "It names a subscription Kin does not know.",
+        "amount": "That amount could not be read.",
+        "approvers": "It needs at least two of the family who share the cost.",
+        "successor": "It names someone who cannot run the circle."
+      },
+      "packet": {
+        "title": "Her wishes",
+        "text": "Each wish in force, as she said it, with the rule Kin reads, who witnessed it and its seal. The full history is in wishes.csv.",
+        "chain": "Every seal checks: the history of her wishes was not rewritten.",
+        "chainBroken": "A seal does not check. Ask Kin's support before relying on this history."
+      },
+      "card": {
+        "when": "When",
+        "does": "What Kin does"
+      }
     }
   },
   "aiProvenance": {
