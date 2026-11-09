@@ -202,6 +202,7 @@ This is the part of Kin that belongs to the parent.
 - **Every change is announced.** A new biller, a changed share or a new member is reported to everyone in the circle.
 - **A pause button.** Any member can freeze outgoing payments for 24 hours if something looks wrong.
 - **Protection against pressure.** Unusual patterns, such as a sudden new payee or repeated requests to the parent, are flagged to the whole circle, not to one person.
+- **Her wishes, in her own words.** While she can decide, the parent says what should happen to her money if she goes into hospital or a care home: "Always keep paying Amara, even if I'm in hospital." Kin reads each wish back as a plain rule, she confirms it, and two of the family witness it. When two people say she is in hospital (or one of the family and her caregiver), Kin carries her wishes out as she said them: her caregiver stays paid, the extras wait, her subscriptions pause, and a new payee needs the people she named. Every decision made on her behalf cites her, with her words one tap away. She can change them whenever she can decide; while she is away they cannot be changed. They complement a power of attorney and an advance directive, and do not replace them.
 
 ### 6.10 Accessibility and language
 
