@@ -1,4 +1,4 @@
-import { authorize } from "@kin/auth";
+import { authorize, authorizeDelegated, type DelegationScope } from "@kin/auth";
 import type { CircleRole } from "@kin/domain";
 
 import { ASK_KIN_TOOLS, ASK_KIN_TOOL_NAMES, isAskKinTool, type AskKinToolName } from "./ask-kin-tools.ts";
@@ -14,7 +14,16 @@ import { parseArgs, type ArgsOf, type ToolArgs } from "./tool-schema.ts";
  */
 
 /** Who is asking, resolved by the caller from the verified session, never from the model. */
-export type ToolContext = { readonly circleId: string; readonly memberId: string; readonly role: CircleRole };
+export type ToolContext = {
+  readonly circleId: string;
+  readonly memberId: string;
+  readonly role: CircleRole;
+  /**
+   * Set when the member's own assistant asks through Kin's MCP server, under a
+   * delegation the member granted. Its scope can only narrow the role.
+   */
+  readonly delegation?: { readonly id: string; readonly scope: DelegationScope };
+};
 
 export type JsonValue = string | number | boolean | null | readonly JsonValue[] | { readonly [key: string]: JsonValue };
 
@@ -66,14 +75,19 @@ export type ToolGateway = {
   readonly call: (use: ToolUse) => Promise<GatewayCall>;
 };
 
-/** Whether `role` may use the tool, decided by the one authorization function. */
-export function mayUseTool(role: CircleRole, name: AskKinToolName): boolean {
-  return authorize({ role, status: "active" }, ASK_KIN_TOOLS[name].action).allowed;
+/**
+ * Whether `role` may use the tool, decided by the one authorization function;
+ * under a delegation, also by its scope, which can only refuse.
+ */
+export function mayUseTool(role: CircleRole, name: AskKinToolName, scope?: DelegationScope): boolean {
+  const seat = { role, status: "active" } as const;
+  const { action } = ASK_KIN_TOOLS[name];
+  return scope === undefined ? authorize(seat, action).allowed : authorizeDelegated(seat, scope, action).allowed;
 }
 
-/** The tools offered to a role, in the catalogue's order. */
-export function toolsForRole(role: CircleRole): ToolSpec[] {
-  return ASK_KIN_TOOL_NAMES.filter((name) => mayUseTool(role, name)).map((name) => ({ name, description: ASK_KIN_TOOLS[name].description, inputSchema: ASK_KIN_TOOLS[name].inputSchema }));
+/** The tools offered to a role, and under a delegation to its scope, in the catalogue's order. */
+export function toolsForRole(role: CircleRole, scope?: DelegationScope): ToolSpec[] {
+  return ASK_KIN_TOOL_NAMES.filter((name) => mayUseTool(role, name, scope)).map((name) => ({ name, description: ASK_KIN_TOOLS[name].description, inputSchema: ASK_KIN_TOOLS[name].inputSchema }));
 }
 
 const REASONS: Record<Exclude<ToolOutcome, "ok">, string> = {
@@ -146,7 +160,7 @@ export function toolGateway(options: {
 
   async function decide(use: ToolUse): Promise<RunOutcome> {
     if (!isAskKinTool(use.name)) return refuse("unknown_tool");
-    if (!mayUseTool(context.role, use.name)) return refuse("refused");
+    if (!mayUseTool(context.role, use.name, context.delegation?.scope)) return refuse("refused");
     if (calls >= limits.maxCalls) return refuse("limit");
     const definition = ASK_KIN_TOOLS[use.name];
     if (definition.kind === "propose" && proposals >= limits.maxProposals) return refuse("limit");
@@ -158,7 +172,7 @@ export function toolGateway(options: {
   }
 
   return {
-    tools: toolsForRole(context.role),
+    tools: toolsForRole(context.role, context.delegation?.scope),
     async call(use) {
       const started = clock();
       const result = await decide(use);

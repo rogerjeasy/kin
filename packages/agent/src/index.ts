@@ -39,3 +39,5 @@ export { SEALED_OFFER_PROMPT_VERSION } from "./sealed-offer-prompt.ts";
 export type { OfferContext } from "./sealed-offer-prompt.ts";
 export { MAX_OFFER_MESSAGES, MAX_OFFER_MESSAGE_CHARS, MAX_OFFER_REPLY_CHARS, readOffer } from "./read-offer.ts";
 export type { DraftOffer, ReadOfferResult } from "./read-offer.ts";
+// Kin's MCP server: the same tools and gateway, for a member's own assistant under a delegation.
+export * from "./mcp/index.ts";

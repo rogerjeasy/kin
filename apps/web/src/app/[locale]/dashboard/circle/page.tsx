@@ -20,7 +20,8 @@ import { demoPayeeNote } from "@/content/circle/payout-proof";
 import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
-import { agreementRoute, careAgreementsRoute } from "@/content/dashboard-routes";
+import { agreementRoute, careAgreementsRoute, connectionsRoute } from "@/content/dashboard-routes";
+import { ConnectionsCard } from "@/components/dashboard/connections/connections-card";
 import { localizedPath } from "@/i18n/routing";
 import { dashboardContext, may } from "@/server/dashboard-context";
 import { demoPayeeOf } from "@/server/sandbox-payout";
@@ -96,6 +97,7 @@ export default async function CirclePage({ params, searchParams }: PageProps<"/[
           <p className="text-sm text-muted-foreground">{fill(dictionary.dashboard.careAgreements.summary, { count: format.count(circle.careAgreements.filter((each) => each.status !== "withdrawn").length) })}</p>
         </Panel>
       ) : null}
+      <ConnectionsCard copy={dictionary.openKin.card} boundary={dictionary.openKin.boundary} href={localizedPath(locale, connectionsRoute)} />
       <MonthlySharePanel locale={locale} dictionary={dictionary} circle={circle} checkOnLoad={backFromPayPal} />
       {circle.invitations.length > 0 ? (
         <Panel title={copy.invitations.title} flush>

@@ -68,5 +68,7 @@ export function askKinTools(world: AskKinWorld): ToolImplementations {
  * question, answer or tool result is logged.
  */
 export function logToolCall(record: ToolCallRecord, context: ToolContext): void {
-  console.info(JSON.stringify({ message: "ask_kin.tool", circleId: context.circleId, memberId: context.memberId, role: context.role, ...record, at: record.at.toISOString() }));
+  // A call from a member's own assistant, through Kin's MCP server, carries the delegation it was made under.
+  const delegation = context.delegation === undefined ? {} : { delegationId: context.delegation.id, scope: context.delegation.scope, channel: "mcp" };
+  console.info(JSON.stringify({ message: "ask_kin.tool", circleId: context.circleId, memberId: context.memberId, role: context.role, ...delegation, ...record, at: record.at.toISOString() }));
 }

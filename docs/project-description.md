@@ -204,6 +204,13 @@ This is the part of Kin that belongs to the parent.
 - **A pause button.** Any member can freeze outgoing payments for 24 hours if something looks wrong.
 - **Protection against pressure.** Unusual patterns, such as a sudden new payee or repeated requests to the parent, are flagged to the whole circle, not to one person.
 
+### 6.9a Connected assistants and agencies
+
+- **Your own assistant, never a new app.** A family member connects the AI assistant they already use (Claude, ChatGPT or any other that speaks MCP) on the Connected assistants screen. It reads the circle's verified record as that member sees it, and may propose a refill if the member allows. It can never approve, pay or sign: those wait for a person in Kin.
+- **Scoped, expiring, revocable.** The member chooses read-only or read-and-propose and how long it lasts. Every call it makes is listed, a refused one included, and revoking it refuses the very next call.
+- **Agencies integrate once.** A home-care agency's software reports its aides' visits with a signed key the organizer creates. A report is shown beside the shift on the family's calendar as the agency's word; it pays nothing, and the family still confirms the visit.
+- **In the demo** Marcus's assistant has already read what he owes and tried to approve, and was refused; the live console plays the same session for real, from the browser.
+
 ### 6.10 Accessibility and language
 
 - **Built for low vision and blindness first.** Everything the parent needs works by voice alone. The screen version uses very large type, high contrast and full screen-reader support.

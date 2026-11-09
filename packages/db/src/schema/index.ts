@@ -18,3 +18,4 @@ export * from "./audit-heads.ts";
 export * from "./presence.ts";
 export * from "./quiet-shares.ts";
 export * from "./system.ts";
+export * from "./open-kin.ts";

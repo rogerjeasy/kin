@@ -391,3 +391,8 @@ export {
   spreadWouldCover,
 } from "./quiet-share.ts";
 export type { MediationInput, MediationResult, Month, QuietPart, QuietPartMethod, QuietShareKind, QuietShareState, SealedOffer } from "./quiet-share.ts";
+// Visits a home-care agency reports through Kin's API: evidence beside a shift, never a payment.
+export { VISIT_REPORT_SCHEMA, matchVisitReport, parseVisitReport } from "./visit-report.ts";
+export type { ReportableShift, VisitReport, VisitReportRefusal } from "./visit-report.ts";
+export { DELEGATION_SCOPES } from "./delegation-scope.ts";
+export type { DelegationScope } from "./delegation-scope.ts";

@@ -7,6 +7,8 @@ export const routes = {
   pricing: "/pricing",
   start: "/start",
   signIn: "/sign-in",
+  /** How an assistant or an agency's software connects to a circle: the MCP server, the API and its OpenAPI document. */
+  developers: "/developers",
 } as const;
 
 export type RouteKey = keyof typeof routes;

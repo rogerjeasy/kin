@@ -12,7 +12,7 @@ describe("what a member may do in a circle", () => {
   });
 
   it("lets a caregiver see only their own payments, and pull the pause switch", () => {
-    expect(allowedActions(active("caregiver"))).toEqual(["circle.view", "own_payments.view", "shift.view", "shift.check", "shift.link", "shift.cancel", "circle.pause", "care_agreement.view", "care_agreement.sign", "caregiver_bill.submit", "caregiver_receiver.set", "payout_target.set"]);
+    expect(allowedActions(active("caregiver"))).toEqual(["circle.view", "own_payments.view", "shift.view", "shift.check", "shift.link", "shift.cancel", "circle.pause", "care_agreement.view", "care_agreement.sign", "caregiver_bill.submit", "caregiver_receiver.set", "payout_target.set", "delegation.grant"]);
     expect(authorize(active("caregiver"), "money.view")).toEqual({ allowed: false, reason: "role" });
     expect(authorize(active("caregiver"), "proposal.answer")).toEqual({ allowed: false, reason: "role" });
   });

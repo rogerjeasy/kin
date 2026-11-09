@@ -16,3 +16,33 @@ export { AccessDenied, CIRCLE_ACTIONS, allowedActions, authorize, requireAccess 
 export type { AccessDecision, CircleAction, Seat } from "./circle-access.ts";
 export { DEMO_SESSION_DAYS, issueDemoSession, readDemoSession } from "./demo-session.ts";
 export type { DemoSession } from "./demo-session.ts";
+export {
+  CONSOLE_DELEGATION_MINUTES,
+  DELEGATION_LIFETIME_DAYS,
+  DELEGATION_OAUTH_SCOPES,
+  DELEGATION_SCOPES,
+  DELEGATION_SCOPE_ACTIONS,
+  MAX_DELEGATION_DAYS,
+  MAX_DELEGATION_LABEL,
+  MAX_LIVE_DELEGATIONS,
+  MIN_DELEGATION_MINUTES,
+  authorizeDelegated,
+  bearerToken,
+  delegationTokenHint,
+  hashDelegationToken,
+  isDelegationScope,
+  newDelegationToken,
+} from "./delegation.ts";
+export type { DelegatedDecision, DelegationScope } from "./delegation.ts";
+export {
+  AGENCY_KEY_HEADER,
+  AGENCY_SIGNATURE_HEADER,
+  AGENCY_SIGNATURE_WINDOW_SECONDS,
+  agencySecret,
+  hashAgencySecret,
+  isAgencyKeyId,
+  newAgencyKeyId,
+  signAgencyRequest,
+  verifyAgencySignature,
+} from "./agency-signature.ts";
+export type { AgencySignatureVerdict } from "./agency-signature.ts";

@@ -11,6 +11,7 @@
 .git
 .github
 .playwright-mcp
+.claude
 apps/web/e2e/.auth
 infra/cdk.out
 **/*.log

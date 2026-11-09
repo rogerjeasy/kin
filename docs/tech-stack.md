@@ -221,7 +221,7 @@ A phone call is not a browser session, so Cognito does not sign the parent in th
 
 ### 9.4 Service access
 
-- **Kin's own MCP server** (**Planned, not built**), which would make Kin usable by other AI agents, would be protected with Cognito-issued OAuth tokens.
+- **Kin's own MCP server** (built, decision 93) makes Kin usable by a member's own AI assistant. It is protected by delegation tokens the member grants and revokes in Kin; Cognito-issued OAuth tokens with PKCE are **Planned, not built**.
 - **Service-to-service calls** inside AWS use IAM roles, not shared keys.
 
 ---

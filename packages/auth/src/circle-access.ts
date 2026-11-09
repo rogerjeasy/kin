@@ -110,6 +110,13 @@ export const CIRCLE_ACTIONS = {
   "quiet_share.raise": ["organizer"],
   /** Talk privately to one's own Kin agent, seal one's own offer, take the gap on with Pay Later and say yes to one's own part: the members who share the cost. */
   "quiet_share.offer": ["organizer", "contributor"],
+  /**
+   * Connect one's own AI assistant to the circle under a delegation, or revoke it. Every member who may write anything may: a delegation's
+   * scope only ever narrows the member's own role (authorizeDelegated), and the organizer may also revoke anyone's. An observer reads and never writes, so grants none.
+   */
+  "delegation.grant": ["organizer", "contributor", "parent", "caregiver"],
+  /** Create or revoke the key a home-care agency's software reports visits with. A report is evidence and pays nothing. */
+  "agency_key.manage": ["organizer"],
 } as const satisfies Record<string, readonly CircleRole[]>;
 
 export type CircleAction = keyof typeof CIRCLE_ACTIONS;

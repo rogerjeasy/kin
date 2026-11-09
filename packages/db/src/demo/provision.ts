@@ -18,6 +18,7 @@ import { writeEntries } from "../ledger-store.ts";
 import { mandateDigest } from "../mandates.ts";
 import { demoTime, type DemoTime } from "./demo-time.ts";
 import { rekeyEntry, rowOf } from "./rekey.ts";
+import { writeOpenKin } from "./write-open-kin.ts";
 import { writeShifts } from "./write-shifts.ts";
 import { asProvisioner } from "../scope.ts";
 import {
@@ -121,6 +122,7 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     await writeShifts(tx, ids);
     await writeNews(tx, ids, ledger);
     await writeTrustedVoices(tx, ids);
+    await writeOpenKin(tx, ids);
     await tx.insert(auditLog).values({
       id: randomUUID(),
       circleId: ids.circleId,
