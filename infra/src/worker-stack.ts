@@ -26,6 +26,11 @@ type WorkerStackProps = StackProps & {
    * the phone service, a number and its address all exist (`callLoopOn` in config.ts).
    */
   readonly shiftCall: { readonly callerNumber: string; readonly publicUrl: string } | null;
+  /**
+   * The texts to a family member for "is it really you?": the sender and the web app's public address. `null` leaves
+   * them queued. Given only when the PayPal app, a sender and the web app's https address all exist (`presenceTextSettings`).
+   */
+  readonly presenceTexts: { readonly from: string; readonly webUrl: string } | null;
 };
 
 /**
@@ -97,18 +102,20 @@ export class WorkerStack extends Stack {
         AWS_REGION: this.region,
         ...(props.demoSandboxPayeeEmail === null ? {} : { KIN_DEMO_SANDBOX_PAYEE_EMAIL: props.demoSandboxPayeeEmail }),
         ...(props.shiftCall === null ? {} : { KIN_TWILIO_CALLER_NUMBER: props.shiftCall.callerNumber, KIN_VOICE_PUBLIC_URL: props.shiftCall.publicUrl }),
+        ...(props.presenceTexts === null ? {} : { KIN_TWILIO_SMS_FROM: props.presenceTexts.from, KIN_WEB_PUBLIC_URL: props.presenceTexts.webUrl }),
       },
       secrets: {
         KIN_DATABASE_SERVICE_PASSWORD: ecs.Secret.fromSecretsManager(secret("ServicePassword", DATABASE_SETTINGS.serviceSecretArn)),
         KIN_PAYPAL_CLIENT_SECRET: ecs.Secret.fromSecretsManager(secret("PayPalSecret", PAYPAL_SETTINGS.secretArn)),
         // The call loop dials with the account's SID and token, and seals each call's token with the key the phone service opens it with.
-        ...(props.shiftCall === null
+        // The texts to a family member need the account too, and nothing of the phone service's key.
+        ...(props.shiftCall === null && props.presenceTexts === null
           ? {}
           : {
               KIN_TWILIO_ACCOUNT_SID: ecs.Secret.fromSecretsManager(secret("TwilioAccountSid", TWILIO_SETTINGS.accountSidSecretArn)),
               KIN_TWILIO_AUTH_TOKEN: ecs.Secret.fromSecretsManager(secret("TwilioAuthToken", TWILIO_SETTINGS.authTokenSecretArn)),
-              KIN_VOICE_STATE_KEY: ecs.Secret.fromSecretsManager(secret("VoiceStateKey", TWILIO_SETTINGS.stateKeySecretArn)),
             }),
+        ...(props.shiftCall === null ? {} : { KIN_VOICE_STATE_KEY: ecs.Secret.fromSecretsManager(secret("VoiceStateKey", TWILIO_SETTINGS.stateKeySecretArn)) }),
       },
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: "worker",

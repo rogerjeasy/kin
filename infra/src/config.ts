@@ -89,6 +89,13 @@ export type InfraConfig = {
    * the button is not shown.
    */
   readonly twilioSmsFrom: string | null;
+  /**
+   * The numbers a parent rings to ask "is it really you?", as the JSON the phone service reads
+   * (`KIN_PRESENCE_LINE_NUMBERS`, an object of E.164 number to circle): `kin:presenceLineNumbers` or, in the pipeline,
+   * KIN_PRESENCE_LINE_NUMBERS. A number of its own, never the office line's. Unset, the presence line is off.
+   * Needs `kin:voice`.
+   */
+  readonly presenceLineNumbers: string | null;
 };
 
 /**
@@ -102,6 +109,18 @@ export function shiftCallSettings(config: InfraConfig): { readonly callerNumber:
   const { paypal, voice, twilioCallerNumber, voicePublicUrl } = config;
   if (paypal === null || !voice || twilioCallerNumber === null || voicePublicUrl === null) return null;
   return { callerNumber: twilioCallerNumber, publicUrl: voicePublicUrl };
+}
+
+/**
+ * The texts Kin sends a family member for "is it really you?" come from the worker, which needs Twilio's account, a sender
+ * and the web app's public address, where the link in the text leads. Given only when all three exist, so a half-set
+ * deployment queues the messages rather than sending a link that leads nowhere (`readPresenceTextConfig` in
+ * `@kin/config` refuses the same).
+ */
+export function presenceTextSettings(config: InfraConfig): { readonly from: string; readonly webUrl: string } | null {
+  const webUrl = config.webOrigins.find((origin) => /^https:\/\/[^\s/?#@]+$/.test(origin));
+  if (config.paypal === null || config.twilioSmsFrom === null || webUrl === undefined) return null;
+  return { from: config.twilioSmsFrom, webUrl };
 }
 
 export class InfraConfigError extends Error {
@@ -143,7 +162,7 @@ export function readConfig({ context, env }: Source): InfraConfig {
   };
 }
 
-function twilio({ context, env }: Source): Pick<InfraConfig, "voice" | "voicePublicUrl" | "twilioCallerNumber" | "twilioSmsFrom"> {
+function twilio({ context, env }: Source): Pick<InfraConfig, "voice" | "voicePublicUrl" | "twilioCallerNumber" | "twilioSmsFrom" | "presenceLineNumbers"> {
   const voice = flag(context("kin:voice"), "kin:voice");
   const voicePublicUrl = optionalVoiceUrl(context("kin:voicePublicUrl"));
   const twilioCallerNumber = optionalPhoneNumber(context("kin:twilioCallerNumber") ?? env["KIN_TWILIO_CALLER_NUMBER"], CALLER_NUMBER_HINT);
@@ -154,7 +173,9 @@ function twilio({ context, env }: Source): Pick<InfraConfig, "voice" | "voicePub
   if (twilioCallerNumber !== null && (paypal === undefined || paypal === null)) {
     throw new InfraConfigError("The Twilio caller number needs kin:paypal: only the worker places the call, and it exists only with the PayPal app");
   }
-  return { voice, voicePublicUrl, twilioCallerNumber, twilioSmsFrom };
+  const presenceLineNumbers = optionalPresenceNumbers(context("kin:presenceLineNumbers") ?? env["KIN_PRESENCE_LINE_NUMBERS"]);
+  if (presenceLineNumbers !== null && !voice) throw new InfraConfigError("The presence line's numbers need kin:voice: the line is answered by the voice service");
+  return { voice, voicePublicUrl, twilioCallerNumber, twilioSmsFrom, presenceLineNumbers };
 }
 
 const CALLER_NUMBER_HINT = "The Twilio caller number (kin:twilioCallerNumber or KIN_TWILIO_CALLER_NUMBER) must be a phone number in E.164 form such as +15551234567, or unset.";
@@ -165,6 +186,27 @@ function optionalPhoneNumber(value: unknown, hint: string): string | null {
   if (value === undefined || value === null || value === "") return null;
   if (typeof value !== "string" || !E164.test(value)) throw new InfraConfigError(hint);
   return value;
+}
+
+/**
+ * The presence line's numbers as the phone service reads them: a JSON object from E.164 number to a circle's UUID, or to
+ * `{circleId, locale}`. Checked here only for shape, so a typo stops the deploy rather than the service at start-up; the
+ * service checks it again. Given as an object in cdk.json or as JSON text in the environment, and passed on as JSON text.
+ */
+function optionalPresenceNumbers(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  let parsed: unknown = value;
+  if (typeof value === "string") {
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      throw new InfraConfigError("kin:presenceLineNumbers (or KIN_PRESENCE_LINE_NUMBERS) is not JSON");
+    }
+  }
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed) || Object.keys(parsed).length === 0 || !Object.keys(parsed).every((number) => E164.test(number))) {
+    throw new InfraConfigError("kin:presenceLineNumbers must map phone numbers in E.164 form to circles");
+  }
+  return JSON.stringify(parsed);
 }
 
 function optionalSmsFrom(value: unknown): string | null {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { InfraConfigError, readConfig, shiftCallSettings } from "./config.ts";
+import { InfraConfigError, presenceTextSettings, readConfig, shiftCallSettings } from "./config.ts";
 
 const context: Record<string, unknown> = {
   "kin:region": "us-east-1",
@@ -154,5 +154,31 @@ describe("readConfig", () => {
 
   it("refuses an empty list of neighbours", () => {
     expect(() => read({ "kin:neighbourPrincipalPatterns": [] })).toThrow(InfraConfigError);
+  });
+});
+
+describe("the presence line and the family-member texts", () => {
+  const numbers = { "+15555550200": "0b6f7a53-0c5b-4a3f-8d2e-6a1b2c3d4e5f" };
+
+  it("takes the line's numbers from cdk.json or the environment, as E.164 to a circle, only with the voice service", () => {
+    expect(read().presenceLineNumbers).toBeNull();
+    expect(read({}, { ...env, KIN_PRESENCE_LINE_NUMBERS: "" }).presenceLineNumbers).toBeNull();
+    expect(read({ "kin:voice": true, "kin:presenceLineNumbers": numbers }).presenceLineNumbers).toBe(JSON.stringify(numbers));
+    expect(read({ "kin:voice": true }, { ...env, KIN_PRESENCE_LINE_NUMBERS: JSON.stringify(numbers) }).presenceLineNumbers).toBe(JSON.stringify(numbers));
+    for (const bad of ["not json", "[]", "{}", JSON.stringify({ "5555550200": "x" })]) {
+      expect(() => read({ "kin:voice": true }, { ...env, KIN_PRESENCE_LINE_NUMBERS: bad })).toThrow(InfraConfigError);
+    }
+    expect(() => read({ "kin:presenceLineNumbers": numbers })).toThrow(InfraConfigError);
+  });
+
+  it("gives the worker the texts' settings only with the PayPal app, a sender and the web app's https address", () => {
+    const paypal = { clientId: "client", webhookId: "WH-1" };
+    const origin = "https://abc123.us-east-1.awsapprunner.com";
+    const settings = (overrides: Record<string, unknown>, environment: Record<string, string | undefined> = env) => presenceTextSettings(read(overrides, environment));
+    const sms = { ...env, KIN_TWILIO_SMS_FROM: "+15551234567" };
+    expect(settings({ "kin:paypal": paypal, "kin:webOrigins": ["http://localhost:3000", origin] }, sms)).toEqual({ from: "+15551234567", webUrl: origin });
+    expect(settings({ "kin:webOrigins": ["http://localhost:3000", origin] }, sms)).toBeNull();
+    expect(settings({ "kin:paypal": paypal, "kin:webOrigins": ["http://localhost:3000", origin] })).toBeNull();
+    expect(settings({ "kin:paypal": paypal }, sms)).toBeNull();
   });
 });

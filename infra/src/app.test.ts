@@ -30,6 +30,7 @@ const config: InfraConfig = {
   voicePublicUrl: null,
   twilioCallerNumber: null,
   twilioSmsFrom: null,
+  presenceLineNumbers: null,
 };
 
 // The same feature flags as a real synth, so the tests see what is deployed.
@@ -1014,5 +1015,25 @@ describe("Kin's phone service", () => {
     expect(readable).toMatch(/kintwilioauthtokenarn/i);
     // Not the state key: only the voice service and the worker open a call's token.
     expect(JSON.stringify(texting.toJSON())).not.toMatch(/KIN_VOICE_STATE_KEY|kinvoicestatekeyarn/i);
+  });
+
+  it("sends the family-member texts from the worker only with a sender and the web app's https address, with the Twilio account and never the phone service's key", () => {
+    const origin = "https://abc123.us-east-1.awsapprunner.com";
+    const on = workerContainer(workerOf(build({ twilioSmsFrom: "+15555550101", webOrigins: ["http://localhost:3000", origin] })));
+    expect(on.Environment).toContainEqual({ Name: "KIN_TWILIO_SMS_FROM", Value: "+15555550101" });
+    expect(on.Environment).toContainEqual({ Name: "KIN_WEB_PUBLIC_URL", Value: origin });
+    expect(on.Secrets.map((secret) => secret.Name)).toEqual(expect.arrayContaining(["KIN_TWILIO_ACCOUNT_SID", "KIN_TWILIO_AUTH_TOKEN"]));
+    expect(on.Secrets.map((secret) => secret.Name)).not.toContain("KIN_VOICE_STATE_KEY");
+    // Without the https address the link would lead nowhere, and without a sender nothing can be sent: the worker is unchanged.
+    for (const partial of [{ twilioSmsFrom: "+15555550101" }, { webOrigins: ["http://localhost:3000", origin] }]) {
+      expect(workerContainer(workerOf(build(partial)))).toEqual(workerContainer(worker));
+    }
+  });
+
+  it("gives the phone service the presence line's numbers only when they are set", () => {
+    const numbers = JSON.stringify({ "+15555550200": "0b6f7a53-0c5b-4a3f-8d2e-6a1b2c3d4e5f" });
+    const on = imageOf(voiceOf(build({ voice: true, presenceLineNumbers: numbers })), "AWS::AppRunner::Service");
+    expect(on.RuntimeEnvironmentVariables).toContainEqual({ Name: "KIN_PRESENCE_LINE_NUMBERS", Value: numbers });
+    expect(imageOf(voice, "AWS::AppRunner::Service").RuntimeEnvironmentVariables.map((variable) => variable.Name)).not.toContain("KIN_PRESENCE_LINE_NUMBERS");
   });
 });

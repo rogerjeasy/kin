@@ -2,7 +2,7 @@ import { App, Tags } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
 
 import { CiStack } from "./ci-stack.ts";
-import { shiftCallSettings, type InfraConfig } from "./config.ts";
+import { presenceTextSettings, shiftCallSettings, type InfraConfig } from "./config.ts";
 import { DataStack } from "./data-stack.ts";
 import { DEPLOY_BOUNDARY_POLICY, GuardrailsStack } from "./guardrails-stack.ts";
 import { NetworkStack } from "./network-stack.ts";
@@ -61,6 +61,8 @@ export function buildKin(app: App, config: InfraConfig): KinStacks {
           demoSandboxPayeeEmail: config.demoSandboxPayeeEmail,
           // Only with the phone service, a number and the service's address, so a half-set deployment places no call.
           shiftCall: shiftCallSettings(config),
+          // Only with a sender and the web app's https address, so no family member is sent a link that leads nowhere.
+          presenceTexts: presenceTextSettings(config),
         });
   // It reads the database, queue and secret settings KinData publishes.
   worker?.addDependency(data);

@@ -92,6 +92,8 @@ export class VoiceStack extends Stack {
       // Twilio signs the address it called, so this must be the address App
       // Runner gave the service: see kin:voicePublicUrl.
       { name: "KIN_VOICE_PUBLIC_URL", value: config.voicePublicUrl ?? VOICE_ADDRESS_PLACEHOLDER },
+      // The numbers a parent rings to ask "is it really you?". Unset, the line is not served.
+      ...(config.presenceLineNumbers === null ? [] : [{ name: "KIN_PRESENCE_LINE_NUMBERS", value: config.presenceLineNumbers }]),
     ];
     const secrets = [
       { name: "KIN_DATABASE_SERVICE_PASSWORD", value: serviceSecret },
