@@ -5,6 +5,7 @@ import { CONTENT_ID } from "@/components/layout/skip-link";
 import { BottomNav } from "./bottom-nav";
 import { DemoBanner } from "./demo-banner";
 import { NoticeBanner } from "./notice-banner";
+import { PresenceHoldBanner } from "./presence-hold-banner";
 import type { ShellContext } from "./shell-context";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
@@ -29,6 +30,7 @@ export function AppShell({ children, ...context }: AppShellProps) {
                 <DemoBanner locale={context.locale} copy={context.dictionary.dashboard.shell.demo} demo={context.demo} />
               </div>
             ) : null}
+            {context.presenceHold ? <PresenceHoldBanner hold={context.presenceHold} /> : null}
             <Suspense fallback={null}>
               <NoticeBanner notices={context.dictionary.dashboard.notices} dismiss={context.dictionary.dashboard.notices.dismiss} />
             </Suspense>

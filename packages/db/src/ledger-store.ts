@@ -87,15 +87,14 @@ function accountId(accounts: AccountIds, code: string): string {
  * accepted the entries. Every entry is checked again on the way out.
  */
 export async function readLedger(tx: Transaction, circle: { id: string; currency: string }): Promise<Ledger> {
-  const [entryRows, lineRows] = await Promise.all([
-    tx.select().from(ledgerEntries).where(eq(ledgerEntries.circleId, circle.id)).orderBy(asc(ledgerEntries.sequence)),
-    tx
-      .select({ entryId: ledgerLines.entryId, code: ledgerAccounts.code, direction: ledgerLines.direction, cents: ledgerLines.cents })
-      .from(ledgerLines)
-      .innerJoin(ledgerAccounts, eq(ledgerAccounts.id, ledgerLines.accountId))
-      .where(eq(ledgerLines.circleId, circle.id))
-      .orderBy(asc(ledgerLines.entryId), asc(ledgerLines.position)),
-  ]);
+  // One query at a time: a transaction is one connection, and pg will refuse queries sent over it at once.
+  const entryRows = await tx.select().from(ledgerEntries).where(eq(ledgerEntries.circleId, circle.id)).orderBy(asc(ledgerEntries.sequence));
+  const lineRows = await tx
+    .select({ entryId: ledgerLines.entryId, code: ledgerAccounts.code, direction: ledgerLines.direction, cents: ledgerLines.cents })
+    .from(ledgerLines)
+    .innerJoin(ledgerAccounts, eq(ledgerAccounts.id, ledgerLines.accountId))
+    .where(eq(ledgerLines.circleId, circle.id))
+    .orderBy(asc(ledgerLines.entryId), asc(ledgerLines.position));
   const linesByEntry = Map.groupBy(lineRows, (line) => line.entryId);
   const entries = entryRows.map((row) =>
     restoreEntry({

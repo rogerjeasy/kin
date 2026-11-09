@@ -31,10 +31,19 @@ for (const viewport of viewports) {
 
     // Theo's phone, shown beside it in a demo circle, takes the same public route the real one does.
     await page.getByRole("button", { name: copy.phone.no }).click();
-    await expect(page.getByRole("status").filter({ hasText: copy.kinSays })).toContainText("Theo says that call was not from Theo. Please hang up and send nothing. I have told the family.", { timeout: 15_000 });
+    await expect(page.getByRole("status").filter({ hasText: copy.kinSays })).toContainText("Theo says someone else made that call. Please hang up and send nothing. I have told the family.", { timeout: 15_000 });
     await expect(page.getByRole("region", { name: copy.recent.title })).toContainText(copy.states.denied);
     await maybeScreenshot(page, "presence-denied");
     await expectNoHorizontalOverflow(page);
+
+    // The day-long hold is said on every screen, with the way to the check, and fits the screen.
+    for (const path of ["/dashboard", "/dashboard/approvals"]) {
+      await page.goto(path);
+      const hold = page.getByRole("status").filter({ hasText: "Outgoing money is on hold until" });
+      await expect(hold).toBeVisible();
+      await expect(hold.getByRole("link", { name: english.dashboard.shell.presenceHold.link })).toHaveAttribute("href", "/dashboard/presence");
+      await expectNoHorizontalOverflow(page);
+    }
 
     // What Kin stopped is on the month's statement.
     await page.goto("/dashboard/record/statement");
@@ -50,7 +59,9 @@ test("a caller who is not on the list gets no one asked, and Rose is told so", a
   await page.getByRole("button", { name: copy.examples.stranger.label }).click();
   await page.getByRole("button", { name: copy.submit }).click();
   const outcome = page.getByRole("status").filter({ hasText: copy.kinSays });
-  await expect(outcome).toContainText(copy.states.unanswered);
+  // Nobody was asked, so it never says Kin could not reach someone.
+  await expect(outcome).toContainText(copy.notOnList);
+  await expect(outcome).not.toContainText(copy.states.unanswered);
   await expect(outcome).toContainText("I do not have anyone of that name among the people you trust.");
   await expect(page.getByText("Theo’s phone")).toHaveCount(0);
 });
@@ -85,6 +96,15 @@ test("the real person's page asks one question with two big answers, and a dead 
   await page.getByRole("button", { name: english.presenceLink.yes }).click();
   await expect(page.getByRole("status")).toContainText("Kin has told the family it was you.");
 
+  // A "yes" can still become a "no"; once it has, the link opened again says so, never that the question ran out.
+  await page.goto(link ?? "/");
+  await page.getByRole("button", { name: english.presenceLink.no }).click();
+  await expect(page.getByRole("status")).toContainText("Kin has told the family it was not you");
+  await page.goto(link ?? "/");
+  await expect(page.getByRole("status")).toContainText("Kin has told the family it was not you");
+  await expect(page.getByText("run out")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: english.presenceLink.no })).toHaveCount(0);
+
   await page.goto(`/v/${"A".repeat(43)}`);
   await expect(page.getByText(english.presenceLink.problems.link)).toBeVisible();
   await page.goto("/v/not-a-token");
@@ -112,6 +132,8 @@ test("the family sees this week's code, and the parent can put it to a caller wh
   await page.getByRole("button", { name: copy.examples.stranger.label }).click();
   await page.getByRole("button", { name: copy.submit }).click();
   await expect(page.getByText(copy.code.askTitle).first()).toBeVisible();
+  // The parent is told to ask for the code and never to say it: the words are on this same screen.
+  await expect(page.getByText(copy.code.askText).first()).toContainText("Never tell them the code.");
   // The latest check is shown in the result and again in the list below it, each with its own form: the first is the one in front of the person.
   await page.getByLabel(copy.code.label).first().fill("apple apple apple");
   await page.getByRole("button", { name: copy.code.submit }).first().click();

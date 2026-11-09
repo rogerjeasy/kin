@@ -1,5 +1,10 @@
 import type {
   Agreement,
+  CareAgreementFacts,
+  CareAgreementStatus,
+  CareEndTerm,
+  CarePayer,
+  CareRelation,
   DeliveryState,
   ApprovalPlan,
   BillState,
@@ -21,6 +26,8 @@ import type {
   ShiftKind,
   ShiftState,
   ShiftWaitingFor,
+  SigningCapacity,
+  UsState,
   VersionStatus,
 } from "@kin/domain";
 
@@ -73,6 +80,35 @@ export type CircleSnapshot = {
   readonly monthlyShares: readonly MonthlyShareRecord[];
   /** Requests for money by PayPal invoice, newest first, for roles that see the circle's money. */
   readonly invoiceRequests: readonly InvoiceRequestRecord[];
+  /** The written agreements between the parent and each caregiver, oldest first. A caregiver reads only their own. */
+  readonly careAgreements: readonly CareAgreementRecord[];
+};
+
+/** One written care agreement with its signatures, and where it stands on the circle's calendar day. */
+export type CareAgreementRecord = {
+  readonly id: string;
+  readonly payeeId: string;
+  readonly caregiverMemberId: string;
+  readonly caregiverRelation: CareRelation;
+  readonly duties: readonly string[];
+  readonly weeklyMinutes: number;
+  readonly rateCentsPerHour: number;
+  readonly startsOn: string;
+  readonly endTerm: CareEndTerm;
+  readonly endsOn: string | null;
+  /** The last day it covers, when the family ended it early. */
+  readonly endedOn: string | null;
+  readonly payer: CarePayer;
+  readonly usState: UsState;
+  readonly state: "draft" | "withdrawn";
+  readonly simulated: boolean;
+  readonly createdBy: string;
+  readonly createdAt: Date;
+  readonly signatures: readonly { readonly memberId: string; readonly capacity: SigningCapacity; readonly signedOn: string; readonly method: ApprovalMethod; readonly at: Date }[];
+  /** Computed from the signatures and the circle's calendar day. */
+  readonly status: CareAgreementStatus;
+  /** What plain code in the domain reads to decide whether the agreement covers a day of work. */
+  readonly facts: CareAgreementFacts;
 };
 
 export type InvoiceRequestRecord = {
@@ -130,6 +166,13 @@ export type CircleRecord = {
   readonly now: Date;
   readonly pausedUntil: Date | null;
   readonly pausedBy: string | null;
+  /**
+   * Until when outgoing money is held by an "is it really you?" check, on the
+   * circle's clock: while one is open, and for a day after a "not me". `null`
+   * when nothing holds it or the viewer may not read the checks. Every path
+   * that moves money out reads the same hold (`outgoingMoneyHeldByPresence`).
+   */
+  readonly heldByPresenceUntil: Date | null;
 };
 
 export type MemberRecord = {

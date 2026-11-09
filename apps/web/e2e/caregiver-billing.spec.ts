@@ -1,11 +1,16 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { clearDemoCaregiverRates } from "./support/clear-caregiver-rates";
+import { demoDates } from "./support/demo-dates";
 import { startDemo, seatAs } from "./support/demo";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
 import { viewports } from "./support/viewports";
 import french from "../src/i18n/dictionaries/fr.json" with { type: "json" };
+
 import arabic from "../src/i18n/dictionaries/ar.json" with { type: "json" };
+
+/** The day before the demo's "today": after the demo caregiver's care agreement took effect (template day 19 October), so Kin pays it. */
+const coveredDay = () => demoDates().day("2026-10-29");
 
 async function configure(page: Page, name?: string) {
   await page.goto("/dashboard/circle");
@@ -38,7 +43,8 @@ for (const viewport of [...viewports, { name: "narrow", width: 320, height: 740 
       await expectNoHorizontalOverflow(page);
       await page.goto("/dashboard/bills");
       const form = page.getByRole("region", { name: "Bill for your visits" });
-      await form.getByLabel("Service date").fill("2026-10-01");
+      // A day the demo caregiver's care agreement covers: Kin pays only for work a signed agreement covers.
+      await form.getByLabel("Service date").fill(coveredDay());
       await form.getByLabel("Hours", { exact: true }).fill("4");
       await form.getByRole("button", { name: "Review bill" }).click();
       await expect(form).toContainText("$88.00");

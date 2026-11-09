@@ -12,6 +12,7 @@ export * from "./invoices.ts";
 export * from "./purchases.ts";
 export * from "./mandates.ts";
 export * from "./shifts.ts";
+export * from "./care-agreements.ts";
 export * from "./shift-calls.ts";
 export * from "./audit-heads.ts";
 export * from "./presence.ts";

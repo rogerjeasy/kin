@@ -5,7 +5,7 @@ import { locales } from "@/i18n/locales";
 import { slotsOf } from "@/i18n/template";
 import { formatters } from "@/lib/format";
 
-import { SHIFT_FAILURES, askReasonText, durationText, failureText, priceText, turnWords } from "./shift-words";
+import { SHIFT_FAILURES, askReasonText, durationText, failureText, priceText, tapsText, turnWords } from "./shift-words";
 
 const english = await getDictionary("en");
 const format = formatters("en", "USD", "America/New_York");
@@ -79,5 +79,23 @@ describe("the words for what a tap brought about", () => {
     expect(turnWords(copy, "check_out", { kind: "waiting" }, { ...who, toYou: true }).text).toBe("Checked out. Now Kin waits for Rose’s word.");
     expect(turnWords(copy, "confirm", { kind: "waiting" }, { ...who, toYou: false }).text).toBe("Thank you. Now Kin waits for Amara to check out.");
     expect(turnWords(copy, "confirm", { kind: "held", reason: "paused" }, { ...who, toYou: false }).text).toBe("Both keys are in, but the payment is on hold. The circle is paused, so nothing is paid now.");
+  });
+});
+
+describe("the caregiver's taps on a shift card", () => {
+  const copy = english.dashboard.shifts;
+  const at = (iso: string) => new Date(iso);
+
+  it("says how long Kin counts between the taps beside the times, so a tap at 2:25:41 PM and one at 8:00 PM count 5 h 34 min", () => {
+    const shift = { checkedInAt: at("2026-11-09T19:25:41Z"), checkedOutAt: at("2026-11-10T01:00:00Z"), workedMinutes: null };
+    expect(tapsText(copy, format, shift)).toBe("In 2:25 PM, out 8:00 PM: 5 h 34 min counted");
+    // Once priced, the stored count is the one shown: it is what the price was worked out from.
+    expect(tapsText(copy, format, { ...shift, workedMinutes: 334 })).toBe("In 2:25 PM, out 8:00 PM: 5 h 34 min counted");
+  });
+
+  it("says only the times for a visit too short to count, and only what has happened so far", () => {
+    expect(tapsText(copy, format, { checkedInAt: at("2026-11-09T19:25:10Z"), checkedOutAt: at("2026-11-09T19:25:50Z"), workedMinutes: null })).toBe("In 2:25 PM, out 2:25 PM");
+    expect(tapsText(copy, format, { checkedInAt: at("2026-11-09T19:25:10Z"), checkedOutAt: null, workedMinutes: null })).toBe("In 2:25 PM");
+    expect(tapsText(copy, format, { checkedInAt: null, checkedOutAt: null, workedMinutes: null })).toBe(copy.keys.todo);
   });
 });

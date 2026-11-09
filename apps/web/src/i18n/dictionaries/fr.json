@@ -1204,6 +1204,14 @@
       "circle": {
         "title": "Cercle · Kin",
         "description": "Les membres, leurs rôles, l’accord familial et les bénéficiaires."
+      },
+      "packet": {
+        "title": "Dossier pour votre avocat · Kin",
+        "description": "Le bilan des 60 mois, les accords de soin et les preuves de visite en un seul téléchargement pour un avocat spécialisé en droit des personnes âgées."
+      },
+      "careAgreements": {
+        "title": "Accords de soin · Kin",
+        "description": "Des accords de soin écrits avec signatures, et ce que chacun couvre."
       }
     },
     "shell": {
@@ -1236,7 +1244,11 @@
         "seat": "Vous êtes {name}, {role}",
         "leave": "Quitter la démo"
       },
-      "visitor": "Visiteur de la démo"
+      "visitor": "Visiteur de la démo",
+      "presenceHold": {
+        "text": "L’argent sortant est retenu jusqu’au {until} : quelqu’un a demandé de l’argent au nom d’un proche, et Kin vérifie auprès de la vraie personne ou a appris que ce n’était pas elle.",
+        "link": "Voir la vérification"
+      }
     },
     "pause": {
       "button": "Suspendre les paiements",
@@ -1960,7 +1972,8 @@
         "model_unavailable": "Kin ne peut pas lire de description pour le moment. Saisissez les jours ci-dessous.",
         "model_refused": "Kin n’a pas pu lire cette description. Saisissez les jours ci-dessous.",
         "description": "Écrivez entre un et mille caractères sur vos visites.",
-        "busy": "Vous avez demandé plusieurs lectures récemment. Patientez un peu, ou saisissez les jours ci-dessous."
+        "busy": "Vous avez demandé plusieurs lectures récemment. Patientez un peu, ou saisissez les jours ci-dessous.",
+        "care_agreement": "Kin ne paie que le travail couvert par un accord de soins signé. Ce travail est daté d'avant la signature de l'accord, ou d'après sa fin. Une fois l'accord de soins signé, il sera payé."
       },
       "states": {
         "received": "En attente de la famille",
@@ -2594,6 +2607,7 @@
         "todo": "Pas encore",
         "in": "Arrivée {start}",
         "inOut": "Arrivée {start}, départ {end}",
+        "inOutCounted": "Arrivée {start}, départ {end} : {duration} comptées",
         "saidBy": "{name}, {time}"
       },
       "duration": {
@@ -2629,6 +2643,7 @@
         "checkedIn": "Votre arrivée est pointée. Touchez « Pointer le départ » en partant.",
         "checkedOutWaiting": "Départ pointé. Kin attend maintenant la parole de {parent}.",
         "confirmedWaiting": "Merci. Kin attend maintenant que {name} pointe son départ.",
+        "declinedByCall": "{parent} a dit au téléphone que la visite n’a pas eu lieu. Rien n’est payé, et la famille peut vérifier.",
         "paid": "{amount} est approuvé par l’autorisation permanente de {parent} et part vers {name} par {wallet}.",
         "paidToYou": "{amount} est approuvé par l’autorisation permanente de {parent} et part vers vous par {wallet}.",
         "asks": "{amount} part à la famille pour approbation, car cela sort du cadre de l’autorisation permanente.",
@@ -2717,7 +2732,8 @@
         "call_over": "Cet appel est déjà terminé.",
         "bad_phone": "Cela ne ressemble pas à un numéro de téléphone. Indiquez l’indicatif du pays, par exemple +33612345678.",
         "texting_off": "L’envoi de SMS n’est pas activé.",
-        "text_limit": "Vous avez envoyé plusieurs SMS récemment. Réessayez plus tard, ou copiez le lien."
+        "text_limit": "Vous avez envoyé plusieurs SMS récemment. Réessayez plus tard, ou copiez le lien.",
+        "care_agreement": "Kin ne paie que le travail couvert par un accord de soins signé. Ce travail est daté d'avant la signature de l'accord, ou d'après sa fin. Une fois l'accord de soins signé, il sera payé."
       }
     },
     "shiftCover": {
@@ -3110,6 +3126,7 @@
         "unanswered": "Injoignable",
         "expired": "Clos"
       },
+      "notOnList": "Absent de votre liste",
       "unknownPerson": "Personne sur la liste ne porte ce nom, donc Kin n’a pu interroger personne.",
       "markersTitle": "Signes d’arnaque dans les mots",
       "markers": {
@@ -3118,7 +3135,8 @@
         "gift_cards": "Cartes cadeaux",
         "crypto_atm": "Cryptomonnaie ou distributeur de bitcoin",
         "courier_pickup": "Quelqu’un pour récupérer l’argent",
-        "wire": "Un virement"
+        "wire": "Un virement",
+        "payment_app": "Un compte d’application de paiement qu’ils ont donné"
       },
       "noMarkers": "Aucun signe d’arnaque dans les mots.",
       "amountLabel": "Montant demandé",
@@ -3208,7 +3226,7 @@
         "text": "Trois mots qui changent chaque lundi. Un vrai proche les connaît, une voix clonée non. Partagez-les avec la famille, jamais avec un appelant.",
         "week": "Pour la semaine {week}",
         "askTitle": "Demander le code de famille à l’appelant",
-        "askText": "Kin n’a pas pu trancher avec la vraie personne. Posez le code à l’appelant et saisissez ce qu’il répond.",
+        "askText": "Kin n’a pas pu trancher avec la vraie personne. Demandez à l’appelant de dire le code familial de la semaine, et tapez ce qu’il dit. Ne lui donnez jamais le code.",
         "label": "Ce qu’a dit l’appelant",
         "submit": "Vérifier le code",
         "checking": "Vérification…",
@@ -3230,6 +3248,238 @@
         "link": "Réponse depuis le SMS",
         "call": "Réponse pendant l’appel de Kin"
       }
+    },
+    "packet": {
+      "title": "Dossier pour votre avocat",
+      "lede": "Un seul téléchargement réunit ce que demande un avocat spécialisé en droit des personnes âgées : les paiements des 60 derniers mois classés selon leur nature, les accords de soin, les preuves de visite, les propres relevés de PayPal et une vérification que le registre n’a pas été modifié.",
+      "link": "Dossier pour votre avocat",
+      "download": "Télécharger le dossier",
+      "downloading": "Préparation du dossier…",
+      "downloadNote": "Un fichier ZIP avec un PDF, des tableurs et le registre que chacun peut vérifier hors ligne. Il s’ouvre sur n’importe quel ordinateur.",
+      "notice": "Préparé pour votre avocat. Kin trie et vérifie le registre. Il ne dit pas si quelque chose est permis, sûr ou conforme, et les règles diffèrent selon l’État.",
+      "tiles": {
+        "window": {
+          "label": "Versé en 60 mois",
+          "note": "Du {from} au {to}, hors frais de PayPal."
+        },
+        "documented": {
+          "label": "Justifié",
+          "note": "Paiements que le registre peut appuyer par des documents."
+        },
+        "lacking": {
+          "label": "À justifier",
+          "note": "{count} paiements sur lesquels un avocat risque de poser des questions."
+        },
+        "chain": {
+          "pass": "Le registre est cohérent",
+          "fail": "Le registre n’est pas cohérent",
+          "note": "{count} écritures recalculées et empreintes à l’instant."
+        }
+      },
+      "note": {
+        "title": "Note d’accompagnement",
+        "text": "Claude rédige cette note à partir de chiffres que le code a déjà calculés. Chaque nombre est vérifié par rapport au registre, et une note fixe la remplace si l’un d’eux ne correspond pas.",
+        "ask": "Demander à Claude de la rédiger",
+        "busy": "Claude est occupé pour le moment, la note fixe de Kin est donc affichée.",
+        "unavailable": "Claude n’est pas activé ici, la note fixe de Kin est donc affichée."
+      },
+      "lookback": {
+        "title": "Les 60 mois, paiement par paiement",
+        "text": "Chaque paiement sorti du compte de soins, classé par un code simple. La rémunération d’un aidant à domicile est justifiée lorsqu’un accord de soin signé couvre le jour du travail.",
+        "empty": "Rien n’est sorti du compte de soins ces 60 derniers mois.",
+        "grid": "Paiements sortis du compte de soins",
+        "cols": {
+          "day": "Payé le",
+          "to": "À",
+          "kind": "Nature",
+          "amount": "Montant",
+          "status": "Statut",
+          "why": "Pourquoi"
+        },
+        "classes": {
+          "caregiver_pay": "Rémunération de l’aidant",
+          "third_party_bill": "Facture à une entreprise",
+          "purchase_for_parent": "Achat pour le parent",
+          "family_transfer": "Argent versé à un proche"
+        },
+        "status": {
+          "documented": "Justifié",
+          "needs_documentation": "À justifier",
+          "reversed": "Annulé"
+        },
+        "reasons": {
+          "no_agreement": "Aucun accord de soin n’est au dossier pour cet aidant.",
+          "agreement_unsigned": "L’accord de soin n’est pas entièrement signé.",
+          "before_agreement": "Le travail a été fait avant la signature de l’accord.",
+          "after_agreement": "Le travail a été fait après la fin de l’accord.",
+          "rate_not_agreed": "Il a été payé à un tarif que l’accord de soins n’indique pas.",
+          "no_document": "Aucune facture ni commande n’est conservée avec ce paiement.",
+          "family_transfer": "Argent versé à un proche. Un avocat demandera à quoi il a servi."
+        },
+        "marks": {
+          "unverified_hours": "Heures non prouvées par une visite",
+          "simulated": "Argent simulé",
+          "paypal": "Sandbox PayPal : argent de test",
+          "rate_below_market": "Tarif très inférieur à la médiane du marché",
+          "rate_above_market": "Tarif très supérieur à la médiane du marché"
+        },
+        "none": "Rien à ajouter.",
+        "summaryOne": "1 paiement",
+        "summaryMany": "{count} paiements",
+        "csv": "Télécharger la liste (CSV)"
+      },
+      "estimate": {
+        "title": "Ce que peut devoir un particulier employeur",
+        "text": "Une estimation pour le comptable de la famille, à partir des sommes versées en espèces à chaque aidant. Kin ne déclare rien et ne dit pas que la famille est en règle.",
+        "empty": "Aucun aidant n’a été payé ces années-là.",
+        "cols": {
+          "employee": "Aidant",
+          "year": "Année",
+          "wages": "Versé",
+          "threshold": "Seuil",
+          "social": "Social Security",
+          "medicare": "Medicare",
+          "futa": "Chômage",
+          "total": "Estimation"
+        },
+        "above": "Seuil atteint",
+        "below": "Sous le seuil",
+        "unknownYear": "Aucun barème pour cette année",
+        "source": "Chiffres : {source}. Comparez-les à la publication avant de vous y fier.",
+        "exemption": "Les salaires versés au conjoint de l’employeur, ou à son enfant de moins de 21 ans, peuvent être exemptés de la cotisation Social Security et Medicare. L’estimation ne connaît pas le lien de parenté, c’est donc au comptable de l’appliquer."
+      },
+      "rate": {
+        "title": "Le tarif est-il proche du marché ?",
+        "text": "Le tarif convenu de chaque aidant comparé à la médiane nationale des soins à domicile.",
+        "source": "{source} ({collected}) : {median} de l’heure.",
+        "near": "{rate} de l’heure est proche du marché.",
+        "below": "{rate} de l’heure est très inférieur à la médiane du marché.",
+        "above": "{rate} de l’heure est très supérieur à la médiane du marché.",
+        "unknown": "Aucune référence n’est disponible pour cette devise.",
+        "none": "Aucun accord de soin n’indique encore de tarif."
+      },
+      "inside": {
+        "title": "Ce que contient le téléchargement",
+        "items": [
+          "packet.pdf : la note d’accompagnement, le tableau des 60 mois, les accords de soin, les preuves de visite et l’estimation pour un particulier employeur.",
+          "record/kin-record.json : le registre avec sa chaîne d’empreintes. Chacun peut le vérifier hors ligne avec kin-verify.",
+          "care-agreements.txt : le texte de chaque accord, et qui l’a signé, et quand.",
+          "look-back.csv, visit-proofs.csv et paypal-payments.csv pour un tableur.",
+          "README.txt et manifest.json : comment vérifier, et une empreinte SHA-256 de chaque fichier."
+        ]
+      }
+    },
+    "careAgreements": {
+      "title": "Accords de soin",
+      "lede": "Un accord écrit, signé avant le début des soins, est la première chose qu’un avocat demande quand une famille rémunère un aidant. Kin remplit le modèle à partir des faits que vous donnez, conserve qui a signé et quand, et ne paie que le travail couvert par l’accord.",
+      "link": "Accords de soin",
+      "notice": "Préparé pour votre avocat. Kin n’est pas un cabinet d’avocats et ceci n’est pas un conseil juridique. L’accord est rédigé en anglais, la langue que lira un avocat. Les règles diffèrent selon l’État.",
+      "empty": "Aucun accord de soin pour l’instant.",
+      "noCaregiver": "Ajoutez d’abord un aidant sur l’écran Cercle. Un accord concerne un aidant que Kin paie.",
+      "status": {
+        "draft": "En attente de signatures",
+        "scheduled": "Signé, commence le {day}",
+        "active": "En vigueur",
+        "ended": "Terminé",
+        "withdrawn": "Retiré"
+      },
+      "card": {
+        "rate": "{rate} de l’heure",
+        "hours": "Environ {hours} par semaine",
+        "starts": "Commence le {day}",
+        "endsOn": "Se termine le {day}",
+        "ongoing": "Jusqu’à ce que l’une des parties donne un préavis de 30 jours",
+        "coveredFrom": "Couvre le travail à partir du {day}",
+        "lateSigned": "Il a été signé après sa date de début, donc le travail avant le {day} n’est pas couvert.",
+        "replaced": "Remplacé par l’accord qui couvre le travail à partir du {day}.",
+        "rateMoved": "Le tarif horaire de {name} est désormais de {payRate}, mais cet accord indique {rate}. Kin retient le paiement du travail qu’il couvre jusqu’à la signature d’un accord à {payRate}.",
+        "signedBy": "{name} a signé le {day} en tant que {capacity}",
+        "waitingFor": "Il manque encore {who}",
+        "needCaregiver": "la signature de l’aidant",
+        "needRecipient": "une signature pour la personne aidée",
+        "capacity": {
+          "caregiver": "aidant",
+          "care_recipient": "personne aidée",
+          "representative": "représentant de la personne aidée"
+        },
+        "read": "Lire l’accord",
+        "gate": "Tant que c’est l’accord de l’aidant, Kin ne paie que le travail qu’il couvre."
+      },
+      "actions": {
+        "sign": "Signer cet accord",
+        "withdraw": "Retirer le brouillon",
+        "end": "Mettre fin à l’accord",
+        "endOn": "Dernier jour couvert",
+        "confirmEnd": "Y mettre fin ce jour-là"
+      },
+      "form": {
+        "title": "Rédiger un accord de soin",
+        "text": "Kin remplit un modèle fixe à partir de ces faits. Rien dans l’accord n’est écrit par un modèle d’IA.",
+        "caregiver": "Aidant",
+        "relation": "Lien entre l’aidant et la personne aidée",
+        "relations": {
+          "child": "Son enfant",
+          "other_relative": "Un autre proche",
+          "not_related": "Aucun lien de parenté",
+          "spouse": "Son conjoint"
+        },
+        "duties": "Ce que fera l’aidant",
+        "dutiesHint": "Une tâche par ligne, 12 au plus.",
+        "hours": "Heures par semaine",
+        "rate": "Tarif horaire",
+        "rateFixed": "Le tarif horaire de {name}, fixé sur la page Cercle. L’accord indique le tarif que Kin paie : changez donc d’abord le tarif là-bas.",
+        "start": "Commence le",
+        "endTerm": "Comment il prend fin",
+        "endTerms": {
+          "either_party_30_days": "Quand l’une des parties donne un préavis de 30 jours",
+          "fixed_end_date": "À une date fixée"
+        },
+        "endsOn": "Se termine le",
+        "payer": "Avec l’argent de qui les soins sont payés",
+        "payers": {
+          "care_recipient": "Les fonds propres de la personne aidée",
+          "family_members": "L’argent versé par les membres de la famille"
+        },
+        "state": "État dont la loi s’applique",
+        "review": "À relire avant d’enregistrer",
+        "propose": "Enregistrer comme brouillon à signer",
+        "back": "Modifier",
+        "previewTitle": "L’accord tel qu’il sera rédigé",
+        "spouseWarning": "Kin ne rédigera pas d’accord avec un conjoint. Cela n’aide pas pour la réduction des biens liée à Medicaid. Demandez à votre avocat."
+      },
+      "rateNote": {
+        "near": "{rate} de l’heure est proche de la médiane du marché, {median}.",
+        "below": "{rate} de l’heure est très inférieur à la médiane du marché, {median}. Un avocat pourrait demander pourquoi.",
+        "above": "{rate} de l’heure est très supérieur à la médiane du marché, {median}. Un avocat pourrait demander pourquoi.",
+        "unknown": "Aucun chiffre de marché n’est disponible pour cette devise."
+      },
+      "errors": {
+        "refused": "Votre rôle ne permet pas de faire cela.",
+        "invalid": "Un élément du formulaire n’a pas pu être lu. Vérifiez-le et réessayez.",
+        "spouse": "Kin ne rédigera pas d’accord avec un conjoint. Demandez à votre avocat.",
+        "relation": "Choisissez le lien de parenté de l’aidant.",
+        "duties": "Écrivez de une à douze tâches, chacune courte.",
+        "hours": "Les heures par semaine doivent être entre 1 et 84.",
+        "rate": "Le tarif n’a pas pu être lu comme un montant.",
+        "start_date": "Le jour de début n’a pas pu être lu.",
+        "end_term": "Choisissez comment l’accord prend fin.",
+        "end_date": "Une date de fin fixée doit venir après le début.",
+        "payer": "Choisissez avec l’argent de qui on paie.",
+        "state": "Choisissez un État.",
+        "amount": "Le tarif n’a pas pu être lu comme un montant.",
+        "unavailable": "Kin n’a pas pu faire cela pour le moment. Réessayez dans un instant.",
+        "gate": {
+          "unsigned": "L’accord de soin de l’aidant n’est pas entièrement signé, le travail du {day} ne peut donc pas encore être payé.",
+          "before_signed": "L’accord de soin ne couvre pas le travail du {day} : il a été fait avant la signature de l’accord.",
+          "after_end": "L’accord de soin s’est terminé avant le {day}."
+        },
+        "closed": "Cet accord n’est plus un brouillon, il ne peut donc ni être signé ni être retiré.",
+        "ended": "Cet accord est déjà terminé.",
+        "signed": "Cet accord est déjà signé, il ne peut donc pas être retiré. Mettez-y fin à la place.",
+        "pay_rate": "Un accord indique le tarif horaire actuel de l’aidant, et celui-ci ne le fait pas. Si le tarif a changé, rédigez un nouvel accord au nouveau tarif.",
+        "overlap": "Un accord signé pour cet aidant couvre déjà le jour où celui-ci commencerait. Faites-le commencer après, ou mettez d’abord fin à l’autre."
+      },
+      "summary": "{count} au dossier."
     }
   },
   "aiProvenance": {

@@ -19,7 +19,8 @@ const CLOCK = new Date("2026-10-30T18:00:00Z");
 const visits = (days: readonly string[]) => ({ version: 1, currency: "USD", rateCentsPerHour: 2200, visits: days.map((date) => ({ date, minutes: 240 })) });
 const THREE_DAYS = ["2026-10-20", "2026-10-21", "2026-10-22"];
 // Six four-hour days at 22.00 is 528.00, above the 500.00 second-approval threshold.
-const SIX_DAYS = ["2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19"];
+// After the demo caregiver's care agreement took effect on 19 October: a bill is sent only for days an agreement covers.
+const SIX_DAYS = ["2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25"];
 
 type Family = VisitorCircle & { readonly caregiver: string };
 

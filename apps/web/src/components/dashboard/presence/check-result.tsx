@@ -17,11 +17,22 @@ const LOOK = {
   expired: { tone: "neutral", icon: HelpCircleIcon },
 } as const satisfies Record<CheckView["state"], { tone: PillTone; icon: typeof ClockIcon }>;
 
-/** A check's state in words, colour and an icon, so colour is never the only sign. */
-export function StatePill({ state, copy }: { state: CheckView["state"]; copy: Copy }) {
+/**
+ * A check's state in words, colour and an icon, so colour is never the only
+ * sign. A caller nobody on the list goes by was never asked about, so that
+ * check says so instead of "could not be reached".
+ */
+export function StatePill({ check, copy }: { check: Pick<CheckView, "state" | "matched">; copy: Copy }) {
+  if (!check.matched && check.state !== "opened" && check.state !== "asked") {
+    return (
+      <StatusPill tone="danger" icon={ShieldAlertIcon}>
+        {copy.notOnList}
+      </StatusPill>
+    );
+  }
   return (
-    <StatusPill tone={LOOK[state].tone} icon={LOOK[state].icon}>
-      {copy.states[state]}
+    <StatusPill tone={LOOK[check.state].tone} icon={LOOK[check.state].icon}>
+      {copy.states[check.state]}
     </StatusPill>
   );
 }
@@ -38,7 +49,7 @@ export function CheckResult({ check, copy, format }: Props) {
   return (
     <div role="status" aria-live="polite" className="min-w-0 space-y-4 rounded-xl border bg-secondary/40 p-4">
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
-        <StatePill state={check.state} copy={copy} />
+        <StatePill check={check} copy={copy} />
         {open && check.voiceName !== null ? <p className="min-w-0 text-sm text-muted-foreground">{fill(copy.waiting, { name: check.voiceName })}</p> : null}
         {check.matched ? null : <p className="min-w-0 text-sm text-muted-foreground">{copy.unknownPerson}</p>}
       </div>

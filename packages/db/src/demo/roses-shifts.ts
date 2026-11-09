@@ -33,28 +33,6 @@ export type DemoShift = {
   readonly endsAt: Date;
 };
 
-/** Amara's two shifts already paid under the permission, with the taps that proved them. */
-export const PAID_SHIFTS: readonly (DemoShift & { readonly checkedInAt: Date; readonly checkedOutAt: Date })[] = [
-  {
-    kind: "aide",
-    title: "Morning care",
-    member: "amara",
-    startsAt: new Date("2026-10-21T13:00:00Z"),
-    endsAt: new Date("2026-10-21T16:30:00Z"),
-    checkedInAt: new Date("2026-10-21T13:00:00Z"),
-    checkedOutAt: new Date("2026-10-21T16:30:00Z"),
-  },
-  {
-    kind: "aide",
-    title: "Afternoon care",
-    member: "amara",
-    startsAt: new Date("2026-10-23T14:00:00Z"),
-    endsAt: new Date("2026-10-23T18:00:00Z"),
-    checkedInAt: new Date("2026-10-23T14:00:00Z"),
-    checkedOutAt: new Date("2026-10-23T18:00:00Z"),
-  },
-];
-
 /**
  * What waits on the calendar: Amara's shift today, which began four hours
  * before the demo clock and still needs her tap, and a few unpaid items over

@@ -1204,6 +1204,14 @@
       "circle": {
         "title": "Círculo · Kin",
         "description": "Los miembros, sus roles, el acuerdo familiar y los destinatarios."
+      },
+      "packet": {
+        "title": "Expediente para su abogado · Kin",
+        "description": "El repaso de 60 meses, los acuerdos de cuidado y las pruebas de visita en una sola descarga para un abogado de derecho de personas mayores."
+      },
+      "careAgreements": {
+        "title": "Acuerdos de cuidado · Kin",
+        "description": "Acuerdos de cuidado escritos con firmas, y qué cubre cada uno."
       }
     },
     "shell": {
@@ -1236,7 +1244,11 @@
         "seat": "Eres {name}, {role}",
         "leave": "Salir de la demo"
       },
-      "visitor": "Visitante de la demo"
+      "visitor": "Visitante de la demo",
+      "presenceHold": {
+        "text": "El dinero saliente está retenido hasta {until}: alguien pidió dinero en nombre de un familiar, y Kin está consultando a la persona real o le dijeron que no era ella.",
+        "link": "Ver la comprobación"
+      }
     },
     "pause": {
       "button": "Pausar pagos",
@@ -1960,7 +1972,8 @@
         "model_unavailable": "Kin no puede leer descripciones ahora. Escribe los días abajo.",
         "model_refused": "Kin no pudo leer esa descripción. Escribe los días abajo.",
         "description": "Escribe entre uno y mil caracteres sobre tus visitas.",
-        "busy": "Has pedido varias lecturas hace poco. Espera un rato o escribe los días abajo."
+        "busy": "Has pedido varias lecturas hace poco. Espera un rato o escribe los días abajo.",
+        "care_agreement": "Kin solo paga el trabajo que cubre un acuerdo de cuidados firmado. Este trabajo es anterior a la firma del acuerdo, o posterior a su fin. Cuando se firme el acuerdo de cuidados, se pagará."
       },
       "states": {
         "received": "Pendiente de revisión familiar",
@@ -2594,6 +2607,7 @@
         "todo": "Aún no",
         "in": "Entrada {start}",
         "inOut": "Entrada {start}, salida {end}",
+        "inOutCounted": "Entrada {start}, salida {end}: {duration} contados",
         "saidBy": "{name}, {time}"
       },
       "duration": {
@@ -2629,6 +2643,7 @@
         "checkedIn": "Su entrada está registrada. Toque Registrar salida al irse.",
         "checkedOutWaiting": "Salida registrada. Ahora Kin espera la palabra de {parent}.",
         "confirmedWaiting": "Gracias. Ahora Kin espera que {name} registre su salida.",
+        "declinedByCall": "{parent} dijo en la llamada que la visita no ocurrió. No se paga nada, y la familia puede averiguarlo.",
         "paid": "El permiso permanente de {parent} aprobó {amount}, que va en camino a {name} por {wallet}.",
         "paidToYou": "El permiso permanente de {parent} aprobó {amount}, que va en camino a usted por {wallet}.",
         "asks": "Se pide a la familia que apruebe {amount}, porque el permiso permanente no lo cubre.",
@@ -2717,7 +2732,8 @@
         "call_over": "Esa llamada ya terminó.",
         "bad_phone": "Eso no parece un número de teléfono. Incluya el prefijo del país, por ejemplo +34612345678.",
         "texting_off": "El envío de SMS no está activado.",
-        "text_limit": "Ha enviado varios SMS hace poco. Inténtelo más tarde, o copie el enlace."
+        "text_limit": "Ha enviado varios SMS hace poco. Inténtelo más tarde, o copie el enlace.",
+        "care_agreement": "Kin solo paga el trabajo que cubre un acuerdo de cuidados firmado. Este trabajo es anterior a la firma del acuerdo, o posterior a su fin. Cuando se firme el acuerdo de cuidados, se pagará."
       }
     },
     "shiftCover": {
@@ -3110,6 +3126,7 @@
         "unanswered": "No se pudo localizar",
         "expired": "Cerrada"
       },
+      "notOnList": "No está en su lista",
       "unknownPerson": "Nadie de la lista se llama así, por lo que Kin no pudo preguntar a nadie.",
       "markersTitle": "Señales de estafa en las palabras",
       "markers": {
@@ -3118,7 +3135,8 @@
         "gift_cards": "Tarjetas de regalo",
         "crypto_atm": "Criptomonedas o un cajero de bitcoin",
         "courier_pickup": "Alguien que recoja el dinero",
-        "wire": "Una transferencia"
+        "wire": "Una transferencia",
+        "payment_app": "Una cuenta de una app de pagos que indicaron"
       },
       "noMarkers": "Ninguna señal de estafa en las palabras.",
       "amountLabel": "Pidió",
@@ -3208,7 +3226,7 @@
         "text": "Tres palabras que cambian cada lunes. Un familiar de verdad las conoce y una voz clonada no. Compártalas con la familia, nunca con quien llama.",
         "week": "Para la semana {week}",
         "askTitle": "Pedir el código de familia a quien llamó",
-        "askText": "Kin no pudo aclararlo con la persona real. Pida el código a quien llamó y escriba lo que responde.",
+        "askText": "Kin no pudo aclararlo con la persona real. Pida a quien llama que diga el código familiar de esta semana y escriba lo que diga. Nunca le diga el código.",
         "label": "Lo que dijo quien llamó",
         "submit": "Comprobar el código",
         "checking": "Comprobando…",
@@ -3230,6 +3248,238 @@
         "link": "Respondió desde el mensaje",
         "call": "Respondió en la llamada de Kin"
       }
+    },
+    "packet": {
+      "title": "Expediente para su abogado",
+      "lede": "Una sola descarga reúne lo que pide un abogado especializado en derecho de personas mayores: los pagos de los últimos 60 meses clasificados según lo que fueron, los acuerdos de cuidado, las pruebas de visita, los propios registros de PayPal y una comprobación de que el registro no ha sido modificado.",
+      "link": "Expediente para su abogado",
+      "download": "Descargar el expediente",
+      "downloading": "Preparando el expediente…",
+      "downloadNote": "Un archivo ZIP con un PDF, hojas de cálculo y el registro que cualquiera puede comprobar sin conexión. Se abre en cualquier ordenador.",
+      "notice": "Preparado para su abogado. Kin clasifica y comprueba el registro. No dice si algo está permitido, es seguro o cumple la normativa, y las reglas difieren según el estado.",
+      "tiles": {
+        "window": {
+          "label": "Pagado en 60 meses",
+          "note": "Del {from} al {to}, sin las comisiones de PayPal."
+        },
+        "documented": {
+          "label": "Documentado",
+          "note": "Pagos que el registro puede respaldar con papeles."
+        },
+        "lacking": {
+          "label": "Falta documentación",
+          "note": "{count} pagos sobre los que probablemente preguntará un abogado."
+        },
+        "chain": {
+          "pass": "El registro es coherente",
+          "fail": "El registro no es coherente",
+          "note": "{count} asientos vueltos a sumar y sellados con una huella ahora mismo."
+        }
+      },
+      "note": {
+        "title": "Nota de presentación",
+        "text": "Claude redacta esta nota a partir de cifras que el código ya ha calculado. Cada número se comprueba con el registro, y una nota fija ocupa su lugar si alguno no coincide.",
+        "ask": "Pedir a Claude que la redacte",
+        "busy": "Claude está ocupado por el momento, así que se muestra la nota fija de Kin.",
+        "unavailable": "Claude no está activado aquí, así que se muestra la nota fija de Kin."
+      },
+      "lookback": {
+        "title": "Los 60 meses, pago por pago",
+        "text": "Cada pago que salió de la cuenta de cuidados, clasificado con código sencillo. El pago a un cuidador cuenta como documentado cuando un acuerdo de cuidado firmado cubre el día del trabajo.",
+        "empty": "No ha salido nada de la cuenta de cuidados en los últimos 60 meses.",
+        "grid": "Pagos salidos de la cuenta de cuidados",
+        "cols": {
+          "day": "Pagado el",
+          "to": "A",
+          "kind": "Qué fue",
+          "amount": "Importe",
+          "status": "Estado",
+          "why": "Motivo"
+        },
+        "classes": {
+          "caregiver_pay": "Pago al cuidador",
+          "third_party_bill": "Factura a una empresa",
+          "purchase_for_parent": "Compra para el padre o la madre",
+          "family_transfer": "Dinero a un familiar"
+        },
+        "status": {
+          "documented": "Documentado",
+          "needs_documentation": "Falta documentación",
+          "reversed": "Revertido"
+        },
+        "reasons": {
+          "no_agreement": "No hay ningún acuerdo de cuidado archivado para este cuidador.",
+          "agreement_unsigned": "El acuerdo de cuidado no está firmado por todos.",
+          "before_agreement": "El trabajo se hizo antes de que se firmara el acuerdo.",
+          "after_agreement": "El trabajo se hizo después de terminar el acuerdo.",
+          "rate_not_agreed": "Se pagó a una tarifa que el acuerdo de cuidado no indica.",
+          "no_document": "No hay ninguna factura ni pedido guardado con él.",
+          "family_transfer": "Dinero pagado a un pariente. Un abogado preguntará para qué fue."
+        },
+        "marks": {
+          "unverified_hours": "Horas no probadas por una visita",
+          "simulated": "Dinero simulado",
+          "paypal": "Sandbox de PayPal: dinero de prueba",
+          "rate_below_market": "Tarifa muy por debajo de la mediana del mercado",
+          "rate_above_market": "Tarifa muy por encima de la mediana del mercado"
+        },
+        "none": "Nada que añadir.",
+        "summaryOne": "1 pago",
+        "summaryMany": "{count} pagos",
+        "csv": "Descargar la lista (CSV)"
+      },
+      "estimate": {
+        "title": "Lo que puede deber un empleador doméstico",
+        "text": "Una estimación para el contable de la familia, a partir del dinero en efectivo pagado a cada cuidador. Kin no presenta nada y no dice que la familia cumpla la normativa.",
+        "empty": "No se pagó a ningún cuidador en esos años.",
+        "cols": {
+          "employee": "Cuidador",
+          "year": "Año",
+          "wages": "Pagado",
+          "threshold": "Umbral",
+          "social": "Social Security",
+          "medicare": "Medicare",
+          "futa": "Desempleo",
+          "total": "Estimación"
+        },
+        "above": "Alcanzó el umbral",
+        "below": "Por debajo del umbral",
+        "unknownYear": "No hay tabla para este año",
+        "source": "Cifras: {source}. Compárelas con la publicación antes de fiarse de ellas.",
+        "exemption": "Los salarios pagados al cónyuge del empleador, o a su hijo menor de 21 años, pueden estar exentos del impuesto de Social Security y Medicare. La estimación no conoce el parentesco, así que lo aplica el contable."
+      },
+      "rate": {
+        "title": "¿La tarifa se acerca al mercado?",
+        "text": "La tarifa acordada de cada cuidador frente a la mediana nacional de los cuidados a domicilio.",
+        "source": "{source} ({collected}): {median} la hora.",
+        "near": "{rate} la hora se acerca al mercado.",
+        "below": "{rate} la hora está muy por debajo de la mediana del mercado.",
+        "above": "{rate} la hora está muy por encima de la mediana del mercado.",
+        "unknown": "No hay ninguna referencia para esta moneda.",
+        "none": "Ningún acuerdo de cuidado indica aún una tarifa."
+      },
+      "inside": {
+        "title": "Qué contiene la descarga",
+        "items": [
+          "packet.pdf: la nota de presentación, la tabla de los 60 meses, los acuerdos de cuidado, las pruebas de visita y la estimación para el empleador doméstico.",
+          "record/kin-record.json: el registro con su cadena de huellas. Cualquiera puede comprobarlo sin conexión con kin-verify.",
+          "care-agreements.txt: el texto de cada acuerdo, y quién lo firmó y cuándo.",
+          "look-back.csv, visit-proofs.csv y paypal-payments.csv para una hoja de cálculo.",
+          "README.txt y manifest.json: cómo comprobarlo, y una huella SHA-256 de cada archivo."
+        ]
+      }
+    },
+    "careAgreements": {
+      "title": "Acuerdos de cuidado",
+      "lede": "Un acuerdo escrito, firmado antes de que empiece el cuidado, es lo primero que pregunta un abogado cuando una familia paga a un cuidador. Kin rellena la plantilla con los datos que usted da, guarda quién firmó y cuándo, y solo paga el trabajo que el acuerdo cubre.",
+      "link": "Acuerdos de cuidado",
+      "notice": "Preparado para su abogado. Kin no es un despacho de abogados y esto no es asesoramiento jurídico. El acuerdo está escrito en inglés, el idioma que leerá un abogado. Las reglas difieren según el estado.",
+      "empty": "Aún no hay ningún acuerdo de cuidado.",
+      "noCaregiver": "Primero añada un cuidador en la pantalla Círculo. Un acuerdo es para un cuidador al que Kin paga.",
+      "status": {
+        "draft": "Esperando firmas",
+        "scheduled": "Firmado, empieza el {day}",
+        "active": "En vigor",
+        "ended": "Terminado",
+        "withdrawn": "Retirado"
+      },
+      "card": {
+        "rate": "{rate} la hora",
+        "hours": "Unas {hours} a la semana",
+        "starts": "Empieza el {day}",
+        "endsOn": "Termina el {day}",
+        "ongoing": "Hasta que una de las partes avise con 30 días de antelación",
+        "coveredFrom": "Cubre el trabajo desde el {day}",
+        "lateSigned": "Se firmó después de su fecha de inicio, así que no cubre el trabajo anterior al {day}.",
+        "replaced": "Sustituido por el acuerdo que cubre el trabajo desde el {day}.",
+        "rateMoved": "La tarifa de {name} ahora es {payRate}, pero este acuerdo dice {rate}. Kin retiene el pago del trabajo que cubre hasta que se firme un acuerdo a {payRate}.",
+        "signedBy": "{name} firmó el {day} como {capacity}",
+        "waitingFor": "Aún falta {who}",
+        "needCaregiver": "la firma del cuidador",
+        "needRecipient": "una firma por la persona cuidada",
+        "capacity": {
+          "caregiver": "cuidador",
+          "care_recipient": "persona cuidada",
+          "representative": "representante de la persona cuidada"
+        },
+        "read": "Leer el acuerdo",
+        "gate": "Mientras este sea el acuerdo del cuidador, Kin solo paga el trabajo que cubre."
+      },
+      "actions": {
+        "sign": "Firmar este acuerdo",
+        "withdraw": "Retirar el borrador",
+        "end": "Terminar el acuerdo",
+        "endOn": "Último día que cubre",
+        "confirmEnd": "Terminarlo este día"
+      },
+      "form": {
+        "title": "Redactar un acuerdo de cuidado",
+        "text": "Kin rellena una plantilla fija con estos datos. Nada del acuerdo lo escribe un modelo de IA.",
+        "caregiver": "Cuidador",
+        "relation": "Parentesco del cuidador con la persona cuidada",
+        "relations": {
+          "child": "Su hijo o hija",
+          "other_relative": "Otro pariente",
+          "not_related": "Sin parentesco",
+          "spouse": "Su cónyuge"
+        },
+        "duties": "Qué hará el cuidador",
+        "dutiesHint": "Una tarea por línea, hasta 12.",
+        "hours": "Horas a la semana",
+        "rate": "Tarifa por hora",
+        "rateFixed": "La tarifa de {name}, fijada en la página Círculo. El acuerdo indica la tarifa que paga Kin, así que cámbiela allí primero.",
+        "start": "Empieza el",
+        "endTerm": "Cómo termina",
+        "endTerms": {
+          "either_party_30_days": "Cuando una de las partes avisa con 30 días de antelación",
+          "fixed_end_date": "En un día fijado"
+        },
+        "endsOn": "Termina el",
+        "payer": "Con el dinero de quién se paga el cuidado",
+        "payers": {
+          "care_recipient": "Los fondos propios de la persona cuidada",
+          "family_members": "El dinero que aportan los familiares"
+        },
+        "state": "Estado cuya ley se aplica",
+        "review": "Léalo antes de guardar",
+        "propose": "Guardar como borrador para firmar",
+        "back": "Cambiarlo",
+        "previewTitle": "El acuerdo tal como se leerá",
+        "spouseWarning": "Kin no redactará un acuerdo con un cónyuge. No sirve para el spend-down de Medicaid. Pregunte a su abogado."
+      },
+      "rateNote": {
+        "near": "{rate} la hora se acerca a la mediana del mercado, {median}.",
+        "below": "{rate} la hora está muy por debajo de la mediana del mercado, {median}. Un abogado podría preguntar por qué.",
+        "above": "{rate} la hora está muy por encima de la mediana del mercado, {median}. Un abogado podría preguntar por qué.",
+        "unknown": "No hay ninguna cifra de mercado para esta moneda."
+      },
+      "errors": {
+        "refused": "Su rol no puede hacer esto.",
+        "invalid": "Algo del formulario no se pudo leer. Revíselo e inténtelo de nuevo.",
+        "spouse": "Kin no redactará un acuerdo con un cónyuge. Pregunte a su abogado.",
+        "relation": "Elija el parentesco del cuidador.",
+        "duties": "Escriba de una a doce tareas, cada una breve.",
+        "hours": "Las horas a la semana deben estar entre 1 y 84.",
+        "rate": "La tarifa no se pudo leer como un importe.",
+        "start_date": "El día de inicio no se pudo leer.",
+        "end_term": "Elija cómo termina el acuerdo.",
+        "end_date": "Un día de fin fijado debe ser posterior al inicio.",
+        "payer": "Elija con el dinero de quién se paga.",
+        "state": "Elija un estado.",
+        "amount": "La tarifa no se pudo leer como un importe.",
+        "unavailable": "Kin no pudo hacerlo ahora mismo. Inténtelo de nuevo en un momento.",
+        "gate": {
+          "unsigned": "El acuerdo de cuidado del cuidador no está firmado por todos, así que el trabajo del {day} aún no se puede pagar.",
+          "before_signed": "El acuerdo de cuidado no cubre el trabajo del {day}: se hizo antes de que se firmara el acuerdo.",
+          "after_end": "El acuerdo de cuidado terminó antes del {day}."
+        },
+        "closed": "Este acuerdo ya no es un borrador, así que no se puede firmar ni retirar.",
+        "ended": "Este acuerdo ya ha terminado.",
+        "signed": "Este acuerdo ya está firmado, así que no se puede retirar. Termínelo en su lugar.",
+        "pay_rate": "Un acuerdo indica la tarifa actual de la cuidadora, y este no. Si la tarifa cambió, redacte un acuerdo nuevo con la tarifa nueva.",
+        "overlap": "Un acuerdo firmado para esta cuidadora ya cubre el día en que empezaría este. Haga que este empiece después, o termine primero aquel."
+      },
+      "summary": "{count} archivados."
     }
   },
   "aiProvenance": {

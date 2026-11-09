@@ -35,7 +35,11 @@ export const MAX_ACCOUNT_CHARS = 1_200;
 // Scam markers
 // ---------------------------------------------------------------------------
 
-export const SCAM_MARKERS = ["secrecy", "urgency", "gift_cards", "crypto_atm", "courier_pickup", "wire"] as const;
+/**
+ * `payment_app`: money to a handle or link the caller names on a payment app.
+ * Families use these apps, so it is a sign and not an unusual route on its own.
+ */
+export const SCAM_MARKERS = ["secrecy", "urgency", "gift_cards", "crypto_atm", "courier_pickup", "wire", "payment_app"] as const;
 export type ScamMarker = (typeof SCAM_MARKERS)[number];
 
 /** The markers that name a way to pay no family member needs. Any one of them is a red flag on its own. */
@@ -44,13 +48,15 @@ export const UNUSUAL_ROUTES = ["gift_cards", "crypto_atm", "courier_pickup", "wi
 const MARKER_RULES: Readonly<Record<ScamMarker, RegExp>> = {
   secrecy:
     /\b(don'?t tell|do not tell|tell (no one|nobody)|keep (this|it) (secret|between us|quiet)|between us|secret|nicht sagen|niemandem|ne le dis|ne dis (rien|à personne)|ne le dites|no se lo (diga|digas)|no (le )?digas? nada|non dirlo|non dire niente)\b/iu,
+  // "now" alone is everyday speech; it is a sign when money is demanded in the same sentence ("send $500 to paypal.me/x now": a dot inside a word does not end it).
   urgency:
-    /\b(right now|immediately|urgent(ly)?|asap|today|tonight|within (the hour|\d+ (minutes|hours?))|at once|hurry|quick(ly)?|sofort|heute|dringend|tout de suite|immédiatement|vite|ahora mismo|enseguida|rápido|subito|urgente|in fretta)\b/iu,
+    /\b(right now|immediately|urgent(ly)?|asap|today|tonight|within (the hour|\d+ (minutes|hours?))|at once|hurry|quick(ly)?|sofort|heute|dringend|tout de suite|immédiatement|vite|ahora mismo|enseguida|rápido|subito|urgente|in fretta)\b|\b(send|pay|wire|transfer|need)\b(?:[^.!?]|[.!?](?=\S)){0,80}\bnow\b/iu,
   gift_cards: /\b(gift ?cards?|itunes|google play card|steam card|prepaid cards?|geschenkkarten?|cartes? cadeaux?|tarjetas? de regalo|carte regalo|carta regalo)\b/iu,
   crypto_atm: /\b(bitcoin|crypto(currency)?|crypto atm|bitcoin atm|coinbase|kryptowährung|cryptomonnaie|criptomoneda|criptovaluta)\b/iu,
   courier_pickup:
     /\b(courier|messenger|(someone|somebody|a man|a person|a driver|a runner|a friend of mine|a lawyer) (will )?(come|pick|collect)|come (to )?(pick|collect)|pick(ed)? (them |it |the (cash|money|cards?) )?up|send (a )?(driver|runner|person)|kurier|coursier|mensajero|corriere)\b/iu,
   wire: /\b(wire( transfer)?|western union|moneygram|bank transfer|überweisung|virement|transferencia|bonifico)\b/iu,
+  payment_app: /(\bpaypal\.me\b|\bpaypal me\b|\bvenmo\b|\bzelle\b|\bcash ?app\b|\bapple cash\b|(^|\s)\$[a-z][a-z0-9_-]{1,19}\b)/iu,
 };
 
 /**

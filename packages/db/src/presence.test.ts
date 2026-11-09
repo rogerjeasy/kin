@@ -37,7 +37,7 @@ import {
 } from "./presence.ts";
 import { asPerson, asService } from "./scope.ts";
 import { proposeHelp } from "./presence-help.ts";
-import { PARENT_PHONE, adminRun, enableCalls, realCircle, seatPerson, serviceRows, visitorWithCircle, withoutTriggers, type VisitorCircle } from "./testing/index.ts";
+import { PARENT_PHONE, adminRun, enableCalls, realCircle, seatPerson, serviceRows, snapshotFor, visitorWithCircle, withoutTriggers, type VisitorCircle } from "./testing/index.ts";
 import { testDatabases } from "./testing/databases.ts";
 import { REFUSED, errorCode } from "./testing/sql.ts";
 
@@ -118,6 +118,13 @@ describe("opening a check in a demo circle", () => {
     await expect(open(circle, circle.userId, input(circle, await theo(other)))).rejects.toMatchObject({ reason: "cannot_ask" });
   });
 
+  it("keeps a payment app among the scam signs, and refuses a sign the rules do not know", async () => {
+    const circle = await visitorWithCircle(db);
+    const { checkId } = await open(circle, circle.userId, input(circle, await theo(circle), { markers: ["urgency", "payment_app"] }));
+    expect(await asPerson(db.app, circle.userId, (tx) => readPresenceCheck(tx, circle.circleId, checkId))).toMatchObject({ markers: ["urgency", "payment_app"] });
+    await expect(open(circle, circle.userId, input(circle, await theo(circle), { markers: ["urgency", "bogus" as never] }))).rejects.toMatchObject({ reason: "invalid" });
+  });
+
   it("is open to the organizer, a contributor and the parent, never to a caregiver or an observer, and a flood is refused", async () => {
     const circle = await visitorWithCircle(db);
     const voice = await theo(circle);
@@ -151,6 +158,25 @@ describe("the real person's answer", () => {
     // Every member who sees the money is told, in the words worked out when the check was opened.
     const told = await serviceRows(db, circle.circleId, "select distinct spoken_text from narrations where claim_check_id is not null and spoken_text like 'Someone saying they were Theo%'");
     expect(told).toEqual([{ spoken_text: ALERTS.denied }]);
+  });
+
+  it("puts the hold on the circle every screen reads, a day long on the circle's own clock, and nothing before any check", async () => {
+    const circle = await visitorWithCircle(db);
+    const heldUntil = async () => (await snapshotFor(db, circle.userId, circle.circleId)).circle;
+    expect((await heldUntil()).heldByPresenceUntil).toBeNull();
+    const token = newCheckToken();
+    await open(circle, circle.userId, input(circle, await theo(circle), { token }));
+    const open15 = await heldUntil();
+    const openLeft = (open15.heldByPresenceUntil?.getTime() ?? 0) - open15.now.getTime();
+    expect(openLeft).toBeGreaterThan(0);
+    expect(openLeft).toBeLessThanOrEqual(3_600_000);
+    await answerPresenceCheck(db.app, { token, answer: "not_me" });
+    const denied = await heldUntil();
+    // A demo circle's clock stands still, so the hold is counted from it: about a day after its "now".
+    const deniedLeft = (denied.heldByPresenceUntil?.getTime() ?? 0) - denied.now.getTime();
+    expect(deniedLeft).toBeGreaterThan(23 * 3_600_000);
+    // The database times the hold on its own clock and this test reads it on Node's: allow a minute between the two.
+    expect(deniedLeft).toBeLessThanOrEqual(24 * 3_600_000 + 60_000);
   });
 
   it("lifts the hold on a 'yes', tells the family nothing has moved, and lets a later 'no' overrule it", async () => {

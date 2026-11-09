@@ -81,6 +81,17 @@ describe("the database's access rules (AGENTS.md section 6)", () => {
     expect(columns.rows.map((row) => `${row.table_name}.${row.column_name}`)).toEqual(["shifts.state"]);
   });
 
+  it("let no role but the operations write a care agreement or its signatures, and the provisioner only add them", async () => {
+    const result = await admin.execute<{ grantee: string; table_name: string; privilege_type: string }>(
+      sql`select grantee, table_name, privilege_type from information_schema.role_table_grants
+          where table_name in ('care_agreements', 'care_agreement_signatures') and grantee = any(${roleArray}) and privilege_type <> 'SELECT'`,
+    );
+    expect(result.rows.map((row) => `${row.grantee} ${row.table_name} ${row.privilege_type}`).toSorted()).toEqual([
+      "kin_provisioner care_agreement_signatures INSERT",
+      "kin_provisioner care_agreements INSERT",
+    ]);
+  });
+
   it("let no role delete or truncate anything", async () => {
     const result = await admin.execute<{ grantee: string; table_name: string; privilege_type: string }>(
       sql`select grantee, table_name, privilege_type from information_schema.role_table_grants

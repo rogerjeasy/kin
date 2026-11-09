@@ -1,7 +1,8 @@
-import { CaregiverPayoutError, calendarDay, planCaregiverPayout, type CircleRole, type ParentLevel } from "@kin/domain";
+import { CareAgreementGateError, CaregiverPayoutError, calendarDay, parseCaregiverBillDetails, planCaregiverPayout, type CircleRole, type ParentLevel } from "@kin/domain";
 import { and, eq, sql } from "drizzle-orm";
 
 import { readAgreementVersions } from "./agreements.ts";
+import { assertCaregiverWorkCovered } from "./care-agreements.ts";
 
 import { CaregiverBillingError, operation, requiredId } from "./caregiver-billing.ts";
 import type { Transaction } from "./connection.ts";
@@ -46,6 +47,14 @@ async function planFor(tx: Transaction, { circleId, billId, now }: Review) {
   // No agreement can mean none exists or that this person may not read it:
   // the database operation tells the two apart, so it is asked.
   if (!agreement) return refusal(tx, circleId, billId);
+  // Once the caregiver has a care agreement on file, a bill is sent only for days it covers, at the rate it states.
+  const details = parseCaregiverBillDetails(bill.caregiverDetails);
+  try {
+    await assertCaregiverWorkCovered(tx, { circleId, payeeId: bill.payeeId, workDates: details.visits.map((visit) => visit.date), rateCentsPerHour: details.rateCentsPerHour });
+  } catch (error) {
+    if (error instanceof CareAgreementGateError) throw new CaregiverBillingError("care_agreement");
+    throw error;
+  }
   const member = payee.memberId !== null && payee.role !== null ? { memberId: payee.memberId, role: payee.role satisfies CircleRole } : null;
   try {
     const { plan } = planCaregiverPayout({

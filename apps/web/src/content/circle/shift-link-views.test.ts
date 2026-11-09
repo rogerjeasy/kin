@@ -31,11 +31,26 @@ describe("who is offered a check-in link", () => {
     expect(todays(await seen("daniel"))).toMatchObject({ canLink: false });
   });
 
+  it("offers one for a sibling's drive, which is credited when its keys turn, and none for an appointment, which waits for no tap", async () => {
+    const snapshot = await seen("elena");
+    const viewOf = (kind: "drive" | "appointment") => {
+      const shift = snapshot.shifts.find((each) => each.kind === kind && each.state === "scheduled");
+      if (shift === undefined) throw new Error(`The demo has no ${kind}`);
+      return shiftViews(snapshot, shiftWeek(snapshot, shift.startsAt.toISOString().slice(0, 10))).find((view) => view.shift.id === shift.id);
+    };
+    expect(viewOf("drive")).toMatchObject({ canLink: true, shift: { waitingFor: "check_in" } });
+    expect(viewOf("appointment")).toMatchObject({ canLink: false, shift: { waitingFor: null } });
+  });
+
   it("offers none for a shift that is already paid, and none for a shift whose time has long gone", async () => {
     const snapshot = await seen("elena");
-    const paid = shiftViews(snapshot, shiftWeek(snapshot, "2026-10-21"));
-    expect(paid.length).toBeGreaterThan(0);
-    for (const view of paid) expect(view.canLink, view.shift.title ?? "").toBe(false);
+    // Today's shift as it reads once both keys have turned and it was paid.
+    const today = todays(snapshot);
+    if (today === undefined) throw new Error("The demo has no aide shift today");
+    const paidAt = new Date("2026-10-30T18:00:00Z");
+    const paidShift = { ...today.shift, state: "paid" as const, checkedInAt: paidAt, checkedOutAt: paidAt, familyConfirmedAt: paidAt, waitingFor: null };
+    const paid = { ...snapshot, shifts: snapshot.shifts.map((shift) => (shift.id === today.shift.id ? paidShift : shift)) };
+    expect(shiftViews(paid, shiftWeek(paid, WEEK)).find((view) => view.shift.id === today.shift.id)).toMatchObject({ canLink: false });
     const late = { ...snapshot, circle: { ...snapshot.circle, now: new Date("2026-11-30T00:00:00Z") } };
     expect(todays(late)).toMatchObject({ canLink: false });
   });

@@ -43,8 +43,9 @@ describe("Kin reading its simulated call aloud", () => {
     const { circle, shiftId } = await finishedVisit();
     const { context, voice } = await speech(circle, "rose");
     expect(await sayShiftCall(context, { shiftId, part: "question", locale: "en" })).toMatchObject({ ok: true, contentType: "audio/mpeg" });
+    // Checked in at the demo clock, 2 PM in New York, so the question is about the afternoon.
     expect(voice.said[0]?.text).toBe(
-      "This is Kin, an automated assistant for your family. If you did not expect this call, you can hang up. Amara is finishing the visit. Was Amara with you this morning? Say yes, or press 1. Say no, or press 2.",
+      "This is Kin, an automated assistant for your family. If you did not expect this call, you can hang up. Amara is finishing the visit. Was Amara with you this afternoon? Say yes, or press 1. Say no, or press 2.",
     );
     await sayShiftCall(context, { shiftId, part: "confirmed", locale: "en" });
     expect(voice.said[1]?.text).toBe("Thank you. I have told Amara and the family.");

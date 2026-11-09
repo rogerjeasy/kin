@@ -56,7 +56,7 @@ export type ShiftTurn = {
 };
 
 /** Reasons for which a confirmed shift stays confirmed and waits, instead of undoing the key that was just turned. */
-export const SHIFT_HOLD_REASONS: readonly ShiftReason[] = ["paused", "no_agreement", "above_ceiling", "missing_rate", "not_covered", "visit_too_short", "visit_too_long", "invalid"];
+export const SHIFT_HOLD_REASONS: readonly ShiftReason[] = ["paused", "no_agreement", "above_ceiling", "missing_rate", "not_covered", "care_agreement", "visit_too_short", "visit_too_long", "invalid"];
 
 /** Settles the shift if both its keys have turned. A failure to settle holds the shift, in a savepoint, and never undoes the key. */
 async function settleIfReady(tx: Transaction, circleId: string, shiftId: string, now: Date): Promise<ShiftTurn> {
@@ -87,6 +87,16 @@ export async function checkOutShift(tx: Transaction, input: { readonly circleId:
  */
 export async function confirmShift(tx: Transaction, input: { readonly circleId: string; readonly shiftId: string; readonly now: Date }): Promise<ShiftTurn> {
   await shiftOperation(() => tx.execute(sql`select kin_private.confirm_shift(${input.circleId}::uuid, ${input.shiftId}::uuid)`));
+  return settleIfReady(tx, input.circleId, input.shiftId, input.now);
+}
+
+/**
+ * Kin's call to the parent, answered in a demo circle by whoever stands in for
+ * her: a yes is her word, recorded as hers and settled like any family word; a
+ * no is a call she declined, and the visit waits. A real circle is refused.
+ */
+export async function answerSimulatedShiftCall(tx: Transaction, input: { readonly circleId: string; readonly shiftId: string; readonly answer: "yes" | "no"; readonly now: Date }): Promise<ShiftTurn> {
+  await shiftOperation(() => tx.execute(sql`select kin_private.answer_simulated_shift_call(${input.circleId}::uuid, ${input.shiftId}::uuid, ${input.answer})`));
   return settleIfReady(tx, input.circleId, input.shiftId, input.now);
 }
 

@@ -43,8 +43,8 @@ describe("a demo visitor playing every role", () => {
     await as(circle, "amara");
     const snapshot = await read(circle.userId, circle.circleId);
     expect(snapshot.agreement).toBeNull();
-    // Her two paid shifts, and her week waiting for Rose.
-    expect(snapshot.proposals.map((proposal) => proposal.purpose)).toEqual(["shift", "shift", "caregiverWeek"]);
+    // Her week waiting for Rose, and none of the family's other proposals.
+    expect(snapshot.proposals.map((proposal) => proposal.purpose)).toEqual(["caregiverWeek"]);
   });
 
   it("cannot take a seat in someone else's demo circle, or a seat another visitor holds", async () => {

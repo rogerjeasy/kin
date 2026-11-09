@@ -38,7 +38,7 @@ export const PRESENCE_WORDS: Readonly<Record<OfficeLocale, PresenceWords>> = {
   en: {
     reply: {
       checking: "I am checking with {name} now, on {name}’s own phone. Please stay on the line. Do not send any money yet.",
-      denied: "{name} says that call was not from {name}. Please hang up and send nothing. I have told the family.",
+      denied: "{name} says someone else made that call. Please hang up and send nothing. I have told the family.",
       unreachable:
         "I could not reach {name} just now. Real family never ask you to keep a secret or to pay with gift cards. Please hang up and wait for the family to call you. I have told them.",
       confirmed: "{name} says that call really was from {name}. I have told the family. No money has moved. Any help goes only to {name}’s own account, and only when the family approves it.",
@@ -114,7 +114,7 @@ export const PRESENCE_WORDS: Readonly<Record<OfficeLocale, PresenceWords>> = {
   de: {
     reply: {
       checking: "Ich frage gerade bei {name} nach, auf dem eigenen Telefon. Bitte bleiben Sie in der Leitung. Schicken Sie noch kein Geld.",
-      denied: "{name} sagt, dass dieser Anruf nicht von {name} stammt. Bitte legen Sie auf und schicken Sie nichts. Ich habe die Familie informiert.",
+      denied: "{name} sagt, dass jemand anderes diesen Anruf gemacht hat. Bitte legen Sie auf und schicken Sie nichts. Ich habe die Familie informiert.",
       unreachable:
         "Ich habe {name} gerade nicht erreicht. Echte Angehörige verlangen nie, dass Sie etwas geheim halten oder mit Geschenkkarten zahlen. Bitte legen Sie auf und warten Sie, bis die Familie Sie anruft. Ich habe sie informiert.",
       confirmed: "{name} bestätigt, dass der Anruf wirklich von {name} kam. Ich habe die Familie informiert. Es ist kein Geld geflossen. Jede Hilfe geht nur auf das eigene Konto von {name} und nur, wenn die Familie zustimmt.",
@@ -123,7 +123,7 @@ export const PRESENCE_WORDS: Readonly<Record<OfficeLocale, PresenceWords>> = {
       code_wrong: "Das ist nicht der Familiencode dieser Woche. Echte Angehörige würden ihn kennen. Bitte legen Sie auf und schicken Sie nichts. Warten Sie, bis die Familie Sie anruft.",
     },
     alert: {
-      denied: "Jemand hat {parent} um {amount} gebeten und sich als {name} ausgegeben. {name} sagt, dass der Anruf nicht von {name} kam. Behandeln Sie es als Betrug. Ausgehende Zahlungen sind einen Tag lang angehalten.",
+      denied: "Jemand hat {parent} um {amount} gebeten und sich als {name} ausgegeben. {name} sagt, dass jemand anderes angerufen hat. Behandeln Sie es als Betrug. Ausgehende Zahlungen sind einen Tag lang angehalten.",
       unreachable: "Jemand hat {parent} um {amount} gebeten und sich als {name} ausgegeben. Ich habe {name} nicht erreicht. Rufen Sie jetzt {name} und {parent} an. Ausgehende Zahlungen sind für die Prüfung angehalten.",
       confirmed: "{name} bestätigt, dass der Anruf bei {parent} wegen {amount} wirklich von {name} kam. Nichts wurde bezahlt. Jede Hilfe braucht die Zustimmung der Familie und geht nur auf das eigene Konto von {name}.",
       unknown: "Jemand hat {parent} um {amount} gebeten und sich als {name} ausgegeben. Diese Person steht nicht auf der Liste der Menschen, die Kin fragen darf. Behandeln Sie es als Betrug und rufen Sie {parent} an.",

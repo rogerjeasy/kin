@@ -62,9 +62,10 @@ export function NeedCard({ item, answer, copy, format, parent, approvalsHref, lo
   const Icon = ICON[item.kind];
   const answered = answer !== null && answer.kind === item.kind ? answer : null;
 
-  /** Sends the tap or the word, and says what came of it. `false` when it was refused. */
-  async function turn(): Promise<boolean> {
-    const reply = await send({ operation: OPERATION[item.kind], shiftId: item.shiftId });
+  /** Sends the tap or the word, or the key pressed on Kin's call, and says what came of it. `false` when it was refused. */
+  async function turn(callAnswer?: "yes" | "no"): Promise<boolean> {
+    const request = callAnswer === undefined ? { operation: OPERATION[item.kind], shiftId: item.shiftId } : { operation: "call_answer", shiftId: item.shiftId, answer: callAnswer };
+    const reply = await send(request);
     if (!reply.ok) return false;
     const who = { format, parent, name: item.name, wallet: item.wallet, toYou: item.toYou };
     const words: TurnWords =
@@ -105,7 +106,7 @@ export function NeedCard({ item, answer, copy, format, parent, approvalsHref, lo
           <Button type="button" disabled={pending} onClick={() => void turn()} className="h-auto min-h-14 w-full whitespace-normal px-6 py-3 text-lg sm:w-auto">
             {pending ? copy.needs.working : item.buttonLabel}
           </Button>
-          {item.callSim ? <CallSimulator shiftId={item.shiftId} locale={locale} parent={parent} copy={calls.simulator} shifts={copy} onYes={turn} large /> : null}
+          {item.callSim ? <CallSimulator shiftId={item.shiftId} locale={locale} parent={parent} copy={calls.simulator} shifts={copy} onAnswer={turn} large /> : null}
           {error ? <p role="alert" className="text-base text-danger">{failureText(copy, error)}</p> : null}
         </>
       )}

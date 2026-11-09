@@ -1,5 +1,5 @@
 import type { CircleSnapshot, ShiftRecord } from "@kin/db";
-import { dayPart, shiftDay, turnedKeys, type ShiftState } from "@kin/domain";
+import { shiftDay, takesKeys, turnedKeys, visitDayPart, type ShiftState } from "@kin/domain";
 
 import { familyWordRefusal, mayHearCall } from "@/server/shift-access";
 import { may } from "@/server/dashboard-context";
@@ -16,7 +16,6 @@ export type PaymentStage = "paid" | "sending" | "waiting_family" | "declined" | 
 export type ShiftChip = ShiftState | "awaits_approval" | "being_paid" | "declined" | "payment_failed";
 
 /** Only an aide's shift is paid, but a sibling's visit is proven the same way, by the same two keys. */
-const KEYED_KINDS: readonly ShiftRecord["kind"][] = ["aide", "visit"];
 const OPEN_STATES: readonly ShiftState[] = ["scheduled", "checked_in", "checked_out"];
 /** A check-in link only helps while a tap is still to come, and the database lets it live six hours past the planned end. */
 const LINKABLE_STATES: readonly ShiftState[] = ["scheduled", "checked_in"];
@@ -55,7 +54,7 @@ export type Need = {
   readonly part: "morning" | "afternoon" | "evening";
 };
 
-const keyed = (shift: ShiftRecord): boolean => KEYED_KINDS.includes(shift.kind);
+const keyed = (shift: ShiftRecord): boolean => takesKeys(shift.kind);
 
 function paymentStage(shift: ShiftRecord): PaymentStage | null {
   if (shift.state === "paid") return "paid";
@@ -127,8 +126,7 @@ export function needsOf(circle: CircleSnapshot): Need[] {
   const needs: Need[] = [];
   for (const shift of circle.shifts) {
     if (!keyed(shift)) continue;
-    // The part of the day the visit was planned for, not the minute of a tap, which a demo clock does not move.
-    const part = dayPart(shift.startsAt, timezone);
+    const part = visitDayPart(shift, timezone);
     const own = shift.memberId === circle.viewer.memberId && may(circle, "shift.check");
     if (own && shift.state === "scheduled" && shiftDay(shift.startsAt, timezone) <= today) needs.push({ shift, kind: "check_in", part });
     else if (own && shift.state === "checked_in") needs.push({ shift, kind: "check_out", part });

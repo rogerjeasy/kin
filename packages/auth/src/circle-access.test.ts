@@ -8,11 +8,11 @@ const active = (role: CircleRole) => ({ role, status: "active" as const });
 describe("what a member may do in a circle", () => {
   // Least-privileged roles first (AGENTS.md section 6).
   it("lets an observer see everything and change nothing", () => {
-    expect(allowedActions(active("observer"))).toEqual(["circle.view", "money.view", "own_payments.view", "safety.view", "shift.view"]);
+    expect(allowedActions(active("observer"))).toEqual(["circle.view", "money.view", "own_payments.view", "safety.view", "shift.view", "care_agreement.view"]);
   });
 
   it("lets a caregiver see only their own payments, and pull the pause switch", () => {
-    expect(allowedActions(active("caregiver"))).toEqual(["circle.view", "own_payments.view", "shift.view", "shift.check", "shift.link", "shift.cancel", "circle.pause", "caregiver_bill.submit", "caregiver_receiver.set", "payout_target.set"]);
+    expect(allowedActions(active("caregiver"))).toEqual(["circle.view", "own_payments.view", "shift.view", "shift.check", "shift.link", "shift.cancel", "circle.pause", "care_agreement.view", "care_agreement.sign", "caregiver_bill.submit", "caregiver_receiver.set", "payout_target.set"]);
     expect(authorize(active("caregiver"), "money.view")).toEqual({ allowed: false, reason: "role" });
     expect(authorize(active("caregiver"), "proposal.answer")).toEqual({ allowed: false, reason: "role" });
   });
@@ -76,6 +76,15 @@ describe("what a member may do in a circle", () => {
       expect(authorize(active(role), "shift_call.stop").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
       expect(authorize(active(role), "payout_target.set").allowed).toBe(role === "caregiver");
       expect(authorize(active(role), "shift.view").allowed).toBe(true);
+    }
+  });
+
+  it("lets the organizer write and manage a care agreement, the parent and caregiver only sign, and an observer only read", () => {
+    for (const role of CIRCLE_ROLES) {
+      expect(authorize(active(role), "care_agreement.view").allowed).toBe(true);
+      expect(authorize(active(role), "care_agreement.propose").allowed).toBe(role === "organizer");
+      expect(authorize(active(role), "care_agreement.manage").allowed).toBe(role === "organizer");
+      expect(authorize(active(role), "care_agreement.sign").allowed).toBe(role === "organizer" || role === "parent" || role === "caregiver");
     }
   });
 

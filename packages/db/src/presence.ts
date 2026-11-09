@@ -519,14 +519,13 @@ export type PresenceLine = {
 export async function readPresenceLine(tx: Transaction, circleId: string): Promise<PresenceLine | null> {
   const [circle] = await tx.select({ currency: circles.currency, timezone: circles.timezone }).from(circles).where(and(eq(circles.id, circleId), eq(circles.status, "active")));
   if (!circle) return null;
-  const [voices, parent] = await Promise.all([
-    tx
-      .select({ id: trustedVoices.id, name: trustedVoices.name, relationship: trustedVoices.relationship, aliases: trustedVoices.aliases })
-      .from(trustedVoices)
-      .where(and(eq(trustedVoices.circleId, circleId), isNull(trustedVoices.removedAt), sql`${trustedVoices.confirmedAt} is not null`))
-      .orderBy(trustedVoices.createdAt, trustedVoices.id),
-    tx.execute<{ name: string | null }>(sql`select display_name as name from members where circle_id = ${circleId}::uuid and role = 'parent' and status = 'active' order by joined_at limit 1`),
-  ]);
+  // One query at a time: a transaction is one connection, and pg will refuse queries sent over it at once.
+  const voices = await tx
+    .select({ id: trustedVoices.id, name: trustedVoices.name, relationship: trustedVoices.relationship, aliases: trustedVoices.aliases })
+    .from(trustedVoices)
+    .where(and(eq(trustedVoices.circleId, circleId), isNull(trustedVoices.removedAt), sql`${trustedVoices.confirmedAt} is not null`))
+    .orderBy(trustedVoices.createdAt, trustedVoices.id);
+  const parent = await tx.execute<{ name: string | null }>(sql`select display_name as name from members where circle_id = ${circleId}::uuid and role = 'parent' and status = 'active' order by joined_at limit 1`);
   return { currency: circle.currency, timezone: circle.timezone, parentName: parent.rows[0]?.name ?? "", voices };
 }
 

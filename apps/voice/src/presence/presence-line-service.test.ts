@@ -104,7 +104,7 @@ describe("the 'is it really you?' line", () => {
   });
 
   it.each([
-    ["denied", "Theo says that call was not from Theo. Please hang up and send nothing. I have told the family."],
+    ["denied", "Theo says someone else made that call. Please hang up and send nothing. I have told the family."],
     ["confirmed", "Theo says that call really was from Theo. I have told the family. No money has moved. Any help goes only to Theo’s own account, and only when the family approves it."],
   ] as const)("tells Rose the one fixed sentence for a check that ended %s, and hangs up", async (ended, sentence) => {
     const { turn } = await rosesCall();

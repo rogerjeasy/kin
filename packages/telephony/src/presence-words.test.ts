@@ -19,6 +19,13 @@ describe.each(OFFICE_LOCALES)("the words of 'is it really you?' in %s", (locale)
     }
   });
 
+  it("names the person once in what Rose hears after a 'not me', and in the family's alert about it", () => {
+    const times = (text: string) => text.split("Theo").length - 1;
+    expect(times(presenceReplyText(facts(locale), "denied"))).toBe(1);
+    // The alert names the impostor's claim and then the real person's answer: twice, never a third time in the answer itself.
+    expect(times(presenceAlertTexts(facts(locale)).denied)).toBeLessThanOrEqual(2);
+  });
+
   it("fills the family's four alerts with the amount from the record, and with a plain word when no amount was named", () => {
     const alerts = presenceAlertTexts(facts(locale));
     for (const alert of Object.values(alerts)) {

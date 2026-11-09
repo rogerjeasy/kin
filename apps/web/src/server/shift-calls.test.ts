@@ -110,10 +110,11 @@ describe("Kin's call, played in a demo circle", () => {
     if (!english.ok || !("call" in english)) throw new Error("Expected the call");
     expect(english.call.opening[0]).toContain("Kin");
     expect(english.call.question).toContain("Amara");
-    expect(english.call.question).toContain("this morning");
+    // Amara checked in at the demo clock, 2 PM in New York: the call asks about the afternoon, as the screen beside it says.
+    expect(english.call.question).toContain("this afternoon");
     expect(english.call.question).toMatch(/press 1/i);
     const french = await as(circle, "rose", { operation: "call_script", shiftId, locale: "fr" });
-    expect(french).toMatchObject({ ok: true, call: { question: expect.stringContaining("ce matin") } });
+    expect(french).toMatchObject({ ok: true, call: { question: expect.stringContaining("cet après-midi") } });
   });
 
   it("is not played for a real circle, a visit that has not ended, or a shift Kin cannot find", async () => {
@@ -127,5 +128,44 @@ describe("Kin's call, played in a demo circle", () => {
     expect(await ask({ shiftId: "00000000-0000-4000-8000-000000000000" })).toEqual({ ok: false, reason: "refused" });
     expect(await ask({ shiftId: "nope" })).toEqual({ ok: false, reason: "invalid" });
     expect(await ask({ shiftId, locale: "xx" })).toEqual({ ok: false, reason: "invalid" });
+  });
+});
+
+describe("the key pressed on Kin's call in a demo circle", () => {
+  async function finishedVisit(circle: VisitorCircle): Promise<string> {
+    const shiftId = await todaysShift(circle);
+    await as(circle, "amara", { operation: "check_in", shiftId });
+    await as(circle, "amara", { operation: "check_out", shiftId });
+    return shiftId;
+  }
+  const shiftOf = async (circle: VisitorCircle, shiftId: string) => (await snapshot(circle, circle.userId)).shifts.find((shift) => shift.id === shiftId);
+
+  it("records Elena's yes, playing Rose, as Rose's word, and pays the visit", async () => {
+    const circle = await visitorWithCircle(db);
+    const shiftId = await finishedVisit(circle);
+    const reply = await as(circle, "elena", { operation: "call_answer", shiftId, answer: "yes" });
+    expect(reply).toMatchObject({ ok: true, outcome: { kind: "paid_by_permission" } });
+    expect(await shiftOf(circle, shiftId)).toMatchObject({ familyConfirmedBy: circle.members.rose, callState: "confirmed" });
+  });
+
+  it("records a no as a call Rose declined: the visit is not paid and the card says why", async () => {
+    const circle = await visitorWithCircle(db);
+    const shiftId = await finishedVisit(circle);
+    expect(await as(circle, "elena", { operation: "call_answer", shiftId, answer: "no" })).toEqual({ ok: true, outcome: { kind: "declined_by_call" } });
+    expect(await shiftOf(circle, shiftId)).toMatchObject({ state: "checked_out", familyConfirmedAt: null, proposalId: null, callState: "declined" });
+  });
+
+  it("is refused to a caregiver and an observer, for a real circle, a visit that has not ended, and any other answer", async () => {
+    const circle = await visitorWithCircle(db);
+    const shiftId = await todaysShift(circle);
+    const press = (persona: keyof VisitorCircle["members"], input: Record<string, unknown>, change?: (seen: CircleSnapshot) => CircleSnapshot) =>
+      as(circle, persona, { operation: "call_answer", shiftId, answer: "yes", ...input }, change);
+    expect(await press("elena", {})).toEqual({ ok: false, reason: "wrong_state" });
+    await as(circle, "amara", { operation: "check_in", shiftId });
+    await as(circle, "amara", { operation: "check_out", shiftId });
+    for (const persona of ["amara", "daniel"] as const) expect(await press(persona, {}), persona).toEqual({ ok: false, reason: "refused" });
+    expect(await press("elena", {}, demoOff)).toEqual({ ok: false, reason: "refused" });
+    expect(await press("elena", { answer: "maybe" })).toEqual({ ok: false, reason: "invalid" });
+    expect(await press("elena", { extra: true })).toEqual({ ok: false, reason: "invalid" });
   });
 });

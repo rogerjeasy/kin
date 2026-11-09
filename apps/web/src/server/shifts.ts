@@ -2,6 +2,7 @@ import { authorize, type CircleAction } from "@kin/auth";
 import {
   ShiftCallError,
   ShiftError,
+  answerSimulatedShiftCall,
   asPerson,
   cancelShift,
   checkInShift,
@@ -22,7 +23,7 @@ import {
 import { ShiftPermissionTermsError, checkShiftPermissionTerms, shiftPermissionExcessAboveParentLimit, type ShiftPermissionRefusal, type ShiftPermissionTerms } from "@kin/domain";
 
 import { parentDecision } from "./mandates";
-import { familyWordRefusal } from "./shift-access";
+import { familyWordRefusal, mayHearCall } from "./shift-access";
 import { setCallSettings, callSettingsRequest, mayEnableCall } from "./shift-call-settings";
 import { simulatedCall, type SimulatedCall } from "./shift-call-simulation";
 import { linkRequest, makeCheckLink, type LinkFailure, type LinkServices, type MadeLink } from "./shift-links";
@@ -44,7 +45,9 @@ export type ShiftOutcome =
   /** A key is still missing, so nothing is priced yet. */
   | { readonly kind: "waiting" }
   /** Both keys turned, but the shift cannot be settled yet (a paused circle, no agreement...). */
-  | { readonly kind: "held"; readonly reason: ShiftReason };
+  | { readonly kind: "held"; readonly reason: ShiftReason }
+  /** The parent said on Kin's call that the visit did not happen: nothing is priced, and the family can look into it. */
+  | { readonly kind: "declined_by_call" };
 
 export type ShiftResult =
   | { readonly ok: true; readonly outcome: ShiftOutcome }
@@ -95,6 +98,7 @@ export async function runShift(context: ShiftContext, input: unknown): Promise<S
     if (operation === "check_link") return allowed("shift.link") ? await checkLink(context, row) : refusal("refused");
     if (operation === "call_settings") return await callSettings(context, row, allowed);
     if (operation === "call_script") return allowed("shift.confirm") ? simulatedCall(context.circle, row["shiftId"], row["locale"]) : refusal("refused");
+    if (operation === "call_answer") return allowed("shift.confirm") ? await callAnswer(context, row) : refusal("refused");
     return refusal("invalid");
   } catch (error) {
     if (error instanceof ShiftPermissionTermsError || error instanceof ShiftError || error instanceof ShiftCallError) return refusal(error.reason);
@@ -147,6 +151,23 @@ async function turnKey(context: ShiftContext, row: Record<string, unknown>, turn
     const result = turn === "check_out" ? await checkOutShift(tx, { circleId, shiftId, now }) : await confirmShift(tx, { circleId, shiftId, now });
     return { ok: true, outcome: outcomeOf(result) };
   });
+}
+
+/**
+ * The key pressed on Kin's call in a demo circle, by whoever plays the parent.
+ * The database records it as the parent's answer, never as the person who
+ * pressed it, and refuses a real circle, which gets the real call.
+ */
+async function callAnswer(context: ShiftContext, row: Record<string, unknown>): Promise<ShiftResult> {
+  const answer = row["answer"];
+  const shiftId = uuidField(row["shiftId"]);
+  if (!onlyKeys(row, ["operation", "shiftId", "answer"]) || shiftId === null || (answer !== "yes" && answer !== "no")) return refusal("invalid");
+  const shift = context.circle.shifts.find((each) => each.id === shiftId);
+  if (shift === undefined || !context.circle.circle.demo) return refusal("refused");
+  if (!mayHearCall(context.circle, shift)) return refusal("wrong_state");
+  const circleId = context.circle.circle.id;
+  const turn = await asPerson(context.db, context.userId, (tx) => answerSimulatedShiftCall(tx, { circleId, shiftId, answer, now: context.circle.circle.now }));
+  return { ok: true, outcome: answer === "no" ? { kind: "declined_by_call" } : outcomeOf(turn) };
 }
 
 function outcomeOf(turn: ShiftTurn): ShiftOutcome {

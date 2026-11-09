@@ -10,6 +10,8 @@ import { waitingProposals } from "@/content/circle/proposal-view";
 import { needsOf } from "@/content/circle/shift-views";
 import { shellCircle } from "@/content/circle/shell";
 import { circleSlots } from "@/content/circle/words";
+import { presenceRoute } from "@/content/dashboard-routes";
+import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
 import { may, sectionsFor, shellData } from "@/server/dashboard-context";
 
@@ -50,6 +52,11 @@ export default async function DashboardLayout({ children, params }: LayoutProps<
   const { now, demo, pausedUntil, pausedBy } = circle.circle;
   const me = circle.members.find((member) => member.id === circle.viewer.memberId);
   const paused = pausedUntil !== null && pausedUntil.getTime() > now.getTime();
+  const { heldByPresenceUntil } = circle.circle;
+  const presenceHold =
+    heldByPresenceUntil !== null && heldByPresenceUntil.getTime() > now.getTime()
+      ? { text: fill(shell.presenceHold.text, { until: format.dateTime(heldByPresenceUntil) }), link: may(circle, "money.view") ? { href: localizedPath(locale, presenceRoute), label: shell.presenceHold.link } : null }
+      : null;
 
   return (
     <AppShell
@@ -77,6 +84,7 @@ export default async function DashboardLayout({ children, params }: LayoutProps<
         canPause: may(circle, "circle.pause"),
         canResume: paused && (circle.viewer.role === "organizer" || pausedBy === circle.viewer.memberId),
       }}
+      presenceHold={presenceHold}
       badges={{
         ...(askedCount > 0 ? { shifts: { value: asked, label: fill(shell.waiting, { count: asked }) } } : {}),
         ...(waitingCount > 0 ? { approvals: { value: waiting, label: fill(shell.waiting, { count: waiting }) } } : {}),

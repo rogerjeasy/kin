@@ -5,7 +5,7 @@ import type { Transaction } from "./connection.ts";
 
 export type CaregiverBillingReason =
   | "refused" | "invalid" | "missing_rate" | "rate_changed" | "duplicate" | "key_reused"
-  | "not_waiting" | "above_ceiling" | "paused" | "no_agreement" | "receiver" | "payment_in_progress";
+  | "not_waiting" | "above_ceiling" | "paused" | "no_agreement" | "receiver" | "payment_in_progress" | "care_agreement";
 
 export class CaregiverBillingError extends Error {
   readonly retryable = false;

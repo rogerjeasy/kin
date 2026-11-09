@@ -1,4 +1,5 @@
 import { accountBalance, memberAccount } from "@kin/domain";
+import { sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
@@ -101,5 +102,45 @@ describe("PayPal's events as stored", () => {
     expect(await asPerson(db.app, mine.userId, (tx) => countIn(tx, "paypal_events", mine.circleId))).toBe(0);
     expect(await asService(db.service, theirs.circleId, (tx) => countIn(tx, "paypal_events", mine.circleId))).toBe(0);
     expect(await asService(db.service, mine.circleId, (tx) => countIn(tx, "paypal_events", mine.circleId))).toBe(1);
+  });
+});
+
+describe("money that arrives wakes the payments waiting for it", () => {
+  /** A payout or refill message the worker held for want of money, due a quarter of an hour from now. */
+  const held = async (circleId: string, topic: string): Promise<string> => {
+    const id = randomUUID();
+    await db.admin.execute(sql`insert into outbox (id, circle_id, topic, payload, available_at) values (${id}, ${circleId}, ${topic}, '{}'::jsonb, now() + interval '15 minutes')`);
+    return id;
+  };
+  const due = async (id: string): Promise<boolean> =>
+    (await db.admin.execute<{ due: boolean }>(sql`select available_at <= now() as due from outbox where id = ${id}`)).rows[0]?.due === true;
+
+  it("makes the circle's waiting payouts and refills due at once when a top-up is recorded, and nothing else", async () => {
+    const circle = await visitorWithCircle(db);
+    const other = await visitorWithCircle(db);
+    const payout = await held(circle.circleId, "payout.execute");
+    const refill = await held(circle.circleId, "purchase.execute");
+    const unrelated = await held(circle.circleId, "shift.settle");
+    const elsewhere = await held(other.circleId, "payout.execute");
+    await record(circle, capture(circle));
+    expect([await due(payout), await due(refill), await due(unrelated), await due(elsewhere)]).toEqual([true, true, false, false]);
+  });
+
+  it("wakes nothing when the same capture is read a second time", async () => {
+    const circle = await visitorWithCircle(db);
+    const paid = capture(circle);
+    await record(circle, paid);
+    const payout = await held(circle.circleId, "payout.execute");
+    expect(await record(circle, paid)).toBe("already_recorded");
+    expect(await due(payout)).toBe(false);
+  });
+
+  it("lets a member wake their own circle and nobody another's", async () => {
+    const circle = await visitorWithCircle(db);
+    const other = await visitorWithCircle(db);
+    const wake = (userId: string, circleId: string) => asPerson(db.app, userId, (tx) => tx.execute(sql`select kin_private.wake_waiting_money(${circleId}::uuid)`));
+    await expect(wake(circle.userId, circle.circleId)).resolves.toBeDefined();
+    await expect(wake(other.userId, circle.circleId)).rejects.toThrow();
+    await expect(asService(db.service, other.circleId, (tx) => tx.execute(sql`select kin_private.wake_waiting_money(${circle.circleId}::uuid)`))).rejects.toThrow();
   });
 });

@@ -1,5 +1,5 @@
 import type { ShiftRecord } from "@kin/db";
-import type { ShiftPermissionRefusal } from "@kin/domain";
+import { ShiftPriceError, workedMinutes, type ShiftPermissionRefusal } from "@kin/domain";
 
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
@@ -12,7 +12,7 @@ export type ShiftCopy = Dictionary["dashboard"]["shifts"];
 export const SHIFT_FAILURES = {
   refused: true, invalid: true, key_reused: true, bad_member: true, wrong_state: true, visit_too_short: true, visit_too_long: true, own_shift: true,
   parent_can_answer: true, not_started: true, not_paid_kind: true, keys_missing: true, missing_rate: true, above_ceiling: true, paused: true,
-  no_agreement: true, payment_in_progress: true, parent_only: true, no_parent: true, not_covered: true, invalid_target: true, not_money: true,
+  no_agreement: true, payment_in_progress: true, parent_only: true, no_parent: true, not_covered: true, care_agreement: true, invalid_target: true, not_money: true,
   bad_minutes: true, bad_dates: true, too_long: true, amount: true, bad_times: true, bad_date: true, bad_payee: true, unavailable: true,
   too_many_links: true, consent_needed: true, no_such_call: true, call_over: true, bad_phone: true, texting_off: true, text_limit: true,
 } as const satisfies Record<ShiftFailure, true>;
@@ -25,6 +25,30 @@ export function failureText(copy: ShiftCopy, reason: string): string {
 const MINUTES_PER_HOUR = 60;
 
 /** "4 h", "45 min" or "3 h 30 min", from whole minutes. */
+/**
+ * The caregiver's two taps, and how long Kin counts between them. The times
+ * are shown to the minute, but the count is the whole minutes between the
+ * exact taps, so 2:25 PM to 8:00 PM can count 5 h 34 min; saying the count
+ * beside the times keeps the price below from looking a minute short.
+ */
+export function tapsText(copy: ShiftCopy, format: Formatters, shift: Pick<ShiftRecord, "checkedInAt" | "checkedOutAt" | "workedMinutes">): string {
+  if (shift.checkedInAt === null) return copy.keys.todo;
+  if (shift.checkedOutAt === null) return fill(copy.keys.in, { start: format.time(shift.checkedInAt) });
+  const times = { start: format.time(shift.checkedInAt), end: format.time(shift.checkedOutAt) };
+  const counted = shift.workedMinutes ?? countable(shift.checkedInAt, shift.checkedOutAt);
+  return counted === null ? fill(copy.keys.inOut, times) : fill(copy.keys.inOutCounted, { ...times, duration: durationText(copy, format, counted) });
+}
+
+/** The whole minutes between two taps, or `null` for a visit too short or too long to count, which the price says why. */
+function countable(checkedInAt: Date, checkedOutAt: Date): number | null {
+  try {
+    return workedMinutes(checkedInAt, checkedOutAt);
+  } catch (error) {
+    if (error instanceof ShiftPriceError) return null;
+    throw error;
+  }
+}
+
 export function durationText(copy: ShiftCopy, format: Formatters, minutes: number): string {
   const hours = Math.floor(minutes / MINUTES_PER_HOUR);
   const rest = minutes % MINUTES_PER_HOUR;
@@ -70,5 +94,7 @@ export function turnWords(copy: ShiftCopy, turn: "check_out" | "confirm", outcom
       return { text: fill(words.held, { reason: failureText(copy, outcome.reason) }), detail: null, toApprovals: false };
     case "waiting":
       return { text: turn === "check_out" ? fill(words.checkedOutWaiting, { parent: who.parent }) : fill(words.confirmedWaiting, { name: who.name }), detail: null, toApprovals: false };
+    case "declined_by_call":
+      return { text: fill(words.declinedByCall, { parent: who.parent }), detail: null, toApprovals: false };
   }
 }

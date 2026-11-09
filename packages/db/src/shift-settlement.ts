@@ -1,4 +1,5 @@
 import {
+  CareAgreementGateError,
   ShiftPriceError,
   decideShiftPermission,
   isPaused,
@@ -12,6 +13,7 @@ import {
 } from "@kin/domain";
 import { and, eq, sql } from "drizzle-orm";
 
+import { assertCaregiverWorkCovered } from "./care-agreements.ts";
 import { requiredId } from "./caregiver-billing.ts";
 import type { Transaction } from "./connection.ts";
 import { ShiftError, shiftOperation } from "./shift-errors.ts";
@@ -182,6 +184,13 @@ async function settleConfirmedShift(tx: Transaction, input: { readonly circleId:
     }
   })();
   if (isPaused(facts.pausedUntil, facts.now)) throw new ShiftError("paused");
+  // Once the caregiver has a care agreement on file, only work it covers at this rate is paid; the shift waits, confirmed, for a signature.
+  try {
+    await assertCaregiverWorkCovered(tx, { circleId, payeeId: shift.payeeId, workDates: [shiftDay(shift.checkedInAt, facts.timezone)], rateCentsPerHour: facts.payee.rules.rateCentsPerHour });
+  } catch (error) {
+    if (error instanceof CareAgreementGateError) throw new ShiftError("care_agreement");
+    throw error;
+  }
   if (price.cents > facts.agreement.ceilingCents) throw new ShiftError("above_ceiling");
 
   const decision = decideShiftPermission(

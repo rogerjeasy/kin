@@ -12,7 +12,7 @@ export { addMember, seatPerson, signedIn, visitorWithCircle } from "./circles.ts
 export type { VisitorCircle } from "./circles.ts";
 export { agreeWithoutCare, confirmedVisit } from "./visits.ts";
 export type { ConfirmedVisit } from "./visits.ts";
-export { PARENT_PHONE, enableCalls, openAideShift, queued, realCircle, setQuietHours, startedCall, waitingForWord, withoutTriggers } from "./real-shifts.ts";
+export { PARENT_PHONE, agreeAtRate, enableCalls, openAideShift, queued, realCircle, setQuietHours, startedCall, waitingForWord, withoutTriggers } from "./real-shifts.ts";
 export type { RealCircle } from "./real-shifts.ts";
 
 /** The circle as `userId` sees it, read the way the web app reads it. */

@@ -30,15 +30,25 @@ export function AnswerButtons({ locale, proposalId, approve, decline, freshCheck
       <input type="hidden" name="decision" value={decision} />
     </>
   );
+  const yes = (
+    <>
+      {field("approve")}
+      <Button type="submit" size="sm" className="min-h-11">
+        <CheckIcon aria-hidden="true" />
+        {approve}
+      </Button>
+    </>
+  );
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <form action={freshCheck ? "/auth/step-up" : answerProposalAction} method="post">
-        {field("approve")}
-        <Button type="submit" size="sm" className="min-h-11">
-          <CheckIcon aria-hidden="true" />
-          {approve}
-        </Button>
-      </form>
+      {/* A plain URL is posted; a server action takes no method, which React sets itself (a method beside it is a hydration mismatch). */}
+      {freshCheck ? (
+        <form action="/auth/step-up" method="post">
+          {yes}
+        </form>
+      ) : (
+        <form action={answerProposalAction}>{yes}</form>
+      )}
       <form action={answerProposalAction}>
         {field("reject")}
         <Button type="submit" size="sm" variant="outline" className="min-h-11">

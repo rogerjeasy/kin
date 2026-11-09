@@ -1,4 +1,4 @@
-import { DownloadIcon, FileTextIcon, ListChecksIcon, ShieldCheckIcon } from "lucide-react";
+import { DownloadIcon, FileTextIcon, ListChecksIcon, ScaleIcon, ShieldCheckIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/dashboard/ui/empty-state";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { Button } from "@/components/ui/button";
-import { dashboardRoutes, verifyRoute } from "@/content/dashboard-routes";
+import { dashboardRoutes, packetRoute, verifyRoute } from "@/content/dashboard-routes";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
@@ -52,6 +52,12 @@ export default async function RecordPage({ params }: PageProps<"/[locale]/dashbo
                 <Link href={verifyRoutePath}>
                   <ShieldCheckIcon aria-hidden="true" />
                   {dictionary.dashboard.verify.link}
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">
+                <Link href={localizedPath(locale, packetRoute)}>
+                  <ScaleIcon aria-hidden="true" />
+                  {dictionary.dashboard.packet.link}
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">

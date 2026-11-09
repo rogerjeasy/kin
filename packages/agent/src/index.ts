@@ -2,6 +2,8 @@ export { bedrockModel } from "./bedrock-model.ts";
 export { DOCUMENT_PROMPT_VERSION } from "./document-prompt.ts";
 export { NARRATION_PROMPT_VERSION, narrate, narrateWithProvenance, passesNumberGuard } from "./narrate.ts";
 export type { Narration, NarrationFacts } from "./narrate.ts";
+export { PACKET_NOTE_PROMPT_VERSION, wordPacketNote } from "./packet-note.ts";
+export type { PacketNote } from "./packet-note.ts";
 export { FALLBACK_REASONS, byClaude, reasonForFailure } from "./provenance.ts";
 export type { FallbackReason, Provenance } from "./provenance.ts";
 export { MAX_DOCUMENT_TEXT, readDocument } from "./read-document.ts";

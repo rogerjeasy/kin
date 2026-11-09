@@ -337,6 +337,48 @@
       "when": 1794247594387,
       "tag": "0047_presence-hold-trust",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1794249836586,
+      "tag": "0048_care-agreements",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1794249842565,
+      "tag": "0049_care-agreements-access",
+      "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1794255296405,
+      "tag": "0050_care-agreement-replaces",
+      "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1794256393070,
+      "tag": "0051_simulated-shift-call",
+      "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1794258810501,
+      "tag": "0052_wake-waiting-money",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1794258961165,
+      "tag": "0053_payment-app-marker",
+      "breakpoints": true
     }
   ]
 }

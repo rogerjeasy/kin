@@ -13,6 +13,12 @@ import { formatMoney } from "@kin/domain";
 type Props = { token: string; status: PublicPresence; copy: Dictionary["presenceLink"]; locale: Locale };
 type Outcome = "me" | "not_me" | { readonly problem: keyof Dictionary["presenceLink"]["problems"] };
 
+/** The answer this link already gave, when the check is closed by it: a "no" is final, and a "yes" that can no longer be changed. */
+function answeredAlready(status: PublicPresence): Outcome | null {
+  if (status.canAnswer) return null;
+  return status.state === "denied" ? "not_me" : status.state === "confirmed" ? "me" : null;
+}
+
 const KEY_CLASS = "h-auto min-h-20 w-full flex-col gap-1 whitespace-normal px-6 py-4 text-2xl";
 
 async function answer(token: string, choice: "me" | "not_me"): Promise<Outcome> {
@@ -30,11 +36,12 @@ async function answer(token: string, choice: "me" | "not_me"): Promise<Outcome> 
  * The question and its two big answers. The server read the check without
  * changing anything; the database decides on the tap, so a late or repeated
  * answer is refused or ignored there and this page only says what happened.
- * A "no" is told plainly: the family has been told and money is held.
+ * A "no" is told plainly: the family has been told and money is held. A link
+ * opened again after its answer counted says that answer, not that it ran out.
  */
 export function PresenceCard({ token, status, copy, locale }: Props) {
   const [pending, setPending] = useState(false);
-  const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [outcome, setOutcome] = useState<Outcome | null>(() => answeredAlready(status));
   const amount = status.claimedCents === null ? null : formatMoney({ cents: status.claimedCents, currency: status.currency }, numberLocaleOf(locale));
   const slots = { parent: status.parentFirstName, amount: amount ?? "" };
 

@@ -13,8 +13,10 @@ import type {
 } from "./circle-snapshot.ts";
 import type { Transaction } from "./connection.ts";
 import { readAgreementVersions } from "./agreements.ts";
+import { readCareAgreements } from "./care-agreements.ts";
 import { readLedger } from "./ledger-store.ts";
 import { parseApprovalPlan } from "./plan-json.ts";
+import { outgoingMoneyHeldByPresence } from "./presence.ts";
 import { readMandateRecords } from "./mandates.ts";
 import { readPurchaseRecords } from "./purchases.ts";
 import { readShiftRecords } from "./shift-records.ts";
@@ -100,6 +102,7 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     invitations: await readInvitations(tx, circle.id),
     monthlyShares: await readMonthlyShares(tx, circle.id, viewerRow.id),
     invoiceRequests: await readInvoiceRequests(tx, circle.id, viewerRow),
+    careAgreements: await readCareAgreements(tx, circle.id, circle.now),
   };
 }
 
@@ -115,6 +118,7 @@ async function readCircleRow(tx: Transaction, circleId: string, now: Date): Prom
     now: row.clockAt ?? now,
     pausedUntil: row.pausedUntil,
     pausedBy: row.pausedBy,
+    heldByPresenceUntil: await outgoingMoneyHeldByPresence(tx, row.id, now, row.clockAt ?? now),
   };
 }
 

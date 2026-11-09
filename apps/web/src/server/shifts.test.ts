@@ -53,7 +53,8 @@ describe("who may do what with a shift, refused first", () => {
     ]) {
       expect(await as(circle, "daniel", input), JSON.stringify(input)).toEqual({ ok: false, reason: "refused" });
     }
-    expect(await serviceRows(db, circle.circleId, "select count(*)::int as n from shifts where circle_id = $1 and state <> 'scheduled'", [circle.circleId])).toEqual([{ n: 2 }]);
+    // Every shift is still only planned: the seed pays none, and the observer changed nothing.
+    expect(await serviceRows(db, circle.circleId, "select count(*)::int as n from shifts where circle_id = $1 and state <> 'scheduled'", [circle.circleId])).toEqual([{ n: 0 }]);
   });
 
   it("refuses a caregiver the family's word, their own shift's and everyone's, and the calendar, rules and permissions", async () => {
@@ -97,7 +98,8 @@ describe("two keys turn a shift", () => {
     // The caregiver's key alone leaves it waiting for the family.
     expect(await as(circle, "amara", { operation: "check_out", shiftId })).toEqual({ ok: true, outcome: { kind: "waiting" } });
     const rose = await seatPerson(db, circle.circleId, circle.members.rose);
-    expect(needsOf(await snapshot(circle, rose)).map((need) => [need.kind, need.part])).toEqual([["word", "morning"]]);
+    // Amara tapped in at the demo clock, 2 PM in New York: Rose is asked about the afternoon.
+    expect(needsOf(await snapshot(circle, rose)).map((need) => [need.kind, need.part])).toEqual([["word", "afternoon"]]);
 
     const answered = await runShift(context(await snapshot(circle, rose), rose), { operation: "confirm", shiftId });
     // Planned 10:00 to 12:00 in New York: 2 hours at 22.00.

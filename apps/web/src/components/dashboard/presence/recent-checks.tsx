@@ -27,7 +27,7 @@ export function RecentChecks({ checks, copy, format, locale, approvalsHref }: Pr
                   <span className="min-w-0 flex-1 basis-48 font-medium wrap-anywhere">
                     {fill(copy.recent.row, { name: check.voiceName ?? check.claimedName ?? copy.recent.noName, amount: check.claimedCents === null ? copy.noAmount : format.money(check.claimedCents) })}
                   </span>
-                  <StatePill state={check.state} copy={copy} />
+                  <StatePill check={check} copy={copy} />
                   <span className="text-sm text-muted-foreground">{format.dateTime(new Date(check.createdAt))}</span>
                   {check.simulated ? <StatusPill tone="neutral">{copy.recent.simulated}</StatusPill> : null}
                 </summary>

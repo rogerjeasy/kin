@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { grantShiftPermission, shiftPermissionDigest } from "./shift-permissions.ts";
 import { ShiftError, cancelShift, checkInShift, checkOutShift, confirmShift, scheduleShift, setOwnPayoutTarget, setShiftRules, settleShift } from "./shifts.ts";
 import { asPerson, asService } from "./scope.ts";
-import { seatPerson, snapshotFor, visitorWithCircle } from "./testing/index.ts";
+import { agreeAtRate, seatPerson, snapshotFor, visitorWithCircle } from "./testing/index.ts";
 import { testDatabases } from "./testing/databases.ts";
 import { CLOCK, newShift, payAsWorker } from "./testing/shifts.ts";
 
@@ -138,8 +138,11 @@ describe("what a shift is worth", () => {
       if (each.minutes === 1 && each.rate === 1) continue;
       await as(elena, circleId, (tx) => setShiftRules(tx, { circleId, payeeId, minimumMinutes: each.min, overtimeAfterMinutes: each.after, overtimePercent: each.percent }));
       await db.admin.execute(sql`update payees set caregiver_rate_cents_per_hour = ${each.rate} where id = ${payeeId}`);
+      // A shift is paid only at the rate its care agreement states, so the seeded agreement follows the rate.
+      await agreeAtRate(db, circleId, payeeId, each.rate);
       const shiftId = randomUUID();
-      const start = new Date(Date.UTC(2026, 0, 1 + index, 8, 0, 0));
+      // From 20 October, after the demo caregiver's care agreement took effect: pay is only for work an agreement covers.
+      const start = new Date(Date.UTC(2026, 9, 20 + index, 8, 0, 0));
       const end = new Date(start.getTime() + each.minutes * 60_000 + (each.minutes === 1440 ? 0 : 59_000));
       // Whole minutes only: the 59 spare seconds are never paid.
       await db.admin.execute(sql`insert into shifts (id, circle_id, kind, member_id, payee_id, starts_at, ends_at, state, checked_in_at, checked_out_at, family_confirmed_by, family_confirmed_at, family_confirmation, created_by)
@@ -193,7 +196,9 @@ describe("the parent's standing permission", () => {
     expect(seen.shiftPermissions).toHaveLength(1);
     expect(seen.shiftPermissions[0]).toMatchObject({ payeeId: circle.payees.amara, maxMinutesPerDay: 240, perShiftCents: 15000, status: "active", simulated: true, grantedBy: circle.members.rose });
     expect(seen.shiftRules).toEqual([{ payeeId: circle.payees.amara, minimumMinutes: 60, overtimeAfterMinutes: 480, overtimePercent: 150, payoutWallet: "paypal" }]);
-    expect(seen.shifts.filter((each) => each.state === "paid")).toHaveLength(2);
+    // Nothing is paid under it yet: the first shift it pays is the one the visitor confirms.
+    expect(seen.shifts.filter((each) => each.state === "paid")).toEqual([]);
+    expect(seen.shiftPermissions[0]?.uses).toEqual([]);
     expect(seen.shifts.filter((each) => each.state === "scheduled").map((each) => each.kind).toSorted()).toEqual(["aide", "aide", "appointment", "drive", "visit"]);
   });
 

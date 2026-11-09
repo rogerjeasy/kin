@@ -24,3 +24,5 @@ export { CAPTURE_COMPLETED, INVOICE_EVENTS, SUBSCRIPTION_EVENTS, WEBHOOK_EVENT_T
 export type { WebhookDelivery, WebhookEnvelope, WebhookHeaders } from "./webhook.ts";
 export { SUBSCRIPTION_ACTIONS, isSubscriptionId, shareStateOf } from "./subscription.ts";
 export type { NewSubscription, Subscription, SubscriptionAction, SubscriptionPayment, SubscriptionStatus } from "./subscription.ts";
+export { leftThePool, maskEmail, parsePayoutItemTransactionId, parseTransactionSearch, searchTransaction, transactionSearchPath } from "./transaction-search.ts";
+export type { TransactionRecord } from "./transaction-search.ts";

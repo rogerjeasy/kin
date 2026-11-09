@@ -1,7 +1,7 @@
 import { CheckCircle2Icon, CircleIcon } from "lucide-react";
 
 import type { ShiftView } from "@/content/circle/shift-views";
-import type { ShiftCopy } from "@/content/circle/shift-words";
+import { tapsText, type ShiftCopy } from "@/content/circle/shift-words";
 import { fill } from "@/i18n/template";
 import type { Formatters } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -27,12 +27,7 @@ function Step({ done, label, detail, doneLabel }: { done: boolean; label: string
 export function ShiftKeys({ view, copy, format, caregiver, familyName }: Props) {
   const { shift, keys } = view;
   const { keys: words } = copy;
-  const taps =
-    shift.checkedInAt === null
-      ? words.todo
-      : shift.checkedOutAt === null
-        ? fill(words.in, { start: format.time(shift.checkedInAt) })
-        : fill(words.inOut, { start: format.time(shift.checkedInAt), end: format.time(shift.checkedOutAt) });
+  const taps = tapsText(copy, format, shift);
   const said = shift.familyConfirmedAt === null ? words.todo : fill(words.saidBy, { name: familyName ?? "", time: format.time(shift.familyConfirmedAt) });
   return (
     <ol className="grid min-w-0 gap-3 sm:grid-cols-2">

@@ -1,14 +1,25 @@
 import { asPerson, readCircle, takeDemoSeat, type CircleSnapshot } from "@kin/db";
 import { serviceRows, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
 import { fakeModel } from "@kin/agent/testing";
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
 import { testDatabases } from "../../../../packages/db/src/testing/databases.ts";
 import { createRateLimiter } from "./model";
 import { familyCode, matchesFamilyCode } from "@kin/telephony";
-import { checkFamilyCode, manageVoice, openPresence, presenceScreen, presenceStatus, requestHelp, type PresenceContext } from "./presence";
+import { checkFamilyCode, manageVoice, openPresence, presenceScreen, presenceStatus, requestHelp, viewCheck, type PresenceContext } from "./presence";
 
 const db = testDatabases();
+
+// pg 8 queues queries sent on one transaction at once and warns from the third (pg 9 refuses them). It warns once per
+// process and each file has its own, so the listener starts with the file and the last test reads what it heard.
+const queryWarnings: string[] = [];
+const listenForQueries = (warning: Error) => {
+  if (warning.message.includes("already executing a query")) queryWarnings.push(warning.message);
+};
+process.on("warning", listenForQueries);
+afterAll(() => {
+  process.off("warning", listenForQueries);
+});
 const CLOCK = new Date("2026-10-30T18:00:00Z");
 const THEO = "Grandma, it's Theo. I've been arrested and I need $2,000 for bail today. Please don't tell Mum. Buy gift cards and a man will come to pick them up.";
 
@@ -217,5 +228,41 @@ describe("other spellings of a name", () => {
       const opened = await openPresence(await actingAs(circle, "elena"), { locale, account });
       expect(opened).toMatchObject({ ok: true, check: { matched: true, voiceName: "Theo", claimedCents: 30_000 } });
     }
+  });
+});
+
+describe("the hold a check shows", () => {
+  const MINUTE = 60_000;
+  const HOUR = 60 * MINUTE;
+
+  it("is the circle's hold when that is longer, its own when not, carried onto the circle's clock, and nothing once its own has ended", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    const realNow = Date.parse("2026-11-09T20:05:00Z");
+    // A check opened now holds money for fifteen minutes of real time.
+    const record = {
+      id: "00000000-0000-4000-8000-000000000001", source: "app" as const, voiceId: null, claimedName: "Theo", claimedRelationship: "grandson", claimedCents: 50_000,
+      markers: [], said: [], state: "asked" as const, locale: "en", createdAt: new Date(realNow), askedAt: new Date(realNow), answeredAt: null,
+      expiresAt: new Date(realNow + 15 * MINUTE), holdUntil: new Date(realNow + 15 * MINUTE), simulated: true, answeredVia: null, helpProposalId: null,
+    };
+    const withHold = (until: Date | null): typeof seen => ({ ...seen, circle: { ...seen.circle, heldByPresenceUntil: until } });
+
+    // A "not me" earlier holds the circle for most of a day: the new check says so, not its own fifteen minutes.
+    const dayLong = new Date(seen.circle.now.getTime() + 23 * HOUR);
+    expect(viewCheck(record, [], withHold(dayLong), "en", realNow).holdUntil).toBe(dayLong.toISOString());
+    // Alone, it says its own fifteen minutes, counted from the circle's clock.
+    expect(viewCheck(record, [], withHold(null), "en", realNow).holdUntil).toBe(new Date(seen.circle.now.getTime() + 15 * MINUTE).toISOString());
+    // Once its own hold is over, it says none, whatever else holds the circle.
+    expect(viewCheck(record, [], withHold(dayLong), "en", realNow + 16 * MINUTE).holdUntil).toBeNull();
+    expect(viewCheck({ ...record, holdUntil: null }, [], withHold(dayLong), "en", realNow).holdUntil).toBeNull();
+  });
+});
+
+describe("the screen's reads", () => {
+  it("send one query at a time on the transaction, here and in every test above", async () => {
+    const circle = await visitorWithCircle(db);
+    await presenceScreen(await actingAs(circle, "elena"), "en", "2026-10");
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(queryWarnings).toEqual([]);
   });
 });

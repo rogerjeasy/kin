@@ -1204,6 +1204,14 @@
       "circle": {
         "title": "Circle · Kin",
         "description": "The members, their roles, the family agreement and the payees."
+      },
+      "packet": {
+        "title": "Packet for your attorney · Kin",
+        "description": "The 60-month look-back, care agreements and visit proofs in one download for an elder-law attorney."
+      },
+      "careAgreements": {
+        "title": "Care agreements · Kin",
+        "description": "Written care agreements with signatures, and what each one covers."
       }
     },
     "shell": {
@@ -1236,7 +1244,11 @@
         "seat": "You are {name}, {role}",
         "leave": "Leave the demo"
       },
-      "visitor": "Demo visitor"
+      "visitor": "Demo visitor",
+      "presenceHold": {
+        "text": "Outgoing money is on hold until {until}: someone asked for money in a family member’s name, and Kin is checking with the real person or was told it was not them.",
+        "link": "Read the check"
+      }
     },
     "pause": {
       "button": "Pause payments",
@@ -1960,7 +1972,8 @@
         "model_unavailable": "Kin cannot read descriptions right now. Enter the days below instead.",
         "model_refused": "Kin could not read that description. Enter the days below instead.",
         "description": "Write between one and a thousand characters about your visits.",
-        "busy": "You have asked Kin to read several descriptions recently. Please wait a while, or enter the days below."
+        "busy": "You have asked Kin to read several descriptions recently. Please wait a while, or enter the days below.",
+        "care_agreement": "Kin pays only for work a signed care agreement covers. This work is dated before the agreement was signed, or after it ended. Sign the care agreement and it is paid."
       },
       "states": {
         "received": "Awaiting family review",
@@ -2594,6 +2607,7 @@
         "todo": "Not yet",
         "in": "In {start}",
         "inOut": "In {start}, out {end}",
+        "inOutCounted": "In {start}, out {end}: {duration} counted",
         "saidBy": "{name}, {time}"
       },
       "duration": {
@@ -2629,6 +2643,7 @@
         "checkedIn": "You are checked in. Tap Check out when you leave.",
         "checkedOutWaiting": "Checked out. Now Kin waits for {parent}’s word.",
         "confirmedWaiting": "Thank you. Now Kin waits for {name} to check out.",
+        "declinedByCall": "{parent} said on the call that the visit did not happen. Nothing is paid, and the family can look into it.",
         "paid": "{amount} is approved by {parent}’s standing permission and is on its way to {name} by {wallet}.",
         "paidToYou": "{amount} is approved by {parent}’s standing permission and is on its way to you by {wallet}.",
         "asks": "{amount} goes to the family for approval, because it is outside the standing permission.",
@@ -2717,7 +2732,8 @@
         "call_over": "That call is already over.",
         "bad_phone": "That does not look like a phone number. Include the country code, such as +14155550123.",
         "texting_off": "Texting is not switched on.",
-        "text_limit": "You have sent several texts lately. Try again later, or copy the link instead."
+        "text_limit": "You have sent several texts lately. Try again later, or copy the link instead.",
+        "care_agreement": "Kin pays only for work a signed care agreement covers. This work is dated before the agreement was signed, or after it ended. Sign the care agreement and it is paid."
       }
     },
     "shiftCover": {
@@ -3110,6 +3126,7 @@
         "unanswered": "Could not be reached",
         "expired": "Closed"
       },
+      "notOnList": "Not on your list",
       "unknownPerson": "Nobody on the list goes by that name, so Kin could not ask anyone.",
       "markersTitle": "Scam signs in the words",
       "markers": {
@@ -3118,7 +3135,8 @@
         "gift_cards": "Gift cards",
         "crypto_atm": "Crypto or a bitcoin machine",
         "courier_pickup": "Someone to collect the money",
-        "wire": "A wire transfer"
+        "wire": "A wire transfer",
+        "payment_app": "A payment app account they named"
       },
       "noMarkers": "No scam signs in the words.",
       "amountLabel": "Asked for",
@@ -3208,7 +3226,7 @@
         "text": "Three words that change every Monday. Real family know them and a cloned voice cannot. Share them with the family, never with a caller.",
         "week": "For the week {week}",
         "askTitle": "Ask the caller for the family code",
-        "askText": "Kin could not settle it with the real person. Put the code to the caller and type what they say.",
+        "askText": "Kin could not settle it with the real person. Ask the caller to say this week’s family code, and type what they say. Never tell them the code.",
         "label": "What the caller said",
         "submit": "Check the code",
         "checking": "Checking…",
@@ -3230,6 +3248,238 @@
         "link": "Answered from the text",
         "call": "Answered on Kin’s call"
       }
+    },
+    "packet": {
+      "title": "Packet for your attorney",
+      "lede": "One download holds what an elder-law attorney asks for: the last 60 months of payments sorted into what they were, the care agreements, the visit proofs, PayPal’s own records and a check that the record has not been changed.",
+      "link": "Packet for your attorney",
+      "download": "Download the packet",
+      "downloading": "Preparing the packet…",
+      "downloadNote": "A ZIP file with a PDF, spreadsheets and the record that anyone can check offline. It opens on any computer.",
+      "notice": "Prepared for your attorney. Kin sorts and checks the record. It does not say whether anything is allowed, safe or compliant, and the rules differ by state.",
+      "tiles": {
+        "window": {
+          "label": "Paid out in 60 months",
+          "note": "From {from} to {to}, without PayPal’s fees."
+        },
+        "documented": {
+          "label": "Documented",
+          "note": "Payments the record can back with paper."
+        },
+        "lacking": {
+          "label": "Needs documentation",
+          "note": "{count} payments an attorney is likely to ask about."
+        },
+        "chain": {
+          "pass": "The record checks out",
+          "fail": "The record does not check out",
+          "note": "{count} entries re-added and fingerprinted just now."
+        }
+      },
+      "note": {
+        "title": "Cover note",
+        "text": "Claude words this note from figures the code has already worked out. Every number in it is checked against the record, and a fixed note stands in if one does not match.",
+        "ask": "Ask Claude to word it",
+        "busy": "Claude is busy for the moment, so Kin’s fixed note is shown.",
+        "unavailable": "Claude is not switched on here, so Kin’s fixed note is shown."
+      },
+      "lookback": {
+        "title": "The 60 months, payment by payment",
+        "text": "Every payment that left the care account, sorted by plain code. A caregiver’s pay counts as documented when a signed care agreement covers the day of the work.",
+        "empty": "Nothing has left the care account in the last 60 months.",
+        "grid": "Payments out of the care account",
+        "cols": {
+          "day": "Paid on",
+          "to": "To",
+          "kind": "What it was",
+          "amount": "Amount",
+          "status": "Status",
+          "why": "Why"
+        },
+        "classes": {
+          "caregiver_pay": "Caregiver pay",
+          "third_party_bill": "Bill to a company",
+          "purchase_for_parent": "Bought for the parent",
+          "family_transfer": "Money to a family member"
+        },
+        "status": {
+          "documented": "Documented",
+          "needs_documentation": "Needs documentation",
+          "reversed": "Reversed"
+        },
+        "reasons": {
+          "no_agreement": "No care agreement is on file for this caregiver.",
+          "agreement_unsigned": "The care agreement is not fully signed.",
+          "before_agreement": "The work was done before the agreement was signed.",
+          "after_agreement": "The work was done after the agreement ended.",
+          "rate_not_agreed": "It was paid at a rate the care agreement does not state.",
+          "no_document": "No invoice or order is stored with it.",
+          "family_transfer": "Money paid to a relative. An attorney will ask what it was for."
+        },
+        "marks": {
+          "unverified_hours": "Hours not proved by a visit",
+          "simulated": "Simulated money",
+          "paypal": "PayPal sandbox: test money",
+          "rate_below_market": "Rate far below the market median",
+          "rate_above_market": "Rate far above the market median"
+        },
+        "none": "Nothing to add.",
+        "summaryOne": "1 payment",
+        "summaryMany": "{count} payments",
+        "csv": "Download the list (CSV)"
+      },
+      "estimate": {
+        "title": "What a household employer may owe",
+        "text": "An estimate for the family’s accountant, from the cash paid to each caregiver. Kin does not file anything and does not say the family complies.",
+        "empty": "No caregiver was paid in these years.",
+        "cols": {
+          "employee": "Caregiver",
+          "year": "Year",
+          "wages": "Paid",
+          "threshold": "Threshold",
+          "social": "Social Security",
+          "medicare": "Medicare",
+          "futa": "Unemployment",
+          "total": "Estimate"
+        },
+        "above": "Reached the threshold",
+        "below": "Under the threshold",
+        "unknownYear": "No table for this year",
+        "source": "Figures: {source}. Check them against the publication before relying on them.",
+        "exemption": "Wages to the employer’s spouse, or to the employer’s child under 21, may be exempt from Social Security and Medicare tax. The estimate does not know the relation, so the accountant applies it."
+      },
+      "rate": {
+        "title": "Is the rate near the market?",
+        "text": "Each caregiver’s agreed rate against the national median for in-home care.",
+        "source": "{source} ({collected}): {median} an hour.",
+        "near": "{rate} an hour is near the market.",
+        "below": "{rate} an hour is far below the market median.",
+        "above": "{rate} an hour is far above the market median.",
+        "unknown": "No benchmark is held for this currency.",
+        "none": "No care agreement names a rate yet."
+      },
+      "inside": {
+        "title": "What is in the download",
+        "items": [
+          "packet.pdf: the cover note, the look-back table, the care agreements, the visit proofs and the household-employer estimate.",
+          "record/kin-record.json: the record with its hash chain. Anyone can check it offline with kin-verify.",
+          "care-agreements.txt: the text of each agreement and who signed it, and when.",
+          "look-back.csv, visit-proofs.csv and paypal-payments.csv for a spreadsheet.",
+          "README.txt and manifest.json: how to check it, and a SHA-256 fingerprint of every file."
+        ]
+      }
+    },
+    "careAgreements": {
+      "title": "Care agreements",
+      "lede": "A written agreement, signed before care starts, is the first thing an attorney asks about when a family pays a caregiver. Kin fills the template from the facts you give, keeps who signed and when, and pays only for work the agreement covers.",
+      "link": "Care agreements",
+      "notice": "Prepared for your attorney. Kin is not a law firm and this is not legal advice. The agreement is written in English, the language an attorney will read. Rules differ by state.",
+      "empty": "No care agreement yet.",
+      "noCaregiver": "Add a caregiver on the Circle screen first. An agreement is for a caregiver Kin pays.",
+      "status": {
+        "draft": "Waiting for signatures",
+        "scheduled": "Signed, starts {day}",
+        "active": "In force",
+        "ended": "Ended",
+        "withdrawn": "Withdrawn"
+      },
+      "card": {
+        "rate": "{rate} an hour",
+        "hours": "About {hours} a week",
+        "starts": "Starts {day}",
+        "endsOn": "Ends {day}",
+        "ongoing": "Until either side gives 30 days’ notice",
+        "coveredFrom": "Covers work from {day}",
+        "lateSigned": "It was signed after its start date, so work before {day} is not covered by it.",
+        "replaced": "Replaced by the agreement that covers work from {day}.",
+        "rateMoved": "{name}’s pay rate is now {payRate}, but this agreement says {rate}. Kin holds pay for the work it covers until an agreement at {payRate} is signed.",
+        "signedBy": "{name} signed on {day} as {capacity}",
+        "waitingFor": "Still needs {who}",
+        "needCaregiver": "the caregiver’s signature",
+        "needRecipient": "a signature for the care recipient",
+        "capacity": {
+          "caregiver": "the caregiver",
+          "care_recipient": "the care recipient",
+          "representative": "the care recipient’s representative"
+        },
+        "read": "Read the agreement",
+        "gate": "While this is the caregiver’s agreement, Kin pays only for work it covers."
+      },
+      "actions": {
+        "sign": "Sign this agreement",
+        "withdraw": "Withdraw the draft",
+        "end": "End the agreement",
+        "endOn": "Last day it covers",
+        "confirmEnd": "End it on this day"
+      },
+      "form": {
+        "title": "Write a care agreement",
+        "text": "Kin fills a fixed template from these facts. Nothing in the agreement is written by an AI model.",
+        "caregiver": "Caregiver",
+        "relation": "How the caregiver is related to the care recipient",
+        "relations": {
+          "child": "Their child",
+          "other_relative": "Another relative",
+          "not_related": "Not related",
+          "spouse": "Their spouse"
+        },
+        "duties": "What the caregiver will do",
+        "dutiesHint": "One duty to a line, up to 12.",
+        "hours": "Hours a week",
+        "rate": "Rate for an hour",
+        "rateFixed": "{name}’s pay rate, set on the Circle page. The agreement states the rate Kin pays, so change the pay rate there first.",
+        "start": "Starts on",
+        "endTerm": "How it ends",
+        "endTerms": {
+          "either_party_30_days": "When either side gives 30 days’ notice",
+          "fixed_end_date": "On a set day"
+        },
+        "endsOn": "Ends on",
+        "payer": "Whose money pays for the care",
+        "payers": {
+          "care_recipient": "The care recipient’s own funds",
+          "family_members": "Money family members put in"
+        },
+        "state": "State whose law applies",
+        "review": "Read it before saving",
+        "propose": "Save as a draft for signing",
+        "back": "Change it",
+        "previewTitle": "The agreement as it will read",
+        "spouseWarning": "Kin will not draft an agreement with a spouse. It does not help for Medicaid spend-down. Ask your attorney."
+      },
+      "rateNote": {
+        "near": "{rate} an hour is near the market median of {median}.",
+        "below": "{rate} an hour is far below the market median of {median}. An attorney may ask why.",
+        "above": "{rate} an hour is far above the market median of {median}. An attorney may ask why.",
+        "unknown": "No market figure is held for this currency."
+      },
+      "errors": {
+        "refused": "Your role cannot do this.",
+        "invalid": "Something in the form could not be read. Check it and try again.",
+        "spouse": "Kin will not draft an agreement with a spouse. Ask your attorney.",
+        "relation": "Choose how the caregiver is related.",
+        "duties": "Write one to twelve duties, each short.",
+        "hours": "Hours a week must be between 1 and 84.",
+        "rate": "The rate could not be read as an amount.",
+        "start_date": "The start day could not be read.",
+        "end_term": "Choose how the agreement ends.",
+        "end_date": "A set end day must come after the start.",
+        "payer": "Choose whose money pays.",
+        "state": "Choose a state.",
+        "amount": "The rate could not be read as an amount.",
+        "unavailable": "Kin could not do this just now. Try again in a moment.",
+        "gate": {
+          "unsigned": "The caregiver’s care agreement is not fully signed, so work on {day} cannot be paid yet.",
+          "before_signed": "The care agreement does not cover work on {day}: it was done before the agreement was signed.",
+          "after_end": "The care agreement ended before {day}."
+        },
+        "closed": "This agreement is no longer a draft, so it cannot be signed or withdrawn.",
+        "ended": "This agreement has already ended.",
+        "signed": "This agreement is already signed, so it cannot be withdrawn. End it instead.",
+        "pay_rate": "An agreement states the caregiver’s current pay rate, and this one does not. If the pay rate changed, write a new agreement at the new rate.",
+        "overlap": "A signed agreement for this caregiver already covers the day this one would begin. Start this one after it, or end that one first."
+      },
+      "summary": "{count} on file."
     }
   },
   "aiProvenance": {

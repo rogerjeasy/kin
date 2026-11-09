@@ -15,7 +15,7 @@ import {
   submitCaregiverBill,
   takeDemoSeat,
 } from "@kin/db";
-import { adminRun, personQuery, seatPerson, serviceRows, testDatabases, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
+import { adminRun, agreeAtRate, personQuery, seatPerson, serviceRows, testDatabases, type VisitorCircle, visitorWithCircle } from "@kin/db/testing";
 import { accountBalance, cashAvailableForPayouts, payableAccount } from "@kin/domain";
 import { fakePool, type FakePool } from "@kin/paypal/testing";
 import { randomUUID } from "node:crypto";
@@ -46,6 +46,8 @@ async function approvedPayout(options: { real?: boolean; receiver?: string | nul
   const caregiver = await seatPerson(db, circle.circleId, circle.members.amara);
   const rate = options.rateCentsPerHour ?? 2200;
   await asPerson(db.app, circle.userId, (tx) => configureCaregiver(tx, { circleId: circle.circleId, memberId: circle.members.amara, payeeId: circle.payees.amara, name: "Amara", rateCentsPerHour: rate }));
+  // Kin pays only at the rate the care agreement states, so Amara's follows the rate this test bills at.
+  await agreeAtRate(db, circle.circleId, circle.payees.amara, rate);
   const visits = options.minutes ? [{ date: "2026-10-20", minutes: options.minutes }] : ["2026-10-20", "2026-10-21", "2026-10-22"].map((date) => ({ date, minutes: 240 }));
   const billId = await asPerson(db.app, caregiver, (tx) => submitCaregiverBill(tx, { circleId: circle.circleId, details: { version: 1, currency: "USD", rateCentsPerHour: rate, visits }, submissionKey: randomUUID() }));
   const proposalId = await asPerson(db.app, circle.userId, (tx) => sendCaregiverBill(tx, { circleId: circle.circleId, billId, now: CLOCK }));

@@ -15,6 +15,7 @@ export { MandateError, grantMandate, newMandateId, setMandateStatus } from "./ma
 export type { MandateReason } from "./mandates.ts";
 export {
   ShiftError,
+  answerSimulatedShiftCall,
   cancelShift,
   checkInShift,
   checkOutShift,
@@ -44,6 +45,8 @@ export { SHIFT_CREDIT_TOPIC, creditShift, shiftCreditSourceId } from "./shift-cr
 export type { CreditSkipReason, ShiftCreditOutcome } from "./shift-credit.ts";
 export { AgreementError, acceptAgreement, proposeAgreement, readAgreementVersions } from "./agreements.ts";
 export type { AgreementReason } from "./agreements.ts";
+export { CareAgreementError, endCareAgreement, proposeCareAgreement, readCareAgreements, signCareAgreement, withdrawCareAgreement } from "./care-agreements.ts";
+export type { CareAgreementReason } from "./care-agreements.ts";
 export {
   PAYOUT_TOPIC,
   beginPayout,

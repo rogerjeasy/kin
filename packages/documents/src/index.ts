@@ -1,6 +1,10 @@
 export { MAX_DOCUMENT_CENTS, amountsIn } from "./amounts.ts";
 export { fieldEvidence, groundedQuote, highlightSegments, locateQuote } from "./evidence.ts";
 export type { EvidenceField, FieldEvidence, Highlight, Segment } from "./evidence.ts";
+export { PdfDocumentError, renderPdf, sanitizePdfText } from "./pdf.ts";
+export type { PdfBlock, PdfDocument, PdfTableColumn } from "./pdf.ts";
+export { ZipError, crc32, zipStore } from "./zip.ts";
+export type { ZipFile } from "./zip.ts";
 export { readLetterText } from "./letter-text.ts";
 export { readableName } from "./readable-name.ts";
 export { parseStoredReading, settleReading } from "./reading.ts";

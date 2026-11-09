@@ -20,6 +20,12 @@ export const mandatesRoute = "/dashboard/circle/mandates";
 /** The parent's standing permission to pay confirmed care shifts, and the caregivers' pay rules: a screen within the circle's section, like the agreement. */
 export const shiftPermissionsRoute = "/dashboard/circle/shifts";
 
+/** Written care agreements with signatures: a screen within the circle's section, like the family agreement. */
+export const careAgreementsRoute = "/dashboard/circle/care-agreements";
+
+/** The packet for an elder-law attorney: a screen of the record, not a section of its own. Its `/export` is the download. */
+export const packetRoute = "/dashboard/record/packet";
+
 /** The door tag: a printable card whose code opens a caregiver's own shifts. A screen of the shifts, not a section of its own. */
 export const shiftDoorRoute = "/dashboard/shifts/door";
 

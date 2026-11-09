@@ -28,4 +28,6 @@ export type ShellContext = {
   pause: Dictionary["dashboard"]["pause"];
   /** Whether the circle is paused, and what the viewer may do about it. */
   pauseState: { active: string | null; canPause: boolean; canResume: boolean };
+  /** Outgoing money held by an "is it really you?" check, said on every screen while it lasts, with where to read the check. */
+  presenceHold: { text: string; link: { href: string; label: string } | null } | null;
 };

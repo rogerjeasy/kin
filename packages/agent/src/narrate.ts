@@ -26,8 +26,8 @@ const MAX_WORDS_LENGTH = 400;
  * are valued the same way and held to the same rule, and words that cannot be
  * valued are refused.
  */
-export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures"> & { readonly language?: string }): boolean {
-  if (words.trim() === "" || words.length > MAX_WORDS_LENGTH || hasHiddenCharacters(words) || /https?:|www\.|@/iu.test(words)) return false;
+export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures"> & { readonly language?: string; /** The longest wording allowed, in characters. A longer written note sets its own. */ readonly maxLength?: number }): boolean {
+  if (words.trim() === "" || words.length > (facts.maxLength ?? MAX_WORDS_LENGTH) || hasHiddenCharacters(words) || /https?:|www\.|@/iu.test(words)) return false;
   const figures = facts.figures.flatMap(numbersIn);
   // Two sets, so a number word inside a name never authorises a digit amount. A figure's digits authorise digits and
   // words alike; a number word inside a figure, such as a payee called "Seven Oaks", authorises only that word again.

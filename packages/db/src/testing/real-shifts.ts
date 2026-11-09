@@ -41,6 +41,19 @@ export async function withoutTriggers<T>(db: TestDatabases, work: (run: (query: 
 }
 
 /**
+ * Puts a caregiver's care agreements at `rateCentsPerHour`, for a test that
+ * pays at another rate than the seeded one to reach a figure it needs. Kin
+ * pays only at the rate an agreement states, and an agreement's terms never
+ * change once written, so the trigger that fixes them is stepped around here,
+ * as nowhere in the app.
+ */
+export function agreeAtRate(db: TestDatabases, circleId: string, payeeId: string, rateCentsPerHour: number): Promise<void> {
+  return withoutTriggers(db, async (run) => {
+    await run(sql`update care_agreements set rate_cents_per_hour = ${rateCentsPerHour} where circle_id = ${circleId} and payee_id = ${payeeId}`);
+  });
+}
+
+/**
  * An aide's shift for Amara on a real circle, planned around the database's now and already checked in
  * `inMinutesAgo` minutes ago, to the whole second, as the database's own taps are, so a visit lasts whole minutes.
  */

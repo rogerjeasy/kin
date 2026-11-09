@@ -109,8 +109,21 @@ export type CheckView = {
   readonly canCheckCode: boolean;
 };
 
-/** A stored check as the screen shows it: its state, the sentence Kin says for it, and who it asked. */
-export function viewCheck(record: PresenceCheckRecord, voices: readonly TrustedVoiceRecord[], circle: CircleSnapshot, locale: OfficeLocale): CheckView {
+/**
+ * Until when outgoing money is held, on the circle's clock, while this check
+ * still holds it: the later of its own hold and the circle's, so a check opened
+ * an hour after a "not me" says the day-long hold, not its own short one. Its
+ * own hold is timed on the real clock, as the database times it, and carried
+ * onto the circle's clock as the time still left. `null` once it holds nothing.
+ */
+function heldUntil(record: PresenceCheckRecord, circle: CircleSnapshot, realNow: number): Date | null {
+  if (record.holdUntil === null || record.holdUntil.getTime() <= realNow) return null;
+  const own = circle.circle.now.getTime() + (record.holdUntil.getTime() - realNow);
+  return new Date(Math.max(own, circle.circle.heldByPresenceUntil?.getTime() ?? 0));
+}
+
+/** A stored check as the screen shows it: its state, the sentence Kin says for it, and who it asked. `realNow` is the real clock, in milliseconds. */
+export function viewCheck(record: PresenceCheckRecord, voices: readonly TrustedVoiceRecord[], circle: CircleSnapshot, locale: OfficeLocale, realNow: number): CheckView {
   const voice = record.voiceId === null ? null : (voices.find((each) => each.id === record.voiceId) ?? null);
   const matched = record.voiceId !== null;
   const reply = presenceReply({ state: record.state, matched });
@@ -126,7 +139,7 @@ export function viewCheck(record: PresenceCheckRecord, voices: readonly TrustedV
     markers: record.markers,
     simulated: record.simulated,
     createdAt: record.createdAt.toISOString(),
-    holdUntil: record.holdUntil?.toISOString() ?? null,
+    holdUntil: heldUntil(record, circle, realNow)?.toISOString() ?? null,
     answeredVia: record.answeredVia,
     help: record.helpProposalId !== null ? "raised" : record.state === "confirmed" && voice?.accountConfirmed === true ? "available" : "none",
     helpMaxCents: record.claimedCents,
@@ -207,7 +220,7 @@ export async function openPresence(context: PresenceContext, input: unknown): Pr
       return { made, record };
     });
     if (opened.record === null) return fail("unavailable");
-    const check = viewCheck(opened.record, voices, circle, locale);
+    const check = viewCheck(opened.record, voices, circle, locale, context.now?.() ?? Date.now());
     const phone =
       opened.made.simulated && plan.voiceId !== null && plan.voiceName !== null
         ? (() => {
@@ -230,7 +243,7 @@ export async function presenceStatus(context: PresenceContext, input: unknown): 
   if (row === null || !onlyKeys(row, ["id", "locale"]) || typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id) || typeof row["locale"] !== "string" || !isLocale(row["locale"])) return fail("invalid");
   const locale = isOfficeLocale(row["locale"]) ? row["locale"] : "en";
   const read = await asPerson(context.db, context.userId, async (tx) => ({ record: await readPresenceCheck(tx, circle.circle.id, id), voices: await readTrustedVoices(tx, circle.circle.id) }));
-  return read.record === null ? fail("refused") : { ok: true, check: viewCheck(read.record, read.voices, circle, locale) };
+  return read.record === null ? fail("refused") : { ok: true, check: viewCheck(read.record, read.voices, circle, locale, context.now?.() ?? Date.now()) };
 }
 
 const MAX_PHONE_CHARS = 20;
@@ -309,11 +322,15 @@ const circleDay = (circle: CircleSnapshot): string => calendarDay(circle.circle.
 export async function presenceScreen(context: PresenceContext, locale: OfficeLocale, period: string): Promise<PresenceScreen> {
   const { circle } = context;
   return asPerson(context.db, context.userId, async (tx) => {
-    const [voices, records, summary] = await Promise.all([readTrustedVoices(tx, circle.circle.id), readPresenceChecks(tx, circle.circle.id), readPresenceSummary(tx, circle.circle.id, period)]);
+    // One query at a time: a transaction is one connection, and pg will refuse queries sent over it at once.
+    const voices = await readTrustedVoices(tx, circle.circle.id);
+    const records = await readPresenceChecks(tx, circle.circle.id);
+    const summary = await readPresenceSummary(tx, circle.circle.id, period);
     // The seed is the family's secret: the database hands it only to the organizer, a contributor and the parent.
     const mayKnow = authorize({ role: circle.viewer.role, status: "active" }, "presence.check").allowed;
     const code = mayKnow ? familyCode(await readFamilyCodeSeed(tx, circle.circle.id), circleDay(circle)) : null;
-    return { voices, checks: records.map((record) => viewCheck(record, voices, circle, locale)), summary, code };
+    const realNow = context.now?.() ?? Date.now();
+    return { voices, checks: records.map((record) => viewCheck(record, voices, circle, locale, realNow)), summary, code };
   });
 }
 

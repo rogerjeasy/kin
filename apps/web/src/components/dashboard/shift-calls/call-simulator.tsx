@@ -22,19 +22,20 @@ type Props = {
   parent: string;
   copy: Dictionary["dashboard"]["shiftCalls"]["simulator"];
   shifts: ShiftCopy;
-  /** Records the family's yes through the real confirm operation. `false` when it was refused. */
-  onYes: () => Promise<boolean>;
+  /** Records the key pressed as the parent's answer on the call. `false` when it was refused. */
+  onAnswer: (answer: "yes" | "no") => Promise<boolean>;
   /** The button's own look: the need card has room for a larger one. */
   large?: boolean;
 };
 
 /**
  * A demo circle never places a real call, so this plays what one would say, in
- * the viewer's language, and takes the key a person would press. Yes goes
- * through the same confirm the family's own button uses, so the real two-key
- * path and the real settlement run. It says plainly that the call is simulated.
+ * the viewer's language, and takes the key a person would press. The key is
+ * recorded as the parent's answer, as on a real call: a yes is her word and
+ * the real settlement runs; a no is a call she declined. It says plainly that
+ * the call is simulated.
  */
-export function CallSimulator({ shiftId, locale, parent, copy, shifts, onYes, large = false }: Props) {
+export function CallSimulator({ shiftId, locale, parent, copy, shifts, onAnswer, large = false }: Props) {
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const [listening, setListening] = useState<"idle" | "playing" | "failed">("idle");
@@ -53,9 +54,9 @@ export function CallSimulator({ shiftId, locale, parent, copy, shifts, onYes, la
     setListening(heard.ok ? "idle" : "failed");
   }
 
-  async function yes() {
+  async function answer(choice: "yes" | "no") {
     setRecording(true);
-    const recorded = await onYes();
+    const recorded = await onAnswer(choice);
     setRecording(false);
     if (recorded) setOpen(false);
   }
@@ -83,7 +84,7 @@ export function CallSimulator({ shiftId, locale, parent, copy, shifts, onYes, la
                 {listening === "playing" ? copy.playing : listening === "idle" ? copy.play : copy.again}
               </Button>
               {listening === "failed" ? <p role="status" className="text-sm text-muted-foreground">{copy.listenFailed}</p> : null}
-              <Keypad label={copy.keypad} yes={copy.yes} no={copy.no} disabled={recording} onYes={yes} onNo={() => setOpen(false)} />
+              <Keypad label={copy.keypad} yes={copy.yes} no={copy.no} disabled={recording} onYes={() => void answer("yes")} onNo={() => void answer("no")} />
               {recording ? <p role="status" className="text-sm text-muted-foreground">{copy.recording}</p> : null}
             </>
           ) : null}

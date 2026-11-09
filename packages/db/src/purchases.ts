@@ -168,19 +168,22 @@ async function parentLevel(tx: Transaction, circleId: string): Promise<ParentLev
 export async function readPurchaseRecords(tx: Transaction, circleId: string, now: Date, timezone: string): Promise<{ purchaseRules: PurchaseRuleRecord[]; purchases: PurchaseRecord[] }> {
   const rules = await tx.select().from(purchaseRules).where(eq(purchaseRules.circleId, circleId)).orderBy(purchaseRules.createdAt, purchaseRules.id);
   const rows = await tx.select().from(purchases).where(eq(purchases.circleId, circleId)).orderBy(purchases.createdAt, purchases.id);
+  // One query at a time: a transaction is one connection, and pg will refuse queries sent over it at once.
+  const purchaseRuleRecords: PurchaseRuleRecord[] = [];
+  for (const rule of rules) {
+    purchaseRuleRecords.push({
+      id: rule.id,
+      payeeId: rule.payeeId,
+      item: rule.item,
+      category: rule.category,
+      priceCents: rule.priceCents,
+      limitCents: rule.limitCents,
+      monthlyBudgetCents: rule.monthlyBudgetCents,
+      committedCents: await committedThisMonth(tx, circleId, rule.id, now, timezone),
+    });
+  }
   return {
-    purchaseRules: await Promise.all(
-      rules.map(async (rule) => ({
-        id: rule.id,
-        payeeId: rule.payeeId,
-        item: rule.item,
-        category: rule.category,
-        priceCents: rule.priceCents,
-        limitCents: rule.limitCents,
-        monthlyBudgetCents: rule.monthlyBudgetCents,
-        committedCents: await committedThisMonth(tx, circleId, rule.id, now, timezone),
-      })),
-    ),
+    purchaseRules: purchaseRuleRecords,
     purchases: rows.map((row) => ({
       id: row.id,
       ruleId: row.ruleId,

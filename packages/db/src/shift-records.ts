@@ -56,7 +56,8 @@ export async function readShiftRecords(
       proposalState,
       permissionId: shift.permissionId,
       simulated: circle?.demo ?? false,
-      waitingFor: shift.state === "cancelled" ? null : waitingFor(shift),
+      // Safe: a check constraint holds the kind to the domain's own list.
+      waitingFor: shift.state === "cancelled" ? null : waitingFor({ ...shift, kind: shift.kind as ShiftKind }),
       callState: callStates.get(shift.id) ?? null,
       creditedMinutes: credits.get(shift.id)?.minutes ?? null,
       creditedCents: credits.get(shift.id)?.cents ?? null,

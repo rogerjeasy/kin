@@ -8,6 +8,7 @@ import {
   checkShiftPermission,
   checkShiftPermissionTerms,
   dayPart,
+  visitDayPart,
   decideShiftPermission,
   mayConfirmShift,
   overtimeRateCentsPerHour,
@@ -16,6 +17,8 @@ import {
   shiftMoveAllowed,
   turnedKeys,
   waitingFor,
+  SHIFT_KINDS,
+  takesKeys,
   workedMinutes,
   SHIFT_TRANSITIONS,
   type ShiftPermission,
@@ -90,10 +93,15 @@ describe("the two keys", () => {
   });
 
   it("says what the shift waits for", () => {
-    expect(waitingFor(none)).toBe("check_in");
-    expect(waitingFor({ ...none, checkedInAt: at("08:00") })).toBe("check_out");
-    expect(waitingFor({ checkedInAt: at("08:00"), checkedOutAt: at("12:00"), familyConfirmedAt: null })).toBe("family_word");
-    expect(waitingFor({ checkedInAt: at("08:00"), checkedOutAt: at("12:00"), familyConfirmedAt: at("12:01") })).toBeNull();
+    expect(waitingFor({ ...none, kind: "aide" })).toBe("check_in");
+    expect(waitingFor({ ...none, kind: "aide", checkedInAt: at("08:00") })).toBe("check_out");
+    expect(waitingFor({ kind: "aide", checkedInAt: at("08:00"), checkedOutAt: at("12:00"), familyConfirmedAt: null })).toBe("family_word");
+    expect(waitingFor({ kind: "aide", checkedInAt: at("08:00"), checkedOutAt: at("12:00"), familyConfirmedAt: at("12:01") })).toBeNull();
+    // A sibling's visit and drive take the same keys; an appointment takes none, so it never waits for a tap.
+    expect(waitingFor({ ...none, kind: "visit" })).toBe("check_in");
+    expect(waitingFor({ ...none, kind: "drive" })).toBe("check_in");
+    expect(waitingFor({ ...none, kind: "appointment" })).toBeNull();
+    expect(SHIFT_KINDS.filter(takesKeys)).toEqual(["aide", "visit", "drive"]);
   });
 });
 
@@ -285,5 +293,12 @@ describe("the circle's calendar", () => {
     expect(dayPart(new Date("2026-11-09T14:00:00Z"), "America/New_York")).toBe("morning");
     expect(dayPart(new Date("2026-11-09T19:00:00Z"), "America/New_York")).toBe("afternoon");
     expect(dayPart(new Date("2026-11-10T01:00:00Z"), "America/New_York")).toBe("evening");
+  });
+
+  it("asks about a visit by the part of the day its check-in fell in, and by its planned start until then", () => {
+    // Planned for 10:25 in the morning, checked in at 2:25 in the afternoon, New York time.
+    const startsAt = new Date("2026-11-09T15:25:00Z");
+    expect(visitDayPart({ startsAt, checkedInAt: new Date("2026-11-09T19:25:00Z") }, "America/New_York")).toBe("afternoon");
+    expect(visitDayPart({ startsAt, checkedInAt: null }, "America/New_York")).toBe("morning");
   });
 });

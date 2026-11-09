@@ -1,5 +1,5 @@
 import { calendarDay, contributionReceived, type Money } from "@kin/domain";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
 import type { Transaction } from "./connection.ts";
@@ -35,7 +35,9 @@ export class ContributionMismatchError extends Error {
  * Credits a member with a top-up PayPal confirmed: the money core builds the
  * entry (gross to the member, PayPal's fee shared), and the capture's ID is
  * the entry's source, so the webhook and the direct read of the same capture
- * write it once between them. Run inside `asService` for the circle.
+ * write it once between them. Money that arrives wakes the payouts and
+ * refills waiting for it. Run inside `asService` for the circle, or as a
+ * member for a demo's simulated share.
  */
 export async function recordContribution(tx: Transaction, circleId: string, capture: ConfirmedCapture): Promise<ContributionOutcome> {
   if (await contributionRecorded(tx, circleId, capture.captureId)) return "already_recorded";
@@ -59,6 +61,8 @@ export async function recordContribution(tx: Transaction, circleId: string, capt
     { memberId: capture.memberId, grossCents: capture.gross.cents, feeCents: capture.fee.cents },
   );
   await writeEntries(tx, [entry], await readAccountIds(tx, circleId));
+  // Payouts and refills waiting for money are looked at again now, not at their next quarter-hour.
+  await tx.execute(sql`select kin_private.wake_waiting_money(${circleId}::uuid)`);
   return "recorded";
 }
 

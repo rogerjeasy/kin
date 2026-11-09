@@ -21,6 +21,17 @@ export type ShiftKind = (typeof SHIFT_KINDS)[number];
 /** Only an aide's shift is paid. A sibling's visit, an appointment and a drive sit on the calendar. */
 export const isPaidShiftKind = (kind: ShiftKind): boolean => kind === "aide";
 
+/**
+ * The kinds proven by the two keys: an aide's shift, which is paid, and a
+ * sibling's visit or drive, which is credited as care time (decision 79). An
+ * appointment is only on the calendar: nobody taps in for it, so it waits for nothing.
+ */
+/** The visit kinds that are credited as care time. An aide is paid and an appointment is the parent's own. */
+export const CREDITED_SHIFT_KINDS = ["visit", "drive"] as const satisfies readonly ShiftKind[];
+
+export const KEYED_SHIFT_KINDS = ["aide", ...CREDITED_SHIFT_KINDS] as const satisfies readonly ShiftKind[];
+export const takesKeys = (kind: ShiftKind): boolean => (KEYED_SHIFT_KINDS as readonly ShiftKind[]).includes(kind);
+
 /** Where a shift stands, from docs/architecture.md section 7.4. A shift only moves forward. */
 export const SHIFT_TRANSITIONS = {
   scheduled: ["checked_in", "cancelled"],
@@ -74,10 +85,11 @@ export function turnedKeys(keys: ShiftKeys): { readonly caregiver: boolean; read
   return { caregiver, family, both: caregiver && family };
 }
 
-/** What a shift waits for: the caregiver's check-in or check-out, or the family's word. `null` once both keys have turned. */
+/** What a shift waits for: the caregiver's check-in or check-out, or the family's word. `null` once both keys have turned, and for a kind that takes none. */
 export type ShiftWaitingFor = "check_in" | "check_out" | "family_word" | null;
 
-export function waitingFor(keys: ShiftKeys): ShiftWaitingFor {
+export function waitingFor(keys: ShiftKeys & { readonly kind: ShiftKind }): ShiftWaitingFor {
+  if (!takesKeys(keys.kind)) return null;
   if (keys.checkedInAt === null) return "check_in";
   if (keys.checkedOutAt === null) return "check_out";
   return keys.familyConfirmedAt === null ? "family_word" : null;
@@ -375,4 +387,14 @@ export function shiftDay(startedAt: Date, timezone: string): string {
 export function dayPart(instant: Date, timezone: string): "morning" | "afternoon" | "evening" {
   const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", hourCycle: "h23" }).format(instant));
   return hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+}
+
+/**
+ * The part of the day a visit is asked about: from the caregiver's check-in
+ * once there is one, as the screen and the call both show it, and from the
+ * planned start before. "Was Amara here this morning?" must agree with
+ * "Amara checked in at 2:25 PM" beside it.
+ */
+export function visitDayPart(visit: { readonly checkedInAt: Date | null; readonly startsAt: Date }, timezone: string): "morning" | "afternoon" | "evening" {
+  return dayPart(visit.checkedInAt ?? visit.startsAt, timezone);
 }

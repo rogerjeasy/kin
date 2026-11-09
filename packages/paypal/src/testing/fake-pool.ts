@@ -7,6 +7,7 @@ import type { Invoice, InvoicePayment, InvoiceStatus, NewInvoice } from "../invo
 import type { Order } from "../order.ts";
 import { PayPalError } from "../paypal-error.ts";
 import type { PayPalPool } from "../pool.ts";
+import type { TransactionRecord } from "../transaction-search.ts";
 import { payoutBody, type NewPayout, type PayoutBatch, type PayoutItemStatus } from "../payout.ts";
 import type { Subscription, SubscriptionAction, SubscriptionPayment, SubscriptionStatus } from "../subscription.ts";
 import type { WebhookDelivery } from "../webhook.ts";
@@ -42,6 +43,8 @@ export type FakePool = PayPalPool & {
   payoutFeeCents: number;
   /** Every payout PayPal made, by batch ID. A repeated request makes none. */
   readonly payouts: Map<string, StoredPayout>;
+  /** What Transaction Search says about each payout item, by item ID. An item with no entry has no transaction yet. */
+  readonly payoutTransactions: Map<string, TransactionRecord>;
   /** PayPal moves a payout's item on, as it does after a pending or unclaimed payout. */
   readonly settlePayout: (batchId: string, status: PayoutItemStatus) => void;
   /** Every subscription PayPal holds, by ID. */
@@ -87,6 +90,7 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
   };
 
   const payouts = new Map<string, StoredPayout>();
+  const payoutTransactions = new Map<string, TransactionRecord>();
   const invoices = new Map<string, StoredInvoice>();
   const findInvoice = (invoiceId: string): StoredInvoice => {
     const stored = invoices.get(invoiceId);
@@ -202,6 +206,11 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
       const stored = payouts.get(batchId);
       if (!stored) throw new PayPalError({ outcome: "rejected", status: 404, issue: "RESOURCE_NOT_FOUND", debugId: "fake", operation: "payouts.get" });
       return stored.batch;
+    },
+    payoutTransactions,
+    async getPayoutTransaction(payoutItemId) {
+      fail("getPayoutTransaction");
+      return payoutTransactions.get(payoutItemId) ?? null;
     },
     settlePayout(batchId, status) {
       const stored = payouts.get(batchId);

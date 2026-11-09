@@ -1,6 +1,8 @@
 import { careValueCents } from "./care.ts";
 import type { CircleRole } from "./roles.ts";
-import { workedMinutes, type ShiftKind } from "./shift.ts";
+import { CREDITED_SHIFT_KINDS, workedMinutes, type ShiftKind } from "./shift.ts";
+
+export { CREDITED_SHIFT_KINDS };
 
 /**
  * A sibling's visit or drive is not paid, but it counts toward their fair
@@ -9,8 +11,6 @@ import { workedMinutes, type ShiftKind } from "./shift.ts";
  * rate the agreement names; the model never sets an hour or an amount.
  */
 
-/** The visit kinds that are credited as care time. An aide is paid and an appointment is the parent's own. */
-export const CREDITED_SHIFT_KINDS = ["visit", "drive"] as const satisfies readonly ShiftKind[];
 
 /** The roles that share the cost of care, and so are credited for time given. */
 export const CREDITED_ROLES = ["organizer", "contributor"] as const satisfies readonly CircleRole[];

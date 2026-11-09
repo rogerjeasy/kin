@@ -235,8 +235,11 @@ export {
   checkShiftPermission,
   checkShiftPermissionTerms,
   dayPart,
+  visitDayPart,
   decideShiftPermission,
   isPaidShiftKind,
+  KEYED_SHIFT_KINDS,
+  takesKeys,
   mayConfirmShift,
   overtimeRateCentsPerHour,
   planShiftPayout,
@@ -305,3 +308,60 @@ export type {
   TrustedVoice,
   VoiceMatch,
 } from "./presence-check.ts";
+export {
+  AGREEMENT_FOOTER,
+  CARE_END_TERMS,
+  CARE_PAYERS,
+  CARE_RELATIONS,
+  CareAgreementGateError,
+  CareAgreementTermsError,
+  MAX_DUTIES,
+  MAX_DUTY_CHARS,
+  MAX_WEEKLY_MINUTES,
+  SIGNING_CAPACITIES,
+  US_STATES,
+  assertWorkCovered,
+  careAgreementClauses,
+  careAgreementStatus,
+  checkCareAgreementTerms,
+  coveredFrom,
+  coveredUntil,
+  hoursText,
+  isFullySigned,
+  replacedBy,
+  signedAfterStart,
+  workCoverage,
+} from "./care-agreement.ts";
+export type {
+  AgreementClause,
+  CareAgreementFacts,
+  CareAgreementNames,
+  CareAgreementSignature,
+  CareAgreementStatus,
+  CareAgreementTerms,
+  CareAgreementTermsReason,
+  CareEndTerm,
+  CarePayer,
+  NotCoveredReason,
+  CareRelation,
+  SigningCapacity,
+  UsState,
+  WorkCoverage,
+} from "./care-agreement.ts";
+export {
+  FUTA_NET_BPS,
+  FUTA_QUARTER_TRIGGER_CENTS,
+  FUTA_WAGE_BASE_CENTS,
+  HOUSEHOLD_TAX_SOURCE,
+  HOUSEHOLD_TAX_YEARS,
+  MEDICARE_BPS,
+  SOCIAL_SECURITY_BPS,
+  bpsOf,
+  estimateHouseholdTax,
+  quarterOf,
+} from "./payroll-estimate.ts";
+export type { EmployeeYearPayments, HouseholdTaxEstimate, HouseholdTaxYear } from "./payroll-estimate.ts";
+export { RATE_BENCHMARKS, RATE_HIGH_BPS, RATE_LOW_BPS, judgeRate } from "./rate-benchmark.ts";
+export type { RateBenchmark, RateJudgement } from "./rate-benchmark.ts";
+export { LACKING_REASONS, LOOKBACK_MONTHS, OUTFLOW_CLASSES, OUTFLOW_MARKS, classifyOutflows, lookbackStart } from "./lookback.ts";
+export type { LackingReason, LookbackContext, LookbackSummary, OutflowClass, OutflowMark, OutflowRow, OutflowStatus, WorkFacts } from "./lookback.ts";

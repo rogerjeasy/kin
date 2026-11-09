@@ -27,6 +27,8 @@ import {
   approvals,
   auditLog,
   bills,
+  careAgreements,
+  careAgreementSignatures,
   careEntries,
   circles,
   claimChecks,
@@ -46,6 +48,7 @@ import {
   AGREEMENT_EFFECTIVE_ON,
   BILLS,
   CARE,
+  CARE_AGREEMENT,
   CLAIM_CHECK,
   DEMO_TRUSTED_VOICES,
   DOCUMENTS,
@@ -104,13 +107,14 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     await writePeople(tx, ids, userId);
     const agreement = await writeAgreement(tx, ids);
     await writePayees(tx, ids);
+    await writeCareAgreement(tx, ids);
     const ledger = rekeyLedger(ids);
     await writeEntries(tx, ledger, new Map());
     await writeBills(tx, ids, ledger);
     await writeProposals(tx, ids, agreement, ledger);
     const ruleIds = await writePurchaseRules(tx, ids);
     await writeMandates(tx, ids, ruleIds);
-    await writeShifts(tx, ids, agreement.version);
+    await writeShifts(tx, ids);
     await writeNews(tx, ids, ledger);
     await writeTrustedVoices(tx, ids);
     await tx.insert(auditLog).values({
@@ -231,6 +235,42 @@ async function writePayees(tx: Transaction, ids: Ids): Promise<void> {
       shiftMinimumMinutes: payee.caregiver?.minimumMinutes ?? 0,
       shiftOvertimeAfterMinutes: payee.caregiver?.overtimeAfterMinutes ?? null,
       shiftOvertimePercent: payee.caregiver?.overtimePercent ?? 150,
+    })),
+  );
+}
+
+/** Amara's signed care agreement, simulated, signed on the days the template says, moved to this copy's clock. */
+async function writeCareAgreement(tx: Transaction, ids: Ids): Promise<void> {
+  const id = randomUUID();
+  const { terms } = CARE_AGREEMENT;
+  await tx.insert(careAgreements).values({
+    id,
+    circleId: ids.circleId,
+    payeeId: ids.payees[CARE_AGREEMENT.payee],
+    caregiverMemberId: ids.members.amara,
+    caregiverRelation: terms.caregiverRelation,
+    duties: [...terms.duties],
+    weeklyMinutes: terms.weeklyMinutes,
+    rateCentsPerHour: terms.rateCentsPerHour,
+    startsOn: ids.time.day(terms.startsOn),
+    endTerm: terms.endTerm,
+    endsOn: terms.endsOn,
+    payer: terms.payer,
+    usState: terms.state,
+    simulated: true,
+    createdBy: ids.members[CARE_AGREEMENT.createdBy],
+    createdAt: ids.time.at(CARE_AGREEMENT.createdAt),
+  });
+  await tx.insert(careAgreementSignatures).values(
+    CARE_AGREEMENT.signatures.map((signature) => ({
+      id: randomUUID(),
+      circleId: ids.circleId,
+      agreementId: id,
+      memberId: ids.members[signature.member],
+      capacity: signature.capacity,
+      method: "app" as const,
+      signedOn: ids.time.day(signature.at.toISOString().slice(0, 10)),
+      signedAt: ids.time.at(signature.at),
     })),
   );
 }

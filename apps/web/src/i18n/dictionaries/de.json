@@ -1204,6 +1204,14 @@
       "circle": {
         "title": "Kreis · Kin",
         "description": "Die Mitglieder, ihre Rollen, die Familienvereinbarung und die Zahlungsempfänger."
+      },
+      "packet": {
+        "title": "Unterlagen für Ihre Anwältin oder Ihren Anwalt · Kin",
+        "description": "Der Rückblick auf 60 Monate, Pflegevereinbarungen und Besuchsnachweise in einem Download für einen Anwalt für Seniorenrecht."
+      },
+      "careAgreements": {
+        "title": "Pflegevereinbarungen · Kin",
+        "description": "Schriftliche Pflegevereinbarungen mit Unterschriften und was jede abdeckt."
       }
     },
     "shell": {
@@ -1236,7 +1244,11 @@
         "seat": "Sie sind {name}, {role}",
         "leave": "Demo verlassen"
       },
-      "visitor": "Demo-Besuch"
+      "visitor": "Demo-Besuch",
+      "presenceHold": {
+        "text": "Ausgehendes Geld ist bis {until} angehalten: Jemand hat im Namen eines Familienmitglieds um Geld gebeten, und Kin fragt die echte Person oder hat gehört, dass sie es nicht war.",
+        "link": "Zur Prüfung"
+      }
     },
     "pause": {
       "button": "Zahlungen pausieren",
@@ -1960,7 +1972,8 @@
         "model_unavailable": "Kin kann gerade keine Beschreibungen lesen. Tragen Sie die Tage unten ein.",
         "model_refused": "Kin konnte diese Beschreibung nicht lesen. Tragen Sie die Tage unten ein.",
         "description": "Schreiben Sie zwischen einem und tausend Zeichen über Ihre Besuche.",
-        "busy": "Sie haben kürzlich mehrere Beschreibungen lesen lassen. Bitte warten Sie etwas oder tragen Sie die Tage unten ein."
+        "busy": "Sie haben kürzlich mehrere Beschreibungen lesen lassen. Bitte warten Sie etwas oder tragen Sie die Tage unten ein.",
+        "care_agreement": "Kin bezahlt nur Arbeit, die eine unterschriebene Pflegevereinbarung abdeckt. Diese Arbeit liegt vor der Unterschrift unter die Vereinbarung oder nach ihrem Ende. Sobald die Pflegevereinbarung unterschrieben ist, wird sie bezahlt."
       },
       "states": {
         "received": "Wartet auf die Familie",
@@ -2594,6 +2607,7 @@
         "todo": "Noch nicht",
         "in": "Eingestempelt {start}",
         "inOut": "Eingestempelt {start}, ausgestempelt {end}",
+        "inOutCounted": "Eingestempelt {start}, ausgestempelt {end}: {duration} gezählt",
         "saidBy": "{name}, {time}"
       },
       "duration": {
@@ -2629,6 +2643,7 @@
         "checkedIn": "Sie sind eingestempelt. Tippen Sie auf Ausstempeln, wenn Sie gehen.",
         "checkedOutWaiting": "Ausgestempelt. Kin wartet jetzt auf das Wort von {parent}.",
         "confirmedWaiting": "Danke. Kin wartet jetzt darauf, dass {name} sich ausstempelt.",
+        "declinedByCall": "{parent} hat am Telefon gesagt, dass der Besuch nicht stattgefunden hat. Nichts wird bezahlt, und die Familie kann der Sache nachgehen.",
         "paid": "{amount} sind durch die dauerhafte Erlaubnis von {parent} freigegeben und unterwegs zu {name} über {wallet}.",
         "paidToYou": "{amount} sind durch die dauerhafte Erlaubnis von {parent} freigegeben und unterwegs zu Ihnen über {wallet}.",
         "asks": "{amount} gehen zur Freigabe an die Familie, weil sie außerhalb der dauerhaften Erlaubnis liegen.",
@@ -2717,7 +2732,8 @@
         "call_over": "Dieser Anruf ist schon beendet.",
         "bad_phone": "Das sieht nicht wie eine Telefonnummer aus. Geben Sie die Ländervorwahl an, zum Beispiel +4915112345678.",
         "texting_off": "SMS-Versand ist nicht eingeschaltet.",
-        "text_limit": "Sie haben in letzter Zeit mehrere SMS gesendet. Versuchen Sie es später noch einmal, oder kopieren Sie den Link."
+        "text_limit": "Sie haben in letzter Zeit mehrere SMS gesendet. Versuchen Sie es später noch einmal, oder kopieren Sie den Link.",
+        "care_agreement": "Kin bezahlt nur Arbeit, die eine unterschriebene Pflegevereinbarung abdeckt. Diese Arbeit liegt vor der Unterschrift unter die Vereinbarung oder nach ihrem Ende. Sobald die Pflegevereinbarung unterschrieben ist, wird sie bezahlt."
       }
     },
     "shiftCover": {
@@ -3110,6 +3126,7 @@
         "unanswered": "Nicht erreicht",
         "expired": "Geschlossen"
       },
+      "notOnList": "Nicht auf Ihrer Liste",
       "unknownPerson": "Niemand auf der Liste trägt diesen Namen, deshalb konnte Kin niemanden fragen.",
       "markersTitle": "Betrugszeichen in den Worten",
       "markers": {
@@ -3118,7 +3135,8 @@
         "gift_cards": "Geschenkkarten",
         "crypto_atm": "Kryptowährung oder Bitcoin-Automat",
         "courier_pickup": "Jemand, der das Geld abholt",
-        "wire": "Eine Überweisung"
+        "wire": "Eine Überweisung",
+        "payment_app": "Ein Konto in einer Bezahl-App, das genannt wurde"
       },
       "noMarkers": "Keine Betrugszeichen in den Worten.",
       "amountLabel": "Verlangt",
@@ -3208,7 +3226,7 @@
         "text": "Drei Wörter, die sich jeden Montag ändern. Echte Angehörige kennen sie, eine geklonte Stimme nicht. Teilen Sie sie mit der Familie, nie mit einem Anrufer.",
         "week": "Für die Woche {week}",
         "askTitle": "Den Anrufer nach dem Familiencode fragen",
-        "askText": "Kin konnte es mit der echten Person nicht klären. Fragen Sie den Anrufer nach dem Code und tippen Sie ein, was er sagt.",
+        "askText": "Kin konnte es mit der echten Person nicht klären. Bitten Sie den Anrufer, den Familiencode dieser Woche zu nennen, und tippen Sie ein, was er sagt. Nennen Sie ihm den Code nie.",
         "label": "Was der Anrufer gesagt hat",
         "submit": "Code prüfen",
         "checking": "Wird geprüft…",
@@ -3230,6 +3248,238 @@
         "link": "Per Link im Text beantwortet",
         "call": "Im Anruf von Kin beantwortet"
       }
+    },
+    "packet": {
+      "title": "Unterlagen für Ihre Anwältin oder Ihren Anwalt",
+      "lede": "Ein Download enthält, wonach ein Anwalt für Seniorenrecht fragt: die Zahlungen der letzten 60 Monate nach Art sortiert, die Pflegevereinbarungen, die Besuchsnachweise, die eigenen Aufzeichnungen von PayPal und eine Prüfung, dass die Aufzeichnung nicht verändert wurde.",
+      "link": "Unterlagen für Ihre Anwältin oder Ihren Anwalt",
+      "download": "Unterlagen herunterladen",
+      "downloading": "Unterlagen werden vorbereitet…",
+      "downloadNote": "Eine ZIP-Datei mit einem PDF, Tabellen und der Aufzeichnung, die jeder offline prüfen kann. Sie lässt sich auf jedem Computer öffnen.",
+      "notice": "Für Ihre Anwältin oder Ihren Anwalt vorbereitet. Kin sortiert und prüft die Aufzeichnung. Kin sagt nicht, ob etwas erlaubt, sicher oder regelkonform ist, und die Regeln unterscheiden sich je nach Bundesstaat.",
+      "tiles": {
+        "window": {
+          "label": "In 60 Monaten ausgezahlt",
+          "note": "Vom {from} bis {to}, ohne die Gebühren von PayPal."
+        },
+        "documented": {
+          "label": "Belegt",
+          "note": "Zahlungen, die die Aufzeichnung mit Unterlagen stützen kann."
+        },
+        "lacking": {
+          "label": "Beleg fehlt",
+          "note": "{count} Zahlungen, nach denen ein Anwalt voraussichtlich fragt."
+        },
+        "chain": {
+          "pass": "Die Aufzeichnung stimmt",
+          "fail": "Die Aufzeichnung stimmt nicht",
+          "note": "{count} Einträge soeben neu addiert und mit einem Fingerabdruck versehen."
+        }
+      },
+      "note": {
+        "title": "Begleitschreiben",
+        "text": "Claude formuliert dieses Schreiben aus Zahlen, die der Code bereits berechnet hat. Jede Zahl darin wird mit der Aufzeichnung abgeglichen, und ein festes Schreiben tritt an die Stelle, wenn eine nicht übereinstimmt.",
+        "ask": "Claude um eine Formulierung bitten",
+        "busy": "Claude ist gerade beschäftigt, deshalb wird Kins festes Schreiben gezeigt.",
+        "unavailable": "Claude ist hier nicht eingeschaltet, deshalb wird Kins festes Schreiben gezeigt."
+      },
+      "lookback": {
+        "title": "Die 60 Monate, Zahlung für Zahlung",
+        "text": "Jede Zahlung, die das Pflegekonto verlassen hat, von einfachem Code sortiert. Die Bezahlung einer Pflegekraft gilt als belegt, wenn eine unterschriebene Pflegevereinbarung den Tag der Arbeit abdeckt.",
+        "empty": "In den letzten 60 Monaten hat nichts das Pflegekonto verlassen.",
+        "grid": "Zahlungen vom Pflegekonto",
+        "cols": {
+          "day": "Bezahlt am",
+          "to": "An",
+          "kind": "Art",
+          "amount": "Betrag",
+          "status": "Status",
+          "why": "Grund"
+        },
+        "classes": {
+          "caregiver_pay": "Bezahlung der Pflegekraft",
+          "third_party_bill": "Rechnung an ein Unternehmen",
+          "purchase_for_parent": "Für das Elternteil gekauft",
+          "family_transfer": "Geld an ein Familienmitglied"
+        },
+        "status": {
+          "documented": "Belegt",
+          "needs_documentation": "Beleg fehlt",
+          "reversed": "Storniert"
+        },
+        "reasons": {
+          "no_agreement": "Für diese Pflegekraft liegt keine Pflegevereinbarung vor.",
+          "agreement_unsigned": "Die Pflegevereinbarung ist nicht vollständig unterschrieben.",
+          "before_agreement": "Die Arbeit wurde vor der Unterschrift unter die Vereinbarung geleistet.",
+          "after_agreement": "Die Arbeit wurde nach dem Ende der Vereinbarung geleistet.",
+          "rate_not_agreed": "Es wurde zu einem Satz gezahlt, den die Pflegevereinbarung nicht nennt.",
+          "no_document": "Zu dieser Zahlung ist keine Rechnung und keine Bestellung gespeichert.",
+          "family_transfer": "Geld an einen Verwandten. Ein Anwalt wird fragen, wofür es war."
+        },
+        "marks": {
+          "unverified_hours": "Stunden nicht durch einen Besuch belegt",
+          "simulated": "Simuliertes Geld",
+          "paypal": "PayPal-Sandbox: Testgeld",
+          "rate_below_market": "Satz weit unter dem Marktmedian",
+          "rate_above_market": "Satz weit über dem Marktmedian"
+        },
+        "none": "Nichts hinzuzufügen.",
+        "summaryOne": "1 Zahlung",
+        "summaryMany": "{count} Zahlungen",
+        "csv": "Liste herunterladen (CSV)"
+      },
+      "estimate": {
+        "title": "Was ein Privathaushalt als Arbeitgeber schulden kann",
+        "text": "Eine Schätzung für die Steuerberatung der Familie, aus dem an jede Pflegekraft bar gezahlten Betrag. Kin reicht nichts ein und sagt nicht, dass die Familie alle Vorschriften einhält.",
+        "empty": "In diesen Jahren wurde keine Pflegekraft bezahlt.",
+        "cols": {
+          "employee": "Pflegekraft",
+          "year": "Jahr",
+          "wages": "Gezahlt",
+          "threshold": "Schwelle",
+          "social": "Social Security",
+          "medicare": "Medicare",
+          "futa": "Arbeitslosenversicherung",
+          "total": "Schätzung"
+        },
+        "above": "Schwelle erreicht",
+        "below": "Unter der Schwelle",
+        "unknownYear": "Keine Tabelle für dieses Jahr",
+        "source": "Zahlen: {source}. Prüfen Sie sie anhand der Veröffentlichung, bevor Sie sich darauf verlassen.",
+        "exemption": "Löhne an den Ehepartner des Arbeitgebers oder an dessen Kind unter 21 Jahren können von der Social-Security- und Medicare-Steuer befreit sein. Die Schätzung kennt die Verwandtschaft nicht, deshalb wendet die Steuerberatung dies an."
+      },
+      "rate": {
+        "title": "Liegt der Satz nahe am Markt?",
+        "text": "Der vereinbarte Satz jeder Pflegekraft im Vergleich zum landesweiten Median für häusliche Pflege.",
+        "source": "{source} ({collected}): {median} pro Stunde.",
+        "near": "{rate} pro Stunde liegt nahe am Markt.",
+        "below": "{rate} pro Stunde liegt weit unter dem Marktmedian.",
+        "above": "{rate} pro Stunde liegt weit über dem Marktmedian.",
+        "unknown": "Für diese Währung liegt kein Vergleichswert vor.",
+        "none": "Noch keine Pflegevereinbarung nennt einen Satz."
+      },
+      "inside": {
+        "title": "Was der Download enthält",
+        "items": [
+          "packet.pdf: das Begleitschreiben, die Tabelle der 60 Monate, die Pflegevereinbarungen, die Besuchsnachweise und die Schätzung für Privathaushalte als Arbeitgeber.",
+          "record/kin-record.json: die Aufzeichnung mit ihrer Hash-Kette. Jeder kann sie offline mit kin-verify prüfen.",
+          "care-agreements.txt: der Text jeder Vereinbarung und wer sie wann unterschrieben hat.",
+          "look-back.csv, visit-proofs.csv und paypal-payments.csv für eine Tabellenkalkulation.",
+          "README.txt und manifest.json: wie man prüft, und ein SHA-256-Fingerabdruck jeder Datei."
+        ]
+      }
+    },
+    "careAgreements": {
+      "title": "Pflegevereinbarungen",
+      "lede": "Eine schriftliche Vereinbarung, vor Pflegebeginn unterschrieben, ist das Erste, wonach ein Anwalt fragt, wenn eine Familie eine Pflegekraft bezahlt. Kin füllt die Vorlage aus den Angaben, die Sie machen, hält fest, wer wann unterschrieben hat, und zahlt nur für Arbeit, die die Vereinbarung abdeckt.",
+      "link": "Pflegevereinbarungen",
+      "notice": "Für Ihre Anwältin oder Ihren Anwalt vorbereitet. Kin ist keine Kanzlei und dies ist keine Rechtsberatung. Die Vereinbarung ist auf Englisch verfasst, in der Sprache, die ein Anwalt lesen wird. Die Regeln unterscheiden sich je nach Bundesstaat.",
+      "empty": "Noch keine Pflegevereinbarung.",
+      "noCaregiver": "Fügen Sie zuerst auf dem Bildschirm Kreis eine Pflegekraft hinzu. Eine Vereinbarung gilt für eine Pflegekraft, die Kin bezahlt.",
+      "status": {
+        "draft": "Wartet auf Unterschriften",
+        "scheduled": "Unterschrieben, beginnt am {day}",
+        "active": "In Kraft",
+        "ended": "Beendet",
+        "withdrawn": "Zurückgezogen"
+      },
+      "card": {
+        "rate": "{rate} pro Stunde",
+        "hours": "Etwa {hours} pro Woche",
+        "starts": "Beginnt am {day}",
+        "endsOn": "Endet am {day}",
+        "ongoing": "Bis eine Seite mit 30 Tagen Frist kündigt",
+        "coveredFrom": "Deckt Arbeit ab dem {day} ab",
+        "lateSigned": "Sie wurde nach ihrem Beginn unterschrieben, deshalb deckt sie Arbeit vor dem {day} nicht ab.",
+        "replaced": "Ersetzt durch die Vereinbarung, die Arbeit ab dem {day} abdeckt.",
+        "rateMoved": "Der Stundenlohn von {name} beträgt jetzt {payRate}, diese Vereinbarung nennt aber {rate}. Kin hält die Bezahlung der abgedeckten Arbeit zurück, bis eine Vereinbarung zu {payRate} unterschrieben ist.",
+        "signedBy": "{name} hat am {day} als {capacity} unterschrieben",
+        "waitingFor": "Es fehlt noch {who}",
+        "needCaregiver": "die Unterschrift der Pflegekraft",
+        "needRecipient": "eine Unterschrift für die pflegebedürftige Person",
+        "capacity": {
+          "caregiver": "Pflegekraft",
+          "care_recipient": "pflegebedürftige Person",
+          "representative": "Vertreter der pflegebedürftigen Person"
+        },
+        "read": "Vereinbarung lesen",
+        "gate": "Solange dies die Vereinbarung der Pflegekraft ist, zahlt Kin nur für Arbeit, die sie abdeckt."
+      },
+      "actions": {
+        "sign": "Diese Vereinbarung unterschreiben",
+        "withdraw": "Entwurf zurückziehen",
+        "end": "Vereinbarung beenden",
+        "endOn": "Letzter Tag, den sie abdeckt",
+        "confirmEnd": "An diesem Tag beenden"
+      },
+      "form": {
+        "title": "Eine Pflegevereinbarung aufsetzen",
+        "text": "Kin füllt eine feste Vorlage aus diesen Angaben. Nichts in der Vereinbarung wird von einem KI-Modell geschrieben.",
+        "caregiver": "Pflegekraft",
+        "relation": "Wie die Pflegekraft mit der pflegebedürftigen Person verwandt ist",
+        "relations": {
+          "child": "Ein Kind der pflegebedürftigen Person",
+          "other_relative": "Ein anderer Verwandter",
+          "not_related": "Nicht verwandt",
+          "spouse": "Der Ehepartner der pflegebedürftigen Person"
+        },
+        "duties": "Was die Pflegekraft tun wird",
+        "dutiesHint": "Eine Aufgabe pro Zeile, höchstens 12.",
+        "hours": "Stunden pro Woche",
+        "rate": "Satz pro Stunde",
+        "rateFixed": "Der Stundenlohn von {name}, festgelegt auf der Seite „Kreis“. Die Vereinbarung nennt den Satz, den Kin zahlt; ändern Sie den Lohn also zuerst dort.",
+        "start": "Beginnt am",
+        "endTerm": "Wie sie endet",
+        "endTerms": {
+          "either_party_30_days": "Wenn eine Seite mit 30 Tagen Frist kündigt",
+          "fixed_end_date": "An einem festen Tag"
+        },
+        "endsOn": "Endet am",
+        "payer": "Wessen Geld die Pflege bezahlt",
+        "payers": {
+          "care_recipient": "Das eigene Geld der pflegebedürftigen Person",
+          "family_members": "Geld, das Familienmitglieder einzahlen"
+        },
+        "state": "Bundesstaat, dessen Recht gilt",
+        "review": "Vor dem Speichern lesen",
+        "propose": "Als Entwurf zur Unterschrift speichern",
+        "back": "Ändern",
+        "previewTitle": "Die Vereinbarung, wie sie lauten wird",
+        "spouseWarning": "Kin setzt keine Vereinbarung mit einem Ehepartner auf. Sie hilft bei der Medicaid-Vermögensverwertung nicht. Fragen Sie Ihre Anwältin oder Ihren Anwalt."
+      },
+      "rateNote": {
+        "near": "{rate} pro Stunde liegt nahe am Marktmedian von {median}.",
+        "below": "{rate} pro Stunde liegt weit unter dem Marktmedian von {median}. Ein Anwalt könnte fragen, warum.",
+        "above": "{rate} pro Stunde liegt weit über dem Marktmedian von {median}. Ein Anwalt könnte fragen, warum.",
+        "unknown": "Für diese Währung liegt keine Marktzahl vor."
+      },
+      "errors": {
+        "refused": "Ihre Rolle darf das nicht.",
+        "invalid": "Etwas im Formular konnte nicht gelesen werden. Prüfen Sie es und versuchen Sie es erneut.",
+        "spouse": "Kin setzt keine Vereinbarung mit einem Ehepartner auf. Fragen Sie Ihre Anwältin oder Ihren Anwalt.",
+        "relation": "Wählen Sie, wie die Pflegekraft verwandt ist.",
+        "duties": "Schreiben Sie eine bis zwölf Aufgaben, jede kurz.",
+        "hours": "Die Stunden pro Woche müssen zwischen 1 und 84 liegen.",
+        "rate": "Der Satz konnte nicht als Betrag gelesen werden.",
+        "start_date": "Der Starttag konnte nicht gelesen werden.",
+        "end_term": "Wählen Sie, wie die Vereinbarung endet.",
+        "end_date": "Ein fester Endtag muss nach dem Beginn liegen.",
+        "payer": "Wählen Sie, wessen Geld zahlt.",
+        "state": "Wählen Sie einen Bundesstaat.",
+        "amount": "Der Satz konnte nicht als Betrag gelesen werden.",
+        "unavailable": "Kin konnte das gerade nicht tun. Versuchen Sie es gleich noch einmal.",
+        "gate": {
+          "unsigned": "Die Pflegevereinbarung der Pflegekraft ist nicht vollständig unterschrieben, deshalb kann die Arbeit am {day} noch nicht bezahlt werden.",
+          "before_signed": "Die Pflegevereinbarung deckt die Arbeit am {day} nicht ab: Sie wurde vor der Unterschrift unter die Vereinbarung geleistet.",
+          "after_end": "Die Pflegevereinbarung endete vor dem {day}."
+        },
+        "closed": "Diese Vereinbarung ist kein Entwurf mehr, deshalb kann sie weder unterschrieben noch zurückgezogen werden.",
+        "ended": "Diese Vereinbarung ist bereits beendet.",
+        "signed": "Diese Vereinbarung ist bereits unterschrieben, deshalb kann sie nicht zurückgezogen werden. Beenden Sie sie stattdessen.",
+        "pay_rate": "Eine Vereinbarung nennt den aktuellen Stundenlohn der Pflegekraft, und diese tut es nicht. Hat sich der Lohn geändert, schreiben Sie eine neue Vereinbarung zum neuen Satz.",
+        "overlap": "Eine unterschriebene Vereinbarung für diese Pflegekraft deckt den Tag schon ab, an dem diese beginnen würde. Lassen Sie diese später beginnen oder beenden Sie zuerst die andere."
+      },
+      "summary": "{count} vorhanden."
     }
   },
   "aiProvenance": {

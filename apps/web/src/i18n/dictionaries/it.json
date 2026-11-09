@@ -1204,6 +1204,14 @@
       "circle": {
         "title": "Cerchia · Kin",
         "description": "I membri, i loro ruoli, l’accordo di famiglia e i beneficiari."
+      },
+      "packet": {
+        "title": "Fascicolo per il tuo avvocato · Kin",
+        "description": "Il riepilogo dei 60 mesi, gli accordi di assistenza e le prove delle visite in un solo download per un avvocato esperto di diritto degli anziani."
+      },
+      "careAgreements": {
+        "title": "Accordi di assistenza · Kin",
+        "description": "Accordi di assistenza scritti con le firme, e cosa copre ciascuno."
       }
     },
     "shell": {
@@ -1236,7 +1244,11 @@
         "seat": "Sei {name}, {role}",
         "leave": "Esci dalla demo"
       },
-      "visitor": "Visitatore della demo"
+      "visitor": "Visitatore della demo",
+      "presenceHold": {
+        "text": "Il denaro in uscita è trattenuto fino al {until}: qualcuno ha chiesto soldi a nome di un familiare, e Kin sta verificando con la persona vera o ha saputo che non era lei.",
+        "link": "Vedi la verifica"
+      }
     },
     "pause": {
       "button": "Sospendi i pagamenti",
@@ -1960,7 +1972,8 @@
         "model_unavailable": "Kin non può leggere descrizioni ora. Inserisci i giorni qui sotto.",
         "model_refused": "Kin non ha potuto leggere quella descrizione. Inserisci i giorni qui sotto.",
         "description": "Scrivi tra uno e mille caratteri sulle tue visite.",
-        "busy": "Hai chiesto diverse letture di recente. Attendi un po’ o inserisci i giorni qui sotto."
+        "busy": "Hai chiesto diverse letture di recente. Attendi un po’ o inserisci i giorni qui sotto.",
+        "care_agreement": "Kin paga solo il lavoro coperto da un accordo di assistenza firmato. Questo lavoro è datato prima della firma dell'accordo, o dopo la sua fine. Una volta firmato l'accordo di assistenza, verrà pagato."
       },
       "states": {
         "received": "In attesa della famiglia",
@@ -2594,6 +2607,7 @@
         "todo": "Non ancora",
         "in": "Entrata {start}",
         "inOut": "Entrata {start}, uscita {end}",
+        "inOutCounted": "Entrata {start}, uscita {end}: {duration} contati",
         "saidBy": "{name}, {time}"
       },
       "duration": {
@@ -2629,6 +2643,7 @@
         "checkedIn": "Hai registrato l’entrata. Tocca «Registra l’uscita» quando te ne vai.",
         "checkedOutWaiting": "Uscita registrata. Ora Kin attende la parola di {parent}.",
         "confirmedWaiting": "Grazie. Ora Kin attende che {name} registri l’uscita.",
+        "declinedByCall": "{parent} ha detto al telefono che la visita non è avvenuta. Non si paga nulla, e la famiglia può verificare.",
         "paid": "{amount} sono approvati dal permesso permanente di {parent} e stanno arrivando a {name} con {wallet}.",
         "paidToYou": "{amount} sono approvati dal permesso permanente di {parent} e stanno arrivando a te con {wallet}.",
         "asks": "{amount} vanno alla famiglia per l’approvazione, perché sono fuori dal permesso permanente.",
@@ -2717,7 +2732,8 @@
         "call_over": "Questa chiamata è già conclusa.",
         "bad_phone": "Non sembra un numero di telefono. Includi il prefisso internazionale, per esempio +393123456789.",
         "texting_off": "L’invio di SMS non è attivo.",
-        "text_limit": "Hai inviato diversi SMS di recente. Riprova più tardi, oppure copia il link."
+        "text_limit": "Hai inviato diversi SMS di recente. Riprova più tardi, oppure copia il link.",
+        "care_agreement": "Kin paga solo il lavoro coperto da un accordo di assistenza firmato. Questo lavoro è datato prima della firma dell'accordo, o dopo la sua fine. Una volta firmato l'accordo di assistenza, verrà pagato."
       }
     },
     "shiftCover": {
@@ -3110,6 +3126,7 @@
         "unanswered": "Non raggiungibile",
         "expired": "Chiusa"
       },
+      "notOnList": "Non è nella vostra lista",
       "unknownPerson": "Nessuno in elenco ha questo nome, quindi Kin non ha potuto chiedere a nessuno.",
       "markersTitle": "Segni di truffa nelle parole",
       "markers": {
@@ -3118,7 +3135,8 @@
         "gift_cards": "Carte regalo",
         "crypto_atm": "Criptovalute o sportello bitcoin",
         "courier_pickup": "Qualcuno che ritira il denaro",
-        "wire": "Un bonifico"
+        "wire": "Un bonifico",
+        "payment_app": "Un conto su un’app di pagamento indicato da loro"
       },
       "noMarkers": "Nessun segno di truffa nelle parole.",
       "amountLabel": "Richiesta",
@@ -3208,7 +3226,7 @@
         "text": "Tre parole che cambiano ogni lunedì. Un vero familiare le conosce, una voce clonata no. Condividetele con la famiglia, mai con chi chiama.",
         "week": "Per la settimana {week}",
         "askTitle": "Chiedere il codice di famiglia a chi ha chiamato",
-        "askText": "Kin non è riuscito a chiarirlo con la persona vera. Ponete il codice a chi ha chiamato e scrivete cosa risponde.",
+        "askText": "Kin non è riuscito a chiarirlo con la persona vera. Chiedete a chi chiama di dire il codice di famiglia di questa settimana e scrivete ciò che dice. Non ditegli mai il codice.",
         "label": "Cosa ha detto chi ha chiamato",
         "submit": "Controlla il codice",
         "checking": "Controllo…",
@@ -3230,6 +3248,238 @@
         "link": "Risposta dal messaggio",
         "call": "Risposta durante la chiamata di Kin"
       }
+    },
+    "packet": {
+      "title": "Fascicolo per il tuo avvocato",
+      "lede": "Un solo download contiene ciò che chiede un avvocato esperto di diritto degli anziani: i pagamenti degli ultimi 60 mesi ordinati per tipo, gli accordi di assistenza, le prove delle visite, le registrazioni di PayPal e una verifica che il registro non sia stato modificato.",
+      "link": "Fascicolo per il tuo avvocato",
+      "download": "Scarica il fascicolo",
+      "downloading": "Preparazione del fascicolo…",
+      "downloadNote": "Un file ZIP con un PDF, fogli di calcolo e il registro che chiunque può verificare offline. Si apre su qualsiasi computer.",
+      "notice": "Preparato per il tuo avvocato. Kin ordina e verifica il registro. Non dice se qualcosa sia consentito, sicuro o conforme, e le regole cambiano da uno Stato all’altro.",
+      "tiles": {
+        "window": {
+          "label": "Pagato in 60 mesi",
+          "note": "Dal {from} al {to}, senza le commissioni di PayPal."
+        },
+        "documented": {
+          "label": "Documentato",
+          "note": "Pagamenti che il registro può sostenere con dei documenti."
+        },
+        "lacking": {
+          "label": "Da documentare",
+          "note": "{count} pagamenti su cui un avvocato probabilmente farà domande."
+        },
+        "chain": {
+          "pass": "Il registro è coerente",
+          "fail": "Il registro non è coerente",
+          "note": "{count} registrazioni risommate e firmate con un’impronta proprio ora."
+        }
+      },
+      "note": {
+        "title": "Nota di accompagnamento",
+        "text": "Claude scrive questa nota a partire da cifre che il codice ha già calcolato. Ogni numero viene confrontato con il registro, e una nota fissa la sostituisce se uno non corrisponde.",
+        "ask": "Chiedi a Claude di scriverla",
+        "busy": "Claude è occupato per il momento, quindi viene mostrata la nota fissa di Kin.",
+        "unavailable": "Claude qui non è attivo, quindi viene mostrata la nota fissa di Kin."
+      },
+      "lookback": {
+        "title": "I 60 mesi, pagamento per pagamento",
+        "text": "Ogni pagamento uscito dal conto di assistenza, ordinato da un semplice codice. La paga di un’assistente familiare conta come documentata quando un accordo di assistenza firmato copre il giorno del lavoro.",
+        "empty": "Negli ultimi 60 mesi non è uscito nulla dal conto di assistenza.",
+        "grid": "Pagamenti in uscita dal conto di assistenza",
+        "cols": {
+          "day": "Pagato il",
+          "to": "A",
+          "kind": "Di che si trattava",
+          "amount": "Importo",
+          "status": "Stato",
+          "why": "Perché"
+        },
+        "classes": {
+          "caregiver_pay": "Paga dell’assistente",
+          "third_party_bill": "Fattura a un’azienda",
+          "purchase_for_parent": "Acquisto per il genitore",
+          "family_transfer": "Denaro a un familiare"
+        },
+        "status": {
+          "documented": "Documentato",
+          "needs_documentation": "Da documentare",
+          "reversed": "Stornato"
+        },
+        "reasons": {
+          "no_agreement": "Per questa assistente non risulta alcun accordo di assistenza.",
+          "agreement_unsigned": "L’accordo di assistenza non è firmato da tutti.",
+          "before_agreement": "Il lavoro è stato svolto prima della firma dell’accordo.",
+          "after_agreement": "Il lavoro è stato svolto dopo la fine dell’accordo.",
+          "rate_not_agreed": "È stato pagato a una tariffa che l’accordo di assistenza non indica.",
+          "no_document": "Non è conservata alcuna fattura o ordine.",
+          "family_transfer": "Denaro dato a un parente. Un avvocato chiederà a cosa servisse."
+        },
+        "marks": {
+          "unverified_hours": "Ore non provate da una visita",
+          "simulated": "Denaro simulato",
+          "paypal": "Sandbox di PayPal: denaro di prova",
+          "rate_below_market": "Tariffa molto sotto la mediana di mercato",
+          "rate_above_market": "Tariffa molto sopra la mediana di mercato"
+        },
+        "none": "Nulla da aggiungere.",
+        "summaryOne": "1 pagamento",
+        "summaryMany": "{count} pagamenti",
+        "csv": "Scarica l’elenco (CSV)"
+      },
+      "estimate": {
+        "title": "Cosa può dovere un datore di lavoro domestico",
+        "text": "Una stima per il commercialista della famiglia, dal denaro contante pagato a ciascuna assistente. Kin non presenta nulla e non dice che la famiglia sia in regola.",
+        "empty": "In questi anni non è stata pagata alcuna assistente.",
+        "cols": {
+          "employee": "Assistente",
+          "year": "Anno",
+          "wages": "Pagato",
+          "threshold": "Soglia",
+          "social": "Social Security",
+          "medicare": "Medicare",
+          "futa": "Disoccupazione",
+          "total": "Stima"
+        },
+        "above": "Soglia raggiunta",
+        "below": "Sotto la soglia",
+        "unknownYear": "Nessuna tabella per quest’anno",
+        "source": "Cifre: {source}. Confrontale con la pubblicazione prima di farvi affidamento.",
+        "exemption": "Le retribuzioni al coniuge del datore di lavoro, o al suo figlio sotto i 21 anni, possono essere esenti dall’imposta Social Security e Medicare. La stima non conosce il rapporto di parentela, quindi lo applica il commercialista."
+      },
+      "rate": {
+        "title": "La tariffa è vicina al mercato?",
+        "text": "La tariffa concordata di ciascuna assistente a confronto con la mediana nazionale per l’assistenza a domicilio.",
+        "source": "{source} ({collected}): {median} l’ora.",
+        "near": "{rate} l’ora è vicino al mercato.",
+        "below": "{rate} l’ora è molto sotto la mediana di mercato.",
+        "above": "{rate} l’ora è molto sopra la mediana di mercato.",
+        "unknown": "Per questa valuta non c’è alcun riferimento.",
+        "none": "Nessun accordo di assistenza indica ancora una tariffa."
+      },
+      "inside": {
+        "title": "Cosa contiene il download",
+        "items": [
+          "packet.pdf: la nota di accompagnamento, la tabella dei 60 mesi, gli accordi di assistenza, le prove delle visite e la stima per il datore di lavoro domestico.",
+          "record/kin-record.json: il registro con la sua catena di hash. Chiunque può verificarlo offline con kin-verify.",
+          "care-agreements.txt: il testo di ogni accordo, chi lo ha firmato e quando.",
+          "look-back.csv, visit-proofs.csv e paypal-payments.csv per un foglio di calcolo.",
+          "README.txt e manifest.json: come verificare, e un’impronta SHA-256 di ogni file."
+        ]
+      }
+    },
+    "careAgreements": {
+      "title": "Accordi di assistenza",
+      "lede": "Un accordo scritto, firmato prima che l’assistenza cominci, è la prima cosa che un avvocato chiede quando una famiglia paga un’assistente. Kin compila il modello con i fatti che indichi, conserva chi ha firmato e quando, e paga solo il lavoro coperto dall’accordo.",
+      "link": "Accordi di assistenza",
+      "notice": "Preparato per il tuo avvocato. Kin non è uno studio legale e questa non è una consulenza legale. L’accordo è scritto in inglese, la lingua che leggerà un avvocato. Le regole cambiano da uno Stato all’altro.",
+      "empty": "Ancora nessun accordo di assistenza.",
+      "noCaregiver": "Aggiungi prima un’assistente nella schermata Cerchia. Un accordo riguarda un’assistente che Kin paga.",
+      "status": {
+        "draft": "In attesa di firme",
+        "scheduled": "Firmato, comincia il {day}",
+        "active": "In vigore",
+        "ended": "Terminato",
+        "withdrawn": "Ritirato"
+      },
+      "card": {
+        "rate": "{rate} l’ora",
+        "hours": "Circa {hours} a settimana",
+        "starts": "Comincia il {day}",
+        "endsOn": "Termina il {day}",
+        "ongoing": "Finché una delle parti dà 30 giorni di preavviso",
+        "coveredFrom": "Copre il lavoro dal {day}",
+        "lateSigned": "È stato firmato dopo la data di inizio, quindi il lavoro prima del {day} non è coperto.",
+        "replaced": "Sostituito dall’accordo che copre il lavoro dal {day}.",
+        "rateMoved": "La tariffa oraria di {name} ora è {payRate}, ma questo accordo dice {rate}. Kin trattiene il pagamento del lavoro che copre finché non viene firmato un accordo a {payRate}.",
+        "signedBy": "{name} ha firmato il {day} in qualità di {capacity}",
+        "waitingFor": "Manca ancora {who}",
+        "needCaregiver": "la firma dell’assistente",
+        "needRecipient": "una firma per la persona assistita",
+        "capacity": {
+          "caregiver": "assistente",
+          "care_recipient": "persona assistita",
+          "representative": "rappresentante della persona assistita"
+        },
+        "read": "Leggi l’accordo",
+        "gate": "Finché questo è l’accordo dell’assistente, Kin paga solo il lavoro che copre."
+      },
+      "actions": {
+        "sign": "Firma questo accordo",
+        "withdraw": "Ritira la bozza",
+        "end": "Termina l’accordo",
+        "endOn": "Ultimo giorno coperto",
+        "confirmEnd": "Termina in questo giorno"
+      },
+      "form": {
+        "title": "Scrivi un accordo di assistenza",
+        "text": "Kin compila un modello fisso con questi dati. Nulla nell’accordo è scritto da un modello di IA.",
+        "caregiver": "Assistente",
+        "relation": "Rapporto dell’assistente con la persona assistita",
+        "relations": {
+          "child": "Un suo figlio",
+          "other_relative": "Un altro parente",
+          "not_related": "Nessuna parentela",
+          "spouse": "Il suo coniuge"
+        },
+        "duties": "Cosa farà l’assistente",
+        "dutiesHint": "Un compito per riga, fino a 12.",
+        "hours": "Ore a settimana",
+        "rate": "Tariffa oraria",
+        "rateFixed": "La tariffa oraria di {name}, impostata nella pagina Cerchia. L’accordo indica la tariffa che Kin paga, quindi cambiatela prima lì.",
+        "start": "Comincia il",
+        "endTerm": "Come finisce",
+        "endTerms": {
+          "either_party_30_days": "Quando una delle parti dà 30 giorni di preavviso",
+          "fixed_end_date": "In un giorno stabilito"
+        },
+        "endsOn": "Termina il",
+        "payer": "Con il denaro di chi si paga l’assistenza",
+        "payers": {
+          "care_recipient": "I fondi propri della persona assistita",
+          "family_members": "Il denaro versato dai familiari"
+        },
+        "state": "Stato la cui legge si applica",
+        "review": "Leggilo prima di salvare",
+        "propose": "Salva come bozza da firmare",
+        "back": "Modifica",
+        "previewTitle": "L’accordo così come sarà scritto",
+        "spouseWarning": "Kin non redige un accordo con un coniuge. Non aiuta per il Medicaid spend-down. Chiedi al tuo avvocato."
+      },
+      "rateNote": {
+        "near": "{rate} l’ora è vicino alla mediana di mercato di {median}.",
+        "below": "{rate} l’ora è molto sotto la mediana di mercato di {median}. Un avvocato potrebbe chiederne il motivo.",
+        "above": "{rate} l’ora è molto sopra la mediana di mercato di {median}. Un avvocato potrebbe chiederne il motivo.",
+        "unknown": "Per questa valuta non c’è alcuna cifra di mercato."
+      },
+      "errors": {
+        "refused": "Il tuo ruolo non può farlo.",
+        "invalid": "Qualcosa nel modulo non si è potuto leggere. Controllalo e riprova.",
+        "spouse": "Kin non redige un accordo con un coniuge. Chiedi al tuo avvocato.",
+        "relation": "Scegli il rapporto di parentela dell’assistente.",
+        "duties": "Scrivi da uno a dodici compiti, ciascuno breve.",
+        "hours": "Le ore a settimana devono essere tra 1 e 84.",
+        "rate": "La tariffa non si è potuta leggere come importo.",
+        "start_date": "Il giorno di inizio non si è potuto leggere.",
+        "end_term": "Scegli come finisce l’accordo.",
+        "end_date": "Un giorno di fine stabilito deve venire dopo l’inizio.",
+        "payer": "Scegli con il denaro di chi si paga.",
+        "state": "Scegli uno Stato.",
+        "amount": "La tariffa non si è potuta leggere come importo.",
+        "unavailable": "Kin non ha potuto farlo ora. Riprova tra un momento.",
+        "gate": {
+          "unsigned": "L’accordo di assistenza dell’assistente non è firmato da tutti, quindi il lavoro del {day} non può ancora essere pagato.",
+          "before_signed": "L’accordo di assistenza non copre il lavoro del {day}: è stato svolto prima della firma dell’accordo.",
+          "after_end": "L’accordo di assistenza è terminato prima del {day}."
+        },
+        "closed": "Questo accordo non è più una bozza, quindi non si può né firmare né ritirare.",
+        "ended": "Questo accordo è già terminato.",
+        "signed": "Questo accordo è già firmato, quindi non si può ritirare. Terminalo invece.",
+        "pay_rate": "Un accordo indica la tariffa oraria attuale di chi assiste, e questo no. Se la tariffa è cambiata, scrivete un nuovo accordo alla nuova tariffa.",
+        "overlap": "Un accordo firmato per questa persona copre già il giorno in cui inizierebbe questo. Fatelo iniziare dopo, oppure chiudete prima l’altro."
+      },
+      "summary": "{count} agli atti."
     }
   },
   "aiProvenance": {

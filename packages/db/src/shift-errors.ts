@@ -28,6 +28,7 @@ export type ShiftReason =
   | "parent_only"
   | "no_parent"
   | "not_covered"
+  | "care_agreement"
   | "invalid_target";
 
 /** A shift operation was refused. Asking again cannot help until what blocks it changes. */

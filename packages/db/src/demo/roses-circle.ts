@@ -1,4 +1,5 @@
-import { REFILL_PRICE_CENTS, rosesMonth, type CircleRole, type ParentLevel, type ProposalKind } from "@kin/domain";
+import { REFILL_PRICE_CENTS, rosesMonth, type CareAgreementTerms, type CircleRole, type ParentLevel, type ProposalKind, type SigningCapacity } from "@kin/domain";
+
 
 import type { ApprovalMethod, ClaimVerdict, DocumentKind } from "../values.ts";
 import { AMARA_PAY } from "./roses-shifts.ts";
@@ -102,6 +103,39 @@ export const ACCEPTANCES: readonly { member: PersonaKey; method: ApprovalMethod;
 ];
 
 export const AGREEMENT_EFFECTIVE_ON = "2026-10-01";
+
+/**
+ * Amara's written care agreement, signed by Elena for Rose and by Amara on
+ * Monday 19 October. It covers the work from that day on, so her twelve hours
+ * paid on 6 October, which came before it, are the one payment the look-back
+ * list shows as lacking documentation. Simulated like the rest of Rose's month.
+ */
+export const CARE_AGREEMENT = {
+  payee: "amara",
+  terms: {
+    caregiverRelation: "not_related",
+    duties: ["Help Rose get up, wash and dress", "Prepare meals and help her eat", "Remind Rose to take her medication", "Light housekeeping and laundry", "Go with Rose to appointments"],
+    weeklyMinutes: 12 * 60,
+    rateCentsPerHour: AMARA_PAY.rateCentsPerHour,
+    startsOn: "2026-10-19",
+    endTerm: "either_party_30_days",
+    endsOn: null,
+    payer: "family_members",
+    state: "NY",
+  },
+  createdBy: "elena",
+  createdAt: new Date("2026-10-19T14:00:00Z"),
+  signatures: [
+    { member: "elena", capacity: "representative", at: new Date("2026-10-19T14:30:00Z") },
+    { member: "amara", capacity: "caregiver", at: new Date("2026-10-19T15:00:00Z") },
+  ],
+} as const satisfies {
+  payee: PayeeKey;
+  terms: Omit<CareAgreementTerms, "payeeId" | "caregiverMemberId">;
+  createdBy: PersonaKey;
+  createdAt: Date;
+  signatures: readonly { member: PersonaKey; capacity: SigningCapacity; at: Date }[];
+};
 
 export type DemoDocument = { readonly key: string; readonly kind: DocumentKind; readonly uploadedBy: PersonaKey; readonly at: Date };
 

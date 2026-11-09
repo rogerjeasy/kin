@@ -33,13 +33,9 @@ describe("the calendar of the demo circle", () => {
       ["Day care", "aide", "scheduled", "neutral"],
       ["Ana visits Rose", "visit", "scheduled", "neutral"],
     ]);
-    // Amara's two October shifts are paid, a week or two earlier.
-    const earlier = shiftViews(snapshot, shiftWeek(snapshot, "2026-10-21"));
-    expect(earlier.map((view) => [view.shift.title, view.chip, view.tone, view.payment, view.byPermission, view.wallet, view.shift.cents])).toEqual([
-      ["Morning care", "paid", "paid", "paid", true, "paypal", 7700],
-      ["Afternoon care", "paid", "paid", "paid", true, "paypal", 8800],
-    ]);
-    expect(earlier[0]?.shift).toMatchObject({ simulated: true });
+    // No shift was paid before the demo begins: every payment is in the ledger, and the seeded month holds none for a shift.
+    expect(shiftViews(snapshot, shiftWeek(snapshot, "2026-10-21"))).toEqual([]);
+    expect(snapshot.shifts.filter((shift) => shift.state === "paid" || shift.proposalId !== null)).toEqual([]);
   });
 
   it("gives a caregiver only their own shifts, and the tap that is theirs to make", async () => {
@@ -48,8 +44,8 @@ describe("the calendar of the demo circle", () => {
     expect(needsOf(snapshot).map((need) => need.kind)).toEqual(["check_in"]);
     expect(shiftViews(snapshot, weekOf(snapshot))[0]?.canCancel).toBe(true);
     expect(snapshot.shiftPermissions).toEqual([]);
-    // The newest payment that came in is the one Amara is told about, and only for a shift of her own.
-    expect(latestPaid(snapshot)).toMatchObject({ payment: "paid", shift: { title: "Afternoon care", cents: 8800 } });
+    // Nothing was paid yet, so there is no payment to tell her about (server/shifts.test.ts follows one in).
+    expect(latestPaid(snapshot)).toBeNull();
   });
 
   it("tells nobody else that a payment came in for a shift of their own", async () => {
@@ -96,6 +92,12 @@ describe("what the screens are given in words", () => {
     const [need] = needItems(checkedIn, needsOf(checkedIn), english.dashboard.shifts, format, names);
     expect(need).toMatchObject({ kind: "word", headline: "Was Amara here this morning?", buttonLabel: "Yes, Amara was here this morning", toYou: false, wallet: "paypal" });
     expect(need?.hint).toBe("Amara checked in at 10:05 AM. Your yes is the family’s key, so say it only if you know the visit happened.");
+
+    // Planned for the morning but begun in the afternoon: the question agrees with the check-in shown beside it.
+    const late = { ...snapshot, shifts: snapshot.shifts.map((shift) => (shift.title === "Day care" ? { ...shift, state: "checked_in" as const, checkedInAt: new Date("2026-10-30T18:25:00Z"), waitingFor: "check_out" as const } : shift)) };
+    const [lateNeed] = needItems(late, needsOf(late), english.dashboard.shifts, format, names);
+    expect(lateNeed).toMatchObject({ headline: "Was Amara here this afternoon?", buttonLabel: "Yes, Amara was here this afternoon" });
+    expect(lateNeed?.hint).toContain("checked in at 2:25 PM");
   });
 
   it("lists who can take each kind of shift: an aide shift only a caregiver with a rate, never an observer", async () => {

@@ -20,6 +20,7 @@ import {
   type SubscriptionAction,
   type SubscriptionPayment,
 } from "./subscription.ts";
+import { parsePayoutItemTransactionId, searchTransaction, type TransactionRecord } from "./transaction-search.ts";
 import { parseVerification, verificationBody, type WebhookDelivery } from "./webhook.ts";
 
 /**
@@ -42,6 +43,12 @@ export type PayPalPool = {
    */
   readonly createPayout: (payout: NewPayout, requestId: string) => Promise<{ readonly batchId: string }>;
   readonly getPayoutBatch: (batchId: string) => Promise<PayoutBatch>;
+  /**
+   * PayPal's own Transaction Search record of one payout item: the proof that
+   * the money left the pool's account. `null` while PayPal has no transaction
+   * for the item yet (its search lags by up to three hours). Read only.
+   */
+  readonly getPayoutTransaction: (payoutItemId: string, around: Date) => Promise<TransactionRecord | null>;
   /**
    * Makes a monthly subscription for a member's share: the circle's product,
    * a plan for the amount, and the subscription the payer then approves on
@@ -101,6 +108,11 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
     },
     async getPayoutBatch(batchId) {
       return parsePayoutBatch(await client.send({ method: "GET", path: `/v1/payments/payouts/${pathId(batchId)}`, operation: "payouts.get" }));
+    },
+    async getPayoutTransaction(payoutItemId, around) {
+      const item = await client.send({ method: "GET", path: `/v1/payments/payouts-item/${pathId(payoutItemId)}`, operation: "payouts.item" });
+      const transactionId = parsePayoutItemTransactionId(item);
+      return transactionId === null ? null : searchTransaction(client, { transactionId, around });
     },
     async createSubscription(subscription, key) {
       const productId = parseCreatedId(

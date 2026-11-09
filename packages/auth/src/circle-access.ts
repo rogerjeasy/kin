@@ -63,6 +63,14 @@ export const CIRCLE_ACTIONS = {
   "agreement.propose": ["organizer"],
   /** Accept the newest version: the members who share the cost, and the parent. */
   "agreement.accept": ["organizer", "contributor", "parent"],
+  /** Read the written care agreements: whoever sees the money, and a caregiver for their own, which the database enforces again. */
+  "care_agreement.view": ["organizer", "contributor", "parent", "caregiver", "observer"],
+  /** Write a care agreement between the parent and a caregiver, as a draft to sign. */
+  "care_agreement.propose": ["organizer"],
+  /** Sign one: the caregiver, the parent for themselves, or the organizer for the parent. The database derives the capacity from the seat. */
+  "care_agreement.sign": ["organizer", "parent", "caregiver"],
+  /** Withdraw a draft that is not yet signed by both sides, or end one that is. */
+  "care_agreement.manage": ["organizer"],
   "audit.view": ["organizer"],
   /** Have Kin keep the head of the record's hash chain when the record is checked or exported. An observer reads and never writes. */
   "audit_head.keep": ["organizer", "contributor", "parent"],

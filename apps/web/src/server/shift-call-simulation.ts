@@ -1,5 +1,5 @@
 import type { CircleSnapshot } from "@kin/db";
-import { dayPart } from "@kin/domain";
+import { visitDayPart } from "@kin/domain";
 import { isOfficeLocale, shiftCallSentences, type ShiftCallSentences } from "@kin/telephony";
 
 import { mayHearCall } from "./shift-access";
@@ -28,6 +28,6 @@ export function simulatedCall(circle: CircleSnapshot, shiftId: unknown, locale: 
   const caregiver = circle.members.find((member) => member.id === shift.memberId);
   return {
     ok: true,
-    call: shiftCallSentences({ locale, caregiverName: firstNameOf(caregiver?.displayName ?? ""), dayPart: dayPart(shift.startsAt, circle.circle.timezone), contactName: null }),
+    call: shiftCallSentences({ locale, caregiverName: firstNameOf(caregiver?.displayName ?? ""), dayPart: visitDayPart(shift, circle.circle.timezone), contactName: null }),
   };
 }

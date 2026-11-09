@@ -32,14 +32,15 @@ describe("a provisioned demo circle", () => {
     expect(moves(ours.plan.collections, byPersona)).toEqual(moves(example.plan.collections, (id) => id));
 
     expect(snapshot.proposals.map((p) => [p.purpose, p.state])).toEqual([
-      // Amara's two shifts, paid in October under Rose's standing permission.
-      ["shift", "settled"],
-      ["shift", "settled"],
       ["stairlift", "pending_approval"],
       ["caregiverWeek", "pending_approval"],
       ...example.plan.payouts.map(() => ["settlement", "pending_approval"]),
     ]);
-    expect(snapshot.proposals[2]?.votes).toEqual([{ memberId: circle.members.rose, role: "parent", decision: "approve", method: "voice", at: new Date("2026-10-29T16:10:00Z") }]);
+    // Nothing in the demo says money was paid that the ledger does not hold: no settled proposal, no paid shift, no confirmed payout.
+    expect(snapshot.proposals.filter((p) => p.state === "settled" || p.state === "executing")).toEqual([]);
+    expect(snapshot.shifts.filter((shift) => shift.state === "paid" || shift.proposalId !== null)).toEqual([]);
+    expect(snapshot.shiftPermissions.flatMap((permission) => permission.uses)).toEqual([]);
+    expect(snapshot.proposals[0]?.votes).toEqual([{ memberId: circle.members.rose, role: "parent", decision: "approve", method: "voice", at: new Date("2026-10-29T16:10:00Z") }]);
     expect(snapshot.narrations.map((n) => n.spokenText)).toContain("Your electricity bill of $84.00 is paid.");
     expect(snapshot.claimChecks[0]).toMatchObject({ verdict: "no_match", claimedCents: 30000, alerted: [circle.members.elena, circle.members.marcus] });
   });
@@ -63,7 +64,7 @@ describe("a provisioned demo circle", () => {
 
     // Nothing has happened after the clock, and nothing waiting has expired.
     const waiting = snapshot.proposals.filter((proposal) => proposal.state === "pending_approval");
-    expect(waiting).toHaveLength(snapshot.proposals.length - 2);
+    expect(waiting).toHaveLength(snapshot.proposals.length);
     expect(snapshot.proposals.every((proposal) => proposal.raisedAt <= pressed)).toBe(true);
     expect(waiting.every((proposal) => proposal.expiresAt !== null && proposal.expiresAt > pressed)).toBe(true);
     expect(waiting[0]?.votes[0]?.at).toEqual(new Date("2026-12-15T18:25:00Z"));

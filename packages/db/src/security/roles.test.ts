@@ -20,8 +20,8 @@ describe("a caregiver (the least-privileged role that reads money)", () => {
 
     expect(snapshot.viewer.role).toBe("caregiver");
     expect(snapshot.payees.map((payee) => payee.id)).toEqual([circle.payees.amara]);
-    // Her two paid shifts, and her week waiting for Rose.
-    expect(snapshot.proposals.map((proposal) => proposal.purpose)).toEqual(["shift", "shift", "caregiverWeek"]);
+    // Her week waiting for Rose, and none of the family's other proposals.
+    expect(snapshot.proposals.map((proposal) => proposal.purpose)).toEqual(["caregiverWeek"]);
     // The approval and the confirmed payout of her twelve hours, each read whole.
     expect(snapshot.ledger.entries.map((entry) => entry.kind).toSorted()).toEqual(["bill_approved", "payout_confirmed"]);
     expect(snapshot.ledger.entries.every((entry) => entry.lines.some((line) => line.account === `payable:${circle.payees.amara}`))).toBe(true);

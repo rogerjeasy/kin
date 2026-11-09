@@ -145,11 +145,10 @@ export type LineRecord = { readonly currency: string; readonly record: RecordFac
 export async function readLineRecord(tx: Transaction, circleId: string): Promise<LineRecord | null> {
   const [circle] = await tx.select({ id: circles.id, currency: circles.currency }).from(circles).where(and(eq(circles.id, circleId), eq(circles.status, "active")));
   if (!circle) return null;
-  const [payeeRows, billRows, ledger] = await Promise.all([
-    // A member's settlement address is a payee row of its own category, and never one a caller could be asking as.
-    tx.select({ id: payees.id, name: payees.name }).from(payees).where(and(eq(payees.circleId, circleId), ne(payees.category, "settlement"))),
-    tx.select({ payeeId: bills.payeeId, cents: bills.amountCents, state: bills.state }).from(bills).where(eq(bills.circleId, circleId)),
-    readLedger(tx, circle),
-  ]);
+  // One query at a time: a transaction is one connection, and pg will refuse queries sent over it at once.
+  // A member's settlement address is a payee row of its own category, and never one a caller could be asking as.
+  const payeeRows = await tx.select({ id: payees.id, name: payees.name }).from(payees).where(and(eq(payees.circleId, circleId), ne(payees.category, "settlement")));
+  const billRows = await tx.select({ payeeId: bills.payeeId, cents: bills.amountCents, state: bills.state }).from(bills).where(eq(bills.circleId, circleId));
+  const ledger = await readLedger(tx, circle);
   return { currency: circle.currency, record: { payees: payeeRows, bills: billRows, payments: confirmedPayments(ledger.entries) } };
 }
