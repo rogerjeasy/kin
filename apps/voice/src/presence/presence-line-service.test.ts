@@ -19,11 +19,12 @@ const CHECK = "6e2d1b63-5a3c-4c1f-9b3b-2f2e2d2c2b2a";
 const code = () => familyCode(SEED, new Date().toISOString().slice(0, 10));
 const ACCOUNT = "Grandma, it's Theo. I've been arrested and I need $2,000 for bail today. Don't tell Mum. Buy gift cards.";
 
-type Opened = PresenceCheckInput & { callSid: string };
+type Opened = PresenceCheckInput & { callSid: string; from: string | null };
 let opened: Opened[];
 let state: PresenceState;
 let looks: number;
 let answers: { callSid: string; answer: string }[];
+let codeTries: number;
 let askExpires: number;
 let service: RunningService;
 let twilio: TwilioCaller;
@@ -32,11 +33,15 @@ const store: PresenceLineStore = {
   read: (circleId) => Promise.resolve(circleId === CIRCLE ? { currency: "USD", timezone: "UTC", parentName: "Rose Okafor", voices: [THEO] } : null),
   open: (input) => {
     opened.push(input);
-    return Promise.resolve({ checkId: "6e2d1b63-5a3c-4c1f-9b3b-2f2e2d2c2b2a", state: input.voiceId === null ? "unanswered" : "asked", simulated: false, repeated: false });
+    return Promise.resolve({ checkId: "6e2d1b63-5a3c-4c1f-9b3b-2f2e2d2c2b2a", state: input.voiceId === null ? "unanswered" : "asked", simulated: false, repeated: false, fromParent: input.from === ROSE });
   },
   status: (): Promise<PresenceLineCheck | null> => {
     looks += 1;
     return Promise.resolve({ state, voiceName: "Theo" });
+  },
+  codeAttempt: () => {
+    codeTries += 1;
+    return Promise.resolve(codeTries <= 2);
   },
   familyCodeSeed: () => Promise.resolve(SEED),
   askFacts: (): Promise<PresenceAskFacts | null> =>
@@ -53,6 +58,7 @@ beforeEach(async () => {
   state = "asked";
   looks = 0;
   answers = [];
+  codeTries = 0;
   askExpires = Date.now() + 600_000;
   service = await startService({
     numbers: new Map([[OFFICE_NUMBER, { circleId: CIRCLE, locale: "en" }]]),
@@ -122,6 +128,56 @@ describe("the 'is it really you?' line", () => {
     const first = await twilio.post("/voice/presence/incoming", base());
     await twilio.post(nextPath(first.body), base({ SpeechResult: "סבתא, זה תיאו, אני צריך 500 דולר היום" }));
     expect(opened[0]).toMatchObject({ voiceId: THEO.id, claimedName: "Theo", claimedCents: 50_000 });
+  });
+
+  describe("for a caller who is not the parent", () => {
+    const stranger = base({ From: "+15555550888" });
+
+    it("never says a name, nor whether anyone matched: the same neutral sentence for a name on the list and one that is not", async () => {
+      for (const account of [ACCOUNT, "It's your nephew Mike, send 900 dollars by wire now"]) {
+        opened = [];
+        const first = await twilio.post("/voice/presence/incoming", stranger);
+        const turn = await twilio.post(nextPath(first.body), { ...stranger, SpeechResult: account });
+        expect(opened[0]?.from).toBe("+15555550888");
+        const said = spokenIn(turn.body).join(" ");
+        expect(said).toContain("a family member");
+        expect(said).not.toContain("Theo");
+        expect(said).not.toContain(PRESENCE_WORDS.en.reply.unknown_person);
+      }
+    });
+
+    it("still opens the check, asks the real person and tells the family: only the name and the freeze are withheld", async () => {
+      const first = await twilio.post("/voice/presence/incoming", stranger);
+      await twilio.post(nextPath(first.body), { ...stranger, SpeechResult: ACCOUNT });
+      expect(opened).toHaveLength(1);
+      expect(opened[0]).toMatchObject({ voiceId: THEO.id, callSid: SID });
+    });
+  });
+
+  describe("the weekly code, tried by phone", () => {
+    it("allows two tries a check, then hangs up on whatever is said, so it cannot be found by asking", async () => {
+      const { turn } = await rosesCall();
+      state = "unanswered";
+      const reply = await twilio.post(nextPath(turn), base());
+      const path = nextPath(reply.body);
+      for (const said of ["apple", "apple again", "apple at last"]) {
+        const answer = await twilio.post(path, base({ SpeechResult: said }));
+        expect(spokenIn(answer.body)).toEqual([PRESENCE_WORDS.en.reply.code_wrong]);
+      }
+      expect(codeTries).toBe(3);
+      // Even the right words, past the tries, are not tested.
+      const right = await twilio.post(path, base({ SpeechResult: code().words.join(" ") }));
+      expect(spokenIn(right.body)).toEqual([PRESENCE_WORDS.en.reply.code_wrong]);
+    });
+
+    it("does not pass a caller who reads out the whole list of code words", async () => {
+      const { turn } = await rosesCall();
+      state = "unanswered";
+      const path = nextPath((await twilio.post(nextPath(turn), base())).body);
+      const everything = FAMILY_CODE_WORDS.join(" ");
+      const answer = await twilio.post(path, base({ SpeechResult: everything.slice(0, 900) }));
+      expect(spokenIn(answer.body)).toEqual([PRESENCE_WORDS.en.reply.code_wrong]);
+    });
   });
 
   describe("when Theo cannot be reached", () => {

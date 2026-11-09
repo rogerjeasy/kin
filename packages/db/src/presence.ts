@@ -214,12 +214,14 @@ export type PresenceOpened = {
   readonly simulated: boolean;
   /** The call had already been recorded: this is the earlier check. */
   readonly repeated: boolean;
+  /** For a call over the telephone: the caller ID was the parent's registered number, so the check holds money and the line may speak names. `false` for anyone else, and for the screen. */
+  readonly fromParent: boolean;
 };
 
 function parseOpened(raw: unknown): PresenceOpened {
   const state = text(raw, "state");
   if (!PRESENCE_STATES.some((each) => each === state)) throw new Error("A presence check came back in an unknown state");
-  return { checkId: text(raw, "checkId"), state: state as PresenceState, simulated: field(raw, "simulated") === true, repeated: field(raw, "repeated") === true };
+  return { checkId: text(raw, "checkId"), state: state as PresenceState, simulated: field(raw, "simulated") === true, repeated: field(raw, "repeated") === true, fromParent: field(raw, "fromParent") === true };
 }
 
 const pgArray = (values: readonly string[]): string => `{${values.map((value) => `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(",")}}`;
@@ -235,10 +237,10 @@ export function openPresenceCheck(tx: Transaction, input: PresenceCheckInput): P
 }
 
 /** Kin's phone line records a call. As the service for the circle the dialled number belongs to, inside `asService`. Once per call. */
-export function openPresenceCheckByLine(tx: Transaction, input: PresenceCheckInput & { readonly callSid: string }): Promise<PresenceOpened> {
+export function openPresenceCheckByLine(tx: Transaction, input: PresenceCheckInput & { readonly callSid: string; /** The caller ID Twilio gave, in E.164 form, or `null` when withheld. */ readonly from: string | null }): Promise<PresenceOpened> {
   return operation(async () => {
     const result = await tx.execute<{ opened: unknown }>(
-      sql`select kin_private.open_presence_check_by_line(${input.circleId}::uuid, ${input.callSid}, ${input.voiceId}::uuid, ${input.claimedName}, ${input.claimedRelationship}, ${input.claimedCents}::bigint, ${pgArray(input.markers)}::text[], ${pgArray(input.said)}::text[], ${input.locale}, ${input.token}, ${JSON.stringify(input.alerts)}::jsonb) as opened`,
+      sql`select kin_private.open_presence_check_by_line(${input.circleId}::uuid, ${input.callSid}, ${input.voiceId}::uuid, ${input.claimedName}, ${input.claimedRelationship}, ${input.claimedCents}::bigint, ${pgArray(input.markers)}::text[], ${pgArray(input.said)}::text[], ${input.locale}, ${input.token}, ${JSON.stringify(input.alerts)}::jsonb, ${input.from}) as opened`,
     );
     return parseOpened(result.rows[0]?.opened);
   });
@@ -639,5 +641,16 @@ export async function requestHelpPayout(tx: Transaction, input: HelpPayoutInput)
     const id = result.rows[0]?.id;
     if (typeof id !== "string") throw new Error("The help operation returned no proposal");
     return id;
+  });
+}
+
+/**
+ * Counts one try at the weekly family code against a check, and says whether it may be made: two a check, by the screen
+ * or the phone. `false` means no tries are left, and the parent is told to hang up and wait for the family.
+ */
+export function useCodeAttempt(tx: Transaction, circleId: string, checkId: string): Promise<boolean> {
+  return operation(async () => {
+    const result = await tx.execute<{ allowed: boolean }>(sql`select kin_private.use_code_attempt(${circleId}::uuid, ${checkId}::uuid) as allowed`);
+    return result.rows[0]?.allowed === true;
   });
 }

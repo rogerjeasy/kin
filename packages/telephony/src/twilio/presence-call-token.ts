@@ -21,6 +21,11 @@ export type PresenceCallToken = {
   readonly reasked: number;
   /** How many times Kin has looked at the check's answer and found none yet. */
   readonly waits: number;
+  /**
+   * Whether Kin may say the person's name to this caller: the call came from the parent's own number and she named the
+   * person herself. Anyone else hears "a family member", so a stranger who dials the line learns nobody's name.
+   */
+  readonly named: boolean;
 };
 
 export const PRESENCE_CALL_TOKEN_TTL_MS = 20 * 60 * 1000;
@@ -43,14 +48,15 @@ const isObject = (value: unknown): value is Record<string, unknown> => value !==
 export function openPresenceCallToken(text: string, key: string, now: number): PresenceCallToken | null {
   const payload = openToken(text, key);
   if (!isObject(payload) || payload["kind"] !== KIND) return null;
-  const { sid, circleId, locale, checkId, reasked, waits, exp } = payload;
+  const { sid, circleId, locale, checkId, reasked, waits, named, exp } = payload;
   if (typeof exp !== "number" || exp <= now) return null;
   if (typeof sid !== "string" || !CALL_SID.test(sid) || typeof circleId !== "string" || !UUID.test(circleId)) return null;
   if (typeof locale !== "string" || !isOfficeLocale(locale)) return null;
   if (checkId !== null && (typeof checkId !== "string" || !UUID.test(checkId))) return null;
   if (typeof reasked !== "number" || !Number.isInteger(reasked) || reasked < 0 || reasked > MAX_PRESENCE_REASKS) return null;
   if (typeof waits !== "number" || !Number.isInteger(waits) || waits < 0 || waits > MAX_PRESENCE_WAITS) return null;
-  return { sid, circleId, locale, checkId, reasked, waits };
+  if (typeof named !== "boolean") return null;
+  return { sid, circleId, locale, checkId, reasked, waits, named };
 }
 
 /** The address Twilio posts the parent's words, or fetches the next look, from: a route and its sealed token. `publicUrl` has no trailing slash, as `KIN_VOICE_PUBLIC_URL` has none. */

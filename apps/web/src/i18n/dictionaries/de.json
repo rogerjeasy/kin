@@ -3191,7 +3191,8 @@
         "above_ceiling": "Das liegt über dem, was die Vereinbarung der Familie zu zahlen erlaubt.",
         "paused": "Zahlungen sind pausiert. Heben Sie zuerst die Pause auf.",
         "no_agreement": "Der Kreis hat noch keine gültige Vereinbarung.",
-        "in_progress": "Hilfe für diese Person läuft schon, ihr Konto kann sich jetzt nicht ändern."
+        "in_progress": "Hilfe für diese Person läuft schon, ihr Konto kann sich jetzt nicht ändern.",
+        "no_tries": "Der Code wurde für diesen Anruf schon zweimal versucht. Bitte legen Sie auf und warten Sie, bis die Familie Sie anruft."
       },
       "link": {
         "title": "Sind Sie das wirklich?",

@@ -15,6 +15,7 @@ import {
   openPresenceCheckByLine,
   presenceHoldUntil,
   readDuePresenceCalls,
+  useCodeAttempt,
   readFamilyCodeSeed,
   readPresenceAskFacts,
   readPresenceCheck,
@@ -36,7 +37,7 @@ import {
 } from "./presence.ts";
 import { asPerson, asService } from "./scope.ts";
 import { proposeHelp } from "./presence-help.ts";
-import { adminRun, realCircle, seatPerson, serviceRows, visitorWithCircle, withoutTriggers, type VisitorCircle } from "./testing/index.ts";
+import { PARENT_PHONE, adminRun, enableCalls, realCircle, seatPerson, serviceRows, visitorWithCircle, withoutTriggers, type VisitorCircle } from "./testing/index.ts";
 import { testDatabases } from "./testing/databases.ts";
 import { REFUSED, errorCode } from "./testing/sql.ts";
 
@@ -107,13 +108,13 @@ describe("opening a check in a demo circle", () => {
     const circle = await visitorWithCircle(db);
     const other = await visitorWithCircle(db);
     const voice = await theo(circle);
-    const call = (callSid: string, circleId = circle.circleId) => asService(db.service, circleId, (tx) => openPresenceCheckByLine(tx, { ...input(circle, voice, { circleId }), callSid }));
+    const call = (callSid: string, circleId = circle.circleId) => asService(db.service, circleId, (tx) => openPresenceCheckByLine(tx, { ...input(circle, voice, { circleId }), callSid, from: null }));
     const first = await call("CA00000000000000000000000000000001");
     const again = await call("CA00000000000000000000000000000001");
     expect(again).toMatchObject({ checkId: first.checkId, repeated: true });
     expect(await serviceRows(db, circle.circleId, "select source from presence_checks where call_sid is not null")).toEqual([{ source: "phone" }]);
     // The service names one circle; any other is refused, and so is a person who belongs to a different circle.
-    await expect(asService(db.service, other.circleId, (tx) => openPresenceCheckByLine(tx, { ...input(circle, voice), callSid: "CA00000000000000000000000000000002" }))).rejects.toMatchObject({ reason: "refused" });
+    await expect(asService(db.service, other.circleId, (tx) => openPresenceCheckByLine(tx, { ...input(circle, voice), callSid: "CA00000000000000000000000000000002", from: null }))).rejects.toMatchObject({ reason: "refused" });
     await expect(open(circle, circle.userId, input(circle, await theo(other)))).rejects.toMatchObject({ reason: "cannot_ask" });
   });
 
@@ -438,5 +439,54 @@ describe("Kin's call to the real person", () => {
     await expect(asService(db.service, demo.circleId, (tx) => startPresenceCall(tx, circle.circleId, checkId))).rejects.toMatchObject({ reason: "refused" });
     expect(await errorCode(asPerson(db.app, circle.userId, (tx) => tx.execute(sql`select kin_private.start_presence_call(${circle.circleId}::uuid, ${checkId}::uuid)`)))).toBe(REFUSED.permission);
     expect(await errorCode(asPerson(db.app, circle.userId, (tx) => tx.execute(sql`select * from kin_private.due_presence_calls()`)))).toBe(REFUSED.permission);
+  });
+});
+
+describe("what a stranger can make the presence line do", () => {
+  async function lineCircle() {
+    const circle = await realCircle(db);
+    await enableCalls(db, circle);
+    const added = await asPerson(db.app, circle.userId, (tx) => addTrustedVoice(tx, { circleId: circle.circleId, name: "Theo", relationship: "grandson", phone: "+15555550123", locale: "en", token: newCheckToken() }));
+    await adminRun(db, "update trusted_voices set confirmed_at = now() where id = $1", [added.id]);
+    const call = (n: number, from: string | null) =>
+      asService(db.service, circle.circleId, (tx) => openPresenceCheckByLine(tx, { ...input(circle, added.id), callSid: `CA${String(n).padStart(32, "0")}`, from }));
+    const held = () => asService(db.service, circle.circleId, (tx) => presenceHoldUntil(tx, circle.circleId, new Date()));
+    return { circle, call, held };
+  }
+
+  it("holds outgoing money for a call from the parent's own number, and for no one else's", async () => {
+    const stranger = await lineCircle();
+    expect(await stranger.call(1, "+15555550999")).toMatchObject({ fromParent: false, state: "opened" });
+    expect(await stranger.call(2, null)).toMatchObject({ fromParent: false });
+    expect(await stranger.held()).toBeNull();
+    // The check still asks the real person and is still on the family's record: only the freeze is withheld.
+    expect(await serviceRows(db, stranger.circle.circleId, "select count(*)::int as n from outbox where topic = 'presence.ask'")).toEqual([{ n: 2 }]);
+    const parent = await lineCircle();
+    expect(await parent.call(1, PARENT_PHONE)).toMatchObject({ fromParent: true });
+    expect(await parent.held()).not.toBeNull();
+  });
+
+  it("answers a call Twilio delivers twice with the same check and counts it once, and opens at most three an hour", async () => {
+    const { call } = await lineCircle();
+    const first = await call(1, null);
+    expect(await call(1, null)).toMatchObject({ checkId: first.checkId, repeated: true });
+    await call(2, null);
+    await call(3, null);
+    await expect(call(4, null)).rejects.toMatchObject({ reason: "rate_limited" });
+  });
+
+  it("lets the weekly code be put to a check's caller twice, by anyone who may, and refuses the rest", async () => {
+    const circle = await visitorWithCircle(db);
+    const { checkId } = await open(circle, circle.userId, input(circle, null));
+    const marcus = await seatPerson(db, circle.circleId, circle.members.marcus);
+    const amara = await seatPerson(db, circle.circleId, circle.members.amara);
+    const attempt = (userId: string) => asPerson(db.app, userId, (tx) => useCodeAttempt(tx, circle.circleId, checkId));
+    expect(await attempt(circle.userId)).toBe(true);
+    expect(await attempt(marcus)).toBe(true);
+    expect(await attempt(circle.userId)).toBe(false);
+    await expect(attempt(amara)).rejects.toMatchObject({ reason: "refused" });
+    expect(await asService(db.service, circle.circleId, (tx) => useCodeAttempt(tx, circle.circleId, checkId))).toBe(false);
+    await expect(asService(db.service, circle.circleId, (tx) => useCodeAttempt(tx, circle.circleId, "00000000-0000-0000-0000-000000000000"))).rejects.toMatchObject({ reason: "refused" });
+    expect(await serviceRows(db, circle.circleId, "select code_attempts from presence_checks where id = $1", [checkId])).toEqual([{ code_attempts: 2 }]);
   });
 });

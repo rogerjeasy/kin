@@ -60,7 +60,7 @@ export type PresenceLineDeps = {
 };
 
 const seal = (token: PresenceCallToken, deps: VoiceDeps): string => sealPresenceCallToken(token, deps.config.stateKey, deps.now());
-const next = (route: "turn" | "wait" | "code", token: PresenceCallToken, deps: VoiceDeps): string => presenceCallUrl(deps.config.publicUrl, route, seal(token, deps));
+const nextUrl = (route: "turn" | "wait" | "code", token: PresenceCallToken, deps: VoiceDeps): string => presenceCallUrl(deps.config.publicUrl, route, seal(token, deps));
 
 /** One verified webhook of the presence line, from its fields to the TwiML that replies. */
 export async function handlePresenceRoute(route: PresenceRoute, params: FormParams, url: URL, deps: VoiceDeps, line: PresenceLineDeps): Promise<VoiceHttpReply> {
@@ -89,8 +89,8 @@ async function incoming(call: VoiceRequest, deps: VoiceDeps, line: PresenceLineD
     return sorry();
   }
   deps.log({ level: "info", message: "voice.presence.call_started", callSid: call.callSid, circleId: target.circleId });
-  const token: PresenceCallToken = { sid: call.callSid, circleId: target.circleId, locale: target.locale, checkId: null, reasked: 0, waits: 0 };
-  return xml(sayAndListen(target.locale, [PRESENCE_WORDS[target.locale].line.intro], next("turn", token, deps)));
+  const token: PresenceCallToken = { sid: call.callSid, circleId: target.circleId, locale: target.locale, checkId: null, reasked: 0, waits: 0, named: false };
+  return xml(sayAndListen(target.locale, [PRESENCE_WORDS[target.locale].line.intro], nextUrl("turn", token, deps)));
 }
 
 async function turn(call: VoiceRequest, token: PresenceCallToken, deps: VoiceDeps, line: PresenceLineDeps): Promise<VoiceHttpReply> {
@@ -99,7 +99,7 @@ async function turn(call: VoiceRequest, token: PresenceCallToken, deps: VoiceDep
   if (account === "") {
     // Silence: ask once more, and then leave it. Nothing was said, so nothing is checked.
     if (token.reasked >= MAX_PRESENCE_REASKS) return xml(sayAndHangUp(token.locale, []));
-    return xml(sayAndListen(token.locale, [words.line.notHeard], next("turn", { ...token, reasked: token.reasked + 1 }, deps)));
+    return xml(sayAndListen(token.locale, [words.line.notHeard], nextUrl("turn", { ...token, reasked: token.reasked + 1 }, deps)));
   }
   const circle = await line.store.read(token.circleId);
   if (circle === null) return sorry();
@@ -117,14 +117,18 @@ async function turn(call: VoiceRequest, token: PresenceCallToken, deps: VoiceDep
     locale: token.locale,
     token: newCheckToken(),
     alerts: plan.alerts,
+    from: call.from,
   });
   deps.log({ level: "info", message: "voice.presence.check_opened", callSid: call.callSid, checkId: opened.checkId, state: opened.state, markers: plan.markers.length, byModel: plan.byModel });
-  const facts = { locale: token.locale, currency: circle.currency, name: plan.voiceName ?? plan.claimedName, parentName: circle.parentName, claimedCents: null };
-  const reply = presenceReply({ state: opened.state, matched: plan.voiceId !== null });
+  // Kin names the person only to the parent, from her own number, and only when she named them herself: a stranger who
+  // dials this line learns no one's name, nor whether anyone on the list matched, so every reply to them is neutral.
+  const named = opened.fromParent && plan.claimedName !== null;
+  const facts = { locale: token.locale, currency: circle.currency, name: named ? (plan.voiceName ?? plan.claimedName) : null, parentName: circle.parentName, claimedCents: null };
+  const reply = presenceReply({ state: opened.state, matched: opened.fromParent ? plan.voiceId !== null : true });
+  const next: PresenceCallToken = { ...token, checkId: opened.checkId, reasked: 0, waits: 0, named };
   // Nobody on the list to ask: the caller can still be asked for the weekly family code, which only real family know.
-  if (reply !== "checking") return xml(askForCode(token, [presenceReplyText(facts, reply)], deps));
-  const waiting: PresenceCallToken = { ...token, checkId: opened.checkId, reasked: 0, waits: 0 };
-  return xml(sayPauseAndRedirect(token.locale, [presenceReplyText(facts, "checking")], PRESENCE_WAIT_SECONDS, next("wait", waiting, deps)));
+  if (reply !== "checking") return xml(askForCode(next, [presenceReplyText(facts, reply)], deps));
+  return xml(sayPauseAndRedirect(token.locale, [presenceReplyText(facts, "checking")], PRESENCE_WAIT_SECONDS, nextUrl("wait", next, deps)));
 }
 
 /** One more look at the check: the parent hears its answer as soon as there is one, and otherwise waits a few seconds more. */
@@ -133,7 +137,7 @@ async function wait(call: VoiceRequest, token: PresenceCallToken, deps: VoiceDep
   const circle = checkId === null ? null : await line.store.read(token.circleId);
   const check = checkId === null || circle === null ? null : await line.store.status(token.circleId, checkId);
   if (check === null || circle === null) return sorry();
-  const facts = { locale: token.locale as OfficeLocale, currency: circle.currency, name: check.voiceName, parentName: circle.parentName, claimedCents: null };
+  const facts = { locale: token.locale as OfficeLocale, currency: circle.currency, name: token.named ? check.voiceName : null, parentName: circle.parentName, claimedCents: null };
   const reply: PresenceReply = presenceReply({ state: check.state, matched: true });
   if (reply !== "checking") {
     deps.log({ level: "info", message: "voice.presence.call_finished", callSid: call.callSid, reply });
@@ -145,12 +149,12 @@ async function wait(call: VoiceRequest, token: PresenceCallToken, deps: VoiceDep
     // The check is still open after the longest Kin waits: the real person has not answered, and Kin says so.
     return xml(askForCode(token, [presenceReplyText(facts, "unreachable")], deps));
   }
-  return xml(sayPauseAndRedirect(token.locale, [], PRESENCE_WAIT_SECONDS, next("wait", { ...token, waits: token.waits + 1 }, deps)));
+  return xml(sayPauseAndRedirect(token.locale, [], PRESENCE_WAIT_SECONDS, nextUrl("wait", { ...token, waits: token.waits + 1 }, deps)));
 }
 
 /** Kin says what it has just said, then asks Rose to put the weekly family code to the caller and tell it what the caller says. */
 const askForCode = (token: PresenceCallToken, sentences: readonly string[], deps: VoiceDeps): string =>
-  sayAndListen(token.locale, [...sentences, PRESENCE_WORDS[token.locale].line.askCode], next("code", token, deps));
+  sayAndListen(token.locale, [...sentences, PRESENCE_WORDS[token.locale].line.askCode], nextUrl("code", token, deps));
 
 /**
  * What Rose says the caller answered when asked for the weekly family code. Plain code compares it with this week's three
@@ -162,7 +166,9 @@ async function code(call: VoiceRequest, token: PresenceCallToken, deps: VoiceDep
   if (circle === null) return sorry();
   const said = call.speech === null ? "" : cleanSpeech(call.speech);
   const facts = { locale: token.locale, currency: circle.currency, name: null, parentName: circle.parentName, claimedCents: null };
-  if (said === "") return xml(sayAndHangUp(token.locale, [presenceReplyText(facts, "code_wrong")]));
+  // Two tries a check, so the code cannot be found by asking: past them, or with nothing said, the answer is the same hang-up.
+  const allowed = said !== "" && token.checkId !== null && (await line.store.codeAttempt(token.circleId, token.checkId));
+  if (!allowed) return xml(sayAndHangUp(token.locale, [presenceReplyText(facts, "code_wrong")]));
   const seed = await line.store.familyCodeSeed(token.circleId);
   const today = calendarDay(new Date(deps.now()), circle.timezone).occurredOn;
   const reply = codeReply(matchesFamilyCode(said, familyCode(seed, today)));

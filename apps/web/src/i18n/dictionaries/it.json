@@ -3191,7 +3191,8 @@
         "above_ceiling": "È oltre ciò che l’accordo permette alla famiglia di pagare.",
         "paused": "I pagamenti sono in pausa. Togliete prima la pausa.",
         "no_agreement": "Il cerchio non ha ancora un accordo in vigore.",
-        "in_progress": "Un aiuto per questa persona è già in corso, quindi il suo conto non può cambiare ora."
+        "in_progress": "Un aiuto per questa persona è già in corso, quindi il suo conto non può cambiare ora.",
+        "no_tries": "Il codice è già stato provato due volte per questa chiamata. Riattacchi e aspetti che la famiglia la richiami."
       },
       "link": {
         "title": "Sei davvero tu?",

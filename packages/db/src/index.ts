@@ -140,6 +140,7 @@ export {
   requestHelpPayout,
   setVoiceAliases,
   startPresenceCall,
+  useCodeAttempt,
   recordVoiceConfirmSent,
   removeTrustedVoice,
   stripOutboxToken,

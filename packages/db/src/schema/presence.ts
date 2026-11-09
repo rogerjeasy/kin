@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, boolean, check, foreignKey, index, jsonb, pgTable, text, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, foreignKey, index, integer, jsonb, pgTable, text, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 import { PRESENCE_STATES } from "@kin/domain";
 
@@ -98,6 +98,8 @@ export const presenceChecks = pgTable(
     askCallSid: text("ask_call_sid"),
     /** How the real person answered: from the link in the text, or on Kin's call. */
     answeredVia: text("answered_via"),
+    /** How many times the weekly family code has been put to this check's caller. A few at most, so it cannot be found by asking. */
+    codeAttempts: integer("code_attempts").notNull().default(0),
     /** The help payment the family raised after a "yes, it was me". At most one per check. Its foreign key is in the access migration. */
     helpProposalId: uuid("help_proposal_id"),
     askedAt: at("asked_at"),
@@ -124,6 +126,7 @@ export const presenceChecks = pgTable(
     check("presence_checks_amount", sql`${t.claimedCents} is null or ${t.claimedCents} > 0`),
     check("presence_checks_hash", sql`${t.tokenHash} ~ '^[0-9a-f]{64}$'`),
     check("presence_checks_locale", sql`${t.locale} in ('en', 'fr', 'de', 'it', 'es', 'ar', 'he')`),
+    check("presence_checks_code_attempts", sql`${t.codeAttempts} between 0 and 5`),
     check("presence_checks_answered_via", sql`${t.answeredVia} is null or ${t.answeredVia} in ('link', 'call')`),
     check("presence_checks_call_sid", sql`${t.askCallSid} is null or ${t.askCallSid} ~ '^[A-Za-z0-9]{1,64}$'`),
     check("presence_checks_said", sql`cardinality(${t.said}) <= 12`),

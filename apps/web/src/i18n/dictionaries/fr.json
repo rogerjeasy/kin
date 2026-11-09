@@ -3191,7 +3191,8 @@
         "above_ceiling": "C’est au-dessus de ce que l’accord permet à la famille de payer.",
         "paused": "Les paiements sont suspendus. Levez d’abord la pause.",
         "no_agreement": "Le cercle n’a pas encore d’accord en vigueur.",
-        "in_progress": "Une aide pour cette personne est déjà en cours : son compte ne peut pas changer maintenant."
+        "in_progress": "Une aide pour cette personne est déjà en cours : son compte ne peut pas changer maintenant.",
+        "no_tries": "Le code a déjà été essayé deux fois pour cet appel. Raccrochez et attendez que la famille vous appelle."
       },
       "link": {
         "title": "C’est vraiment vous ?",

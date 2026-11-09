@@ -61,13 +61,20 @@ export function familyCode(seed: string, day: string): FamilyCode {
 }
 
 const wordsOf = (text: string): string[] => text.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase().match(/[a-z]+/g) ?? [];
+const LISTED = new Set(FAMILY_CODE_WORDS);
+/** What a person repeats is the three words and a few more at most. A longer answer is not an answer: it could be the whole list read out. */
+const MAX_SPOKEN_WORDS = 12;
 
 /**
- * Whether what a caller said, as the parent repeats it, holds all three of this week's words. Order and anything
- * around them do not matter: a frightened person repeats it as she heard it. A caller who guesses has about one chance
- * in seventeen million, and the parent is told to hang up after a wrong one.
+ * Whether what a caller said, as the parent repeats it, is this week's code: all three words, in any order or case, with
+ * ordinary words around them, and **no other word from the list**. Counting only the three would let anyone pass by
+ * reading the whole list out, so a longer answer, or one that names any other code word, never matches. A caller who
+ * guesses has about one chance in seventeen million per try, and each check takes only a few tries (the database counts
+ * them), so the code cannot be worked out by asking.
  */
 export function matchesFamilyCode(said: string, code: FamilyCode): boolean {
-  const heard = new Set(wordsOf(said.slice(0, 400)));
-  return code.words.every((word) => heard.has(word));
+  const spoken = wordsOf(said.slice(0, 400));
+  if (spoken.length > MAX_SPOKEN_WORDS) return false;
+  const heard = new Set(spoken.filter((word) => LISTED.has(word)));
+  return heard.size === code.words.length && code.words.every((word) => heard.has(word));
 }

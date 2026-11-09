@@ -15,6 +15,7 @@ import {
   reissueVoiceConfirmation,
   removeTrustedVoice,
   setVoiceAliases,
+  useCodeAttempt,
   type CircleSnapshot,
   type Database,
   type PresenceCheckRecord,
@@ -60,6 +61,8 @@ export type PresenceFailure =
   | "paused"
   | "no_agreement"
   | "in_progress"
+  /** The weekly code has been put to this check's caller twice already. */
+  | "no_tries"
   | "unavailable";
 
 const fail = (reason: PresenceFailure): { readonly ok: false; readonly reason: PresenceFailure } => ({ ok: false, reason });
@@ -329,8 +332,15 @@ export async function checkFamilyCode(context: PresenceContext, input: unknown):
   const said = row?.["said"];
   if (row === null || !onlyKeys(row, ["id", "locale", "said"]) || typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id) || typeof said !== "string" || said.trim() === "" || said.length > 400 || typeof row["locale"] !== "string" || !isLocale(row["locale"])) return fail("invalid");
   const locale = isOfficeLocale(row["locale"]) ? row["locale"] : "en";
-  const read = await asPerson(context.db, context.userId, async (tx) => ({ record: await readPresenceCheck(tx, circle.circle.id, id), seed: await readFamilyCodeSeed(tx, circle.circle.id) }));
-  if (read.record === null) return fail("refused");
+  // Two tries a check, counted by the database, so the code cannot be found by asking. A try is spent before it is compared.
+  const read = await asPerson(context.db, context.userId, async (tx) => {
+    const record = await readPresenceCheck(tx, circle.circle.id, id);
+    if (record === null) return null;
+    const allowed = await useCodeAttempt(tx, circle.circle.id, id);
+    return { allowed, seed: allowed ? await readFamilyCodeSeed(tx, circle.circle.id) : "" };
+  });
+  if (read === null) return fail("refused");
+  if (!read.allowed) return fail("no_tries");
   const reply = codeReply(matchesFamilyCode(said, familyCode(read.seed, circleDay(circle))));
   return { ok: true, reply, replyText: presenceReplyText(factsFor(locale, circle, null), reply) };
 }

@@ -3191,7 +3191,8 @@
         "above_ceiling": "Es más de lo que el acuerdo permite pagar a la familia.",
         "paused": "Los pagos están en pausa. Levante antes la pausa.",
         "no_agreement": "El círculo aún no tiene un acuerdo en vigor.",
-        "in_progress": "Ya hay una ayuda en marcha para esa persona, así que su cuenta no puede cambiar ahora."
+        "in_progress": "Ya hay una ayuda en marcha para esa persona, así que su cuenta no puede cambiar ahora.",
+        "no_tries": "El código ya se probó dos veces para esta llamada. Cuelgue y espere a que la familia le llame."
       },
       "link": {
         "title": "¿Es usted de verdad?",

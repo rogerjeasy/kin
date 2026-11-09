@@ -2,6 +2,7 @@ import {
   answerPresenceCheckByCall,
   asService,
   openPresenceCheckByLine,
+  useCodeAttempt,
   readFamilyCodeSeed,
   readPresenceAskFacts,
   readPresenceLine,
@@ -25,9 +26,11 @@ export type PresenceLineStore = {
   /** The circle as the line may read it, or `null` when it is closed. */
   read(circleId: string): Promise<PresenceLine | null>;
   /** Records the parent's call as a check, once per call. A second delivery for the same call returns the first check. */
-  open(input: PresenceCheckInput & { readonly callSid: string }): Promise<PresenceOpened>;
+  open(input: PresenceCheckInput & { readonly callSid: string; readonly from: string | null }): Promise<PresenceOpened>;
   /** How a check this line opened stands. */
   status(circleId: string, checkId: string): Promise<PresenceLineCheck | null>;
+  /** Counts one try at the weekly family code against a check; `false` when its tries are used up. */
+  codeAttempt(circleId: string, checkId: string): Promise<boolean>;
   /** The secret the weekly family code is worked out from, for the circle the dialled number belongs to. */
   familyCodeSeed(circleId: string): Promise<string>;
   /** Who a check is about and what it says, for Kin's call to the real person. `null` when the check is gone. */
@@ -41,6 +44,7 @@ export function presenceLineStoreOn(db: Database): PresenceLineStore {
     read: (circleId) => asService(db, circleId, (tx) => readPresenceLine(tx, circleId)),
     open: (input) => asService(db, input.circleId, (tx) => openPresenceCheckByLine(tx, input)),
     status: (circleId, checkId) => asService(db, circleId, (tx) => readPresenceLineCheck(tx, circleId, checkId)),
+    codeAttempt: (circleId, checkId) => asService(db, circleId, (tx) => useCodeAttempt(tx, circleId, checkId)),
     familyCodeSeed: (circleId) => asService(db, circleId, (tx) => readFamilyCodeSeed(tx, circleId)),
     askFacts: (circleId, checkId) => asService(db, circleId, (tx) => readPresenceAskFacts(tx, circleId, checkId)),
     answerByCall: (input) => asService(db, input.circleId, (tx) => answerPresenceCheckByCall(tx, input)),

@@ -1,0 +1,2 @@
+ALTER TABLE "presence_checks" ADD COLUMN "code_attempts" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "presence_checks" ADD CONSTRAINT "presence_checks_code_attempts" CHECK ("presence_checks"."code_attempts" between 0 and 5);

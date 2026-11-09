@@ -147,4 +147,13 @@ describe("the weekly family code", () => {
     expect(matchesFamilyCode("", code)).toBe(false);
     expect(matchesFamilyCode("apple apple apple", { ...code, words: ["pear", "plum", "fig"] })).toBe(false);
   });
+
+  it("is not passed by reading the list out: another code word beside the three, or a long answer, never matches", () => {
+    const code = familyCode(SEED, "2026-11-09");
+    const other = FAMILY_CODE_WORDS.find((word) => !code.words.includes(word)) ?? "";
+    expect(matchesFamilyCode(`${code.words.join(" ")} ${other}`, code)).toBe(false);
+    expect(matchesFamilyCode(FAMILY_CODE_WORDS.join(" "), code)).toBe(false);
+    expect(matchesFamilyCode(`${code.words.join(" ")} ${"and so on ".repeat(10)}`, code)).toBe(false);
+    expect(matchesFamilyCode(`he said ${code.words.join(", ")} and then hung up`, code)).toBe(true);
+  });
 });

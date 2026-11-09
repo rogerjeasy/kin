@@ -144,6 +144,18 @@ describe("the weekly family code", () => {
     }
     expect(await checkFamilyCode(await actingAs(circle, "amara"), { id: opened.check.id, locale: "en", said: "a" })).toEqual({ ok: false, reason: "refused" });
   });
+
+  it("allows two tries a check, and refuses a third even with the right words, and does not let the whole list pass", async () => {
+    const circle = await visitorWithCircle(db);
+    const context = await actingAs(circle, "rose");
+    const code = (await presenceScreen(context, "en", "2026-10")).code;
+    const opened = await openPresence(context, { locale: "en", account: "I'm your nephew Mike, send 900 dollars by wire" });
+    if (!opened.ok || code === null) throw new Error("not opened");
+    const everything = (await import("@kin/telephony")).FAMILY_CODE_WORDS.join(" ").slice(0, 390);
+    expect(await checkFamilyCode(context, { id: opened.check.id, locale: "en", said: everything })).toMatchObject({ ok: true, reply: "code_wrong" });
+    expect(await checkFamilyCode(context, { id: opened.check.id, locale: "en", said: code.words.join(" ") })).toMatchObject({ ok: true, reply: "code_ok" });
+    expect(await checkFamilyCode(context, { id: opened.check.id, locale: "en", said: code.words.join(" ") })).toEqual({ ok: false, reason: "no_tries" });
+  });
 });
 
 describe("help for someone who said it was really them", () => {

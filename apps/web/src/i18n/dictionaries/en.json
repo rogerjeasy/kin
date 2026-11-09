@@ -3191,7 +3191,8 @@
         "above_ceiling": "That is above what the agreement lets the family pay.",
         "paused": "Payments are paused. Lift the pause first.",
         "no_agreement": "The circle has no agreement in force yet.",
-        "in_progress": "Help for that person is already moving, so their account cannot change now."
+        "in_progress": "Help for that person is already moving, so their account cannot change now.",
+        "no_tries": "The code has been tried twice for this call. Please hang up and wait for the family to call you."
       },
       "link": {
         "title": "Is it really you?",
