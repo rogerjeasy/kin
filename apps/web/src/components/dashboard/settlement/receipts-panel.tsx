@@ -25,15 +25,15 @@ export function ReceiptsPanel({ title, description, empty, items, form }: Props)
         {items.length === 0 ? (
           <EmptyState text={empty} />
         ) : (
-          <ul className="divide-y rounded-xl border">
+          <ul className="divide-y overflow-hidden rounded-2xl border bg-card shadow-xs">
             {items.map((item) => (
-              <li key={item.id} className="grid min-w-0 gap-3 p-4">
+              <li key={item.id} className="grid min-w-0 gap-3 p-4 transition-colors duration-300 hover:bg-muted/50 sm:p-5">
                 <div className="flex min-w-0 flex-wrap items-start justify-between gap-x-4 gap-y-2">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-pretty break-words">{item.title}</p>
                     <p className="text-sm text-pretty break-words text-muted-foreground">{item.detail}</p>
                   </div>
-                  <span className="text-lg font-semibold whitespace-nowrap tabular-nums">{item.amount}</span>
+                  <span className="font-serif text-2xl leading-none whitespace-nowrap tabular-nums">{item.amount}</span>
                 </div>
                 <div className="flex min-w-0 flex-wrap items-center gap-3">
                   <StatusPill tone={item.tone}>{item.stateText}</StatusPill>

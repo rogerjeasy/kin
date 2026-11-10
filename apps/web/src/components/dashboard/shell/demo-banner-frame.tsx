@@ -30,14 +30,16 @@ export function DemoBannerFrame({ label, switcher, explanation, actions }: DemoB
   const detailsId = useId();
   const shown = open ? "flex" : "hidden sm:flex";
   return (
-    <div role="note" className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-highlight/25 bg-highlight/8 px-3 py-1 text-sm sm:px-4 sm:py-3">
+    <div role="note" className="surface flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border-highlight/30 px-3 py-1 text-sm sm:px-4 sm:py-3">
       <FlaskConicalIcon aria-hidden="true" className="size-4 shrink-0 text-highlight sm:hidden" />
       <Button type="button" variant="ghost" size="sm" className="order-1 min-h-11 gap-1 px-2 font-semibold sm:hidden" aria-expanded={open} aria-controls={detailsId} onClick={() => setOpen((value) => !value)}>
         {label}
         <ChevronDownIcon aria-hidden="true" className={cn("transition-transform motion-reduce:transition-none", open && "rotate-180")} />
       </Button>
       <strong className="order-1 hidden items-center gap-2 font-semibold sm:flex">
-        <FlaskConicalIcon aria-hidden="true" className="size-4 shrink-0 text-highlight" />
+        <span aria-hidden="true" className="inline-flex size-7 items-center justify-center rounded-full bg-highlight/12 ring-1 ring-highlight/30">
+          <FlaskConicalIcon className="size-3.5 shrink-0 text-highlight" />
+        </span>
         {label}
       </strong>
       {/* A flex-1 item with a zero basis never wraps, so a long label (French) pushed the switcher past the edge. A real basis wraps it onto its own line when it cannot fit, whatever the font. */}

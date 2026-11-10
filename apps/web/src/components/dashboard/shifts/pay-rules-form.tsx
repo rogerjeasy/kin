@@ -51,7 +51,7 @@ export function PayRulesForm({ payeeId, heading, rules, copy, shifts }: Props) {
   }
 
   return (
-    <form onSubmit={save} aria-labelledby={`${id}-heading`} className="min-w-0 space-y-4 rounded-xl border p-4" aria-busy={pending}>
+    <form onSubmit={save} aria-labelledby={`${id}-heading`} className="min-w-0 space-y-4 rounded-2xl border p-4" aria-busy={pending}>
       <h3 id={`${id}-heading`} className="font-semibold">{heading}</h3>
       <fieldset disabled={pending} className="grid min-w-0 gap-4 sm:grid-cols-3">
         <Field id={`${id}-minimum`} label={copy.minimum}>

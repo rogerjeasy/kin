@@ -7,7 +7,7 @@ import { Container } from "./container";
 const tones = {
   plain: "",
   muted: "bg-muted",
-  band: "bg-band text-band-foreground",
+  band: "aurora relative overflow-clip text-band-foreground",
 } as const;
 
 type SectionProps = {

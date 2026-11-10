@@ -78,7 +78,7 @@ export function NeedCard({ item, answer, copy, format, parent, approvalsHref, lo
   }
 
   return (
-    <li id={`need-${item.shiftId}`} className={cn("min-w-0 space-y-4 rounded-2xl border-2 p-5 shadow-xs sm:p-6", answered ? "border-positive/40 bg-positive/5" : "border-highlight/50 bg-highlight/5")}>
+    <li id={`need-${item.shiftId}`} className={cn("min-w-0 space-y-4 rounded-3xl border p-5 sm:p-6", answered ? "border-positive/40 bg-positive/5 shadow-[0_0_44px_-20px_var(--positive)]" : "border-gold/60 bg-highlight/5 shadow-[0_0_44px_-18px_rgb(var(--glow-gold)/0.8)]")}>
       {answered ? (
         <div role="status" className="flex min-w-0 items-start gap-3">
           <CheckCircle2Icon aria-hidden="true" className="mt-1 size-7 shrink-0 text-positive" />

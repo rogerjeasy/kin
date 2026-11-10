@@ -31,7 +31,7 @@ export function CreateCircle({ locale, copy, levels, signOut, signedIn, notice }
   const zones = Intl.supportedValuesOf("timeZone");
   return (
     <main id={CONTENT_ID} className="flex min-h-dvh justify-center px-4 pt-[calc(2rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))]">
-      <section aria-labelledby="create-circle-heading" className="w-full max-w-xl self-start rounded-2xl border bg-card p-5 shadow-xs sm:p-8">
+      <section aria-labelledby="create-circle-heading" className="w-full max-w-xl self-start surface rounded-3xl p-5 sm:p-8">
         <KnotMark className="size-10" />
         <p className="mt-6 text-sm font-semibold text-highlight">{copy.eyebrow}</p>
         <h1 id="create-circle-heading" className="mt-1 font-serif text-subtitle text-balance">
@@ -50,7 +50,7 @@ export function CreateCircle({ locale, copy, levels, signOut, signedIn, notice }
           <fieldset className="grid gap-2">
             <legend className="mb-1 font-medium">{copy.parentLevel.label}</legend>
             {PARENT_LEVELS.map((level, index) => (
-              <label key={level} className="flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border p-3 has-checked:border-primary has-checked:bg-primary/5">
+              <label key={level} className="flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl border p-3 has-checked:border-primary has-checked:bg-primary/5">
                 <input type="radio" name="parentLevel" value={level} defaultChecked={index === 0} required className="mt-1 size-4 shrink-0" />
                 <span className="min-w-0">
                   <span className="block font-medium">{levels[level].title}</span>

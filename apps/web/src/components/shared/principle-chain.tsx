@@ -12,14 +12,15 @@ const steps = [
 
 type PrincipleChainProps = { copy: Dictionary["principle"] };
 
-/** The rule behind every payment, as three steps in the order they happen. */
+/** The rule behind every payment, as three lit cards on one line of gold, in the order they happen. */
 export function PrincipleChain({ copy }: PrincipleChainProps) {
   return (
-    <ol aria-label={copy.label} className="grid divide-y rounded-3xl border bg-card md:grid-cols-3 md:divide-x md:divide-y-0">
+    <ol aria-label={copy.label} className="relative grid gap-3 md:grid-cols-3">
+      <span aria-hidden="true" className="pointer-events-none absolute inset-x-[10%] top-[2.875rem] hidden h-px bg-linear-to-r from-gold/10 via-gold/70 to-gold/10 md:block" />
       {steps.map((step, index) => (
-        <li key={step.key} className="min-w-0 p-6 sm:p-7">
+        <li key={step.key} className="surface lift glow-edge min-w-0 rounded-3xl p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
-            <IconBadge icon={step.icon} />
+            <IconBadge icon={step.icon} className="border border-gold/40 shadow-[0_0_18px_-2px_rgb(var(--glow-gold)/0.5)]" />
             <span aria-hidden="true" className="font-mono text-sm font-medium text-highlight tabular-nums">
               {String(index + 1).padStart(2, "0")}
             </span>

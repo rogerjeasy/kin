@@ -12,7 +12,7 @@ type Props = { copy: Dictionary["openKin"]["token"]; token: string; endpoint: st
 export function TokenReveal({ copy, token, endpoint, onDone }: Props) {
   const labels = { copyLabel: copy.copy, copiedLabel: copy.copied, failedLabel: copy.failed };
   return (
-    <section aria-labelledby="token-reveal" className="grid min-w-0 gap-4 rounded-2xl border-2 border-highlight/40 bg-highlight/5 p-4 sm:p-5">
+    <section aria-labelledby="token-reveal" className="grid min-w-0 gap-4 rounded-3xl border border-gold/60 bg-highlight/5 shadow-[0_0_44px_-18px_rgb(var(--glow-gold)/0.8)] p-4 sm:p-5">
       <div className="min-w-0">
         <h3 id="token-reveal" className="font-semibold">
           {copy.title}

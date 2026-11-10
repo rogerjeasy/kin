@@ -1,6 +1,6 @@
 "use client";
 
-import { MenuIcon, XIcon } from "lucide-react";
+import { ArrowRightIcon, MenuIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 
 import { DemoButton } from "@/components/shared/demo-button";
@@ -43,11 +43,12 @@ export function MobileMenu({ locale, common, className }: MobileMenuProps) {
             </Button>
           </SheetClose>
         </div>
-        <nav aria-label={nav.label} className="mt-4 border-t">
+        <nav aria-label={nav.label} className="enter-stagger mt-4">
           {links.map((key) => (
             <SheetClose key={key} asChild>
-              <Link href={localizedPath(locale, routes[key])} className="flex min-h-14 items-center border-b font-serif text-2xl">
+              <Link href={localizedPath(locale, routes[key])} className="group flex min-h-14 items-center justify-between gap-3 border-b font-serif text-2xl">
                 {nav[key]}
+                <ArrowRightIcon aria-hidden="true" className="size-5 shrink-0 text-highlight transition-transform duration-300 group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1" />
               </Link>
             </SheetClose>
           ))}

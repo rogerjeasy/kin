@@ -36,7 +36,7 @@ export function WishActions({ wishId, copy, can, witnessHint, large = false }: P
         </div>
       ) : null}
       {confirming ? (
-        <div role="group" aria-label={copy.actions.withdraw} className="flex min-w-0 flex-col gap-2 rounded-xl border bg-secondary/40 p-3">
+        <div role="group" aria-label={copy.actions.withdraw} className="flex min-w-0 flex-col gap-2 rounded-2xl border bg-muted/60 p-3">
           <p className="text-pretty">{copy.actions.withdrawConfirm}</p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" className={`${button} border-danger text-danger hover:bg-danger/10`} disabled={pending} onClick={() => send({ operation: "withdraw", wishId })}>

@@ -16,7 +16,7 @@ export function BoundaryList({ copy }: Props) {
   return (
     <ul aria-label={copy.label} className="grid min-w-0 gap-3 sm:grid-cols-3">
       {ITEMS.map(({ key, icon, tone }) => (
-        <li key={key} className="flex min-w-0 items-start gap-3 rounded-2xl border bg-card p-4 shadow-xs">
+        <li key={key} className="flex min-w-0 items-start gap-3 surface rounded-3xl p-4">
           <IconTile icon={icon} className={tone} />
           <p className="min-w-0">
             <strong className="block font-semibold text-balance">{copy[key].title}</strong>

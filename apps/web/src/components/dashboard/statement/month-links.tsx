@@ -19,8 +19,8 @@ export function MonthLinks({ label, current, months }: MonthLinksProps) {
               href={month.href}
               aria-current={month.period === current ? "page" : undefined}
               className={cn(
-                "inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium",
-                month.period === current ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted",
+                "inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium transition-[background-color,border-color,box-shadow] duration-300",
+                month.period === current ? "border-primary bg-primary text-primary-foreground shadow-[0_0_0_3px_rgb(var(--glow-gold)/0.22),var(--shadow-sm)]" : "bg-card hover:border-gold/60 hover:bg-muted",
               )}
             >
               {month.label}

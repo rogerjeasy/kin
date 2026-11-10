@@ -24,7 +24,7 @@ export function FindingsList({ copy, ai, rows }: FindingsListProps) {
       {rows.map((row) => {
         const { tone, icon } = PRESENTATION[row.severity];
         return (
-          <li key={row.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
+          <li key={row.id} className="enter flex flex-col gap-2 py-3.5 first:pt-0 last:pb-0">
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill tone={tone} icon={icon}>
                 {copy.severity[row.severity]}

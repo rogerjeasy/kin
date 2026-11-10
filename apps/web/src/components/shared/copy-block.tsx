@@ -30,7 +30,7 @@ export function CopyBlock({ label, value, copyLabel, copiedLabel, failedLabel }:
         </Button>
       </div>
       {/* Code reads left to right in every language, and wraps rather than pushing the page sideways. */}
-      <pre dir="ltr" className="mt-1 min-w-0 rounded-lg bg-secondary p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap wrap-anywhere">
+      <pre dir="ltr" className="mt-1.5 min-w-0 rounded-2xl border border-band-border bg-band p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap text-band-foreground shadow-md wrap-anywhere">
         {value}
       </pre>
       {state === "failed" ? <p role="status" className="mt-1 text-sm text-muted-foreground">{failedLabel}</p> : null}

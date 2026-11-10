@@ -5,7 +5,10 @@ import { MicIcon, SquareIcon, Volume2Icon } from "lucide-react";
 import Link from "next/link";
 import { useId, useState } from "react";
 
+import { KinThinking } from "@/components/dashboard/ai/kin-thinking";
+import { inputClass } from "@/components/dashboard/create-circle/field";
 import { useRecorder } from "@/components/dashboard/speech/use-recorder";
+import { Waveform } from "@/components/shared/waveform";
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
@@ -65,7 +68,7 @@ export function RecordWish({ copy, locale, book, currency, timezone, changing }:
   }
 
   return (
-    <section id="say" aria-labelledby={`${fieldId}-title`} className="flex min-w-0 scroll-mt-24 flex-col gap-5 rounded-2xl border-2 border-primary/30 bg-card p-5 shadow-xs sm:p-7">
+    <section id="say" aria-labelledby={`${fieldId}-title`} className="surface flex min-w-0 scroll-mt-24 flex-col gap-5 rounded-3xl p-5 ring-1 ring-gold/40 shadow-[0_0_56px_-22px_rgb(var(--glow-gold)/0.9)] sm:p-7">
       <div className="min-w-0">
         <h2 id={`${fieldId}-title`} className="text-2xl font-semibold text-balance sm:text-3xl">
           {record.title}
@@ -73,7 +76,7 @@ export function RecordWish({ copy, locale, book, currency, timezone, changing }:
         <p className="mt-2 text-lg text-pretty text-muted-foreground">{record.text}</p>
       </div>
       {changing ? (
-        <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-xl bg-secondary/50 p-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-2xl bg-muted/70 p-4 ring-1 ring-inset ring-border">
           <p className="min-w-0 flex-1 basis-60 text-lg text-pretty break-words">{fill(record.changing, { quote: changing.quote })}</p>
           <Button asChild variant="outline" className="h-auto min-h-12">
             <Link href={changing.cancelHref}>{record.cancelChange}</Link>
@@ -82,7 +85,7 @@ export function RecordWish({ copy, locale, book, currency, timezone, changing }:
       ) : null}
       <div className="flex min-w-0 flex-col gap-3">
         {recorder.state === "recording" ? (
-          <Button type="button" onClick={recorder.stop} className="h-auto min-h-20 w-full max-w-full px-8 text-xl whitespace-normal sm:w-auto">
+          <Button type="button" onClick={recorder.stop} className="h-auto min-h-20 w-full max-w-full px-8 text-xl whitespace-normal ring-4 ring-danger/25 motion-safe:animate-glow-pulse sm:w-auto">
             <SquareIcon aria-hidden="true" className="size-7" />
             {record.stop}
           </Button>
@@ -93,7 +96,14 @@ export function RecordWish({ copy, locale, book, currency, timezone, changing }:
           </Button>
         )}
         <div aria-live="polite" className="min-w-0 text-lg text-pretty">
-          {recorder.state === "recording" ? <p>{record.listening}</p> : null}
+          {recorder.state === "recording" ? (
+            <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+              <p>{record.listening}</p>
+              <span aria-hidden="true" className="flex min-w-0 flex-1 basis-40 items-center">
+                <Waveform />
+              </span>
+            </div>
+          ) : null}
           {hearing === "transcribing" ? <p>{record.transcribing}</p> : null}
           {hearing === "no_speech" ? <p>{record.noSpeech}</p> : null}
           {recordingId !== null && hearing === "idle" ? <p className="text-base text-muted-foreground">{record.recordingKept}</p> : null}
@@ -121,7 +131,7 @@ export function RecordWish({ copy, locale, book, currency, timezone, changing }:
           rows={3}
           maxLength={2000}
           placeholder={record.placeholder}
-          className="min-h-28 w-full min-w-0 rounded-xl border border-input bg-background px-4 py-3 text-xl leading-relaxed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className={`${inputClass} min-h-28 px-4 py-3 font-serif text-xl leading-relaxed`}
         />
       </div>
       <div className="flex min-w-0 flex-wrap items-center gap-3">
@@ -130,9 +140,9 @@ export function RecordWish({ copy, locale, book, currency, timezone, changing }:
           {record.readBack}
         </Button>
         {pending && drafts === null ? (
-          <p role="status" className="text-lg text-muted-foreground">
-            {record.reading}
-          </p>
+          <div role="status" className="min-w-0 text-lg">
+            <KinThinking label={record.reading} />
+          </div>
         ) : null}
       </div>
       {error ? (

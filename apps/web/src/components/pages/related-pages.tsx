@@ -31,11 +31,11 @@ export function RelatedPages({ locale, dictionary, current }: RelatedPagesProps)
   const pages = introductions(dictionary);
 
   return (
-    <Section labelledBy={HEADING_ID} className="border-t lg:py-20">
+    <Section labelledBy={HEADING_ID} className="lg:py-20">
       <Heading as="h2" size="subtitle" id={HEADING_ID}>
         {dictionary.common.related.title}
       </Heading>
-      <ul className="mt-8 grid gap-4 md:grid-cols-3 lg:gap-6">
+      <ul className="reveal mt-8 grid gap-4 md:grid-cols-3 lg:gap-6">
         {mainNav
           .filter((key) => key !== current)
           .map((key) => (

@@ -1,4 +1,4 @@
-import { Section } from "@/components/layout/section";
+import { InsetSection } from "@/components/layout/inset-section";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { FeatureList } from "@/components/shared/feature-list";
 import { Heading } from "@/components/shared/heading";
@@ -19,9 +19,9 @@ type SafetySectionProps = {
 
 export function SafetySection({ copy, trace, spoken, amount, href }: SafetySectionProps) {
   return (
-    <Section tone="muted" labelledBy={HEADING_ID}>
+    <InsetSection tone="muted" labelledBy={HEADING_ID}>
       <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-        <div className="min-w-0 lg:col-span-5">
+        <div className="min-w-0 lg:sticky lg:top-[calc(var(--header-height)+2rem)] lg:col-span-5 lg:self-start">
           <Eyebrow>{copy.eyebrow}</Eyebrow>
           <Heading as="h2" size="title" id={HEADING_ID} className="mt-4">
             {copy.title}
@@ -35,9 +35,9 @@ export function SafetySection({ copy, trace, spoken, amount, href }: SafetySecti
           <FeatureList items={copy.safeguards} />
         </div>
       </div>
-      <div className="mt-10 lg:mt-14">
+      <div className="reveal mt-12 lg:mt-16">
         <RecordTrace copy={trace} spoken={spoken} amount={amount} />
       </div>
-    </Section>
+    </InsetSection>
   );
 }

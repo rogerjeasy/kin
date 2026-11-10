@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import { cn } from "@/lib/utils";
 
+import { ListeningLine } from "./listening-line";
 import { useRecorder } from "./use-recorder";
 
 type Props = {
@@ -27,17 +28,21 @@ export function MicButton({ label, copy, disabled = false, onRecorded, className
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-3">
       {state === "recording" ? (
-        <Button type="button" variant="outline" className={cn("h-auto min-h-11 max-w-full shrink whitespace-normal text-start", className)} onClick={stop}>
+        <Button type="button" variant="outline" className={cn("h-auto min-h-11 max-w-full shrink border-danger/60 whitespace-normal text-start ring-4 ring-danger/15", className)} onClick={stop}>
           <SquareIcon aria-hidden="true" />
           {copy.stop}
         </Button>
       ) : (
         <Button type="button" variant="outline" className={cn("h-auto min-h-11 max-w-full shrink whitespace-normal text-start", className)} disabled={disabled} onClick={start}>
-          <MicIcon aria-hidden="true" />
+          <MicIcon aria-hidden="true" className="text-highlight" />
           {label}
         </Button>
       )}
-      {state === "recording" ? <p role="status" className="text-sm text-muted-foreground">{copy.listening}</p> : null}
+      {state === "recording" ? (
+        <div className="flex min-w-0 flex-1 basis-60 text-sm text-muted-foreground">
+          <ListeningLine text={copy.listening} />
+        </div>
+      ) : null}
       {state === "denied" ? <p role="alert" className="text-sm text-danger">{copy.micDenied}</p> : null}
     </div>
   );

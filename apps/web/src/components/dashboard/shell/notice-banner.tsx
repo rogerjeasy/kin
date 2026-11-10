@@ -16,7 +16,7 @@ export function NoticeBanner({ notices, dismiss }: NoticeBannerProps) {
   const notice = params.get("notice");
   if (!isNotice(notice)) return null;
   return (
-    <div role="status" className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3 text-sm shadow-xs">
+    <div role="status" className="surface enter flex items-start gap-3 rounded-2xl px-4 py-3 text-sm">
       <InfoIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-highlight" />
       <p className="min-w-0 flex-1 text-pretty">{notices[notice]}</p>
       <Button type="button" variant="ghost" size="icon" aria-label={dismiss} className="-my-2 -me-2 size-11 shrink-0" onClick={() => router.replace(pathname, { scroll: false })}>

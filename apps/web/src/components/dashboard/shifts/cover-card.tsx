@@ -46,7 +46,7 @@ export function CoverCard({ item, copy, cover, doneName, onDone }: Props) {
 
   if (doneName !== null) {
     return (
-      <li className="min-w-0 rounded-2xl border-2 border-positive/40 bg-positive/5 p-5 sm:p-6">
+      <li className="min-w-0 rounded-3xl border border-positive/40 bg-positive/5 shadow-[0_0_44px_-20px_var(--positive)] p-5 sm:p-6">
         <div role="status" className="flex min-w-0 items-start gap-3">
           <CheckCircle2Icon aria-hidden="true" className="mt-1 size-7 shrink-0 text-positive" />
           <p className="min-w-0 text-lg font-semibold text-pretty">{fill(cover.done, { name: doneName })}</p>
@@ -56,7 +56,7 @@ export function CoverCard({ item, copy, cover, doneName, onDone }: Props) {
   }
 
   return (
-    <li className="min-w-0 space-y-4 rounded-2xl border-2 border-highlight/50 bg-highlight/5 p-5 shadow-xs sm:p-6">
+    <li className="min-w-0 space-y-4 rounded-3xl border border-gold/60 bg-highlight/5 shadow-[0_0_44px_-18px_rgb(var(--glow-gold)/0.8)] p-5 shadow-xs sm:p-6">
       <div className="flex min-w-0 items-start gap-3">
         <UserRoundCheckIcon aria-hidden="true" className="mt-1.5 size-7 shrink-0 text-highlight" />
         <h3 className="min-w-0 font-serif text-xl leading-snug text-balance sm:text-2xl">{item.heading}</h3>
@@ -72,7 +72,7 @@ export function CoverCard({ item, copy, cover, doneName, onDone }: Props) {
       ) : (
         <ul aria-label={cover.candidates} className="min-w-0 space-y-3">
           {item.people.map((person) => (
-            <li key={person.memberId} className="min-w-0 space-y-2 rounded-xl border bg-card p-4">
+            <li key={person.memberId} className="min-w-0 space-y-2 rounded-2xl border bg-card p-4 shadow-2xs">
               <p className="min-w-0 font-semibold wrap-anywhere">{person.name}</p>
               <p className="text-sm text-muted-foreground">{person.kindText}</p>
               <p className="text-sm text-muted-foreground">{person.hoursDay}. {person.hoursWeek}.</p>

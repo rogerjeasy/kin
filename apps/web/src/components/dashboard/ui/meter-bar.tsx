@@ -28,10 +28,10 @@ export function MeterBar({ value, max, target, fill, label, className }: MeterBa
       preserveAspectRatio="none"
       role="img"
       aria-label={label}
-      className={cn("block h-2.5 w-full overflow-visible rtl:-scale-x-100", className)}
+      className={cn("block h-3 w-full overflow-visible rtl:-scale-x-100", className)}
     >
       <rect width={WIDTH} height={HEIGHT} rx={HEIGHT / 2} className="fill-muted" />
-      {filled > 0 ? <rect width={filled} height={HEIGHT} rx={HEIGHT / 2} className={fill} /> : null}
+      {filled > 0 ? <rect width={filled} height={HEIGHT} rx={HEIGHT / 2} className={cn("grow-bar", fill)} /> : null}
       {target === undefined ? null : (
         <rect x={scale(target) - TICK / 2} y={-3} width={TICK} height={HEIGHT + 6} className="fill-foreground" />
       )}

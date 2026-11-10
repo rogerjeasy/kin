@@ -56,7 +56,7 @@ export function BillVoice({ locale, details, copy, speech, disabled, onYes, onNo
     }
   }
   return (
-    <div className="min-w-0 space-y-3 rounded-xl border border-dashed p-4">
+    <div className="min-w-0 space-y-3 rounded-2xl border border-dashed bg-muted/50 p-4">
       <div className="flex flex-wrap gap-3">
         <Button type="button" variant="outline" className="h-auto min-h-11 max-w-full shrink whitespace-normal text-start" disabled={disabled || working} onClick={listen}>
           <Volume2Icon aria-hidden="true" />

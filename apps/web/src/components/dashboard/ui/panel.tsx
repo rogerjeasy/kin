@@ -22,10 +22,10 @@ export function Panel({ title, description, link, aside, flush = false, classNam
   const headingId = useId();
 
   return (
-    <section aria-labelledby={headingId} className={cn("flex min-w-0 flex-col rounded-2xl border bg-card shadow-xs", className)}>
+    <section aria-labelledby={headingId} className={cn("surface reveal flex min-w-0 flex-col rounded-3xl", className)}>
       <header className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 pt-5 sm:px-6">
         <div className="min-w-0 flex-1">
-          <h2 id={headingId} className="text-lg font-semibold text-balance">
+          <h2 id={headingId} className="text-lg font-semibold tracking-tight text-balance">
             {title}
           </h2>
           {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
@@ -34,10 +34,12 @@ export function Panel({ title, description, link, aside, flush = false, classNam
       </header>
       <div className={cn("flex-1", flush ? "mt-4" : "px-5 pt-4 pb-5 sm:px-6 sm:pb-6")}>{children}</div>
       {link ? (
-        <footer className="border-t px-5 sm:px-6">
-          <Link href={link.href} className="group inline-flex min-h-12 items-center gap-1.5 text-sm font-semibold">
+        <footer className="border-t border-dashed px-5 sm:px-6">
+          <Link href={link.href} className="group inline-flex min-h-12 items-center gap-2 text-sm font-semibold">
             {link.label}
-            <ArrowRightIcon aria-hidden="true" className="size-4 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
+            <span aria-hidden="true" className="inline-flex size-6 items-center justify-center rounded-full bg-secondary transition-[background-color,color,transform] duration-300 group-hover:translate-x-1 group-hover:bg-primary group-hover:text-primary-foreground rtl:-scale-x-100 rtl:group-hover:-translate-x-1">
+              <ArrowRightIcon className="size-3.5" />
+            </span>
           </Link>
         </footer>
       ) : null}

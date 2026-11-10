@@ -2,6 +2,7 @@ import type { OwnPartRecord } from "@kin/db";
 import { addMonths } from "@kin/domain";
 import { EyeOffIcon } from "lucide-react";
 
+import { RisingFigure } from "@/components/motion/rising-figure";
 import { fill } from "@/i18n/template";
 import type { Formatters } from "@/lib/format";
 
@@ -25,7 +26,9 @@ export function PartFigures({ copy, part, costCents, startMonth, format }: Props
         <p className="text-lg">{words.nothing}</p>
       ) : (
         <div className="min-w-0">
-          <p className="font-serif text-title leading-tight wrap-anywhere">{format.money(part.cents)}</p>
+          <p className="font-serif text-title leading-tight tabular-nums wrap-anywhere">
+            <RisingFigure value={format.money(part.cents)} />
+          </p>
           {part.careTrips > 0 ? <p className="text-lg font-medium">{fill(words.care, { count: format.count(part.careTrips) })}</p> : null}
           <p className="mt-1 text-sm text-muted-foreground">{fill(words.of, { total: format.money(costCents) })}</p>
         </div>
@@ -41,7 +44,7 @@ export function PartFigures({ copy, part, costCents, startMonth, format }: Props
       {part.careValueCents > 0 ? <p className="text-sm text-muted-foreground">{fill(words.careValue, { value: format.money(part.careValueCents) })}</p> : null}
       {asksNothing ? null : <p className="text-sm text-muted-foreground">{fill(words.share, { share: format.money(part.shareCents) })}</p>}
       {part.atLimit ? (
-        <div className="flex min-w-0 items-start gap-3 rounded-xl bg-positive/10 p-3 text-positive">
+        <div className="flex min-w-0 items-start gap-3 rounded-2xl border border-positive/25 bg-positive/10 p-3.5 text-positive">
           <EyeOffIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
           <div className="min-w-0">
             <p className="font-semibold">{words.private}</p>

@@ -8,7 +8,7 @@ export function EntryLines({ caption, headers, lines }: EntryLinesProps) {
     <table className="w-full text-sm">
       <caption className="sr-only">{caption}</caption>
       <thead>
-        <tr className="text-muted-foreground">
+        <tr className="text-xs tracking-wide text-muted-foreground uppercase">
           <th scope="col" className="py-1.5 pe-3 text-start font-medium">{headers.account}</th>
           <th scope="col" className="py-1.5 px-3 text-end font-medium">{headers.debit}</th>
           <th scope="col" className="py-1.5 ps-3 text-end font-medium">{headers.credit}</th>

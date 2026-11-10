@@ -55,7 +55,7 @@ export function VoiceAnswer({ locale, proposalId, copy, speech, outcomes }: Prop
   }
 
   return (
-    <div className="min-w-0 basis-full space-y-3 rounded-xl border border-dashed p-3">
+    <div className="min-w-0 basis-full space-y-3 rounded-2xl border border-dashed bg-muted/50 p-3 sm:p-4">
       <div className="flex flex-wrap gap-3">
         {heard === null ? (
           <>

@@ -9,6 +9,7 @@ import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
 
 import { useSettlementRequest } from "./use-settlement-request";
+import { formWell } from "./form-well.ts";
 
 type Props = {
   /** The address on record, masked, or `null`. */
@@ -39,7 +40,7 @@ export function SettlementReceiverForm({ receiver, copy, errors }: Props) {
   }
   const hint = receiver === null ? copy.receiverNone : fill(copy.receiverRecorded, { address: receiver });
   return (
-    <form onSubmit={save} className="grid min-w-0 gap-4 rounded-xl border p-4 sm:max-w-md sm:p-5" aria-busy={pending} aria-labelledby="settlement-receiver-title">
+    <form onSubmit={save} className={`${formWell} sm:max-w-md`} aria-busy={pending} aria-labelledby="settlement-receiver-title">
       <div>
         <h3 id="settlement-receiver-title" className="font-semibold">{copy.receiverTitle}</h3>
         <p className="mt-1 text-sm text-pretty text-muted-foreground">{copy.receiverText}</p>

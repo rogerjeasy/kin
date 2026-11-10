@@ -60,7 +60,7 @@ export function DescribeVisits({ locale, copy, ai, speech, disabled, onDescribed
     }
   }
   return (
-    <div className="min-w-0 space-y-3 rounded-xl border border-dashed p-4">
+    <div className="min-w-0 space-y-3 rounded-2xl border border-dashed bg-muted/50 p-4">
       <label htmlFor={id} className="font-medium">{copy.describeLabel}</label>
       <p id={`${id}-hint`} className="text-sm text-muted-foreground">{copy.describeHint}</p>
       <textarea id={id} aria-describedby={`${id}-hint`} rows={3} maxLength={1000} value={text} disabled={disabled || pending} onChange={(event) => setText(event.target.value)} className={`${inputClass} min-h-24 py-2`} />

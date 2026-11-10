@@ -19,7 +19,7 @@ export function Waveform() {
       viewBox={`0 0 ${BARS * BAR_STEP} ${HEIGHT}`}
       aria-hidden="true"
       preserveAspectRatio="xMinYMid meet"
-      className="h-5.5 min-w-0 flex-1 rtl:-scale-x-100"
+      className="wave-bars h-5.5 min-w-0 flex-1 rtl:-scale-x-100"
     >
       {heights.map((height, index) => (
         <rect

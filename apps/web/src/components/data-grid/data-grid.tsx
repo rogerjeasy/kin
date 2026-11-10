@@ -62,7 +62,7 @@ export function DataGrid<TData>({ label, copy, rtl, ready = true, failed = false
   );
 
   return (
-    <div ref={region} role="region" aria-label={label} aria-describedby={hintId} className={cn("min-w-0 overflow-hidden rounded-xl border print:overflow-visible print:rounded-none print:border-0", className)}>
+    <div ref={region} role="region" aria-label={label} aria-describedby={hintId} className={cn("min-w-0 overflow-hidden rounded-2xl border bg-card shadow-xs transition-shadow duration-500 focus-within:shadow-[0_0_0_1px_rgb(var(--glow-gold)/0.35),var(--shadow-sm)] print:overflow-visible print:rounded-none print:border-0 print:shadow-none", className)}>
       <p id={hintId} className="sr-only">
         {copy.hint}
       </p>

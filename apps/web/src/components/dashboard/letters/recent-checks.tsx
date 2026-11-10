@@ -34,7 +34,7 @@ export function RecentChecks({ circle, locale, copy, speech }: Props) {
       ) : (
         <ul className="min-w-0 divide-y">
           {checks.map((check) => (
-            <li key={check.id} className="flex min-w-0 flex-col gap-2 py-3 first:pt-0 last:pb-0">
+            <li key={check.id} className="relative flex min-w-0 flex-col gap-2 py-3 ps-4 first:pt-0 last:pb-0 before:absolute before:inset-y-3 before:start-0 before:w-0.5 before:rounded-full before:bg-border first:before:top-0 last:before:bottom-0">
               <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
                 <VerdictPill verdict={check.verdict} payeeId={check.payeeId} labels={copy.check.verdicts} />
                 <span className="text-sm text-muted-foreground">{format.day(check.checkedOn)}</span>

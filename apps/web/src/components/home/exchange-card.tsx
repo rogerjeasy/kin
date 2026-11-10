@@ -2,13 +2,22 @@ import { SpokenLines, type SpokenLine } from "@/components/shared/spoken-lines";
 
 type ExchangeCardProps = { label: string; lines: readonly SpokenLine[] };
 
-/** One thing Rose can do by voice, shown as what is said. */
+const BARS = [40, 75, 55, 100, 65, 85, 45] as const;
+
+/** One thing Rose can do by voice, shown as a call: who said what. */
 export function ExchangeCard({ label, lines }: ExchangeCardProps) {
   return (
-    <article className="min-w-0 border-t border-band-border py-7 lg:border-t-0 lg:border-s lg:px-8 lg:py-0 lg:first:border-s-0 lg:first:ps-0">
-      <h3 className="font-mono text-xs font-medium text-band-highlight uppercase ltr:tracking-widest">{label}</h3>
+    <article className="glow-edge lift min-w-0 rounded-3xl border border-foreground/10 bg-foreground/[0.04] p-5 backdrop-blur-md sm:p-6 lg:even:-translate-y-6">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-mono text-xs font-medium text-highlight uppercase ltr:tracking-widest">{label}</h3>
+        <svg viewBox="0 0 26 12" aria-hidden="true" className="wave-bars h-3 w-6.5 shrink-0">
+          {BARS.map((height, index) => (
+            <rect key={index} x={index * 4} y={(12 - (12 * height) / 100) / 2} width="2" height={(12 * height) / 100} rx="1" className="fill-gold" />
+          ))}
+        </svg>
+      </div>
       <div className="mt-5">
-        <SpokenLines lines={lines} tone="band" />
+        <SpokenLines lines={lines} />
       </div>
     </article>
   );

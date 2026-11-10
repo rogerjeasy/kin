@@ -5,37 +5,65 @@
 /* The theme is an attribute on <html>, set before first paint by themeScript. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/*
+ * Luminous warmth. Warm paper and deep ink, lit by gold. Every surface is
+ * still a flat colour, so the shared readability check measures real text on a
+ * real background; the light, the sheen and the glow are painted by
+ * pseudo-elements that carry no text.
+ */
 @theme inline {
   /* One stack per role. The browser falls through to the Arabic and Hebrew
      faces glyph by glyph, so no per-language font switch is needed. */
   --font-sans:
-    var(--font-plex-sans), var(--font-plex-arabic), var(--font-plex-hebrew),
+    var(--font-geist), var(--font-plex-arabic), var(--font-plex-hebrew),
     ui-sans-serif, system-ui, sans-serif;
   --font-serif:
     var(--font-newsreader), var(--font-naskh), var(--font-frank), Georgia, serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   /* Fluid sizes for display type. Each mixes rem with vw so text still grows
      when a reader zooms. */
-  --text-display: clamp(2.375rem, 1.3rem + 4.4vw, 4.5rem);
-  --text-display--line-height: 1.04;
-  --text-title: clamp(1.875rem, 1.35rem + 2.2vw, 3rem);
-  --text-title--line-height: 1.1;
-  --text-subtitle: clamp(1.5rem, 1.25rem + 1vw, 2.125rem);
+  --text-display: clamp(2.5rem, 1.25rem + 5vw, 5.25rem);
+  --text-display--line-height: 1.02;
+  --text-title: clamp(2rem, 1.35rem + 2.5vw, 3.25rem);
+  --text-title--line-height: 1.08;
+  --text-subtitle: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
   --text-subtitle--line-height: 1.15;
-  --text-figure: clamp(2rem, 1.5rem + 1.6vw, 2.75rem);
-  --text-figure--line-height: 1.1;
+  --text-figure: clamp(2rem, 1.5rem + 1.8vw, 3rem);
+  --text-figure--line-height: 1.05;
   --text-speech: clamp(1.1875rem, 1rem + 0.7vw, 1.5rem);
   --text-speech--line-height: 1.3;
   --text-lede: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
-  --text-lede--line-height: 1.5;
+  --text-lede--line-height: 1.55;
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-xl: calc(var(--radius) * 1.3);
+  --radius-2xl: calc(var(--radius) * 1.7);
+  --radius-3xl: calc(var(--radius) * 2.3);
+
+  /* Layered, warm shadows: a tight contact line and a wide soft fall. */
+  --shadow-2xs: 0 1px 1px var(--shadow-tint-1);
+  --shadow-xs: 0 1px 2px var(--shadow-tint-1), 0 6px 20px -8px var(--shadow-tint-2);
+  --shadow-sm: 0 1px 2px var(--shadow-tint-1), 0 10px 30px -10px var(--shadow-tint-2);
+  --shadow-md: 0 2px 4px var(--shadow-tint-1), 0 18px 40px -14px var(--shadow-tint-3);
+  --shadow-lg: 0 2px 6px var(--shadow-tint-1), 0 28px 60px -18px var(--shadow-tint-3);
+  --shadow-xl: 0 4px 10px var(--shadow-tint-1), 0 40px 90px -24px var(--shadow-tint-4);
+  --shadow-glow: 0 0 0 1px rgb(var(--glow-gold) / 0.28), 0 12px 40px -12px rgb(var(--glow-gold) / 0.55);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-fade-up: fade-up 0.8s var(--ease-out-expo) both;
+  --animate-fade-in: fade-in 0.6s ease-out both;
+  --animate-scale-in: scale-in 0.6s var(--ease-out-expo) both;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-glow-pulse: glow-pulse 3.2s ease-in-out infinite;
+  --animate-dot-ping: dot-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-shimmer: shimmer 2.2s linear infinite;
+  --animate-spin-slow: spin 24s linear infinite;
+  --animate-gradient-pan: gradient-pan 8s ease-in-out infinite alternate;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -55,6 +83,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-highlight: var(--highlight);
+  --color-gold: var(--gold);
   --color-danger: var(--danger);
   --color-positive: var(--positive);
   --color-band: var(--band);
@@ -67,75 +96,94 @@
   --color-share-3: var(--share-3);
 }
 
-/* Warm paper and navy. Every text and background pair below meets WCAG AA. */
+/* Warm paper and ink. Every text and background pair below meets WCAG AA. */
 :root {
-  --radius: 0.75rem;
+  --radius: 0.875rem;
   /* The header's own height, without its border or the notch above it. */
   --header-height: 4.5rem;
-  --background: #faf7f2;
-  --foreground: #1a1714;
+  --background: #fbf8f2;
+  --foreground: #17140f;
   --card: #ffffff;
-  --card-foreground: #1a1714;
+  --card-foreground: #17140f;
   --popover: #ffffff;
-  --popover-foreground: #1a1714;
-  --primary: #1d2b4f;
-  --primary-foreground: #faf7f2;
-  --secondary: #efe8dc;
-  --secondary-foreground: #1a1714;
-  --muted: #f3ede3;
-  --muted-foreground: #5e564d;
-  --accent: #efe8dc;
-  --accent-foreground: #1a1714;
-  --border: #e4dcd0;
-  --input: #cfc5b5;
-  --ring: #1d2b4f;
+  --popover-foreground: #17140f;
+  --primary: #141d3b;
+  --primary-foreground: #fbf8f2;
+  --secondary: #f1eadf;
+  --secondary-foreground: #17140f;
+  --muted: #f5efe6;
+  --muted-foreground: #5b5349;
+  --accent: #f1eadf;
+  --accent-foreground: #17140f;
+  --border: #e8dfd1;
+  --input: #c9bdab;
+  --ring: #8a5a00;
   /* Gold for the amounts Kin speaks. */
   --highlight: #8a5a00;
+  /* Gold as light: glows, sparks and rules. Never text. */
+  --gold: #e0a64a;
   /* For a form field that needs correcting, and an alert. */
   --danger: #a3261e;
   /* Money PayPal has confirmed. */
-  --positive: #1d6b3c;
-  /* The navy band keeps its own colours in both themes. */
-  --band: #1d2b4f;
-  --band-foreground: #faf7f2;
+  --positive: #17663a;
+  /* The ink band keeps its own colours in both themes. */
+  --band: #0d1430;
+  --band-foreground: #fbf8f2;
   --band-muted: #c3c8d6;
-  --band-border: #3a4870;
-  --band-highlight: #e9b872;
+  --band-border: #27325c;
+  --band-highlight: #f0c27b;
   /* One colour per sibling's share. Checked for colour-blind separation. */
   --share-1: #2b6cd4;
   --share-2: #c2610c;
   --share-3: #a2398c;
+  /* Light sources, as RGB triples so each can take its own alpha. */
+  --glow-gold: 224 166 74;
+  --glow-blue: 91 147 240;
+  --glow-rose: 192 92 171;
+  --sheen: 255 255 255;
+  --shadow-tint-1: rgb(40 28 10 / 0.05);
+  --shadow-tint-2: rgb(40 28 10 / 0.09);
+  --shadow-tint-3: rgb(30 24 40 / 0.14);
+  --shadow-tint-4: rgb(20 18 40 / 0.22);
+  --ambient-strength: 1;
 }
 
 [data-theme="dark"] {
-  --background: #11131a;
-  --foreground: #f2eee7;
-  --card: #1a1d27;
-  --card-foreground: #f2eee7;
-  --popover: #1a1d27;
-  --popover-foreground: #f2eee7;
-  --primary: #f2eee7;
-  --primary-foreground: #11131a;
-  --secondary: #232735;
-  --secondary-foreground: #f2eee7;
-  --muted: #161924;
-  --muted-foreground: #a9a69f;
-  --accent: #232735;
-  --accent-foreground: #f2eee7;
-  --border: #2b2f3c;
-  --input: #454b5e;
-  --ring: #f2eee7;
-  --highlight: #e9b872;
+  --background: #090c16;
+  --foreground: #f3efe8;
+  --card: #111525;
+  --card-foreground: #f3efe8;
+  --popover: #151a2c;
+  --popover-foreground: #f3efe8;
+  --primary: #f3efe8;
+  --primary-foreground: #0d1120;
+  --secondary: #1b2136;
+  --secondary-foreground: #f3efe8;
+  --muted: #0f1320;
+  --muted-foreground: #aaa7a0;
+  --accent: #1b2136;
+  --accent-foreground: #f3efe8;
+  --border: #232a41;
+  --input: #4a5169;
+  --ring: #f0c27b;
+  --highlight: #f0c27b;
+  --gold: #f0c27b;
   --danger: #f5a79e;
   --positive: #86d3a0;
-  --band: #1b2238;
-  --band-foreground: #f2eee7;
+  --band: #0a1027;
+  --band-foreground: #f3efe8;
   --band-muted: #b4b9c8;
-  --band-border: #303a5a;
-  --band-highlight: #e9b872;
+  --band-border: #263055;
+  --band-highlight: #f0c27b;
   --share-1: #5b93f0;
   --share-2: #c97b2e;
   --share-3: #c05cab;
+  --sheen: 255 255 255;
+  --shadow-tint-1: rgb(0 0 0 / 0.3);
+  --shadow-tint-2: rgb(0 0 0 / 0.35);
+  --shadow-tint-3: rgb(0 0 0 / 0.45);
+  --shadow-tint-4: rgb(0 0 0 / 0.6);
+  --ambient-strength: 0.7;
 }
 
 @layer base {
@@ -150,6 +198,7 @@
        the header's real height: Next treats a new page that starts above this
        line as out of view, and scrolls past its opening section. */
     scroll-padding-top: calc(var(--header-height) + env(safe-area-inset-top));
+    -webkit-tap-highlight-color: transparent;
   }
 
   html[data-theme="dark"] {
@@ -158,11 +207,43 @@
 
   body {
     @apply min-h-dvh bg-background font-sans text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+
+  /* The room's light: gold from the upper left, a cool blue from the right,
+     a rose glow low down. Fixed, behind everything, and never under text as
+     a background image. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--ambient-strength);
+    background:
+      radial-gradient(60rem 40rem at 0% -10%, rgb(var(--glow-gold) / 0.16), transparent 60%),
+      radial-gradient(50rem 36rem at 105% 0%, rgb(var(--glow-blue) / 0.11), transparent 60%),
+      radial-gradient(46rem 30rem at 60% 110%, rgb(var(--glow-rose) / 0.08), transparent 60%);
+  }
+
+  ::selection {
+    background: rgb(var(--glow-gold) / 0.35);
   }
 
   /* A focus ring that is always visible, on any background. */
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--foreground) 22%, transparent) transparent;
+  }
+
+  /* Numbers that line up and do not jump while they count. */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -177,5 +258,351 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+/* ---------- Surfaces ---------- */
+
+/*
+ * A lit card: a flat card colour, a soft sheen from above and a faint gold
+ * warmth in one corner, both painted behind the content by ::before.
+ */
+@utility surface {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgb(var(--sheen) / 0.05), transparent 30%),
+      radial-gradient(90% 70% at 100% 0%, rgb(var(--glow-gold) / 0.07), transparent 60%);
+  }
+}
+
+/* Frosted glass, for bars that float over the page. */
+@utility glass {
+  background-color: color-mix(in oklab, var(--background) 82%, transparent);
+  backdrop-filter: saturate(1.6) blur(18px);
+  -webkit-backdrop-filter: saturate(1.6) blur(18px);
+}
+
+/* A hairline of gold light around the edge, shown on hover or when current. */
+@utility glow-edge {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: linear-gradient(135deg, rgb(var(--glow-gold) / 0.9), rgb(var(--glow-gold) / 0) 40%, rgb(var(--glow-blue) / 0) 60%, rgb(var(--glow-blue) / 0.7));
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out-expo);
+  }
+
+  &:hover::after,
+  &:focus-within::after,
+  &[aria-current="page"]::after {
+    opacity: 1;
+  }
+}
+
+/* Rises a little towards the pointer. */
+@utility lift {
+  transition:
+    transform 0.45s var(--ease-out-expo),
+    box-shadow 0.45s var(--ease-out-expo),
+    border-color 0.3s ease;
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+}
+
+/*
+ * The ink band with moving light: slow pools of gold, blue and rose drift
+ * across it. The pools are one layer larger than the band that moves by
+ * transform, so the compositor moves it without repainting the band each
+ * frame. The element must be positioned (relative, sticky...) and must clip
+ * its overflow (overflow-clip, or overflow-x-hidden where it scrolls).
+ */
+@utility aurora {
+  isolation: isolate;
+  background-color: var(--band);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -12%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(32% 30% at 25% 28%, rgb(var(--glow-gold) / 0.3), transparent 70%),
+      radial-gradient(36% 34% at 75% 66%, rgb(var(--glow-blue) / 0.28), transparent 70%),
+      radial-gradient(28% 26% at 55% 12%, rgb(var(--glow-rose) / 0.18), transparent 70%);
+    will-change: transform;
+    animation: aurora-drift 22s ease-in-out infinite alternate;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+  }
+}
+
+/* Gold type for a word that carries the meaning. Decorative weight only:
+   both ends of the gradient meet AA on their own. */
+@utility text-luminous {
+  background-image: linear-gradient(100deg, var(--highlight) 0%, color-mix(in oklab, var(--highlight) 70%, var(--gold)) 50%, var(--highlight) 100%);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: gradient-pan 6s ease-in-out infinite alternate;
+}
+
+/* A sweep of light across a button on hover. */
+@utility shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.28) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.9s var(--ease-out-expo);
+  }
+
+  @media (hover: hover) {
+    &:hover::after {
+      transform: translateX(120%);
+    }
+  }
+}
+
+/* A loading placeholder that glints. */
+@utility skeleton {
+  background-color: var(--muted);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgb(var(--sheen) / 0.35), transparent);
+    animation: shimmer 1.8s linear infinite;
+  }
+}
+
+/* ---------- Motion ---------- */
+
+/*
+ * Entrances. Each runs once and ends at the element's own state, so a reader
+ * who asks for reduced motion sees the finished page at once.
+ */
+@utility enter {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: fade-up 0.8s var(--ease-out-expo) both;
+    animation-delay: calc(var(--enter-index, 0) * 80ms);
+  }
+}
+
+/* Children arrive one after another. */
+@utility enter-stagger {
+  @media (prefers-reduced-motion: no-preference) {
+    & > * {
+      animation: fade-up 0.75s var(--ease-out-expo) both;
+    }
+
+    & > *:nth-child(2) { animation-delay: 60ms; }
+    & > *:nth-child(3) { animation-delay: 120ms; }
+    & > *:nth-child(4) { animation-delay: 180ms; }
+    & > *:nth-child(5) { animation-delay: 240ms; }
+    & > *:nth-child(6) { animation-delay: 300ms; }
+    & > *:nth-child(7) { animation-delay: 360ms; }
+    & > *:nth-child(n + 8) { animation-delay: 420ms; }
+  }
+}
+
+/* The characters of a figure rise one after another (RisingFigure). */
+@utility rise-chars {
+  & > span {
+    display: inline-block;
+    white-space: pre;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    & > span {
+      animation: fade-up 0.7s var(--ease-out-expo) both;
+      animation-delay: 120ms;
+    }
+
+    & > span:nth-child(2) { animation-delay: 165ms; }
+    & > span:nth-child(3) { animation-delay: 210ms; }
+    & > span:nth-child(4) { animation-delay: 255ms; }
+    & > span:nth-child(5) { animation-delay: 300ms; }
+    & > span:nth-child(6) { animation-delay: 345ms; }
+    & > span:nth-child(7) { animation-delay: 390ms; }
+    & > span:nth-child(8) { animation-delay: 435ms; }
+    & > span:nth-child(9) { animation-delay: 480ms; }
+    & > span:nth-child(10) { animation-delay: 525ms; }
+    & > span:nth-child(11) { animation-delay: 570ms; }
+    & > span:nth-child(12) { animation-delay: 615ms; }
+    & > span:nth-child(13) { animation-delay: 660ms; }
+    & > span:nth-child(14) { animation-delay: 705ms; }
+    & > span:nth-child(n + 15) { animation-delay: 750ms; }
+  }
+}
+
+/* Rises into place as it scrolls into view. Transform only, so text is
+   always at full strength. */
+@utility reveal {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+
+/* A waveform that breathes, bar by bar. */
+@utility wave-bars {
+  @media (prefers-reduced-motion: no-preference) {
+    & > rect {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: wave 1.6s ease-in-out infinite;
+    }
+
+    & > rect:nth-child(3n + 1) { animation-delay: -0.4s; }
+    & > rect:nth-child(3n + 2) { animation-delay: -0.9s; }
+    & > rect:nth-child(5n) { animation-duration: 1.2s; }
+  }
+}
+
+/* A bar that fills from its start when it first paints (SVG rect or box). */
+@utility grow-bar {
+  transform-box: fill-box;
+  transform-origin: left center;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: grow-x 1.2s var(--ease-out-expo) 0.25s both;
+  }
+}
+
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: none; }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.45); }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(36px) scale(0.985);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--glow-gold) / 0), 0 0 24px -6px rgb(var(--glow-gold) / 0.35); }
+  50% { box-shadow: 0 0 0 6px rgb(var(--glow-gold) / 0.08), 0 0 36px -4px rgb(var(--glow-gold) / 0.55); }
+}
+
+@keyframes dot-ping {
+  75%, 100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes aurora-drift {
+  0% { transform: translate3d(-6%, -4%, 0); }
+  50% { transform: translate3d(6%, 3%, 0); }
+  100% { transform: translate3d(-2%, 6%, 0); }
+}
+
+@keyframes gradient-pan {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+
+/* Moving between pages and themes cross-fades instead of cutting. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.45s;
+    animation-timing-function: var(--ease-out-expo);
   }
 }

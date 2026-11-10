@@ -12,7 +12,7 @@ export function BillingWeek({ copy, people }: BillingWeekProps) {
   return (
     <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
       <div className="min-w-0">
-        <div className="rounded-3xl border bg-card p-6 sm:p-9">
+        <div className="surface rounded-3xl p-6 shadow-md sm:p-9">
           <SpokenLines
             lines={[
               { speaker: people.amara, text: copy.amaraLine, voice: "person" },
@@ -20,9 +20,9 @@ export function BillingWeek({ copy, people }: BillingWeekProps) {
             ]}
           />
         </div>
-        <p className="mt-6 max-w-xl text-lg text-muted-foreground">{copy.note}</p>
+        <p className="mt-6 max-w-xl border-s-2 border-gold/50 ps-4 text-lg text-muted-foreground">{copy.note}</p>
       </div>
-      <div className="min-w-0 border-b">
+      <div className="min-w-0">
         <StepList steps={copy.steps} />
       </div>
     </div>

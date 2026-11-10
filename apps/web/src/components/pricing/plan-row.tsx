@@ -10,7 +10,7 @@ type PlanRowProps = {
  */
 export function PlanRow({ name, details }: PlanRowProps) {
   return (
-    <li className="grid gap-x-8 gap-y-3 border-t py-6 lg:grid-cols-[1fr_1.3fr_1.6fr_1.2fr] lg:items-baseline">
+    <li className="grid gap-x-8 gap-y-3 border-t px-5 py-6 transition-colors duration-300 first:border-t-0 hover:bg-secondary/50 sm:px-7 lg:grid-cols-[1fr_1.3fr_1.6fr_1.2fr] lg:items-baseline">
       <h3 className="font-serif text-2xl">{name}</h3>
       {details.map((detail) => (
         <p key={detail.label} className="min-w-0">

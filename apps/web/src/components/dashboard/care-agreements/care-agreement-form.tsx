@@ -106,7 +106,7 @@ export function CareAgreementForm({ copy, caregivers, today }: Props) {
             </Field>
           </div>
           {spouse ? (
-            <p role="alert" className="flex items-start gap-2 rounded-xl border border-highlight/40 bg-highlight/10 p-3 text-sm">
+            <p role="alert" className="flex items-start gap-2 rounded-2xl border border-highlight/40 bg-highlight/10 p-3.5 text-sm">
               <AlertTriangleIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-highlight" />
               <span className="min-w-0">{form.spouseWarning}</span>
             </p>
@@ -114,7 +114,7 @@ export function CareAgreementForm({ copy, caregivers, today }: Props) {
           <Field id="ca-duties" label={form.duties} hint={form.dutiesHint}>
             <textarea id="ca-duties" required rows={5} maxLength={2400} value={draft.duties} aria-describedby="ca-duties-hint" onChange={(event) => edit({ duties: event.target.value })} className={`${inputClass} py-2`} />
           </Field>
-          <div className="grid min-w-0 gap-4 sm:grid-cols-3">
+          <div className="grid min-w-0 items-start gap-4 sm:grid-cols-3">
             <Field id="ca-hours" label={form.hours}>
               <input id="ca-hours" type="text" inputMode="numeric" required maxLength={2} value={draft.hours} onChange={(event) => edit({ hours: event.target.value })} className={inputClass} />
             </Field>
@@ -128,7 +128,7 @@ export function CareAgreementForm({ copy, caregivers, today }: Props) {
           <fieldset className="min-w-0 space-y-2">
             <legend className="font-medium">{form.endTerm}</legend>
             {CARE_END_TERMS.map((term) => (
-              <label key={term} className="flex min-h-11 items-center gap-3">
+              <label key={term} className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border bg-card px-3.5 py-2 transition-[border-color,background-color,box-shadow] duration-300 hover:border-input has-[:checked]:border-primary has-[:checked]:bg-secondary has-[:checked]:shadow-[0_0_0_3px_rgb(var(--glow-gold)/0.18)] sm:max-w-md">
                 <input type="radio" name="ca-end" className={radioClass} checked={draft.endTerm === term} onChange={() => edit({ endTerm: term })} />
                 <span className="min-w-0">{form.endTerms[term]}</span>
               </label>
@@ -142,7 +142,7 @@ export function CareAgreementForm({ copy, caregivers, today }: Props) {
           <fieldset className="min-w-0 space-y-2">
             <legend className="font-medium">{form.payer}</legend>
             {CARE_PAYERS.map((payer) => (
-              <label key={payer} className="flex min-h-11 items-center gap-3">
+              <label key={payer} className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border bg-card px-3.5 py-2 transition-[border-color,background-color,box-shadow] duration-300 hover:border-input has-[:checked]:border-primary has-[:checked]:bg-secondary has-[:checked]:shadow-[0_0_0_3px_rgb(var(--glow-gold)/0.18)] sm:max-w-md">
                 <input type="radio" name="ca-payer" className={radioClass} checked={draft.payer === payer} onChange={() => edit({ payer })} />
                 <span className="min-w-0">{form.payers[payer]}</span>
               </label>
@@ -159,7 +159,7 @@ export function CareAgreementForm({ copy, caregivers, today }: Props) {
           </Field>
         </fieldset>
         {preview !== null ? (
-          <div className="space-y-4 rounded-xl border bg-secondary/40 p-4">
+          <div className="enter space-y-4 rounded-2xl border bg-secondary/50 p-4 shadow-xs sm:p-6">
             <p className="text-sm font-medium">{fill(copy.rateNote[preview.rate.judgement], { rate: preview.rate.rate, median: preview.rate.median ?? "" })}</p>
             <h3 className="font-semibold">{form.previewTitle}</h3>
             <AgreementText clauses={preview.clauses} footer={AGREEMENT_FOOTER} />

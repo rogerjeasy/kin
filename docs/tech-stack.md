@@ -13,7 +13,7 @@ This document says what to build with and why. It is not a design or an implemen
 | Language | TypeScript everywhere, on the 6.0 release line |
 | Repository | One pnpm workspace: `apps/*`, `packages/*` and `infra` |
 | Lint | ESLint with typescript-eslint, strict preset |
-| Web app | Next.js, React, Tailwind CSS, shadcn/ui, installable to the home screen |
+| Web app | Next.js, React, Tailwind CSS, shadcn/ui, motion, three.js with React Three Fiber, installable to the home screen |
 | Data grid | AG Grid Community for the family ledger and audit screens |
 | Care calendar | Bryntum Scheduler, the trial build, read-only, for the family's week of care shifts |
 | Checkout | PayPal JavaScript SDK v6 |
@@ -90,6 +90,8 @@ Three small services share one codebase:
 - **Accessibility target:** WCAG 2.2 level AA, tested with a screen reader.
 - **Public pages.** The homepage, How it works, Safety, For caregivers and Pricing live in the same app under `src/app/[locale]`, and are prerendered as static HTML.
 - **Seven languages, no library.** English, French, German, Italian, Spanish, Arabic and Hebrew. English sits at the short address (`/pricing`) and the others are prefixed (`/fr/pricing`). A proxy file rewrites the short address, and each language is one JSON dictionary. A test fails the build if a translation's structure drifts from the English one. Arabic and Hebrew render right to left, so components use logical properties only (`ms-`, `pe-`, `text-start`).
+- **three.js, React Three Fiber and drei for one 3D scene.** The home page's hero draws the Kin knot in WebGL. It loads only on that page, after it is interactive, a still poster stands in where WebGL is missing, and a reader who asks for reduced motion keeps the poster, so no GPU work is done (`architecture.md` decision 95).
+- **motion for shared-layout transitions.** Navigation indicators glide between items; everything else moves in CSS. Both follow the reader's reduced-motion setting.
 - **Light and dark themes, no library.** The theme is a `data-theme` attribute on `<html>`, set before first paint by a small inline script, with the choice kept in the browser. The colours are CSS variables under shadcn/ui's token names.
 - **shadcn/ui on Radix primitives**, initialised with right-to-left support. Buttons are resized so every control is at least 44 pixels.
 - **Type.** Newsreader for headlines and spoken sentences, IBM Plex Sans for text and IBM Plex Mono for records, with IBM Plex Sans Arabic, IBM Plex Sans Hebrew, Noto Naskh Arabic and Frank Ruhl Libre behind them. All are self-hosted at build time through `next/font`.

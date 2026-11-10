@@ -20,13 +20,15 @@ export function Sidebar({ locale, dictionary, month, clock, badges, pause, pause
   return (
     <aside
       {...themeAttribute}
-      className="sticky top-0 hidden h-dvh flex-col gap-6 overflow-y-auto bg-band px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-5 text-foreground lg:flex print:hidden"
+      className="aurora sticky top-0 hidden h-dvh flex-col gap-6 overflow-x-hidden overflow-y-auto border-e border-band-border/60 px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-5 text-foreground lg:flex print:hidden"
     >
       <div className="px-2">
         <Logo href={localizedPath(locale, dashboardRoutes.overview)} label={fill(shell.homeLabel, { circle: circle.name })} />
       </div>
-      <div className="flex items-center gap-3 rounded-2xl border border-band-border bg-foreground/5 p-3">
-        <MemberAvatar portrait={circle.portrait} name={circle.parentName} size="md" />
+      <div className="flex items-center gap-3 rounded-2xl border border-band-border bg-band p-3 shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]">
+        <span className="relative shrink-0 rounded-full p-0.5 ring-1 ring-band-highlight/60 motion-safe:animate-glow-pulse">
+          <MemberAvatar portrait={circle.portrait} name={circle.parentName} size="md" />
+        </span>
         <div className="min-w-0">
           <p className="truncate font-semibold">{circle.name}</p>
           <p className="truncate text-sm text-muted-foreground">{month}</p>

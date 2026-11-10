@@ -55,14 +55,14 @@ export function HelpForm({ locale, checkId, name, max, copy, approvalsHref }: Pr
 
   return (
     <form
-      className="min-w-0 space-y-3 rounded-xl border bg-card p-4"
+      className="min-w-0 space-y-3 rounded-3xl border bg-card p-4 shadow-sm motion-safe:animate-fade-up sm:p-5"
       onSubmit={(event) => {
         event.preventDefault();
         void ask();
       }}
     >
       <h3 className="flex items-center gap-2 font-semibold">
-        <HandHeartIcon aria-hidden="true" className="size-5 shrink-0" />
+        <HandHeartIcon aria-hidden="true" className="size-5 shrink-0 text-highlight" />
         <span className="min-w-0">{fill(copy.help.title, { name })}</span>
       </h3>
       <p className="text-sm text-muted-foreground">{fill(copy.help.text, { name })}</p>

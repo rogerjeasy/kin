@@ -21,7 +21,7 @@ export function DeliveryTrack({ steps, current, label }: Props) {
           <li
             key={step.key}
             aria-current={index === at ? "step" : undefined}
-            className={cn("flex min-w-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm", reached ? "border-positive/40 bg-positive/10 font-semibold" : "text-muted-foreground")}
+            className={cn("flex min-w-0 items-center gap-2 rounded-xl border px-3 py-2 text-sm", reached ? "border-positive/40 bg-positive/10 font-semibold" : "text-muted-foreground")}
           >
             <span aria-hidden="true" className={cn("flex size-5 shrink-0 items-center justify-center rounded-full border", reached && "border-positive bg-positive text-background")}>
               {reached ? <CheckIcon className="size-3" /> : null}

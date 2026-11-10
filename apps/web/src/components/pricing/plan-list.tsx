@@ -16,13 +16,13 @@ export function PlanList({ copy }: PlanListProps) {
       <h2 id={HEADING_ID} className="font-serif text-subtitle">{title}</h2>
       {/* Visible column titles for wide screens. Each row repeats them for
           screen readers, so this copy is hidden from them. */}
-      <div aria-hidden="true" className="mt-6 hidden gap-x-8 pb-3 text-sm text-muted-foreground lg:grid lg:grid-cols-[1fr_1.3fr_1.6fr_1.2fr]">
+      <div aria-hidden="true" className="mt-6 hidden gap-x-8 px-7 pb-3 font-mono text-xs font-medium text-muted-foreground uppercase lg:grid lg:grid-cols-[1fr_1.3fr_1.6fr_1.2fr] ltr:tracking-wider">
         <span />
         {labels.map((label) => (
           <span key={label}>{label}</span>
         ))}
       </div>
-      <ul aria-labelledby={HEADING_ID} className="mt-6 border-b lg:mt-0">
+      <ul aria-labelledby={HEADING_ID} className="surface mt-6 overflow-hidden rounded-3xl lg:mt-0">
         {items.map((plan) => (
           <PlanRow
             key={plan.name}

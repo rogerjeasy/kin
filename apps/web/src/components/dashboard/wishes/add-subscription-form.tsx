@@ -29,7 +29,7 @@ export function AddSubscriptionForm({ copy, demo }: Props) {
   }
 
   return (
-    <details className="mt-4 rounded-xl border px-4">
+    <details className="mt-4 rounded-2xl border px-4">
       <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold">{text.title}</summary>
       <form onSubmit={submit} className="flex min-w-0 flex-col gap-3 pb-4">
         <div className="grid min-w-0 gap-3 sm:grid-cols-2">

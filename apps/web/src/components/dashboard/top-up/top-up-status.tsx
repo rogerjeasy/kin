@@ -10,7 +10,7 @@ const ICONS = { working: LoaderCircleIcon, done: CheckCircle2Icon, problem: Circ
 export function TopUpStatus({ tone, text }: { tone: Tone; text: string }) {
   const Icon = ICONS[tone];
   return (
-    <p className="flex min-w-0 items-start gap-3 rounded-xl border bg-card px-4 py-3 text-pretty">
+    <p className={cn("enter flex min-w-0 items-start gap-3 rounded-2xl border bg-card px-4 py-3.5 text-pretty shadow-xs", tone === "done" && "border-gold/60 shadow-[0_0_0_4px_rgb(var(--glow-gold)/0.14),var(--shadow-sm)]")}>
       <Icon
         aria-hidden="true"
         className={cn("mt-0.5 size-5 shrink-0", tone === "working" && "animate-spin text-muted-foreground motion-reduce:animate-none", tone === "done" && "text-highlight", tone === "problem" && "text-destructive")}

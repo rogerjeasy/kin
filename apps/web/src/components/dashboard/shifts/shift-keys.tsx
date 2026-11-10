@@ -10,8 +10,12 @@ type Props = { view: ShiftView; copy: ShiftCopy; format: Formatters; caregiver: 
 
 function Step({ done, label, detail, doneLabel }: { done: boolean; label: string; detail: string; doneLabel: string }) {
   return (
-    <li className="flex min-w-0 items-start gap-2">
-      {done ? <CheckCircle2Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-positive" /> : <CircleIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" />}
+    <li className={cn("flex min-w-0 items-start gap-2.5 rounded-2xl border p-3 transition-colors", done ? "border-positive/30 bg-positive/5" : "border-dashed bg-muted/40")}>
+      {done ? (
+        <CheckCircle2Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-positive drop-shadow-[0_0_6px_var(--positive)] motion-safe:animate-scale-in" />
+      ) : (
+        <CircleIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+      )}
       <div className="min-w-0">
         <p className={cn("text-sm font-medium text-pretty", !done && "text-muted-foreground")}>
           {done ? <span className="sr-only">{doneLabel}: </span> : null}
@@ -30,7 +34,7 @@ export function ShiftKeys({ view, copy, format, caregiver, familyName }: Props) 
   const taps = tapsText(copy, format, shift);
   const said = shift.familyConfirmedAt === null ? words.todo : fill(words.saidBy, { name: familyName ?? "", time: format.time(shift.familyConfirmedAt) });
   return (
-    <ol className="grid min-w-0 gap-3 sm:grid-cols-2">
+    <ol className="grid min-w-0 gap-2 sm:grid-cols-2">
       <Step done={keys.caregiver} label={fill(words.caregiver, { name: caregiver })} detail={taps} doneLabel={words.done} />
       <Step done={keys.family} label={words.family} detail={said} doneLabel={words.done} />
     </ol>

@@ -1,11 +1,13 @@
 import { CheckIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { RisingFigure } from "@/components/motion/rising-figure";
 import { cn } from "@/lib/utils";
 
 const tones = {
-  page: { card: "border bg-card", quiet: "text-muted-foreground", mark: "text-highlight", rule: "border-border", badge: "bg-secondary text-muted-foreground" },
-  band: { card: "bg-band text-band-foreground", quiet: "text-band-muted", mark: "text-band-highlight", rule: "border-band-border", badge: "bg-band-border text-band-foreground" },
+  page: "surface lift glow-edge",
+  /** The family's plan: a small ink panel of its own, lit like the hero. */
+  band: "aurora relative overflow-clip text-foreground shadow-xl ring-1 ring-gold/40 lg:-translate-y-3",
 } as const;
 
 type PlanCardProps = {
@@ -21,22 +23,35 @@ type PlanCardProps = {
 
 /** One proposed plan: who pays, how much, and what it includes. */
 export function PlanCard({ plan, includes, badge, tone = "page", children }: PlanCardProps) {
-  const colours = tones[tone];
+  // The ink card switches the tokens inside it to the dark theme, so its text keeps its contrast.
+  const theme = tone === "band" ? { "data-theme": "dark" } : {};
 
   return (
-    <li className={cn("flex min-w-0 flex-col rounded-3xl p-6 sm:p-8", colours.card)}>
+    <li {...theme} className={cn("flex min-w-0 flex-col rounded-3xl p-6 sm:p-8", tones[tone])}>
+      {tone === "band" ? (
+        <span aria-hidden="true" className="pointer-events-none absolute inset-x-8 top-0 h-px bg-linear-to-r from-transparent via-gold to-transparent" />
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <h2 className="text-lg font-semibold">{plan.name}</h2>
-        {badge ? <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", colours.badge)}>{badge}</span> : null}
+        {badge ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/50 bg-gold/10 px-2.5 py-1 text-xs font-medium text-highlight">
+            <span aria-hidden="true" className="size-1.5 rounded-full bg-gold" />
+            {badge}
+          </span>
+        ) : null}
       </div>
-      <p className="mt-6 font-serif text-figure text-balance ltr:tracking-tight">{plan.price}</p>
-      <p className={colours.quiet}>{plan.priceNote}</p>
-      <p className={cn("mt-5 border-t pt-5 font-medium", colours.rule)}>{plan.whoPays}</p>
-      <p className={cn("mt-5 font-mono text-xs font-medium uppercase ltr:tracking-widest", colours.quiet)}>{includes}</p>
+      <p className="mt-7 font-serif text-figure text-balance ltr:tracking-tight">
+        <RisingFigure value={plan.price} />
+      </p>
+      <p className="mt-1 text-muted-foreground">{plan.priceNote}</p>
+      <p className="mt-6 border-t pt-5 font-medium">{plan.whoPays}</p>
+      <p className="mt-6 font-mono text-xs font-medium text-muted-foreground uppercase ltr:tracking-widest">{includes}</p>
       <ul className="mt-3 space-y-2.5">
         {plan.features.map((feature) => (
           <li key={feature} className="grid grid-cols-[1.25rem_minmax(0,1fr)] gap-x-3">
-            <CheckIcon aria-hidden="true" className={cn("mt-1 size-4", colours.mark)} />
+            <span aria-hidden="true" className="mt-1 grid size-5 place-items-center rounded-full bg-gold/15">
+              <CheckIcon className="size-3.5 text-highlight" />
+            </span>
             <span>{feature}</span>
           </li>
         ))}

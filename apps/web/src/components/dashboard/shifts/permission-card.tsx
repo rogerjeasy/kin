@@ -28,7 +28,7 @@ export function PermissionCard({ copy, shifts, format, view, caregiver, parent, 
   const terms = { payeeId: permission.payeeId, maxMinutesPerDay: permission.maxMinutesPerDay, perShiftCents: permission.perShiftCents, validFrom: permission.validFrom, expiresOn: permission.expiresOn };
   const used = fill(copy.used, { used: durationText(shifts, format, permission.usedMinutesToday), cap: durationText(shifts, format, permission.maxMinutesPerDay) });
   return (
-    <li className="min-w-0 space-y-4 rounded-2xl border bg-card p-5 shadow-xs sm:p-6">
+    <li className="min-w-0 space-y-4 surface rounded-3xl p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="min-w-0 flex-1 text-base font-medium text-pretty">{readBack(copy, shifts, format, terms, caregiver)}</p>
         <StatusPill tone={status.tone} icon={status.icon}>{copy.statuses[permission.status]}</StatusPill>

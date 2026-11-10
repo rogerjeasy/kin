@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { InsetSection } from "@/components/layout/inset-section";
 import { Section } from "@/components/layout/section";
 import { PageHero } from "@/components/pages/page-hero";
 import { RelatedPages } from "@/components/pages/related-pages";
@@ -36,9 +37,9 @@ export default async function PricingPage({ params }: PageProps<"/[locale]/prici
           <PlanList copy={plans} />
         </div>
       </Section>
-      <Section tone="muted">
+      <InsetSection tone="muted">
         <FeeSplit locale={locale} copy={split} people={common.people} />
-      </Section>
+      </InsetSection>
       <FaqSection copy={faq} />
       <RelatedPages locale={locale} dictionary={dictionary} current="pricing" />
       <ClosingBand locale={locale} title={home.closing.title} nav={common.nav} />

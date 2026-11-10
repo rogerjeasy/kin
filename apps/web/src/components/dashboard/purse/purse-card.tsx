@@ -24,7 +24,7 @@ export function PurseCard({ screen, copy, format, href }: Props) {
       aside={<WalletIcon aria-hidden="true" className="size-6 shrink-0 text-primary" />}
     >
       {held > 0 && !screen.isParent ? (
-        <p className="flex items-start gap-2 rounded-xl bg-highlight/10 p-3 font-semibold text-balance">
+        <p className="flex items-start gap-2 rounded-2xl border border-highlight/25 bg-highlight/10 p-3.5 font-semibold text-balance">
           <ShieldAlertIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-highlight" />
           {fill(held === 1 ? copy.heldOne : copy.heldMany, { count: format.count(held), parent: screen.parentName })}
         </p>

@@ -19,7 +19,7 @@ export function EvidenceText({ text, highlights, copy }: Props) {
   return (
     <figure className="min-w-0 space-y-1">
       <figcaption className="text-xs font-semibold text-muted-foreground">{copy.textTitle}</figcaption>
-      <blockquote className="rounded-lg border bg-background p-3 text-sm wrap-anywhere whitespace-pre-wrap">
+      <blockquote className="rounded-2xl border bg-background p-3 text-sm wrap-anywhere whitespace-pre-wrap">
         {segments.map((segment, at) =>
           segment.ids.length === 0 ? (
             <span key={at}>{segment.text}</span>

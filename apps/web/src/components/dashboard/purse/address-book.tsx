@@ -5,6 +5,7 @@ import { Panel } from "@/components/dashboard/ui/panel";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
+import { cn } from "@/lib/utils";
 import type { PursePayeeView } from "@/server/purse";
 
 import { PayeeActions, PayeeForm } from "./payee-actions";
@@ -22,7 +23,16 @@ export function AddressBook({ payees, copy, parentName, isParent, canAdd, canRem
         ) : (
           <ul className="divide-y">
             {payees.map((payee) => (
-              <li key={payee.id} className="flex min-w-0 flex-col gap-3 py-3">
+              <li key={payee.id} className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-3.5 gap-y-3 py-4 first:pt-0">
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "inline-flex size-11 items-center justify-center rounded-full font-serif text-xl ring-1 ring-inset",
+                    payee.verified ? "bg-positive/10 text-positive ring-positive/25" : "bg-highlight/10 text-highlight ring-highlight/30",
+                  )}
+                >
+                  {Array.from(payee.name)[0] ?? ""}
+                </span>
                 <div className="min-w-0 flex-1 space-y-1">
                   <p className="text-lg font-semibold wrap-anywhere">
                     {payee.name}
@@ -42,7 +52,9 @@ export function AddressBook({ payees, copy, parentName, isParent, canAdd, canRem
                   )}
                   <p className="text-xs text-muted-foreground">{fill(book.addedBy, { name: payee.addedByName })}</p>
                 </div>
-                <PayeeActions payeeId={payee.id} name={payee.name} canVerify={payee.canVerify} canRemove={canRemove} copy={copy} />
+                <div className="col-start-2 min-w-0">
+                  <PayeeActions payeeId={payee.id} name={payee.name} canVerify={payee.canVerify} canRemove={canRemove} copy={copy} />
+                </div>
               </li>
             ))}
           </ul>

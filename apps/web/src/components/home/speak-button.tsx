@@ -50,7 +50,7 @@ export function SpeakButton({ text, lang, playLabel, stopLabel }: SpeakButtonPro
       type="button"
       onClick={toggle}
       aria-label={speaking ? stopLabel : playLabel}
-      className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+      className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-300 hover:scale-105 active:scale-95 motion-safe:animate-glow-pulse"
     >
       {speaking ? <SquareIcon className="size-3.5 fill-current" /> : <PlayIcon className="ml-0.5 size-4 fill-current" />}
     </button>

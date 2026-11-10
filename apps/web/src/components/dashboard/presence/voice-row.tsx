@@ -38,8 +38,11 @@ export function VoiceRow({ voice, copy, canRemove }: Props) {
   }
 
   return (
-    <li className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 py-3 first:pt-0 last:pb-0">
-      <span className="min-w-0 flex-1 basis-48 font-medium wrap-anywhere">
+    <li className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 py-4 first:pt-0 last:pb-0">
+      <span aria-hidden="true" className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary font-serif text-lg ring-1 ring-border">
+        {Array.from(voice.name)[0]}
+      </span>
+      <span className="min-w-0 flex-1 basis-40 font-medium wrap-anywhere">
         {voice.name} <span className="font-normal text-muted-foreground">· {voice.relationship}</span>
         {voice.aliases.length === 0 ? null : <span className="block text-sm font-normal text-muted-foreground">{fill(copy.aliasesLine, { aliases: voice.aliases.join(", ") })}</span>}
       </span>

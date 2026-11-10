@@ -29,7 +29,7 @@ export function ShortfallOptions({ screen, ask }: Props) {
   const canSpread = ask.kind === "one_off" && ask.months === 1;
 
   return (
-    <div className="min-w-0 space-y-4 rounded-2xl border-2 border-highlight/40 bg-highlight/5 p-4 sm:p-5">
+    <div className="enter min-w-0 space-y-4 rounded-2xl border-2 border-highlight/40 bg-highlight/5 p-4 shadow-[0_0_0_4px_rgb(var(--glow-gold)/0.08)] sm:p-5">
       <div className="min-w-0">
         <p className="text-lg font-semibold text-balance">{fill(words.title, { shortfall })}</p>
         <p className="mt-1 text-sm text-muted-foreground">{words.text}</p>

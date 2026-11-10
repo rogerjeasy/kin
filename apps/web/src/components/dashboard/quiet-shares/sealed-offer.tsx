@@ -16,12 +16,14 @@ export function SealedOffer({ screen, offer, sealsLeft, canChange, onChange }: P
   const { copy } = screen;
   const format = formatters(screen.locale, screen.currency, screen.timezone);
   return (
-    <div className="min-w-0 space-y-3 rounded-2xl border border-dashed p-4 sm:p-5">
-      <p className="flex items-center gap-2 font-semibold">
-        <LockKeyholeIcon aria-hidden="true" className="size-5 shrink-0 text-positive" />
+    <div className="enter relative min-w-0 space-y-3 overflow-clip rounded-2xl border border-positive/30 bg-positive/5 p-4 sm:p-5">
+      <p className="flex items-center gap-3 font-semibold">
+        <span aria-hidden="true" className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-positive shadow-[0_0_0_1px_color-mix(in_oklab,var(--positive)_30%,transparent),0_0_22px_-4px_rgb(var(--glow-gold)/0.6)]">
+          <LockKeyholeIcon className="size-5" />
+        </span>
         <span className="min-w-0">{copy.offer.sealedTitle}</span>
       </p>
-      <p className="text-base text-pretty">{fill(copy.offer.sealed, { summary: offerSummary(offer, copy.offer.summary, format) })}</p>
+      <p className="text-lg text-pretty">{fill(copy.offer.sealed, { summary: offerSummary(offer, copy.offer.summary, format) })}</p>
       {canChange && sealsLeft > 0 ? (
         <div className="flex min-w-0 flex-wrap items-center gap-3">
           <Button type="button" variant="outline" className="min-h-11" onClick={onChange}>

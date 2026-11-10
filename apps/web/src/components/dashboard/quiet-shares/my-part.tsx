@@ -32,7 +32,7 @@ export function MyPart({ screen, ask }: Props) {
   const waitingForMe = ask.state === "planned" && part.acceptedAt === null;
 
   return (
-    <div className="min-w-0 space-y-4 rounded-2xl border bg-card p-4 sm:p-5">
+    <div className="enter min-w-0 space-y-4 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
       <PartFigures copy={copy} part={part} costCents={ask.costCents} startMonth={ask.startMonth} format={format} />
       {waitingForMe ? (
         <form
@@ -46,7 +46,7 @@ export function MyPart({ screen, ask }: Props) {
             <fieldset className="min-w-0 space-y-2">
               <legend className="font-medium">{words.methodLabel}</legend>
               {ask.methods.map((each) => (
-                <label key={each} htmlFor={`${id}-${each}`} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 has-[:checked]:border-primary">
+                <label key={each} htmlFor={`${id}-${each}`} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border bg-card px-3 py-2 transition-[border-color,background-color,box-shadow] duration-300 hover:border-input has-[:checked]:border-primary has-[:checked]:bg-secondary has-[:checked]:shadow-[0_0_0_3px_rgb(var(--glow-gold)/0.18)]">
                   <input id={`${id}-${each}`} type="radio" name={`${id}-method`} value={each} checked={method === each} onChange={() => setMethod(each)} className="size-5 shrink-0 accent-primary" />
                   <span className="min-w-0">{words.methods[each]}</span>
                 </label>

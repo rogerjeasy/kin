@@ -4,6 +4,7 @@ import type { QuietShareState } from "@kin/domain";
 import { CheckCircle2Icon, CircleSlashIcon, HourglassIcon, InfoIcon, TriangleAlertIcon, type LucideIcon } from "lucide-react";
 import { useId } from "react";
 
+import { ProgressRing } from "@/components/dashboard/approvals/progress-ring";
 import { MeterBar } from "@/components/dashboard/ui/meter-bar";
 import { StatusPill, type PillTone } from "@/components/dashboard/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -44,11 +45,11 @@ export function AskCard({ screen, ask }: Props) {
       : null;
 
   return (
-    <article aria-labelledby={`${id}-title`} className="@container min-w-0 space-y-5 rounded-2xl border bg-card p-4 shadow-xs sm:p-5">
+    <article aria-labelledby={`${id}-title`} className="surface @container min-w-0 space-y-5 rounded-3xl p-4 sm:p-6">
       <header className="flex min-w-0 flex-col-reverse gap-3 @lg:flex-row @lg:items-start @lg:justify-between">
         <div className="min-w-0 @lg:flex-1">
-          <h3 id={`${id}-title`} dir="auto" className="text-xl font-semibold text-balance wrap-break-word">{ask.title}</h3>
-          <p className="mt-1 text-base">{costWords(ask, copy.kinds, format)}</p>
+          <h3 id={`${id}-title`} dir="auto" className="text-2xl font-semibold tracking-tight text-balance wrap-break-word">{ask.title}</h3>
+          <p className="mt-1 font-serif text-xl tabular-nums">{costWords(ask, copy.kinds, format)}</p>
           <p className="mt-1 text-sm text-muted-foreground">{fill(copy.raisedBy, { name: ask.raisedByName })}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -57,14 +58,17 @@ export function AskCard({ screen, ask }: Props) {
         </div>
       </header>
       {progress ? (
-        <div className="min-w-0 space-y-2">
-          <MeterBar value={progress.value} max={progress.max} fill="fill-share-1" label={progress.text} />
-          <p className="text-sm font-medium">{progress.text}</p>
+        <div className="flex min-w-0 items-center gap-4 rounded-2xl border bg-muted/60 p-3.5">
+          <ProgressRing done={progress.value} total={progress.max} />
+          <div className="min-w-0 flex-1 space-y-2">
+            <MeterBar value={progress.value} max={progress.max} fill="fill-gold" label={progress.text} className="drop-shadow-[0_0_6px_rgb(var(--glow-gold)/0.5)]" />
+            <p className="text-sm font-medium">{progress.text}</p>
+          </div>
         </div>
       ) : null}
       {ask.payLaterUsed && ask.state !== "short" ? <p className="text-sm text-muted-foreground">{copy.payLaterUsed}</p> : null}
       {ask.privacyCaveat !== null ? (
-        <p className="flex items-start gap-2 rounded-xl bg-secondary p-3 text-sm">
+        <p className="flex items-start gap-2 rounded-2xl bg-secondary p-3.5 text-sm">
           <InfoIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
           <span className="min-w-0">{ask.privacyCaveat === "pair" ? copy.caveat : copy.caveatShort}</span>
         </p>

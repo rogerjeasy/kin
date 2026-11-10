@@ -39,10 +39,10 @@ export default async function StartPage({ params }: PageProps<"/[locale]/start">
       <FormHeading id={FORM_HEADING_ID} title={form.title} text={form.text} />
       <StartForm labelledBy={FORM_HEADING_ID} copy={form} action="/auth/sign-in" next={localizedPath(locale, dashboardRoutes.overview)} />
       <FormFooter question={form.haveCircle} link={{ href: localizedPath(locale, routes.signIn), label: common.nav.signIn }} />
-      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-muted-foreground">
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-muted-foreground">
         {form.justLooking}
         <DemoButton locale={locale} label={common.nav.demo} size="sm" />
-      </p>
+      </div>
     </AccountScreen>
   );
 }

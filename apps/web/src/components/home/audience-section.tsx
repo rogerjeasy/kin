@@ -15,7 +15,7 @@ export function AudienceSection({ locale, copy }: AudienceSectionProps) {
 
   return (
     <div className="py-16 sm:py-20 lg:py-28">
-      <Container className="grid gap-6 md:grid-cols-2 lg:gap-8">
+      <Container className="reveal grid gap-4 md:grid-cols-2 lg:gap-6">
         <AudienceCard
           eyebrow={caregivers.eyebrow}
           title={caregivers.title}

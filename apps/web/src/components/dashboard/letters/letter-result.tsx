@@ -32,12 +32,12 @@ export function LetterResultCard({ result, locale, currency, copy, ai, sourceTex
         ? { tone: "waiting", icon: CopyIcon, label: copy.result.duplicate }
         : { tone: "neutral", icon: InfoIcon, label: copy.result.nothing };
   return (
-    <div role="status" className="min-w-0 space-y-3 rounded-xl border bg-secondary/40 p-4">
+    <div role="status" className="enter min-w-0 space-y-3 rounded-2xl border bg-secondary/50 p-4 shadow-xs sm:p-5">
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
         <StatusPill tone={pill.tone as "danger" | "positive" | "waiting" | "neutral"} icon={pill.icon}>{pill.label}</StatusPill>
         <ProvenanceBadge provenance={result.provenance} kind="read" copy={ai} />
       </div>
-      <p className="wrap-anywhere font-medium">{fill(copy.result.from, { kind: copy.result.kinds[reading.kind], sender })}</p>
+      <p className="wrap-anywhere text-lg font-semibold tracking-tight">{fill(copy.result.from, { kind: copy.result.kinds[reading.kind], sender })}</p>
       <ul className="space-y-1 text-sm text-muted-foreground">
         {reading.amountCents === null ? null : <li>{fill(copy.result.amount, { amount: format.money(reading.amountCents) })}</li>}
         {reading.dueOn === null ? null : <li>{fill(copy.result.due, { day: format.day(reading.dueOn) })}</li>}

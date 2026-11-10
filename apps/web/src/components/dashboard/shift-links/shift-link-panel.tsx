@@ -54,7 +54,7 @@ export function ShiftLinkPanel({ shiftId, name, locale, timezone, copy, shifts, 
         {open ? copy.close : copy.open}
       </Button>
       {open ? (
-        <div id={panelId} role="group" aria-label={fill(copy.title, { name })} className="min-w-0 space-y-5 rounded-xl border bg-secondary/40 p-4 sm:p-5">
+        <div id={panelId} role="group" aria-label={fill(copy.title, { name })} className="min-w-0 space-y-5 rounded-3xl border bg-muted/60 p-4 motion-safe:animate-scale-in sm:p-5">
           <div className="min-w-0 space-y-1">
             <h3 className="font-semibold text-pretty">{fill(copy.title, { name })}</h3>
             <p className="text-sm text-muted-foreground text-pretty">{fill(copy.text, { name })}</p>

@@ -106,7 +106,7 @@ export function PermissionForm({ locale, currency, timezone, copy, shifts, paren
           </Field>
         </fieldset>
         {review !== null && caregiver ? (
-          <div className="min-w-0 space-y-2 rounded-xl border bg-secondary/40 p-4">
+          <div className="min-w-0 space-y-2 rounded-2xl border bg-muted/60 p-4">
             <h3 className="font-semibold">{form.readBackTitle}</h3>
             <p className="text-pretty">{readBack(copy, shifts, format, review, caregiver.name)}</p>
             {aboveUsualCents > 0 ? <p role="note" className="text-pretty font-medium">{aboveUsualNotice(copy, shifts, format, review, parent, aboveUsualCents)}</p> : null}

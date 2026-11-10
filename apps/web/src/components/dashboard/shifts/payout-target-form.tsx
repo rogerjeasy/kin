@@ -62,7 +62,7 @@ export function PayoutTargetForm({ copy, wallets, current, venmoNote }: Props) {
             <input id="target-receiver" name="receiver" type={wallet === "venmo" ? "text" : "email"} required maxLength={127} autoComplete="off" aria-describedby="target-receiver-hint" className={inputClass} />
           </Field>
         </fieldset>
-        {wallet === "venmo" && venmoNote !== null ? <p role="note" className="rounded-lg border border-highlight/40 bg-highlight/5 p-3 text-sm font-medium text-pretty">{venmoNote}</p> : null}
+        {wallet === "venmo" && venmoNote !== null ? <p role="note" className="rounded-2xl border border-gold/50 bg-highlight/10 p-3 text-sm font-medium text-pretty">{venmoNote}</p> : null}
         <p className="text-sm text-muted-foreground text-pretty">{recorded}</p>
         {error ? <p role="alert" className="text-sm text-danger">{failureText(copy, error)}</p> : null}
         {saved ? <p role="status" className="text-sm text-positive">{form.saved}</p> : null}

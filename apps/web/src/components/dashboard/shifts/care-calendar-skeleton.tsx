@@ -6,7 +6,7 @@ const ROWS = 3;
  */
 export function CareCalendarSkeleton() {
   return (
-    <div aria-hidden="true" className="min-w-0 space-y-2 rounded-lg border p-3">
+    <div aria-hidden="true" className="min-w-0 space-y-2 rounded-2xl border p-3">
       {Array.from({ length: ROWS }, (_, row) => (
         <div key={row} className="h-14 animate-pulse rounded-md bg-muted motion-reduce:animate-none" />
       ))}

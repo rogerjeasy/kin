@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { Field, inputClass } from "@/components/dashboard/create-circle/field";
+import { formWell } from "@/components/dashboard/settlement/form-well.ts";
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
@@ -37,7 +38,7 @@ export function RateForm({ memberId, name, rate, payees, configuredPayeeId, rece
     if (result.ok) { setSaved(true); router.refresh(); }
   }
   return (
-    <form onSubmit={save} className="grid min-w-0 gap-4 rounded-xl border p-4" aria-label={name}>
+    <form onSubmit={save} className={formWell} aria-label={name}>
       <h3 className="font-semibold wrap-anywhere">{name}</h3>
       <fieldset disabled={pending} className="grid min-w-0 gap-4 sm:grid-cols-2">
         <Field id={`${prefix}-name`} label={copy.name}>

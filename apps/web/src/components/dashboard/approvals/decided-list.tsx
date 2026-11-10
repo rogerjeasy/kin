@@ -13,8 +13,8 @@ export function DecidedList({ title, description, simulated, items }: DecidedLis
     <Panel title={title} description={description} flush>
       <ul className="divide-y border-t">
         {items.map((item) => (
-          <li key={item.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-5 py-3.5 sm:gap-x-4 sm:px-6">
-            <span aria-hidden="true" className="inline-flex size-7 items-center justify-center rounded-full bg-positive/10 text-positive">
+          <li key={item.id} className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-5 py-3.5 transition-colors duration-300 hover:bg-muted/60 sm:gap-x-4 sm:px-6">
+            <span aria-hidden="true" className="inline-flex size-8 items-center justify-center rounded-full bg-positive/10 text-positive ring-1 ring-positive/25 ring-inset transition-transform duration-500 ease-(--ease-spring) group-hover:scale-110">
               <CheckIcon className="size-4" />
             </span>
             <div className="min-w-0">
@@ -26,7 +26,7 @@ export function DecidedList({ title, description, simulated, items }: DecidedLis
                 {item.simulated ? <Tag className="py-0.5">{simulated}</Tag> : null}
               </p>
             </div>
-            <span className="font-semibold whitespace-nowrap tabular-nums">{item.amount}</span>
+            <span className="font-serif text-lg whitespace-nowrap tabular-nums">{item.amount}</span>
           </li>
         ))}
       </ul>

@@ -70,7 +70,7 @@ export function ReadBackCard({ payment, locale, copy, speech, money, capCents, o
   }
 
   return (
-    <section aria-labelledby={`read-back-${payment.id}`} className={`min-w-0 space-y-5 rounded-2xl border-2 p-5 sm:p-6 ${holds ? "border-highlight/60 bg-highlight/5" : "border-primary/40 bg-card"}`}>
+    <section aria-labelledby={`read-back-${payment.id}`} className={`enter min-w-0 space-y-5 rounded-3xl border-2 p-5 shadow-md sm:p-7 ${holds ? "border-highlight/60 bg-highlight/5" : "border-primary/40 bg-card"}`}>
       <h3 id={`read-back-${payment.id}`} className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
         {confirm.title}
       </h3>
@@ -88,7 +88,7 @@ export function ReadBackCard({ payment, locale, copy, speech, money, capCents, o
       {holds ? (
         <div className="min-w-0 space-y-4">
           <HoldReasons reasons={payment.holdReasons} payee={payment.payeeName} cap={money(capCents)} copy={copy} />
-          <div className="rounded-xl bg-card p-4 shadow-xs">
+          <div className="rounded-2xl border bg-card p-4 shadow-xs sm:p-5">
             <p className="flex items-start gap-2 text-xl font-semibold text-balance">
               <ShieldAlertIcon aria-hidden="true" className="mt-1 size-6 shrink-0 text-highlight" />
               {confirm.question}

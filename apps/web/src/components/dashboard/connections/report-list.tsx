@@ -33,7 +33,7 @@ export function ReportList({ reports, copy, sampleLabel, shiftsHref }: Props) {
     <ul className="grid min-w-0 gap-3">
       {reports.map((report) =>
         report.state === "refused" ? (
-          <li key={report.id} className="flex min-w-0 items-start gap-3 rounded-xl border border-dashed p-3 text-sm">
+          <li key={report.id} className="flex min-w-0 items-start gap-3 rounded-2xl border border-dashed p-3 text-sm">
             <FileWarningIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
             <p className="min-w-0">
               <span className="font-medium">{report.agency}</span> · <time>{report.received}</time>
@@ -41,7 +41,7 @@ export function ReportList({ reports, copy, sampleLabel, shiftsHref }: Props) {
             </p>
           </li>
         ) : (
-          <li key={report.id} className="grid min-w-0 gap-2 rounded-xl border bg-background p-3 sm:p-4">
+          <li key={report.id} className="grid min-w-0 gap-2 rounded-2xl border bg-background/70 p-3 sm:p-4">
             <div className="flex min-w-0 flex-wrap items-start gap-2">
               <p className="min-w-0 flex-1 basis-56 font-semibold text-balance">{fill(copy.report, { agency: report.agency, caregiver: report.caregiver })}</p>
               <StatusPill tone={report.matched ? "positive" : "neutral"} icon={report.matched ? CalendarCheckIcon : CalendarXIcon}>

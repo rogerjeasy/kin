@@ -49,7 +49,7 @@ export function MonthlySharePanel({ locale, dictionary, circle, checkOnLoad }: P
     <Panel title={copy.title} description={copy.text} flush>
       {items.length === 0 ? <p className="px-5 pb-4 text-sm text-muted-foreground sm:px-6">{copy.empty}</p> : <ShareList items={items} />}
       {canManage && limits !== undefined ? (
-        <div className="border-t px-5 py-4 sm:px-6">
+        <div className="border-t px-5 py-5 sm:px-6">
           <ShareControls
             copy={copy}
             currency={circle.circle.currency}

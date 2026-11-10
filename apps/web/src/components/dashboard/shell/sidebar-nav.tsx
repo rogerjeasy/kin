@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
@@ -34,9 +35,19 @@ export function SidebarNav({ locale, copy, badges, sections }: SidebarNavProps) 
               <Link
                 href={localizedPath(locale, dashboardRoutes[section])}
                 aria-current={current === section ? "page" : undefined}
-                className="group flex min-h-11 items-center gap-3 rounded-xl px-3 font-medium text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground aria-[current=page]:bg-foreground/10 aria-[current=page]:text-foreground"
+                className="group relative isolate flex min-h-11 items-center gap-3 rounded-xl px-3 font-medium text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground aria-[current=page]:text-foreground"
               >
-                <Icon aria-hidden="true" className="size-5 shrink-0 group-aria-[current=page]:text-highlight" />
+                {current === section ? (
+                  <motion.span
+                    layoutId="sidebar-current"
+                    aria-hidden="true"
+                    transition={{ type: "spring", stiffness: 420, damping: 36 }}
+                    className="absolute inset-0 -z-10 rounded-xl bg-foreground/10 shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]"
+                  >
+                    <span className="absolute inset-y-2 start-0 w-0.5 rounded-full bg-highlight shadow-[0_0_12px_2px_rgb(var(--glow-gold)/0.7)]" />
+                  </motion.span>
+                ) : null}
+                <Icon aria-hidden="true" className="size-5 shrink-0 transition-transform duration-300 group-hover:scale-110 group-aria-[current=page]:text-highlight" />
                 <span className="min-w-0 flex-1 truncate">{copy.nav[section]}</span>
                 {badge ? (
                   <span className="rounded-full bg-highlight px-2 py-0.5 text-xs font-semibold text-band tabular-nums">

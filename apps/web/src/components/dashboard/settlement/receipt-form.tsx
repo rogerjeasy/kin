@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 
 import { useSettlementRequest } from "./use-settlement-request";
+import { formWell } from "./form-well.ts";
 
 type Props = {
   copy: Dictionary["dashboard"]["fairness"]["receipts"];
@@ -48,7 +49,7 @@ export function ReceiptForm({ copy, errors, categories, today }: Props) {
     }
   }
   return (
-    <form onSubmit={file} className="grid min-w-0 gap-4 rounded-xl border p-4 sm:p-5" aria-busy={pending} aria-labelledby="receipt-form-title">
+    <form onSubmit={file} className={formWell} aria-busy={pending} aria-labelledby="receipt-form-title">
       <h3 id="receipt-form-title" className="font-semibold">{copy.fileTitle}</h3>
       <fieldset disabled={pending} className="grid min-w-0 gap-4 sm:grid-cols-2">
         <Field id="receipt-amount" label={copy.amount} hint={copy.amountHint}>

@@ -78,7 +78,7 @@ export function ChangesPanel({ copy, book, format, locale, effects, kept, subscr
           const Icon = change.icon;
           const [headline, ...rest] = change.lines;
           return (
-            <li key={change.key} className="flex min-w-0 flex-col gap-3 rounded-2xl border bg-card p-5 shadow-xs">
+            <li key={change.key} className="flex min-w-0 flex-col gap-3 surface rounded-3xl p-5">
               <div className="flex min-w-0 items-start gap-3">
                 <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-positive" />
                 <div className="min-w-0 flex-1">

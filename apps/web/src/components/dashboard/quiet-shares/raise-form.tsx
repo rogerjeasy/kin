@@ -53,7 +53,7 @@ export function RaiseForm({ copy }: { copy: QuietCopy }) {
           <legend className="font-medium">{words.kindLabel}</legend>
           <div className="flex flex-wrap gap-2">
             {QUIET_SHARE_KINDS.map((each) => (
-              <label key={each} htmlFor={`${id}-${each}`} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 has-[:checked]:border-primary">
+              <label key={each} htmlFor={`${id}-${each}`} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border bg-card px-3 transition-[border-color,background-color,box-shadow] duration-300 hover:border-input has-[:checked]:border-primary has-[:checked]:bg-secondary has-[:checked]:shadow-[0_0_0_3px_rgb(var(--glow-gold)/0.18)]">
                 <input id={`${id}-${each}`} type="radio" name={`${id}-kind`} value={each} checked={kind === each} onChange={() => setKind(each)} className="size-5 accent-primary" />
                 {words.kinds[each]}
               </label>

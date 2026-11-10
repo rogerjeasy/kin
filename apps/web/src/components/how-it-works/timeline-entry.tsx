@@ -22,13 +22,12 @@ type TimelineEntryProps = {
  */
 export function TimelineEntry({ day, title, text, photo, isLast, children }: TimelineEntryProps) {
   return (
-    <li className="grid grid-cols-[0.75rem_minmax(0,1fr)] gap-x-5 md:grid-cols-[6rem_0.75rem_minmax(0,1fr)] md:gap-x-7">
+    <li className="reveal grid grid-cols-[0.75rem_minmax(0,1fr)] gap-x-5 md:grid-cols-[6rem_0.75rem_minmax(0,1fr)] md:gap-x-7">
       <p className="col-start-2 row-start-1 font-mono text-sm font-medium text-highlight uppercase md:col-start-1 md:text-end ltr:tracking-widest">
         {day}
       </p>
-      <div aria-hidden="true" className="col-start-1 row-span-2 row-start-1 flex flex-col items-center md:col-start-2 md:row-span-1">
-        <span className="mt-1 size-3 shrink-0 rounded-full bg-highlight" />
-        {isLast ? null : <span className="mt-2 w-px flex-1 bg-border" />}
+      <div aria-hidden="true" className="relative z-10 col-start-1 row-span-2 row-start-1 flex flex-col items-center md:col-start-2 md:row-span-1">
+        <span className="mt-1 size-3 shrink-0 rounded-full bg-gold ring-4 ring-gold/20 shadow-[0_0_14px_2px_rgb(var(--glow-gold)/0.6)]" />
       </div>
       <div className={cn("col-start-2 row-start-2 grid min-w-0 items-start gap-x-12 gap-y-6 pt-2 md:col-start-3 md:row-start-1 md:pt-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]", isLast ? "pb-2" : "pb-14 lg:pb-20")}>
         <div className="min-w-0 max-w-2xl">
@@ -37,12 +36,16 @@ export function TimelineEntry({ day, title, text, photo, isLast, children }: Tim
           {children}
         </div>
         {photo ? (
-          <Image
-            src={photo.src}
-            alt={photo.alt}
-            sizes="(min-width: 1024px) 20rem, (min-width: 768px) 28rem, 100vw"
-            className="order-first aspect-4/3 w-full max-w-md min-w-0 rounded-2xl object-cover lg:order-last"
-          />
+          <div className="group surface order-first w-full max-w-md min-w-0 rounded-3xl p-1.5 shadow-md lg:order-last">
+            <div className="overflow-hidden rounded-[1.25rem]">
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                sizes="(min-width: 1024px) 20rem, (min-width: 768px) 28rem, 100vw"
+                className="aspect-4/3 w-full object-cover transition-transform duration-1000 ease-(--ease-out-expo) motion-safe:group-hover:scale-[1.06]"
+              />
+            </div>
+          </div>
         ) : null}
       </div>
     </li>

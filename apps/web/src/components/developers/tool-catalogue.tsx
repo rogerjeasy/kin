@@ -9,9 +9,9 @@ type Props = { tools: readonly Tool[]; kinds: { readonly read: string; readonly 
 /** The MCP server's tools, from the catalogue itself, each marked as reading or proposing. None approves. */
 export function ToolCatalogue({ tools, kinds }: Props) {
   return (
-    <ul className="mt-4 grid min-w-0 divide-y rounded-2xl border bg-card">
+    <ul className="surface mt-5 grid min-w-0 divide-y overflow-hidden rounded-3xl shadow-md">
       {tools.map((tool) => (
-        <li key={tool.name} className="grid min-w-0 gap-1.5 p-4">
+        <li key={tool.name} className="grid min-w-0 gap-1.5 p-4 transition-colors duration-300 hover:bg-secondary/50 sm:px-5">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <code dir="ltr" className="font-mono text-sm font-semibold wrap-anywhere">
               {tool.name}

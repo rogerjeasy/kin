@@ -1,9 +1,10 @@
 "use client";
 
-import { ShieldQuestionIcon } from "lucide-react";
+import { ShieldQuestionIcon, UserRoundIcon, UserRoundXIcon } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { KinThinking } from "@/components/dashboard/ai/kin-thinking";
 import { inputClass } from "@/components/dashboard/create-circle/field";
 import { postLetterJson, type LetterError } from "@/components/dashboard/letters/letter-client";
 import { Panel } from "@/components/dashboard/ui/panel";
@@ -13,6 +14,7 @@ import type { Locale } from "@/i18n/locales";
 import { dashboardRoutes } from "@/content/dashboard-routes";
 import { localizedPath } from "@/i18n/routing";
 import { formatters } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { CheckView, OpenedCheck } from "@/server/presence";
 
 import { CheckActions } from "./check-actions";
@@ -23,6 +25,7 @@ type Props = { locale: Locale; copy: Dictionary["dashboard"]["presence"]; /** Th
 type Opened = Extract<OpenedCheck, { ok: true }>;
 
 const EXAMPLES = ["grandson", "stranger"] as const;
+const EXAMPLE_ICON = { grandson: UserRoundIcon, stranger: UserRoundXIcon } as const;
 const POLL_MS = 2_000;
 /** A check is open only while Kin waits for the real person, so the screen stops asking once it has ended. */
 const isOpen = (check: CheckView): boolean => check.state === "opened" || check.state === "asked";
@@ -87,27 +90,35 @@ export function CheckForm({ locale, copy, currency, timezone }: Props) {
       >
         <fieldset className="min-w-0 space-y-2">
           <legend className="font-medium">{copy.examplesLabel}</legend>
-          <div className="flex flex-wrap gap-2">
-            {EXAMPLES.map((key) => (
-              <Button key={key} type="button" variant="outline" disabled={pending} onClick={() => setAccount(copy.examples[key].text)} className="h-auto min-h-11 max-w-full whitespace-normal text-start">
-                {copy.examples[key].label}
-              </Button>
-            ))}
+          <div className="grid min-w-0 gap-2 sm:grid-cols-2">
+            {EXAMPLES.map((key) => {
+              const Icon = EXAMPLE_ICON[key];
+              const chosen = account === copy.examples[key].text;
+              return (
+                <Button key={key} type="button" variant="outline" disabled={pending} onClick={() => setAccount(copy.examples[key].text)} className={cn("lift h-auto min-h-14 max-w-full justify-start rounded-2xl px-4 py-3 whitespace-normal text-start", chosen && "border-gold/70 bg-highlight/10 shadow-[0_0_0_3px_rgb(var(--glow-gold)/0.15)]")}>
+                  <span aria-hidden="true" className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-full ring-1", chosen ? "bg-gold/25 text-highlight ring-gold/50" : "bg-secondary text-muted-foreground ring-border")}>
+                    <Icon className="size-4.5" />
+                  </span>
+                  <span className="min-w-0">{copy.examples[key].label}</span>
+                </Button>
+              );
+            })}
           </div>
         </fieldset>
         <div className="min-w-0 space-y-1">
           <label htmlFor={`${id}-account`} className="font-medium">{copy.accountLabel}</label>
           <p id={`${id}-account-hint`} className="text-sm text-muted-foreground">{copy.accountHint}</p>
-          <textarea id={`${id}-account`} aria-describedby={`${id}-account-hint`} dir="auto" rows={5} required maxLength={1200} value={account} disabled={pending} onChange={(event) => setAccount(event.target.value)} className={`${inputClass} min-h-32 py-2 text-lg`} />
+          <textarea id={`${id}-account`} aria-describedby={`${id}-account-hint`} dir="auto" rows={5} required maxLength={1200} value={account} disabled={pending} onChange={(event) => setAccount(event.target.value)} className={`${inputClass} min-h-36 py-3 text-lg leading-relaxed`} />
         </div>
-        <Button type="submit" disabled={pending || account.trim() === ""} className="h-auto min-h-14 max-w-full whitespace-normal text-start text-lg">
+        <Button type="submit" disabled={pending || account.trim() === ""} className="h-auto min-h-14 max-w-full px-7 whitespace-normal text-start text-lg">
           <ShieldQuestionIcon aria-hidden="true" className="size-6" />
           {pending ? copy.submitting : copy.submit}
         </Button>
+        {pending ? <KinThinking label={copy.submitting} /> : null}
         {error ? <p role="alert" className="text-sm text-danger">{copy.errors[error as keyof typeof copy.errors] ?? copy.errors.unavailable}</p> : null}
       </form>
       {check ? (
-        <div className="mt-6 grid min-w-0 items-start gap-4 lg:grid-cols-2">
+        <div className="mt-6 grid min-w-0 items-start gap-6 border-t border-dashed pt-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
           <div className="min-w-0 space-y-4">
             <CheckResult check={check} copy={copy} format={format} />
             <CheckActions check={check} locale={locale} copy={copy} max={check.helpMaxCents === null ? null : format.money(check.helpMaxCents)} approvalsHref={localizedPath(locale, dashboardRoutes.approvals)} />

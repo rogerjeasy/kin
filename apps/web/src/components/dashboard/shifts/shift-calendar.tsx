@@ -32,7 +32,7 @@ export function ShiftCalendar(props: Omit<CareCalendarProps, "onSelect">) {
     card?.focus();
   };
   return (
-    <div className="min-w-0 overflow-x-auto rounded-2xl border bg-card p-2">
+    <div className="surface min-w-0 overflow-x-auto rounded-3xl p-3">
       <CareCalendar {...props} onSelect={select} />
     </div>
   );

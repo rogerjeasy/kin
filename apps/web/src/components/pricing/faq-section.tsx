@@ -14,7 +14,7 @@ export function FaqSection({ copy }: FaqSectionProps) {
   return (
     <Section labelledBy={HEADING_ID}>
       <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-        <div className="min-w-0 lg:col-span-5">
+        <div className="min-w-0 lg:sticky lg:top-[calc(var(--header-height)+2rem)] lg:col-span-5 lg:self-start">
           <Eyebrow>{copy.eyebrow}</Eyebrow>
           <Heading as="h2" size="title" id={HEADING_ID} className="mt-4">
             {copy.title}

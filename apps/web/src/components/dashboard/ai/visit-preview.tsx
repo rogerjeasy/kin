@@ -52,7 +52,7 @@ export function VisitPreview({ locale, copy, billing }: Props) {
         {error ? <p role="alert" className="text-sm text-danger">{billing.errors[error]}</p> : null}
         {why === null ? null : <WhyNotClaude why={why} copy={copy} />}
         {shown ? (
-          <div role="status" className="min-w-0 space-y-3 rounded-xl border bg-secondary/40 p-4">
+          <div role="status" className="min-w-0 space-y-3 rounded-2xl border bg-muted/60 p-4">
             <h3 className="font-semibold">{copy.preview.resultTitle}</h3>
             <VisitReadingResult outcome={shown.outcome} sourceText={shown.read} locale={locale} copy={copy} />
             {shown.outcome.unclear.length > 0 ? <p className="text-sm wrap-anywhere text-muted-foreground">{fill(billing.unclearNote, { items: shown.outcome.unclear.join("; ") })}</p> : null}

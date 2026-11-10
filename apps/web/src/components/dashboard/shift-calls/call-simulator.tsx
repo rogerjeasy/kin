@@ -3,6 +3,7 @@
 import { PhoneCallIcon, Volume2Icon } from "lucide-react";
 import { useId, useState } from "react";
 
+import { KinMark } from "@/components/dashboard/ai/kin-mark";
 import { speak } from "@/components/dashboard/speech/speech-client";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,9 @@ type Props = {
   /** The button's own look: the need card has room for a larger one. */
   large?: boolean;
 };
+
+/** The call screen keeps the ink band's own dark colours in both themes. */
+const callScreen = { "data-theme": "dark" };
 
 /**
  * A demo circle never places a real call, so this plays what one would say, in
@@ -68,9 +72,12 @@ export function CallSimulator({ shiftId, locale, parent, copy, shifts, onAnswer,
         {copy.open}
       </Button>
       {open ? (
-        <section id={panelId} aria-label={fill(copy.title, { parent })} className="mx-auto min-w-0 max-w-sm space-y-4 rounded-3xl border-2 bg-secondary/40 p-4 sm:p-5">
-          <header className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="min-w-0 font-semibold text-pretty">{fill(copy.title, { parent })}</h3>
+        <section id={panelId} aria-label={fill(copy.title, { parent })} {...callScreen} className="aurora relative mx-auto min-w-0 max-w-sm space-y-4 overflow-clip rounded-[2rem] p-4 text-foreground shadow-xl ring-1 ring-band-border motion-safe:animate-scale-in sm:p-5">
+          <header className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <KinMark active={listening === "playing" || pending} />
+              <h3 className="min-w-0 font-semibold text-pretty">{fill(copy.title, { parent })}</h3>
+            </div>
             <StatusPill tone="waiting" icon={PhoneCallIcon}>{copy.badge}</StatusPill>
           </header>
           <p className="text-sm text-muted-foreground text-pretty">{copy.note}</p>

@@ -8,6 +8,7 @@ import { Panel } from "@/components/dashboard/ui/panel";
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
+import { cn } from "@/lib/utils";
 
 import { PurseError } from "./purse-error";
 import { usePurseRequest } from "./use-purse-request";
@@ -63,7 +64,7 @@ export function PurseSetup({ copy, parentName, current, status, canSetUp, canSto
               {fields.map((field) => (
                 <div key={field.key} className="grid min-w-0 gap-1.5">
                   <label htmlFor={`${id}-${field.key}`} className="font-medium">{field.label}</label>
-                  <input id={`${id}-${field.key}`} inputMode="decimal" required maxLength={12} value={field.value} onChange={(event) => field.set(event.target.value)} aria-describedby={`${id}-hint`} className={`${inputClass} tabular-nums`} />
+                  <input id={`${id}-${field.key}`} inputMode="decimal" required maxLength={12} value={field.value} onChange={(event) => field.set(event.target.value)} aria-describedby={`${id}-hint`} className={cn(inputClass, "min-h-12 font-serif text-xl tabular-nums")} />
                 </div>
               ))}
             </div>

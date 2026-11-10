@@ -19,7 +19,7 @@
   --b-grid-cell-focused-outline-color: var(--ring);
   --b-grid-cell-focused-outline-width: 2px;
   --b-sch-event-font-size: 0.875rem;
-  --b-sch-event-border-radius: var(--radius-md);
+  --b-sch-event-border-radius: 0.75rem;
   font-family: var(--font-sans);
   scroll-behavior: auto;
 }
@@ -77,6 +77,24 @@
   --b-sch-event-color: var(--foreground);
   --b-sch-event-border-color: var(--input);
   --b-sch-event-background: var(--secondary);
+}
+
+/* Each bar is a small lit card: a soft shadow, rising a little under the pointer. */
+.care-calendar .b-sch-event {
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow 0.35s var(--ease-out-expo), transform 0.35s var(--ease-out-expo);
+}
+
+@media (hover: hover) {
+  .care-calendar .b-sch-event:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+}
+
+.care-calendar .b-grid-header {
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .care-calendar .care-shift-pending {
@@ -140,10 +158,11 @@
   font-size: 0.8125rem;
 }
 
-/* The line for the circle's own "now". */
+/* The line for the circle's own "now": Kin's gold light, glowing. */
 .care-calendar .care-now {
-  --b-time-range-line-color: var(--danger);
+  --b-time-range-line-color: var(--highlight);
   --b-time-range-line-width: 2px;
+  filter: drop-shadow(0 0 6px rgb(var(--glow-gold) / 0.7));
 }
 
 .care-calendar .care-person .b-grid-cell-value,

@@ -1,5 +1,6 @@
 import { GivenBars, type GivenRow } from "@/components/dashboard/ui/given-bars";
 import { Panel } from "@/components/dashboard/ui/panel";
+import { RisingFigure } from "@/components/motion/rising-figure";
 
 type FairnessPanelProps = {
   title: string;
@@ -17,11 +18,13 @@ export function FairnessPanel({ title, description, link, rows, totals, classNam
     <Panel title={title} description={description} link={link} className={className}>
       <div className="flex h-full flex-col justify-between gap-6">
         <GivenBars rows={rows} />
-        <dl className="grid grid-cols-1 gap-3 rounded-xl bg-muted p-4 sm:grid-cols-3">
+        <dl className="grid grid-cols-1 divide-y overflow-hidden rounded-2xl border bg-muted sm:grid-cols-3 sm:divide-x sm:divide-y-0 rtl:sm:divide-x-reverse">
           {totals.map((total) => (
-            <div key={total.label} className="min-w-0">
+            <div key={total.label} className="min-w-0 p-4">
               <dt className="text-sm text-muted-foreground">{total.label}</dt>
-              <dd className="mt-0.5 text-xl font-semibold tabular-nums">{total.value}</dd>
+              <dd className="mt-1 font-serif text-2xl tracking-tight tabular-nums">
+                <RisingFigure value={total.value} />
+              </dd>
             </div>
           ))}
         </dl>

@@ -37,7 +37,7 @@ export function AgencyPanel({ copy, keys, reports, canManage, origin, caregiver,
           ) : (
             <ul className="grid min-w-0 gap-3">
               {keys.map((key) => (
-                <li key={key.id} className="flex min-w-0 flex-wrap items-center gap-3 rounded-xl border bg-background p-3">
+                <li key={key.id} className="flex min-w-0 flex-wrap items-center gap-3 rounded-2xl border bg-background/70 p-3">
                   <IconTile icon={BuildingIcon} />
                   <p className="min-w-0 flex-1 basis-40">
                     <span className="block font-medium wrap-anywhere">{key.label}</span>

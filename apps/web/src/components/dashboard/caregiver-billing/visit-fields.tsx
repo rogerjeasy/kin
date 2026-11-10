@@ -9,7 +9,7 @@ type Props = { visit: VisitInput; prefix: string; today: string; removable: bool
 
 export function VisitFields({ visit, prefix, today, removable, copy, onChange, onRemove }: Props) {
   return (
-    <div className="grid min-w-0 gap-3 rounded-xl border p-4 sm:grid-cols-3">
+    <div className="grid min-w-0 items-start gap-3 rounded-2xl border bg-card p-4 shadow-2xs sm:grid-cols-3">
       <Field id={`${prefix}-date`} label={copy.date}>
         <input id={`${prefix}-date`} type="date" required max={today} value={visit.date} onChange={(event) => onChange({ ...visit, date: event.target.value })} className={inputClass} />
       </Field>

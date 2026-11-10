@@ -23,7 +23,7 @@ export function SubmittedBills({ circle, locale, canReview, copy, sandbox }: Pro
         {bills.map((bill) => {
           const proposal = circle.proposals.findLast((each) => each.billId === bill.id);
           return (
-            <article key={bill.id} id={`caregiver-bill-${bill.id}`} className="min-w-0 scroll-mt-24 rounded-xl border p-4">
+            <article key={bill.id} id={`caregiver-bill-${bill.id}`} className="min-w-0 scroll-mt-24 rounded-2xl border bg-card p-4 shadow-xs transition-[border-color,box-shadow] duration-300 hover:border-gold/50 hover:shadow-sm sm:p-5">
               <h3 className="font-semibold wrap-anywhere">{circle.payees.find((payee) => payee.id === bill.payeeId)?.name}</h3>
               <p className="mt-1 mb-4 text-sm text-muted-foreground">
                 {proposal ? copy.proposalStates[proposal.state] : copy.states[bill.state]}

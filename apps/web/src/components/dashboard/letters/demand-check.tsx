@@ -83,7 +83,7 @@ export function DemandCheck({ locale, copy, ai, speech }: Props) {
         </Button>
         {error ? <p role="alert" className="text-sm text-danger">{copy.errors[error as keyof typeof copy.errors] ?? copy.errors.unavailable}</p> : null}
         {result ? (
-          <div role="status" className="min-w-0 space-y-3 rounded-xl border bg-secondary/40 p-4">
+          <div role="status" className="enter min-w-0 space-y-3 rounded-2xl border bg-secondary/50 p-4 shadow-xs sm:p-5">
             <VerdictPill verdict={result.verdict} payeeId={result.payeeId} labels={words.verdicts} />
             <p className="wrap-anywhere text-sm">{result.words}</p>
             <ProvenanceBadge provenance={result.provenance} kind="worded" copy={ai} />

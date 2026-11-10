@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { Field, inputClass } from "@/components/dashboard/create-circle/field";
+import { formWell } from "@/components/dashboard/settlement/form-well.ts";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
@@ -68,7 +69,7 @@ export function ShareControls({ copy, currency, limits, share, demo, checkOnLoad
   }
 
   return (
-    <div className="grid min-w-0 gap-4 rounded-xl border p-4">
+    <div className={formWell}>
       <h3 className="font-semibold">{copy.yours}</h3>
       {share === null ? (
         <form onSubmit={start} className="grid min-w-0 gap-4" noValidate>

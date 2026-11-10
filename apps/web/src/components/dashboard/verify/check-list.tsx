@@ -15,9 +15,17 @@ export function CheckList({ copy, rows }: CheckListProps) {
       {rows.map(({ id, ok, count, alone }) => {
         const Icon = ok ? CircleCheckIcon : CircleXIcon;
         return (
-          <li key={id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-            <Icon aria-hidden="true" className={cn("mt-0.5 size-5 shrink-0", ok ? "text-positive" : "text-danger")} />
-            <div className="min-w-0">
+          <li key={id} className="flex items-start gap-3.5 py-3.5 first:pt-0 last:pb-0">
+            <span
+              aria-hidden="true"
+              className={cn(
+                "inline-flex size-9 shrink-0 items-center justify-center rounded-full ring-1 ring-inset",
+                ok ? "bg-positive/10 text-positive ring-positive/25" : "bg-danger/10 text-danger ring-danger/25",
+              )}
+            >
+              <Icon className="size-5" />
+            </span>
+            <div className="min-w-0 pt-1">
               <p className="font-semibold">{copy[id].label}</p>
               <p className="text-sm text-pretty text-muted-foreground">{ok ? fill(id === "head" && alone ? copy.head.okAlone : copy[id].ok, { count }) : copy[id].bad}</p>
             </div>

@@ -12,7 +12,7 @@ export function CareCalendarFallback({ events, resources, label, locale, timezon
   const ordered = [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 
   return (
-    <ul aria-label={label} className="divide-y rounded-lg border">
+    <ul aria-label={label} className="divide-y rounded-2xl border bg-card">
       {ordered.map((event) => (
         <li key={event.id} className="min-w-0 px-4 py-3 text-sm">
           <p className="truncate font-medium">{event.title}</p>

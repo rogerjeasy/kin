@@ -43,7 +43,7 @@ export function DraftReadBack({ copy, drafts, book, locale, currency, timezone, 
     <div className="flex min-w-0 flex-col gap-4">
       <h3 className="text-xl font-semibold">{record.readBackTitle}</h3>
       {drafts.length === 0 ? <p className="text-lg text-pretty">{copy.reasons.unreadable}</p> : null}
-      <ol className="flex min-w-0 flex-col gap-4">
+      <ol className="enter-stagger flex min-w-0 flex-col gap-4">
         {drafts.map((drafted, index) => {
           const done = answered[index];
           if (drafted.kind === "flagged") {
@@ -61,8 +61,8 @@ export function DraftReadBack({ copy, drafts, book, locale, currency, timezone, 
           }
           const { when, does } = wishReadBack(copy, book, format, drafted.draft, "you");
           return (
-            <li key={index} className="flex min-w-0 flex-col gap-4 rounded-2xl border bg-secondary/30 p-5">
-              <p dir="auto" className="text-2xl font-semibold text-pretty break-words">“{drafted.draft.quote}”</p>
+            <li key={index} className="flex min-w-0 flex-col gap-4 rounded-3xl border border-gold/40 bg-card p-5 shadow-[0_0_40px_-20px_rgb(var(--glow-gold)/0.8)]">
+              <p dir="auto" className="border-s-2 border-gold ps-4 font-serif text-2xl leading-snug text-pretty break-words sm:text-3xl">“{drafted.draft.quote}”</p>
               <p className="text-xl text-pretty">
                 <span className="font-semibold">{when}: </span>
                 {does}

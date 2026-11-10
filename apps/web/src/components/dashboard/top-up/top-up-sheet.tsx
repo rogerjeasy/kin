@@ -70,7 +70,7 @@ export function TopUpSheet({ locale, copy, circle, clientId, sdkUrl, currency, p
       <SheetContent className="w-full gap-0 overflow-y-auto p-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:max-w-md">
         <SheetTitle className="pe-8 font-serif text-subtitle font-normal text-balance">{copy.title}</SheetTitle>
         <SheetDescription className="mt-3 text-base">{fill(copy.text, { circle })}</SheetDescription>
-        <p className="mt-4 rounded-xl border border-dashed px-4 py-3 text-sm text-muted-foreground">{copy.sandbox}</p>
+        <p className="mt-4 rounded-2xl border border-dashed bg-muted/50 px-4 py-3 text-sm text-muted-foreground">{copy.sandbox}</p>
 
         {isChoosing(phase) ? (
           <div className="mt-6 grid gap-5">

@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
@@ -32,9 +33,9 @@ export function BottomNav({ locale, copy, badges, sections, className }: BottomN
   return (
     <nav
       aria-label={copy.navLabel}
-      className={cn("fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm", className)}
+      className={cn("fixed inset-x-0 bottom-0 z-40 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:px-4", className)}
     >
-      <ul className={cn("mx-auto grid max-w-2xl", columns[offered.length] ?? "grid-cols-5")}>
+      <ul className={cn("glass mx-auto grid max-w-2xl rounded-3xl border border-border/80 shadow-lg", columns[offered.length] ?? "grid-cols-5")}>
         {offered.map((section) => {
           const Icon = sectionIcons[section];
           const badge = badges[section];
@@ -45,8 +46,16 @@ export function BottomNav({ locale, copy, badges, sections, className }: BottomN
                 aria-current={current === section ? "page" : undefined}
                 className="group flex min-h-16 flex-col items-center justify-center gap-1 px-0.5 text-muted-foreground aria-[current=page]:text-foreground"
               >
-                <span className="relative inline-flex h-7 w-12 items-center justify-center rounded-full transition-colors group-aria-[current=page]:bg-secondary">
-                  <Icon aria-hidden="true" className="size-5" />
+                <span className="relative isolate inline-flex h-7 w-12 items-center justify-center rounded-full">
+                  {current === section ? (
+                    <motion.span
+                      layoutId="bottom-current"
+                      aria-hidden="true"
+                      transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                      className="absolute inset-0 -z-10 rounded-full bg-primary"
+                    />
+                  ) : null}
+                  <Icon aria-hidden="true" className="size-5 transition-colors group-aria-[current=page]:text-primary-foreground" />
                   {badge ? (
                     <span className="absolute -top-1 -end-0.5 min-w-4.5 rounded-full bg-highlight px-1 text-center text-[0.6875rem] leading-4.5 font-semibold text-background tabular-nums">
                       <span aria-hidden="true">{badge.value}</span>

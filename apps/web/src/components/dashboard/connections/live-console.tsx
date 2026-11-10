@@ -22,6 +22,8 @@ type Props = {
 };
 
 const STEPS = ["connect", "list", "ask", "approve"] as const;
+/** The console keeps the ink band's own dark colours in both themes. */
+const terminal = { "data-theme": "dark" };
 type StepKey = (typeof STEPS)[number];
 type Step = { readonly state: StepState; readonly exchanges: readonly Exchange[]; readonly detail: string | null; readonly quote: string | null };
 
@@ -89,29 +91,38 @@ export function LiveConsole({ copy, endpoint, seatName, waitingProposalId }: Pro
   return (
     <div className="grid min-w-0 gap-4">
       <div className="flex min-w-0 flex-wrap items-center gap-3">
-        <Button type="button" onClick={() => void play()} disabled={playing} className="h-auto min-h-12 max-w-full whitespace-normal text-start">
+        <Button type="button" onClick={() => void play()} disabled={playing} className="h-auto min-h-12 max-w-full whitespace-normal text-start shadow-glow">
           {played ? <RotateCcwIcon aria-hidden="true" /> : <PlayIcon aria-hidden="true" />}
           {playing ? copy.playing : played ? copy.again : copy.play}
         </Button>
         <p className="min-w-0 flex-1 basis-56 text-sm text-muted-foreground">{fill(copy.seat, { name: seatName })}</p>
       </div>
-      <p className="min-w-0 text-sm">
-        <span className="font-semibold">{copy.endpoint}: </span>
-        <code dir="ltr" className="rounded bg-secondary px-1.5 py-0.5 font-mono text-xs wrap-anywhere">
-          {endpoint}
-        </code>
-      </p>
-      <ol aria-live="polite" aria-busy={playing} className="grid min-w-0 gap-3">
-        {STEPS.map((key, index) => {
-          const step = steps[key];
-          return (
-            <ConsoleStep key={key} index={index + 1} title={copy.steps[key].title} state={step.state} copy={copy} exchanges={step.exchanges}>
-              {step.detail ? <p>{step.detail}</p> : null}
-              {step.quote ? <blockquote className="mt-2 rounded-lg border-s-4 border-s-positive bg-positive/5 p-3 text-pretty">{step.quote}</blockquote> : null}
-            </ConsoleStep>
-          );
-        })}
-      </ol>
+      <div {...terminal} className="aurora relative min-w-0 overflow-clip rounded-3xl p-4 text-foreground shadow-xl ring-1 ring-band-border sm:p-5">
+        <div className="mb-4 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-band-border pb-3">
+          <span aria-hidden="true" className="flex shrink-0 gap-1.5">
+            <span className="size-2.5 rounded-full bg-danger/70" />
+            <span className="size-2.5 rounded-full bg-gold/80" />
+            <span className="size-2.5 rounded-full bg-positive/70" />
+          </span>
+          <p className="min-w-0 flex-1 text-sm">
+            <span className="font-semibold">{copy.endpoint}: </span>
+            <code dir="ltr" className="rounded bg-secondary px-1.5 py-0.5 font-mono text-xs wrap-anywhere">
+              {endpoint}
+            </code>
+          </p>
+        </div>
+        <ol aria-live="polite" aria-busy={playing} className="grid min-w-0 gap-3">
+          {STEPS.map((key, index) => {
+            const step = steps[key];
+            return (
+              <ConsoleStep key={key} index={index + 1} title={copy.steps[key].title} state={step.state} copy={copy} exchanges={step.exchanges}>
+                {step.detail ? <p>{step.detail}</p> : null}
+                {step.quote ? <blockquote className="mt-2 rounded-xl border-s-4 border-s-positive bg-positive/10 p-3 text-pretty">{step.quote}</blockquote> : null}
+              </ConsoleStep>
+            );
+          })}
+        </ol>
+      </div>
       {failed ? (
         <p role="alert" className="text-sm text-danger">
           {copy.error}

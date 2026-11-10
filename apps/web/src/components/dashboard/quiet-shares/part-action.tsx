@@ -43,7 +43,7 @@ export function PartAction({ screen, ask, part }: Props) {
       {part.cents === 0 ? (
         <p className="text-sm">{words.nothingToPay}</p>
       ) : ask.simulated ? (
-        <div className="min-w-0 space-y-2 rounded-xl border border-dashed p-3">
+        <div className="min-w-0 space-y-2 rounded-2xl border border-dashed bg-muted/50 p-3.5">
           <StatusPill tone="neutral">{copy.simulated}</StatusPill>
           <p className="text-sm">{fill(words.simulated[method], { amount })}</p>
         </div>

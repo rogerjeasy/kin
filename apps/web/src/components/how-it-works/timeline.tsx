@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/locales";
 
 import { TimelineEntry } from "./timeline-entry";
 import { TimelineFacts } from "./timeline-facts";
+import { TimelineLine } from "./timeline-line";
 import { TimelineQuote } from "./timeline-quote";
 
 type TimelineProps = {
@@ -22,7 +23,8 @@ type TimelineProps = {
 export function Timeline({ locale, copy, people, moments }: TimelineProps) {
   return (
     <section aria-label={copy.label} className="py-14 sm:py-16 lg:py-24">
-      <Container>
+      <Container className="relative">
+        <TimelineLine className="start-[calc(1.25rem+0.375rem)] sm:start-[calc(2rem+0.375rem)] md:start-[calc(2rem+8.125rem)] lg:start-[calc(3.5rem+8.125rem)]" />
         <ol>
           {copy.entries.map((entry, index) => {
             const scene = monthScenes[index] ?? {};

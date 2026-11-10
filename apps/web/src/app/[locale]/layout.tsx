@@ -2,6 +2,7 @@ import type { Viewport } from "next";
 
 import { DirectionProvider } from "@/components/layout/direction-provider";
 import { SkipLink } from "@/components/layout/skip-link";
+import { MotionProvider } from "@/components/motion/motion-provider";
 import { directionOf, locales } from "@/i18n/locales";
 import { pageContext } from "@/i18n/page-context";
 import { THEME_ATTRIBUTE, themeScript } from "@/theme/theme";
@@ -45,7 +46,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <body>
         <DirectionProvider dir={dir}>
           <SkipLink label={dictionary.common.skipToContent} />
-          {children}
+          <MotionProvider>{children}</MotionProvider>
         </DirectionProvider>
       </body>
     </html>

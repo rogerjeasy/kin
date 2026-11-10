@@ -23,7 +23,7 @@ export function SiteHeader({ locale, common }: SiteHeaderProps) {
   const { nav } = common;
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
+    <header className="glass sticky top-0 z-40 border-b border-border/60 pt-[env(safe-area-inset-top)]">
       <Container className="flex min-h-(--header-height) items-center gap-2">
         <Logo href={localizedPath(locale, routes.home)} label={common.brandHome} />
         <MainNav locale={locale} labels={nav} className="ms-10 hidden xl:flex" />

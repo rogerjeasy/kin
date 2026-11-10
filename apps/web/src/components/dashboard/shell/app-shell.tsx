@@ -24,10 +24,10 @@ export function AppShell({ children, ...context }: AppShellProps) {
       <Sidebar {...context} />
       <div className="flex min-w-0 flex-col">
         <TopBar {...context} />
-        <main id={CONTENT_ID} className="flex-1 px-4 pt-5 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-10 lg:pt-8 lg:pb-14">
+        <main id={CONTENT_ID} className="flex-1 px-4 pt-5 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-10 lg:pt-8 lg:pb-14">
           <div className="mx-auto w-full max-w-7xl space-y-6 lg:space-y-8">
             {context.demo ? (
-              <div className="contents print:hidden">
+              <div className="print:hidden">
                 <DemoBanner locale={context.locale} copy={context.dictionary.dashboard.shell.demo} demo={context.demo} />
               </div>
             ) : null}

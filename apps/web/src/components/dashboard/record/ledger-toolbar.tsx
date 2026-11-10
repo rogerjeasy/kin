@@ -38,7 +38,7 @@ export function LedgerToolbar({ view, copy, total }: LedgerToolbarProps) {
               onChange={(event) => view.setQuery(event.target.value)}
               placeholder={toolbar.searchPlaceholder}
               autoComplete="off"
-              className="min-h-11 w-full rounded-lg border border-input bg-card ps-9 pe-3 text-base"
+              className="min-h-11 w-full rounded-full border border-input bg-card ps-9 pe-4 text-base shadow-2xs transition-[border-color,box-shadow] duration-300 focus-visible:border-gold focus-visible:shadow-[0_0_0_4px_rgb(var(--glow-gold)/0.16)]"
             />
           </div>
         </div>

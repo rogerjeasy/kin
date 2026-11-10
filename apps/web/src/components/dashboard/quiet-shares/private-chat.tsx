@@ -59,7 +59,7 @@ export function PrivateChat({ screen, askId, title, examples, onDraft }: Props) 
   }
 
   return (
-    <section aria-labelledby={`${id}-title`} className="min-w-0 space-y-4 rounded-2xl border bg-secondary/40 p-4 sm:p-5">
+    <section aria-labelledby={`${id}-title`} className="min-w-0 space-y-4 rounded-2xl border bg-secondary/50 p-4 shadow-[inset_0_1px_0_rgb(var(--sheen)/0.5)] sm:p-5">
       <div className="min-w-0">
         <h4 id={`${id}-title`} className="text-base font-semibold">{chat.title}</h4>
         <p className="mt-1 flex items-start gap-2 text-sm text-muted-foreground">
@@ -69,8 +69,8 @@ export function PrivateChat({ screen, askId, title, examples, onDraft }: Props) 
       </div>
       <ol aria-live="polite" className="min-w-0 space-y-2">
         {lines.map((line, index) => (
-          <li key={index} className={cn("flex min-w-0", line.who === "you" ? "justify-end" : "justify-start")}>
-            <p dir="auto" className={cn("max-w-[85%] rounded-2xl px-3 py-2 text-base wrap-anywhere", line.who === "you" ? "bg-primary text-primary-foreground" : "border bg-card")}>
+          <li key={index} className={cn("enter flex min-w-0", line.who === "you" ? "justify-end" : "justify-start")}>
+            <p dir="auto" className={cn("max-w-[85%] rounded-3xl px-4 py-2.5 text-base wrap-anywhere shadow-xs", line.who === "you" ? "rounded-ee-md bg-primary text-primary-foreground" : "rounded-es-md border bg-card")}>
               <span className="sr-only">{line.who === "you" ? chat.you : chat.kin}: </span>
               {line.text}
             </p>

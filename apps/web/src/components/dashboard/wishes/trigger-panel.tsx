@@ -47,7 +47,7 @@ export function TriggerPanel({ copy, book, format, open, ended, viewer, needs }:
   const canStart = (event: "hospital" | "care_home") => can(event) && !viewer.gains[event];
   const gainsHere = open === null ? EVENTS.some((event) => can(event) && viewer.gains[event]) : open.state === "reported" && can(open.event) && viewer.gains[open.event];
   const active = open?.state === "active";
-  const tone = active ? "border-highlight/50 bg-highlight/10" : open ? "border-highlight/40 bg-card" : "bg-card";
+  const tone = active ? "border-gold/60 bg-highlight/10 shadow-[0_0_48px_-18px_rgb(var(--glow-gold)/0.9)]" : open ? "border-gold/50 bg-card shadow-[0_0_40px_-20px_rgb(var(--glow-gold)/0.8)]" : "bg-card shadow-xs";
 
   const says =
     open === null
@@ -62,9 +62,11 @@ export function TriggerPanel({ copy, book, format, open, ended, viewer, needs }:
   const dismissable = open?.state === "reported" && (viewer.role === "organizer" || open.reportedBy === viewer.memberId);
 
   return (
-    <section aria-labelledby="wish-trigger-title" className={cn("flex min-w-0 flex-col gap-4 rounded-2xl border p-5 shadow-xs sm:p-6", tone)}>
+    <section aria-labelledby="wish-trigger-title" className={cn("flex min-w-0 flex-col gap-4 rounded-3xl border p-5 sm:p-6", tone)}>
       <div className="flex min-w-0 items-start gap-3">
-        <HeartPulseIcon aria-hidden="true" className="mt-1 size-6 shrink-0 text-highlight" />
+        <span aria-hidden="true" className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-gold/15 text-highlight ring-1 ring-gold/40", open !== null && "motion-safe:animate-glow-pulse")}>
+          <HeartPulseIcon className="size-5" />
+        </span>
         <div className="min-w-0 flex-1">
           <h2 id="wish-trigger-title" className="text-lg font-semibold text-balance">
             {fill(copy.trigger.title, { parent })}

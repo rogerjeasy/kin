@@ -4,6 +4,7 @@ import { BadgeCheckIcon, Trash2Icon } from "lucide-react";
 import { useId, useState } from "react";
 
 import { inputClass } from "@/components/dashboard/create-circle/field";
+import { formWell } from "@/components/dashboard/settlement/form-well.ts";
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
@@ -64,7 +65,7 @@ export function PayeeForm({ copy, parentName }: { copy: Copy; parentName: string
 
   return (
     <form
-      className="min-w-0 space-y-4 rounded-xl border border-dashed p-4"
+      className={formWell}
       onSubmit={(event) => {
         event.preventDefault();
         void submit();
@@ -96,7 +97,7 @@ export function PayeeForm({ copy, parentName }: { copy: Copy; parentName: string
           <p id={`${id}-receiver-hint`} className="text-sm text-muted-foreground">{fill(add.receiverHint, { parent: parentName })}</p>
         </div>
       </div>
-      <Button type="submit" disabled={pending || name.trim() === "" || relationship.trim() === "" || receiver.trim() === ""} className="h-auto max-w-full whitespace-normal">
+      <Button type="submit" disabled={pending || name.trim() === "" || relationship.trim() === "" || receiver.trim() === ""} className="h-auto max-w-full justify-self-start whitespace-normal">
         {add.submit}
       </Button>
       {added ? <p role="status" className="text-sm text-positive">{add.added}</p> : null}

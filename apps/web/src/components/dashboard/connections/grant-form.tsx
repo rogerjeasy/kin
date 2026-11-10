@@ -58,7 +58,7 @@ export function GrantForm({ copy, tokenCopy, lifetimes }: Props) {
         <legend className="font-medium">{copy.scope}</legend>
         <div className="grid min-w-0 gap-2 sm:grid-cols-2">
           {(["read", "propose"] as const).map((each) => (
-            <label key={each} className="flex min-h-11 min-w-0 cursor-pointer items-start gap-3 rounded-xl border bg-background p-3 has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring">
+            <label key={each} className="flex min-h-11 min-w-0 cursor-pointer items-start gap-3 rounded-2xl border bg-background/70 p-3 has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring">
               <input type="radio" name={`${id}-scope`} value={each} checked={scope === each} disabled={pending} onChange={() => setScope(each)} className="mt-1 size-4 shrink-0 accent-primary" />
               <span className="min-w-0">
                 <span className="block font-semibold">{copy.scopes[each].title}</span>

@@ -29,7 +29,7 @@ export function ShareList({ items }: { items: readonly ShareItem[] }) {
   return (
     <ul className="divide-y border-t">
       {items.map((item) => (
-        <li key={item.id} className="grid min-w-0 gap-x-4 gap-y-2 px-5 py-4 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] sm:items-center sm:px-6">
+        <li key={item.id} className="grid min-w-0 gap-x-4 gap-y-2 px-5 py-4 transition-colors duration-300 hover:bg-muted/50 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] sm:items-center sm:px-6">
           <Person portrait={item.portrait} name={item.name} detail={item.amount} />
           <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 ps-12 sm:ps-0">
             <StatusPill tone={STATE_LOOK[item.state].tone} icon={STATE_LOOK[item.state].icon}>

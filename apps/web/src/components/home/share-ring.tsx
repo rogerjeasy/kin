@@ -12,6 +12,8 @@ const ROSE_RADIUS = 112;
 const FACE_RADIUS = 38;
 /** A disc in the section's colour behind each face, so the ring appears to pass under it. */
 const HALO_RADIUS = 46;
+/** The faint orbit drawn between Rose and the ring. */
+const ORBIT_RADIUS = 150;
 
 const shareStrokes = ["stroke-share-1", "stroke-share-2", "stroke-share-3"] as const;
 
@@ -42,7 +44,13 @@ function Portrait({ id, href, x, y, radius }: { id: string; href: string; x: num
 /** Rose in the middle of a ring cut into her children's agreed shares. */
 export function ShareRing({ label }: { label: string }) {
   return (
-    <svg viewBox={`0 ${CROP} ${SIZE} ${SIZE - CROP * 2}`} role="img" aria-label={label} className="mx-auto block h-auto w-full max-w-lg">
+    <svg viewBox={`0 ${CROP} ${SIZE} ${SIZE - CROP * 2}`} role="img" aria-label={label} className="relative mx-auto block h-auto w-full max-w-lg">
+      {/* A fine orbit of gold, turning slowly behind the ring. */}
+      <g className="origin-center [transform-box:fill-box] motion-safe:animate-spin-slow">
+        <circle cx={RING.centre} cy={RING.centre} r={ORBIT_RADIUS} fill="none" strokeWidth="1.5" strokeDasharray="2 9" strokeLinecap="round" className="stroke-gold/60" />
+        <circle cx={RING.centre} cy={RING.centre - ORBIT_RADIUS} r="4" className="fill-gold" />
+      </g>
+      <circle cx={RING.centre} cy={RING.centre} r={ROSE_RADIUS + 10} className="fill-card stroke-gold/40" strokeWidth="1" />
       <g transform={`rotate(-90 ${RING.centre} ${RING.centre})`} fill="none" strokeWidth="18">
         {segments.map((segment, index) => (
           <circle
@@ -62,7 +70,7 @@ export function ShareRing({ label }: { label: string }) {
         const { x, y } = pointOnRing(RING, segments[index]?.middle ?? 0);
         return (
           <g key={share.member}>
-            <circle cx={x} cy={y} r={HALO_RADIUS} strokeWidth="4" className={`fill-muted ${shareStrokes[index] ?? ""}`} />
+            <circle cx={x} cy={y} r={HALO_RADIUS} strokeWidth="4" className={`fill-card ${shareStrokes[index] ?? ""}`} />
             <Portrait id={`share-ring-${share.member}`} href={siblingPortraits[share.member].src} x={x} y={y} radius={FACE_RADIUS} />
           </g>
         );

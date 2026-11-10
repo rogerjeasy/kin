@@ -1,4 +1,4 @@
-import { Section } from "@/components/layout/section";
+import { InsetSection } from "@/components/layout/inset-section";
 import { Emphasis } from "@/components/shared/emphasis";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { Heading } from "@/components/shared/heading";
@@ -28,24 +28,27 @@ export function CircleSection({ locale, copy, common, amounts }: CircleSectionPr
   const { people, example } = common;
 
   return (
-    <Section tone="muted" labelledBy={HEADING_ID}>
+    <InsetSection tone="muted" labelledBy={HEADING_ID}>
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
         {/* The words come first on a phone, the picture first on a wide screen. */}
         <figure className="order-2 min-w-0 lg:order-1">
-          <ShareRing label={copy.ringAlt} />
-          <figcaption className="mt-5 text-center">
-            <p className="font-serif text-2xl">{people.rose}</p>
-            <p className="text-sm text-muted-foreground">{fill(copy.roseNote, { limit: amounts.limit })}</p>
-            <div className="mt-4">
+          <div className="reveal relative">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-[12%] rounded-full bg-gold/20 blur-3xl" />
+            <ShareRing label={copy.ringAlt} />
+          </div>
+          <figcaption className="mt-4 text-center">
+            <p className="font-serif text-3xl">{people.rose}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{fill(copy.roseNote, { limit: amounts.limit })}</p>
+            <div className="mt-5">
               <ShareLegend locale={locale} shares={exampleShares(people)} />
             </div>
           </figcaption>
-          <div className="mt-6">
+          <div className="mt-7">
             <PaymentTicker
               text={fill(copy.ticker, { amount: amounts.caregiverPay })}
               note={copy.tickerNote}
               tag={example.sandbox}
-              className="mx-auto max-w-lg"
+              className="mx-auto max-w-lg motion-safe:animate-float"
             />
           </div>
         </figure>
@@ -55,7 +58,7 @@ export function CircleSection({ locale, copy, common, amounts }: CircleSectionPr
             {copy.titleLead} <Emphasis>{copy.titleEmphasis}</Emphasis>
           </Heading>
           <Lede className="mt-5">{copy.lede}</Lede>
-          <div className="mt-8">
+          <div className="mt-10">
             <StepList
               steps={copy.steps}
               afterLast={
@@ -68,6 +71,6 @@ export function CircleSection({ locale, copy, common, amounts }: CircleSectionPr
           </div>
         </div>
       </div>
-    </Section>
+    </InsetSection>
   );
 }

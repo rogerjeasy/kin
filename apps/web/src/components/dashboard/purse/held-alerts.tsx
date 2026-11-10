@@ -36,7 +36,7 @@ export function HeldAlerts({ payments, copy, format, parentName, capCents, canCa
         {flagged.map((payment) => {
           const values = { parent: parentName, payee: payment.payeeName, amount: format.money(payment.cents) };
           return (
-            <li key={payment.id} className="min-w-0 space-y-3 rounded-2xl border-2 border-highlight/50 bg-highlight/5 p-4 sm:p-5">
+            <li key={payment.id} className="min-w-0 space-y-3 rounded-3xl border-2 border-highlight/50 bg-highlight/5 p-4 shadow-[0_0_0_4px_rgb(var(--glow-gold)/0.08),var(--shadow-sm)] sm:p-5">
               <p className="text-lg font-semibold text-balance wrap-anywhere">{fill(payment.pressured ? alerts.pressured : alerts.text, values)}</p>
               {payment.words !== "" ? <p className="text-sm text-muted-foreground wrap-anywhere">{fill(alerts.said, { words: payment.words })}</p> : null}
               <HoldReasons reasons={payment.holdReasons} payee={payment.payeeName} cap={format.money(capCents)} copy={copy} className="text-sm" />

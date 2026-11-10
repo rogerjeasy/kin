@@ -140,20 +140,6 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
       {awaitsMe ? (
         <AgreementPrompt href={path(agreementRoute)} text={fill(dictionary.dashboard.agreement.attention, { version: format.count(awaitsMe.version) })} label={dictionary.dashboard.agreement.open} />
       ) : null}
-      {purse?.purse ? <PurseCard screen={{ ...purse, purse: purse.purse }} copy={dictionary.dashboard.purse.card} format={format} href={path(purseRoute)} /> : null}
-      {may(circle, "presence.check") ? <PresenceCard copy={dictionary.dashboard.presence.link} href={path(presenceRoute)} /> : null}
-      {may(circle, "quiet_share.view") && quietAsk !== null ? <QuietShareCard copy={dictionary.dashboard.quietShares.card} ask={quietAsk} href={path(quietSharesRoute)} format={format} /> : null}
-      {may(circle, "wish.view") ? (
-        <WishesCard
-          title={fill(dictionary.dashboard.wishes.link.title, slots)}
-          text={dictionary.dashboard.wishes.link.text}
-          label={dictionary.dashboard.wishes.link.label}
-          href={path(wishesRoute)}
-          quote={circle.wishes.wishes.find((wish) => wish.state === "in_force")?.quote ?? null}
-        />
-      ) : null}
-      <AskKinCard copy={dictionary.askKin} suggestions={askKinSuggestions(circle, dictionary.askKin.suggestions, format, names)} href={path(askRoute)} />
-      <ConnectionsCard copy={dictionary.openKin.card} boundary={dictionary.openKin.boundary} href={path(connectionsRoute)} />
       <div className="grid gap-6 lg:grid-cols-3">
         {waiting.length > 0 ? (
           <AttentionPanel
@@ -183,6 +169,23 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
           <EmptyPanel title={empty.safety.title} text={empty.safety.text} icon={ShieldCheckIcon} />
         )}
       </div>
+      {/* Kin's helpers, side by side: what it does for the family besides moving money. */}
+      <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
+        {purse?.purse ? <PurseCard screen={{ ...purse, purse: purse.purse }} copy={dictionary.dashboard.purse.card} format={format} href={path(purseRoute)} /> : null}
+        {may(circle, "presence.check") ? <PresenceCard copy={dictionary.dashboard.presence.link} href={path(presenceRoute)} /> : null}
+        {may(circle, "quiet_share.view") && quietAsk !== null ? <QuietShareCard copy={dictionary.dashboard.quietShares.card} ask={quietAsk} href={path(quietSharesRoute)} format={format} /> : null}
+        {may(circle, "wish.view") ? (
+          <WishesCard
+            title={fill(dictionary.dashboard.wishes.link.title, slots)}
+            text={dictionary.dashboard.wishes.link.text}
+            label={dictionary.dashboard.wishes.link.label}
+            href={path(wishesRoute)}
+            quote={circle.wishes.wishes.find((wish) => wish.state === "in_force")?.quote ?? null}
+          />
+        ) : null}
+        <ConnectionsCard copy={dictionary.openKin.card} boundary={dictionary.openKin.boundary} href={path(connectionsRoute)} />
+      </div>
+      <AskKinCard copy={dictionary.askKin} suggestions={askKinSuggestions(circle, dictionary.askKin.suggestions, format, names)} href={path(askRoute)} />
       <div className="grid gap-6 lg:grid-cols-3">
         {settlement && fairness.length > 0 ? (
           <FairnessPanel

@@ -13,7 +13,7 @@ type Props = { proof: PayoutProof; copy: Dictionary["sandboxPayout"] };
  */
 export function SandboxPayoutProof({ proof, copy }: Props) {
   return (
-    <section aria-label={copy.title} className="mt-2 min-w-0 rounded-lg border border-dashed p-3 text-sm">
+    <section aria-label={copy.title} className="mt-2 min-w-0 rounded-xl border border-dashed border-highlight/40 bg-highlight/5 p-3 text-sm">
       <p className="flex flex-wrap items-center gap-2">
         <Tag className="py-0.5">{copy.tag}</Tag>
         <span className="text-muted-foreground text-pretty">{copy.testMoney}</span>

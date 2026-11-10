@@ -41,12 +41,12 @@ export function InvoiceRequestsPanel({ locale, dictionary, circle }: Props) {
             const name = names.member(request.memberId);
             const purpose = request.purpose === "settlement" && request.period !== null ? fill(copy.purposes.settlement, { month: format.month(request.period) }) : copy.purposes.topUp;
             return (
-              <li key={request.id} className="grid min-w-0 gap-3 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-6 sm:px-6">
+              <li key={request.id} className="grid min-w-0 gap-3 px-5 py-4 transition-colors duration-300 hover:bg-muted/50 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-6 sm:px-6">
                 <div className="min-w-0">
                   <p className="font-medium text-pretty">{name}</p>
                   <p className="text-sm text-muted-foreground">{purpose}</p>
                 </div>
-                <p className="text-lg font-semibold whitespace-nowrap tabular-nums sm:text-end">{format.money(request.cents)}</p>
+                <p className="font-serif text-2xl leading-none whitespace-nowrap tabular-nums sm:text-end">{format.money(request.cents)}</p>
                 <div className="min-w-0 sm:col-span-2">
                   <InvoiceStatus request={request} name={name} viewer={invoiceViewer(circle, request)} copy={copy} />
                 </div>
@@ -56,7 +56,7 @@ export function InvoiceRequestsPanel({ locale, dictionary, circle }: Props) {
         </ul>
       )}
       {canAsk && limits !== undefined ? (
-        <div className="border-t px-5 py-4 sm:px-6">
+        <div className="border-t px-5 py-5 sm:px-6">
           <InvoiceTopUpForm members={askable} hint={fill(copy.topUp.hint, { min: format.money(limits.minCents), max: format.money(limits.maxCents) })} copy={copy} />
         </div>
       ) : null}

@@ -20,7 +20,9 @@ export function LinkResult({ link, copy, name, locale, timezone }: Props) {
         <p className="text-sm text-muted-foreground">{copy.once}</p>
       </div>
       <figure className="min-w-0 space-y-2 sm:w-44">
-        <QrSvg code={link.qr} label={copy.qrLabel} className="mx-auto max-w-44" />
+        <div className="mx-auto max-w-44 rounded-2xl bg-white p-2 shadow-[0_0_0_1px_var(--border),0_16px_40px_-18px_rgb(var(--glow-gold)/0.7)]">
+          <QrSvg code={link.qr} label={copy.qrLabel} />
+        </div>
         <figcaption className="text-sm text-muted-foreground text-pretty">{fill(copy.qrText, { name })}</figcaption>
       </figure>
     </div>

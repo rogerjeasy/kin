@@ -37,15 +37,15 @@ export function MandateCard({ copy, format, view, seller, parent, recordedBy }: 
   const status = STATUS[mandate.status];
   const terms = { ruleId: mandate.ruleId, perPurchaseCents: mandate.perPurchaseCents, perPeriodCents: mandate.perPeriodCents, cadence: mandate.cadence, validFrom: mandate.validFrom, expiresOn: mandate.expiresOn };
   return (
-    <li className="min-w-0 space-y-4 rounded-2xl border bg-card p-5 shadow-xs sm:p-6">
+    <li className="surface lift min-w-0 space-y-4 rounded-3xl p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <p className="min-w-0 flex-1 text-base font-medium text-pretty">{readBack(copy, format, terms, { item, seller })}</p>
+        <p className="min-w-0 flex-1 basis-56 font-serif text-xl leading-snug text-pretty">{readBack(copy, format, terms, { item, seller })}</p>
         <StatusPill tone={status.tone} icon={status.icon}>{copy.statuses[mandate.status]}</StatusPill>
       </div>
       {view.aboveUsualCents > 0 ? <p className="text-sm font-medium text-pretty">{fill(copy.aboveUsual.tag, { parent, over: format.money(view.aboveUsualCents) })}</p> : null}
       {mandate.spokenText ? <p className="text-sm text-muted-foreground text-pretty">{fill(copy.spoke, { parent, text: mandate.spokenText })}</p> : null}
-      <div className="space-y-1.5">
-        <p className="text-sm tabular-nums">{fill(copy.used, { used: format.money(mandate.usedCents), cap: format.money(mandate.perPeriodCents) })}</p>
+      <div className="space-y-2 rounded-2xl border p-3">
+        <p className="text-sm font-medium tabular-nums">{fill(copy.used, { used: format.money(mandate.usedCents), cap: format.money(mandate.perPeriodCents) })}</p>
         <MeterBar value={mandate.usedCents} max={mandate.perPeriodCents} fill={shareFills[0]} label={fill(copy.used, { used: format.money(mandate.usedCents), cap: format.money(mandate.perPeriodCents) })} />
       </div>
       <div className="space-y-1">
@@ -53,14 +53,14 @@ export function MandateCard({ copy, format, view, seller, parent, recordedBy }: 
         {mandate.uses.length === 0 ? (
           <p className="text-sm text-muted-foreground">{copy.noUses}</p>
         ) : (
-          <ul className="space-y-0.5 text-sm tabular-nums">
+          <ul className="space-y-1 border-s-2 border-gold/60 ps-3 text-sm tabular-nums">
             {mandate.uses.map((use) => (
               <li key={use.proposalId}>{fill(copy.useLine, { amount: format.money(use.cents), day: format.dateTime(use.at) })}</li>
             ))}
           </ul>
         )}
       </div>
-      <p className="text-xs text-muted-foreground wrap-anywhere">
+      <p className="border-t border-dashed pt-3 font-mono text-xs text-muted-foreground wrap-anywhere">
         {fill(copy.recordedBy, { name: recordedBy })} · {fill(copy.sealed, { digest: mandate.digest.slice(0, SEAL_CHARS) })}
         {mandate.simulated ? ` · ${copy.simulatedTag}` : ""}
       </p>

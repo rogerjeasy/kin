@@ -43,7 +43,7 @@ export function VoiceForm({ locale, copy, errors, languageNames }: Props) {
 
   return (
     <form
-      className="min-w-0 space-y-4"
+      className="min-w-0 space-y-4 rounded-3xl border border-dashed bg-muted/50 p-4 sm:p-5"
       onSubmit={(event) => {
         event.preventDefault();
         void add();

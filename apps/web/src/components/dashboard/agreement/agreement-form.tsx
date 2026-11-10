@@ -75,7 +75,7 @@ export function AgreementForm({ locale, currency, copy, members, names, parent, 
           <TermFields copy={copy.form} draft={draft} parent={parent} currency={currency} today={today} onChange={edit} />
         </fieldset>
         {review !== null ? (
-          <div className="rounded-xl border bg-secondary/40 p-4">
+          <div className="rounded-2xl border bg-muted/60 p-4">
             <ChangeList title={copy.changesTitle} empty={copy.noChanges} changes={review.map((change) => changeWords(copy, (id) => names[id] ?? id, format, parent, change))} />
           </div>
         ) : null}

@@ -49,7 +49,7 @@ export function OfferForm({ screen, askId, startMonth, sealsLeft, draft, onChang
   return (
     <form
       aria-labelledby={`${id}-title`}
-      className="@container min-w-0 space-y-4 rounded-2xl border bg-card p-4 sm:p-5"
+      className="@container min-w-0 space-y-4 rounded-2xl border bg-card p-4 shadow-xs transition-[border-color,box-shadow] duration-500 ease-(--ease-out-expo) focus-within:border-gold/60 focus-within:shadow-[0_0_0_4px_rgb(var(--glow-gold)/0.12),var(--shadow-sm)] sm:p-5"
       onSubmit={(event) => {
         event.preventDefault();
         void seal();

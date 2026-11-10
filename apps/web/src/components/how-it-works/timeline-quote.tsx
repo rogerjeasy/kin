@@ -16,7 +16,7 @@ export function TimelineQuote({ voice, speaker, quote }: TimelineQuoteProps) {
   const isKin = voice === "kin";
 
   return (
-    <figure className="mt-5 rounded-2xl border bg-card p-5">
+    <figure className={cn("surface mt-5 rounded-3xl p-5 shadow-md", isKin && "border-gold/40")}>
       <figcaption className="flex items-center gap-3">
         {isKin ? (
           <span aria-hidden="true" className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary">

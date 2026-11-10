@@ -53,5 +53,19 @@ export function chooseTheme(choice: ThemeChoice): void {
     // Storage is blocked, so the choice cannot outlive this page. Nothing else
     // can be done about that, and the page itself still follows the device.
   }
-  apply();
+  applyWithCrossFade();
+}
+
+/**
+ * The whole page cross-fades into the new theme where the browser can do it
+ * (the View Transitions API), and switches at once for a reader who asks for
+ * reduced motion or a browser that cannot.
+ */
+function applyWithCrossFade(): void {
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (still || typeof document.startViewTransition !== "function") {
+    apply();
+    return;
+  }
+  document.startViewTransition(apply);
 }

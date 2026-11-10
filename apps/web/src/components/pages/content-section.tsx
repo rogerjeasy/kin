@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { InsetSection } from "@/components/layout/inset-section";
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { Heading } from "@/components/shared/heading";
@@ -15,18 +16,25 @@ type ContentSectionProps = {
   children: ReactNode;
 };
 
-/** A titled section of an inner page. */
-export function ContentSection({ id, eyebrow, title, lede, tone, children }: ContentSectionProps) {
+/** A titled section of an inner page. A muted one is set into the page as a lit panel. */
+export function ContentSection({ id, eyebrow, title, lede, tone = "plain", children }: ContentSectionProps) {
   const headingId = `${id}-heading`;
-
-  return (
-    <Section tone={tone} labelledBy={headingId}>
+  const body = (
+    <>
       <Eyebrow>{eyebrow}</Eyebrow>
       <Heading as="h2" size="title" id={headingId} className="mt-4 max-w-3xl">
         {title}
       </Heading>
       {lede ? <Lede className="mt-5 max-w-2xl">{lede}</Lede> : null}
-      <div className="mt-10">{children}</div>
-    </Section>
+      <div className="reveal mt-10 lg:mt-12">{children}</div>
+    </>
+  );
+
+  return tone === "muted" ? (
+    <InsetSection tone="muted" labelledBy={headingId}>
+      {body}
+    </InsetSection>
+  ) : (
+    <Section labelledBy={headingId}>{body}</Section>
   );
 }

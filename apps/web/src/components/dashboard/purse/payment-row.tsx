@@ -70,7 +70,7 @@ export function PaymentRow({ payment, copy, format, parentName, isParent, canCan
         ))}
       </div>
       <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-        <p className="text-xl font-semibold tabular-nums">{format.money(payment.cents)}</p>
+        <p className="font-serif text-2xl leading-none tabular-nums">{format.money(payment.cents)}</p>
         {isParent && !flagged && payment.state !== "proposed" ? <ShareToggle paymentId={payment.id} shared={payment.shared} copy={copy} label={label} /> : null}
         {canCancel && payment.state === "held" ? <CancelPayment paymentId={payment.id} copy={copy} label={label} /> : null}
       </div>

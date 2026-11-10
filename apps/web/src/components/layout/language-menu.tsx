@@ -42,7 +42,7 @@ export function LanguageMenu({ locale, label, display, className }: LanguageMenu
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="rounded-2xl p-1.5 shadow-xl">
         {locales.map((target) => (
           <DropdownMenuItem key={target} asChild>
             <Link
@@ -50,7 +50,7 @@ export function LanguageMenu({ locale, label, display, className }: LanguageMenu
               lang={target}
               hrefLang={target}
               aria-current={target === locale ? "true" : undefined}
-              className="min-h-11 px-3 text-base aria-[current=true]:font-semibold"
+              className="min-h-11 rounded-xl px-3 text-base aria-[current=true]:font-semibold aria-[current=true]:text-highlight"
             >
               {localeNames[target]}
             </Link>

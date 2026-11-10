@@ -31,7 +31,7 @@ type Props = { delegation: DelegationView; copy: Dictionary["openKin"]["list"]; 
 export function DelegationCard({ delegation, copy, toolLabels }: Props) {
   const status = delegation.status === "live" ? fill(copy.live, { date: delegation.until }) : copy[delegation.status];
   return (
-    <li className="min-w-0 rounded-2xl border bg-card p-4 shadow-xs sm:p-5">
+    <li className="min-w-0 surface rounded-3xl p-4 sm:p-5">
       <div className="flex min-w-0 flex-wrap items-start gap-3">
         <IconTile icon={delegation.console ? TerminalIcon : BotIcon} />
         <div className="min-w-0 flex-1 basis-48">

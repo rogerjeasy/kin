@@ -14,13 +14,17 @@ type FeatureListProps = {
   as?: "h2" | "h3";
 };
 
-/** Short titled points in a grid, each under a hairline. */
+/** Short titled points, each in its own lit card under a line of gold. */
 export function FeatureList({ items, columns = "two", as: Title = "h3" }: FeatureListProps) {
   return (
-    <ul className={cn("grid gap-x-10", layouts[columns])}>
-      {items.map((item) => (
-        <li key={item.title} className="min-w-0 border-t py-5">
-          <Title className="text-lg font-semibold">{item.title}</Title>
+    <ul className={cn("grid gap-3 sm:gap-4", layouts[columns])}>
+      {items.map((item, index) => (
+        <li key={item.title} className="surface lift glow-edge min-w-0 rounded-3xl p-5 sm:p-6">
+          <span aria-hidden="true" className="absolute inset-x-6 top-0 h-px bg-linear-to-r from-gold/80 via-gold/30 to-transparent rtl:bg-linear-to-l" />
+          <span aria-hidden="true" className="font-mono text-xs font-medium text-highlight tabular-nums">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <Title className="mt-3 text-lg font-semibold">{item.title}</Title>
           <p className="mt-1 text-muted-foreground">{item.text}</p>
         </li>
       ))}

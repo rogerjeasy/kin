@@ -2,6 +2,7 @@
 
 import { Field, inputClass } from "@/components/dashboard/create-circle/field";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type AmountPickerProps = {
   label: string;
@@ -29,7 +30,7 @@ export function AmountPicker({ label, hint, presetsLabel, presets, value, error,
           onChange={(event) => onChange(event.target.value)}
           aria-describedby={error === null ? "top-up-amount-hint" : "top-up-amount-hint top-up-amount-error"}
           aria-invalid={error !== null}
-          className={inputClass}
+          className={cn(inputClass, "min-h-14 font-serif text-2xl tabular-nums transition-[border-color,box-shadow] duration-300 focus-visible:border-gold focus-visible:shadow-[0_0_0_4px_rgb(var(--glow-gold)/0.16)]")}
         />
       </Field>
       <div role="group" aria-label={presetsLabel} className="flex flex-wrap gap-2">
@@ -39,7 +40,7 @@ export function AmountPicker({ label, hint, presetsLabel, presets, value, error,
             type="button"
             variant={preset.value === value ? "default" : "outline"}
             size="sm"
-            className="min-h-11 min-w-16"
+            className={preset.value === value ? "min-h-11 min-w-16 shadow-[0_0_0_3px_rgb(var(--glow-gold)/0.22)]" : "min-h-11 min-w-16"}
             aria-pressed={preset.value === value}
             onClick={() => onChange(preset.value)}
           >

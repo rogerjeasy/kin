@@ -22,13 +22,19 @@ export function TopBar({ locale, dictionary, clock, pause, pauseState, viewer, c
   const path = (route: string) => localizedPath(locale, route);
 
   return (
-    <header className="sticky top-0 z-30 border-b print:hidden bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
+    <header className="glass sticky top-0 z-30 border-b border-border/70 pt-[env(safe-area-inset-top)] print:hidden">
       <div className="flex min-h-16 min-w-0 flex-wrap items-center gap-2 px-4 sm:px-6 lg:px-10">
         <Link href={path(dashboardRoutes.overview)} aria-label={fill(shell.homeLabel, { circle: circle.name })} className="inline-flex min-h-11 min-w-0 items-center gap-2.5 lg:hidden">
           <KnotMark className="size-7" />
           <span className="truncate font-semibold">{circle.name}</span>
         </Link>
-        <p className="hidden truncate text-sm text-muted-foreground lg:block">{clock}</p>
+        <p className="hidden items-center gap-2 truncate text-sm text-muted-foreground lg:flex">
+          <span aria-hidden="true" className="relative inline-flex size-2">
+            <span className="absolute inset-0 rounded-full bg-positive opacity-60 motion-safe:animate-dot-ping" />
+            <span className="relative size-2 rounded-full bg-positive" />
+          </span>
+          {clock}
+        </p>
         <div className="ms-auto flex max-w-full shrink-0 flex-wrap items-center justify-end gap-0.5">
           {/* On a phone only the globe shows, so the circle's name keeps its room. */}
           <LanguageMenu

@@ -12,9 +12,9 @@ const INSET = round((TILE * (1 - KNOT_SCALE)) / 2);
  * so the icon carries its own ground. These are --band, --band-foreground and
  * --band-highlight from globals.css, and a test keeps them in step.
  */
-const TILE_COLOUR = "#1d2b4f";
-const LINE_COLOUR = "#faf7f2";
-const CENTRE_COLOUR = "#e9b872";
+const TILE_COLOUR = "#0d1430";
+const LINE_COLOUR = "#fbf8f2";
+const CENTRE_COLOUR = "#f0c27b";
 
 /** The site icon: the Kin knot on a navy tile. */
 export function faviconSvg(): string {

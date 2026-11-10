@@ -1,4 +1,4 @@
-import { Section } from "@/components/layout/section";
+import { InsetSection } from "@/components/layout/inset-section";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { Heading } from "@/components/shared/heading";
 import type { SpokenLine } from "@/components/shared/spoken-lines";
@@ -24,21 +24,25 @@ export function VoiceSection({ copy, people }: VoiceSectionProps) {
   ];
 
   return (
-    <Section tone="band" labelledBy={HEADING_ID}>
-      <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-5">
+    <InsetSection tone="ink" labelledBy={HEADING_ID}>
+      <div className="grid items-end gap-x-12 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
         <div className="min-w-0">
-          <Eyebrow className="text-band-muted">{copy.eyebrow}</Eyebrow>
+          <Eyebrow>{copy.eyebrow}</Eyebrow>
           <Heading as="h2" size="title" id={HEADING_ID} className="mt-4 max-w-2xl">
             {copy.title}
           </Heading>
         </div>
-        <p className="max-w-sm text-lg text-band-muted">{copy.aside}</p>
+        <p className="border-s border-gold/50 ps-5 text-lg text-muted-foreground">{copy.aside}</p>
       </div>
-      <div className="mt-10 grid lg:mt-14 lg:grid-cols-3 lg:border-t lg:border-band-border lg:pt-8">
-        {exchanges.map((exchange) => (
-          <ExchangeCard key={exchange.label} label={exchange.label} lines={exchange.lines} />
-        ))}
+      <div className="relative mt-12 lg:mt-20">
+        {/* One thread of light runs through the three calls. */}
+        <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/2 hidden h-px bg-linear-to-r from-transparent via-gold/50 to-transparent lg:block" />
+        <div className="relative grid gap-4 lg:grid-cols-3 lg:gap-6">
+          {exchanges.map((exchange) => (
+            <ExchangeCard key={exchange.label} label={exchange.label} lines={exchange.lines} />
+          ))}
+        </div>
       </div>
-    </Section>
+    </InsetSection>
   );
 }

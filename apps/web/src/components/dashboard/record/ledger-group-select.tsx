@@ -14,7 +14,7 @@ export function LedgerGroupSelect({ value, onChange, copy }: LedgerGroupSelectPr
       <label htmlFor={id} className="text-sm font-medium text-muted-foreground">
         {copy.group}
       </label>
-      <select id={id} value={value} onChange={(event) => onChange(GROUP_BYS.find((each) => each === event.target.value) ?? "none")} className="min-h-11 rounded-lg border border-input bg-card px-3 text-base">
+      <select id={id} value={value} onChange={(event) => onChange(GROUP_BYS.find((each) => each === event.target.value) ?? "none")} className="min-h-11 rounded-full border border-input bg-card px-4 shadow-2xs transition-[border-color,box-shadow] duration-300 focus-visible:border-gold focus-visible:shadow-[0_0_0_4px_rgb(var(--glow-gold)/0.16)] text-base">
         {GROUP_BYS.map((each) => (
           <option key={each} value={each}>
             {copy.groups[each]}

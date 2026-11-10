@@ -17,7 +17,7 @@ type SpokenCaptionProps = {
 /** The sentence Kin said to Rose, with a button that says it aloud. */
 export function SpokenCaption({ locale, copy, className }: SpokenCaptionProps) {
   return (
-    <figure className={cn("rounded-2xl bg-card p-5", className)}>
+    <figure className={cn("rounded-3xl bg-card p-5", className)}>
       <div className="flex items-center gap-3">
         <SpeakButton
           text={fill(copy.spoken, { amount: copy.spokenAmount })}

@@ -1,7 +1,7 @@
 import {
   Frank_Ruhl_Libre,
-  IBM_Plex_Mono,
-  IBM_Plex_Sans,
+  Geist,
+  Geist_Mono,
   IBM_Plex_Sans_Arabic,
   IBM_Plex_Sans_Hebrew,
   Newsreader,
@@ -15,17 +15,16 @@ const newsreader = Newsreader({
   display: "swap",
 });
 
-const plexSans = IBM_Plex_Sans({
+// Geist is a variable face: one file carries every weight the interface uses.
+const geist = Geist({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600"],
-  variable: "--font-plex-sans",
+  variable: "--font-geist",
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex-mono",
+  variable: "--font-geist-mono",
   display: "swap",
   preload: false,
 });
@@ -64,8 +63,8 @@ const frank = Frank_Ruhl_Libre({
 /** Class names that define every font variable. Set once, on <html>. */
 export const fontVariables = [
   newsreader,
-  plexSans,
-  plexMono,
+  geist,
+  geistMono,
   plexArabic,
   plexHebrew,
   naskh,

@@ -28,7 +28,9 @@ export default defineConfig({
   reporter: "list",
   // Signing in crosses two servers and renders a signed-in page from cold.
   expect: { timeout: 10_000 },
-  use: { baseURL, trace: "retain-on-failure" },
+  // Reduced motion: the shared checks measure each screen as it rests, not
+  // halfway through an entrance. e2e/motion.spec.ts covers the moving page.
+  use: { baseURL, trace: "retain-on-failure", reducedMotion: "reduce" },
   projects: [
     // Public pages, and every test of signing in, start signed out.
     { name: "public", testIgnore: [/dashboard\.spec\.ts/, /real-circle\.spec\.ts/, /\.setup\.ts/], use: { ...devices["Desktop Chrome"] } },

@@ -1,26 +1,27 @@
 "use client";
 
-import { PhoneCallIcon } from "lucide-react";
+import { BadgeCheckIcon, PhoneCallIcon, ReceiptIcon, ShieldAlertIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 
 import { inputClass } from "@/components/dashboard/create-circle/field";
 import { postLetterJson, type LetterError } from "@/components/dashboard/letters/letter-client";
-import { VerdictPill } from "@/components/dashboard/letters/verdict-pill";
+import { KinThinking } from "@/components/dashboard/ai/kin-thinking";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
-import { fill } from "@/i18n/template";
+import { cn } from "@/lib/utils";
 import type { OfficeCallResult } from "@/server/office-line";
 
-import { CallTranscript } from "./call-transcript";
+import { CallOutcome } from "./call-outcome";
 
 type Props = { locale: Locale; copy: Dictionary["dashboard"]["officeLine"] };
 
 type Done = Extract<OfficeCallResult, { ok: true }>;
 
 const SCENARIOS = ["scam", "paid", "real"] as const;
+const SCENARIO_ICON = { scam: ShieldAlertIcon, paid: ReceiptIcon, real: BadgeCheckIcon } as const;
 
 /**
  * The "try the office line" screen: the caller's words are written down and
@@ -61,49 +62,38 @@ export function CallSimulator({ locale, copy }: Props) {
       >
         <fieldset className="min-w-0 space-y-2">
           <legend className="font-medium">{copy.scenariosLabel}</legend>
-          <div className="flex flex-wrap gap-2">
-            {SCENARIOS.map((key) => (
-              <Button key={key} type="button" variant="outline" disabled={pending} onClick={() => setLines(copy.scenarios[key].lines.join("\n"))} className="h-auto min-h-11 max-w-full whitespace-normal text-start">
-                {copy.scenarios[key].label}
-              </Button>
-            ))}
+          <div className="grid min-w-0 gap-2 sm:grid-cols-3">
+            {SCENARIOS.map((key) => {
+              const Icon = SCENARIO_ICON[key];
+              const chosen = lines === copy.scenarios[key].lines.join("\n");
+              return (
+                <Button key={key} type="button" variant="outline" disabled={pending} onClick={() => setLines(copy.scenarios[key].lines.join("\n"))} className={cn("lift h-auto min-h-14 max-w-full justify-start rounded-2xl px-4 py-3 whitespace-normal text-start", chosen && "border-gold/70 bg-highlight/10 shadow-[0_0_0_3px_rgb(var(--glow-gold)/0.15)]")}>
+                  <span aria-hidden="true" className={cn("inline-flex size-8 shrink-0 items-center justify-center rounded-full ring-1", chosen ? "bg-gold/25 text-highlight ring-gold/50" : "bg-secondary text-muted-foreground ring-border")}>
+                    <Icon className="size-4" />
+                  </span>
+                  <span className="min-w-0">{copy.scenarios[key].label}</span>
+                </Button>
+              );
+            })}
           </div>
         </fieldset>
         <div className="min-w-0 space-y-1">
           <label htmlFor={`${id}-lines`} className="font-medium">{copy.callerLinesLabel}</label>
           <p id={`${id}-lines-hint`} className="text-sm text-muted-foreground">{copy.callerLinesHint}</p>
-          <textarea id={`${id}-lines`} aria-describedby={`${id}-lines-hint`} rows={6} required value={lines} disabled={pending} onChange={(event) => setLines(event.target.value)} className={`${inputClass} min-h-36 py-2`} />
+          <textarea id={`${id}-lines`} aria-describedby={`${id}-lines-hint`} rows={6} required value={lines} disabled={pending} onChange={(event) => setLines(event.target.value)} className={`${inputClass} min-h-40 py-3 font-mono text-[0.95rem] leading-7`} />
         </div>
         <div className="min-w-0 space-y-1">
           <label htmlFor={`${id}-number`} className="font-medium">{copy.numberLabel}</label>
           <p id={`${id}-number-hint`} className="text-sm text-muted-foreground">{copy.numberHint}</p>
           <input id={`${id}-number`} aria-describedby={`${id}-number-hint`} inputMode="tel" autoComplete="off" maxLength={32} value={number} disabled={pending} onChange={(event) => setNumber(event.target.value)} className={inputClass} />
         </div>
-        <Button type="submit" disabled={pending || lines.trim() === ""} className="h-auto min-h-11 max-w-full shrink whitespace-normal text-start">
-          <PhoneCallIcon aria-hidden="true" />
+        <Button type="submit" disabled={pending || lines.trim() === ""} className="h-auto min-h-12 max-w-full shrink whitespace-normal text-start">
+          <PhoneCallIcon aria-hidden="true" className={pending ? "motion-safe:animate-bounce" : undefined} />
           {pending ? copy.calling : copy.submit}
         </Button>
         {error ? <p role="alert" className="text-sm text-danger">{copy.errors[error as keyof typeof copy.errors] ?? copy.errors.unavailable}</p> : null}
-        {result ? (
-          <div role="status" className="min-w-0 space-y-4 rounded-xl border bg-secondary/40 p-4">
-            <CallTranscript turns={result.transcript} labels={{ kin: copy.kin, caller: copy.caller, title: copy.transcriptTitle }} />
-            <div className="min-w-0 space-y-2">
-              <h3 className="text-sm font-semibold">{copy.verdictTitle}</h3>
-              <VerdictPill verdict={result.verdict} payeeId={result.payeeId} labels={copy.verdicts} />
-            </div>
-            {result.pressure.length > 0 ? (
-              <div className="min-w-0 space-y-1">
-                <h3 className="text-sm font-semibold">{copy.pressureTitle}</h3>
-                <p className="text-sm">{result.pressure.map((signal) => copy.signals[signal]).join(", ")}</p>
-              </div>
-            ) : null}
-            <div className="min-w-0 space-y-1">
-              <h3 className="text-sm font-semibold">{copy.alertTitle}</h3>
-              <p className="text-sm wrap-anywhere">{result.alert}</p>
-              <p className="text-sm text-muted-foreground">{fill(copy.told, { count: String(result.told) })}</p>
-            </div>
-          </div>
-        ) : null}
+        {pending ? <KinThinking label={copy.calling} /> : null}
+        {result ? <CallOutcome result={result} copy={copy} /> : null}
       </form>
     </Panel>
   );

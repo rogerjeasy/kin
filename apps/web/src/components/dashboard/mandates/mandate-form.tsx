@@ -114,7 +114,7 @@ export function MandateForm({ locale, currency, copy, parent, rules, today, defa
           </Field>
         </fieldset>
         {review !== null && rule ? (
-          <div className="min-w-0 space-y-2 rounded-xl border bg-secondary/40 p-4">
+          <div className="min-w-0 space-y-2 rounded-2xl border bg-muted/60 p-4">
             <h3 className="font-semibold">{form.readBackTitle}</h3>
             <p className="text-pretty">{readBack(copy, format, review, { item: rule.item, seller: rule.seller })}</p>
             {aboveUsualCents > 0 ? (

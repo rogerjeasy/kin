@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { BillingWeek } from "@/components/caregivers/billing-week";
 import { CaregiverPhoto } from "@/components/caregivers/caregiver-photo";
 import { IncomeRecord } from "@/components/caregivers/income-record";
+import { InsetSection } from "@/components/layout/inset-section";
 import { Section } from "@/components/layout/section";
 import { ContentSection } from "@/components/pages/content-section";
 import { IconCardGrid } from "@/components/pages/icon-card-grid";
@@ -74,7 +75,7 @@ export default async function CaregiversPage({ params }: PageProps<"/[locale]/ca
           </div>
         </div>
       </Section>
-      <Section tone="muted">
+      <InsetSection tone="muted">
         <IconCardGrid
           as="h2"
           items={[
@@ -83,7 +84,7 @@ export default async function CaregiversPage({ params }: PageProps<"/[locale]/ca
             { icon: BadgeCheckIcon, ...free },
           ]}
         />
-      </Section>
+      </InsetSection>
       <RelatedPages locale={locale} dictionary={dictionary} current="caregivers" />
       <ClosingBand locale={locale} title={home.closing.title} nav={common.nav} />
     </>

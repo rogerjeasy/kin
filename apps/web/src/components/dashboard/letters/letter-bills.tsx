@@ -31,7 +31,7 @@ export function LetterBills({ circle, locale, copy, ai }: Props) {
                 <PayeeCell name={payee?.name ?? ""} detail={bill.dueOn === null ? undefined : fill(copy.bills.due, { day: format.day(bill.dueOn) })} />
                 <div className="flex min-w-0 flex-wrap items-center gap-3">
                   {state === null ? null : <StatusPill tone={state === "duplicate" ? "neutral" : "waiting"}>{copy.bills.states[state]}</StatusPill>}
-                  <span className="font-semibold tabular-nums">{format.money(bill.amountCents)}</span>
+                  <span className="font-serif text-xl tabular-nums">{format.money(bill.amountCents)}</span>
                 </div>
                 {provenance === null ? null : <div className="basis-full"><ProvenanceBadge provenance={provenance} kind="read" copy={ai} /></div>}
               </li>

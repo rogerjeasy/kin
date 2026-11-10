@@ -14,7 +14,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "pnpm run build && node scripts/prepare-standalone.mjs && playwright test",
-    "test:e2e:key": "pnpm run build && node scripts/prepare-standalone.mjs && playwright test e2e/sign-in e2e/demo e2e/dashboard e2e/pages e2e/responsive e2e/agreement e2e/refills e2e/mandates e2e/office-line e2e/presence e2e/verify e2e/simulator e2e/fairness-cross-border e2e/settlement e2e/top-up e2e/caregiver-billing e2e/shifts e2e/shift-links e2e/shift-cover e2e/shift-assistant e2e/connections",
+    "test:e2e:key": "pnpm run build && node scripts/prepare-standalone.mjs && playwright test e2e/sign-in e2e/demo e2e/dashboard e2e/pages e2e/responsive e2e/agreement e2e/refills e2e/mandates e2e/office-line e2e/presence e2e/verify e2e/simulator e2e/fairness-cross-border e2e/settlement e2e/top-up e2e/caregiver-billing e2e/shifts e2e/shift-links e2e/shift-cover e2e/shift-assistant e2e/connections e2e/motion",
     "brand:export": "node scripts/export-sign-in-brand.ts"
   },
   "dependencies": {
@@ -30,16 +30,20 @@
     "@kin/speech": "workspace:*",
     "@kin/telephony": "workspace:*",
     "@kin/verify": "workspace:*",
+    "@react-three/drei": "10.7.9",
+    "@react-three/fiber": "9.8.2",
     "ag-grid-community": "^36.2.0",
     "ag-grid-react": "^36.2.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "lucide-react": "^1.55.0",
+    "motion": "14.6.0",
     "next": "16.4.1",
     "qrcode-generator": "2.0.4",
     "radix-ui": "^1.8.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "three": "0.186.1"
   },
   "devDependencies": {
     "@playwright/test": "1.64.0",
@@ -47,6 +51,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@types/three": "0.186.0",
     "shadcn": "^4.21.4",
     "tailwindcss": "4.3.3",
     "tw-animate-css": "^1.4.0"

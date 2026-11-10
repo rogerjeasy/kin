@@ -33,7 +33,7 @@ export function SampleLetter({ copy, disabled, onPick }: Props) {
     }
   }
   return (
-    <div className="flex min-w-0 flex-wrap items-start gap-4 rounded-xl border border-dashed p-4">
+    <div className="flex min-w-0 flex-wrap items-start gap-4 rounded-2xl border border-dashed p-4">
       <Image src={sample} alt={copy.imageAlt} sizes="(min-width: 640px) 8rem, 6rem" className="h-auto w-24 shrink-0 rounded-lg border sm:w-32" />
       <div className="min-w-0 flex-1 basis-48 space-y-2">
         <p className="font-medium">{copy.title}</p>

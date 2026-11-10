@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 
 import { Field, inputClass } from "@/components/dashboard/create-circle/field";
+import { formWell } from "@/components/dashboard/settlement/form-well.ts";
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 
@@ -32,7 +33,7 @@ export function InvoiceTopUpForm({ members, hint, copy }: Props) {
     }
   }
   return (
-    <form onSubmit={submit} className="grid min-w-0 gap-4 rounded-xl border p-4 sm:p-5" aria-busy={pending} aria-labelledby="invoice-top-up-title" noValidate>
+    <form onSubmit={submit} className={formWell} aria-busy={pending} aria-labelledby="invoice-top-up-title" noValidate>
       <div>
         <h3 id="invoice-top-up-title" className="font-semibold">{copy.topUp.title}</h3>
         <p className="mt-1 text-sm text-pretty text-muted-foreground">{copy.topUp.text}</p>

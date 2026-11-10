@@ -12,7 +12,7 @@ type Props = { hold: NonNullable<ShellContext["presenceHold"]> };
  */
 export function PresenceHoldBanner({ hold }: Props) {
   return (
-    <div role="status" className="flex min-w-0 flex-wrap items-start gap-x-3 gap-y-2 rounded-xl border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm">
+    <div role="status" className="enter flex min-w-0 flex-wrap items-start gap-x-3 gap-y-2 rounded-2xl border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm shadow-[0_0_0_4px_rgb(var(--glow-gold)/0.08)]">
       <ShieldAlertIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-highlight" />
       <p className="min-w-0 flex-1 basis-60 text-pretty">{hold.text}</p>
       {hold.link ? (
