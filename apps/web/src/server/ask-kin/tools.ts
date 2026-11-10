@@ -57,7 +57,8 @@ export function askKinTools(world: AskKinWorld): ToolImplementations {
     },
     propose_refill: async (args, context) => {
       ownCircle(context);
-      return proposeRefill(world, args.item);
+      // Under a delegation the refill always waits for a person: never the standing permission.
+      return proposeRefill(world, args.item, context.delegation?.id);
     },
   };
 }

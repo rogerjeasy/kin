@@ -119,6 +119,30 @@ CREATE TRIGGER credential_fixed BEFORE UPDATE ON public.agency_keys
   FOR EACH ROW EXECUTE FUNCTION kin_private.assert_credential_fixed();
 --> statement-breakpoint
 
+-- Nothing a member's own assistant starts is approved in the same breath. The
+-- web app opens every write an assistant causes with kin.delegation_id set
+-- (asDelegate in packages/db); while it is set, no approval of any kind is
+-- written, the parent's standing permission included, so a refill an
+-- assistant proposes always waits for a person's yes in Kin. An approval is
+-- otherwise unchanged: this only refuses.
+CREATE FUNCTION kin_private.refuse_approval_under_delegation() RETURNS trigger
+  LANGUAGE plpgsql
+  AS $$
+  BEGIN
+    IF nullif(current_setting('kin.delegation_id', true), '') IS NOT NULL THEN
+      RAISE EXCEPTION 'kin: an outside assistant cannot approve, and nothing it starts is approved for it' USING ERRCODE = 'insufficient_privilege';
+    END IF;
+    RETURN NEW;
+  END
+  $$;
+
+CREATE TRIGGER no_approval_under_delegation BEFORE INSERT ON public.approvals
+  FOR EACH ROW EXECUTE FUNCTION kin_private.refuse_approval_under_delegation();
+CREATE TRIGGER no_approval_under_delegation BEFORE UPDATE OF state ON public.proposals
+  FOR EACH ROW WHEN (NEW.state IS DISTINCT FROM OLD.state AND NEW.state = 'approved')
+  EXECUTE FUNCTION kin_private.refuse_approval_under_delegation();
+--> statement-breakpoint
+
 -- Grants a delegation for the person's own seat, from the hash of a token the
 -- web app made and will show once. Any active member but an observer may: the
 -- scope only ever narrows their own role, in packages/auth. It lasts from an hour to ninety
@@ -352,6 +376,7 @@ CREATE FUNCTION kin_private.receive_agency_visit(p_key_id text, p_secret_hash te
   $$;
 --> statement-breakpoint
 
+REVOKE ALL ON FUNCTION kin_private.refuse_approval_under_delegation() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.assert_credential_fixed() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.grant_delegation(uuid, text, text, text, text, timestamptz, boolean) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.revoke_delegation(uuid, uuid) FROM PUBLIC;

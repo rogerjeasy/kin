@@ -1,10 +1,15 @@
 import { authorize } from "@kin/auth";
-import { RefillError, asPerson, proposeRefill, type CircleSnapshot, type Database, type RefillMandate, type RefillReason } from "@kin/db";
+import { RefillError, asDelegate, asPerson, proposeRefill, type CircleSnapshot, type Database, type RefillMandate, type RefillReason } from "@kin/db";
 
 export type RefillContext = {
   readonly db: Database;
   readonly userId: string;
   readonly circle: CircleSnapshot;
+  /**
+   * Set when a member's own assistant asks, through Kin's MCP server. The refill then never rides the parent's
+   * standing permission and always waits for a person's yes in Kin; the database refuses any approval in that write.
+   */
+  readonly delegationId?: string;
 };
 
 export type RefillResult = { readonly ok: true; readonly id: string; readonly mandate: RefillMandate } | { readonly ok: false; readonly reason: RefillReason };
@@ -25,7 +30,12 @@ export async function runRefill(context: RefillContext, input: unknown): Promise
   const circleId = context.circle.circle.id;
   const now = context.circle.circle.now;
   try {
-    return { ok: true, ...(await asPerson(context.db, context.userId, (tx) => proposeRefill(tx, { circleId, ruleId, now }))) };
+    const { delegationId } = context;
+    const proposed =
+      delegationId === undefined
+        ? await asPerson(context.db, context.userId, (tx) => proposeRefill(tx, { circleId, ruleId, now }))
+        : await asDelegate(context.db, context.userId, delegationId, (tx) => proposeRefill(tx, { circleId, ruleId, now, standingPermission: false }));
+    return { ok: true, ...proposed };
   } catch (error) {
     if (error instanceof RefillError) return { ok: false, reason: error.reason };
     throw error;

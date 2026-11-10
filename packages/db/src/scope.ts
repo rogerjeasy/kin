@@ -16,6 +16,20 @@ export function asPerson<T>(db: Database, userId: string, work: (tx: Transaction
   });
 }
 
+/**
+ * As a signed-in person whose own AI assistant acts under the delegation
+ * `delegationId`, through `kin_app`. The database then refuses every yes in
+ * this transaction (migration open-kin-access): nothing an assistant starts is
+ * approved here, not even by the parent's standing permission.
+ */
+export function asDelegate<T>(db: Database, userId: string, delegationId: string, work: (tx: Transaction) => Promise<T>): Promise<T> {
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`select set_config('kin.user_id', ${requireText(userId, "user")}, true)`);
+    await tx.execute(sql`select set_config('kin.delegation_id', ${requireText(delegationId, "delegation")}, true)`);
+    return work(tx);
+  });
+}
+
 /** As Kin's own service, for the one circle a job names, through `kin_service`. */
 export function asService<T>(db: Database, circleId: string, work: (tx: Transaction) => Promise<T>): Promise<T> {
   return db.transaction(async (tx) => {

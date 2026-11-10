@@ -84,7 +84,7 @@ export {
 } from "./purchases.ts";
 export type { DeliveryJob, PurchaseBegin, PurchaseJob, RefillMandate, RefillProposed, RefillReason } from "./purchases.ts";
 export type { Database, Transaction } from "./connection.ts";
-export { asPerson, asProvisioner, asService } from "./scope.ts";
+export { asDelegate, asPerson, asProvisioner, asService } from "./scope.ts";
 export { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";
 export type { AccountIds } from "./ledger-store.ts";
 export { CircleNotFoundError, readCircle } from "./read-circle.ts";
