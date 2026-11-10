@@ -99,6 +99,15 @@ describe("an approved caregiver payout", () => {
     expect(accountBalance(await ledgerOf(payout.circle.circleId), payableAccount(payout.circle.payees.amara))).toBe(0);
   });
 
+  it("charges a simulated payout no fee, since PayPal charged nothing", async () => {
+    const payout = await approvedPayout();
+    const before = await ledgerOf(payout.circle.circleId);
+    expect(await step(payout)).toEqual({ next: "done", result: "confirmed" });
+    const after = await ledgerOf(payout.circle.circleId);
+    expect(accountBalance(after, "fees") - accountBalance(before, "fees")).toBe(0);
+    expect(accountBalance(after, "pool_cash") - accountBalance(before, "pool_cash")).toBe(-26_400);
+  });
+
   it("is paid in a real circle only once PayPal's record says the item succeeded, with PayPal's own fee", async () => {
     const payout = await approvedPayout({ real: true });
     const before = await ledgerOf(payout.circle.circleId);

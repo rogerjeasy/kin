@@ -126,8 +126,9 @@ describe("an approved settlement payout", () => {
     // Each member's balance with the pool is cleared by exactly what they were owed, and the fees are the circle's.
     expect(accountBalance(after, memberAccount(settlement.circle.members.elena)) - accountBalance(before, memberAccount(settlement.circle.members.elena))).toBe(-12_600);
     expect(accountBalance(after, memberAccount(settlement.circle.members.ana)) - accountBalance(before, memberAccount(settlement.circle.members.ana))).toBe(-4_000);
-    expect(accountBalance(after, "pool_cash") - accountBalance(before, "pool_cash")).toBe(-(12_600 + 4_000 + 2 * FEE));
-    expect(accountBalance(after, "fees") - accountBalance(before, "fees")).toBe(2 * FEE);
+    // Simulated, so PayPal charged no fee and none is posted.
+    expect(accountBalance(after, "pool_cash") - accountBalance(before, "pool_cash")).toBe(-(12_600 + 4_000));
+    expect(accountBalance(after, "fees") - accountBalance(before, "fees")).toBe(0);
   });
 
   it("is paid once, however many times its message is handed out", async () => {

@@ -60,7 +60,7 @@ export async function executePayout(deps: PayoutDeps, circleId: string, executio
     if (job.simulated) {
       // A demo payout, approved and readied like any other, may go to PayPal's sandbox instead.
       const routed = await routeReadiedDemoPayout(tx, job, deps.sandbox ?? null, deps.now());
-      return routed.sandbox ? { job: routed } : { step: await paySimulated(tx, job, deps) };
+      return routed.sandbox ? { job: routed } : { step: await paySimulated(tx, job) };
     }
     // beginPayout fixed the address on the execution if it had none. A sandbox payout's address is Kin's, already set.
     return { job: job.sandbox ? job : { ...job, receiver: payoutReceiver(job) } };
@@ -74,11 +74,12 @@ export async function executePayout(deps: PayoutDeps, circleId: string, executio
 }
 
 // A demo circle's money is simulated: nothing is sent, and the entry says so.
-async function paySimulated(tx: Transaction, job: PayoutJob, deps: PayoutDeps): Promise<PayoutStep> {
+// No fee either: PayPal charged nothing, as for a simulated share or Purse payment.
+async function paySimulated(tx: Transaction, job: PayoutJob): Promise<PayoutStep> {
   const now = job.now;
   if (job.state === "created") await recordSubmitted(tx, job, null, now);
   const submitted = { ...job, simulated: true, state: job.state === "created" ? ("submitted" as const) : job.state };
-  await confirmPayout(tx, submitted, { itemId: `simulated-payout-${job.executionId}`, batchId: null, feeCents: deps.feeReserve(job.currency), at: now });
+  await confirmPayout(tx, submitted, { itemId: `simulated-payout-${job.executionId}`, batchId: null, feeCents: 0, at: now });
   return done("confirmed");
 }
 
@@ -89,7 +90,7 @@ async function paySimulated(tx: Transaction, job: PayoutJob, deps: PayoutDeps): 
  */
 async function fallBackToSimulated(tx: Transaction, job: PayoutJob, deps: PayoutDeps, reason: string): Promise<PayoutStep> {
   await recordSandboxFallback(tx, job, reason);
-  return paySimulated(tx, job, deps);
+  return paySimulated(tx, job);
 }
 
 /**
