@@ -271,12 +271,21 @@ function prepare(input: MediationInput): Prepared {
 }
 
 /**
- * Whether a person's limit can be worked out from what they see. With only
- * two people sharing, the one who is not at their limit sees their own part
- * and the total, and so the other's part: when the other is at their limit,
- * that part is the limit. The screens say so whenever it applies.
+ * When someone's limit can be worked out from what the others see, and how,
+ * so the screen can say so. `pair`: with only two people sharing, the one not
+ * at their limit sees their own part and the total, and so the other's part,
+ * which is the other's limit when they are at it. `comparing`: when three or
+ * more fall short, every part is exactly its person's limit, so all but one
+ * who compare their parts can subtract them from what was covered and get the
+ * last one's. Otherwise nobody can, alone or together, tell a part at a limit
+ * from one that is not. The exact shortfall is still shown: it is the one fact
+ * the family needs to close the gap.
  */
-export const limitsCanBeDeduced = (askedCount: number): boolean => askedCount === 2;
+export function limitsCanBeDeduced(askedCount: number, state: QuietShareState): "pair" | "comparing" | null {
+  if (state === "withdrawn") return null;
+  if (askedCount === 2) return "pair";
+  return askedCount >= 3 && state === "short" ? "comparing" : null;
+}
 
 /** The PayPal action that carries a person's part, once the plan is agreed. */
 export const QUIET_PART_METHODS = ["checkout", "pay_later", "invoice", "monthly_share"] as const;

@@ -147,8 +147,10 @@ describe("the ask and its parts", () => {
     expect(QUIET_SHARE_TRANSITIONS.withdrawn).toEqual([]);
   });
 
-  it("says when a limit can be worked out: in a family of two", () => {
-    expect([1, 2, 3, 4].map(limitsCanBeDeduced)).toEqual([false, true, false, false]);
+  it("says when a limit can be worked out: in a family of two, and when three or more fall short and compare their parts", () => {
+    expect([1, 2, 3, 4].map((count) => limitsCanBeDeduced(count, "planned"))).toEqual([null, "pair", null, null]);
+    expect([1, 2, 3, 4].map((count) => limitsCanBeDeduced(count, "short"))).toEqual([null, "pair", "comparing", "comparing"]);
+    expect([2, 3].map((count) => limitsCanBeDeduced(count, "withdrawn"))).toEqual([null, null]);
   });
 
   it("pays a monthly rise by the monthly share, and a one-off by checkout, Pay Later or invoice", () => {
@@ -240,6 +242,18 @@ describe("the mediator's properties, for any ask", () => {
       const targets = allocate(input.costCents, sorted.map((share) => share.bps));
       if (sorted.some((share, index) => capacity(input, share.memberId) < (targets[index] ?? 0))) return;
       expect(mediateQuietShare(input).parts.map((part) => part.cents)).toEqual(targets);
+    });
+  });
+
+  it("when short, lets all but one who compare their parts work out the last one's limit, which is why the screen warns of it", () => {
+    forAll(randomAsk, (input) => {
+      const result = mediateQuietShare(input);
+      if (result.shortfallCents === 0 || result.parts.length < 3) return;
+      expect(limitsCanBeDeduced(result.parts.length, "short")).toBe("comparing");
+      for (const part of result.parts) {
+        const others = result.parts.filter((each) => each.memberId !== part.memberId).reduce((sum, each) => sum + each.cents, 0);
+        expect(result.coveredCents - others).toBe(capacity(input, part.memberId));
+      }
     });
   });
 

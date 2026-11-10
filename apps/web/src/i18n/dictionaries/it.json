@@ -3518,6 +3518,7 @@
         ]
       },
       "caveat": "Questa spesa la condividete in due, quindi la riservatezza non può essere totale: quando uno di voi è al proprio limite, l’altro può dedurlo dal totale e dalla propria parte.",
+      "caveatShort": "Se gli altri confrontano le loro quote, potrebbero ricavare quella dell’ultima persona. Kin mostra solo quanto manca.",
       "raise": {
         "title": "Chiedi alla famiglia",
         "text": "Per una spesa che il fondo non può sostenere da solo, come una riparazione o un aumento del budget per le cure. Chi condivide la spesa viene interpellato in privato.",

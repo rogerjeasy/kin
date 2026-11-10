@@ -3518,6 +3518,7 @@
         ]
       },
       "caveat": "Sie teilen sich diese Kosten zu zweit, deshalb kann die Privatsphäre nicht vollständig sein: Ist einer von Ihnen an seiner Grenze, kann der andere das aus der Summe und dem eigenen Anteil ableiten.",
+      "caveatShort": "Wenn die anderen ihre Anteile vergleichen, könnten sie den der letzten Person ausrechnen. Kin zeigt nur die Lücke.",
       "raise": {
         "title": "Die Familie fragen",
         "text": "Für Kosten, die der Topf nicht allein tragen kann, etwa eine Reparatur oder ein höheres Pflegebudget. Alle, die sich die Kosten teilen, werden vertraulich gefragt.",

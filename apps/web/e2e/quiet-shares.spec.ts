@@ -86,6 +86,8 @@ test("a short ask says only how much is short and is spread over three months, a
   await answerOn(phone(page, "Ana"), "Honestly I can only manage 60.", "60.00");
   for (const name of ["Marcus", "Elena", "Ana"]) await expect(phone(page, name).getByText(fill(copy.short.title, { shortfall: "$140.00" }))).toBeVisible();
   await expect(phone(page, "Elena").getByText(fill(copy.short.spreadCovers, { months: "3" }))).toBeVisible();
+  // When everyone is at their limit, comparing parts would give away the last one's: every phone says so.
+  for (const name of ["Marcus", "Elena", "Ana"]) await expect(phone(page, name).getByText(copy.caveatShort)).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await phone(page, "Elena").getByRole("button", { name: fill(copy.short.spread, { months: "3" }) }).click();
   await expect(phone(page, "Ana").getByText(copy.part.title, { exact: true })).toBeVisible();

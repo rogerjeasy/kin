@@ -54,8 +54,8 @@ export type QuietContext = { readonly db: Database; readonly userId: string; rea
 
 /** One ask as one person sees it: the family's progress, and their own offer and part. */
 export type AskView = QuietShareRecord & {
-  /** With only two people sharing, one can work out the other's limit from the total. */
-  readonly privacyCaveat: boolean;
+  /** When a limit can be worked out: by the other of two, or by the others comparing their parts when the offers fall short. */
+  readonly privacyCaveat: "pair" | "comparing" | null;
   /** How the person may pay their part, once there is one. */
   readonly methods: readonly QuietPartMethod[];
   readonly sealsLeft: number;
@@ -76,7 +76,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 const view = (record: QuietShareRecord): AskView => ({
   ...record,
-  privacyCaveat: limitsCanBeDeduced(record.askedCount),
+  privacyCaveat: limitsCanBeDeduced(record.askedCount, record.state),
   methods: record.myPart === null ? [] : partMethods(record.kind, record.myPart),
   sealsLeft: Math.max(0, MAX_OFFER_SEALS - (record.myOffer?.seals ?? 0)),
   offersOpen: offersAreOpen(record.state),

@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
-import { QuietShareError, acceptMyQuietSharePart, raiseQuietShare, sealMyOffer, spreadQuietShare, takeQuietShareGap, withdrawQuietShare } from "../quiet-shares.ts";
+import { QuietShareError, acceptMyQuietSharePart, raiseQuietShare, readQuietShares, sealMyOffer, spreadQuietShare, takeQuietShareGap, withdrawQuietShare } from "../quiet-shares.ts";
 import { asPerson, asService } from "../scope.ts";
 import { addMember, seatPerson, visitorWithCircle, type VisitorCircle } from "../testing/index.ts";
 import { testDatabases } from "../testing/databases.ts";
@@ -76,6 +76,52 @@ describe("a sealed offer is read by its author alone", () => {
     await seal(people.marcus, circle, people.askId);
     const logged = await db.admin.execute<{ details: unknown }>(sql`select details from audit_log where circle_id = ${circle.circleId} and action = 'quiet_share.offer_sealed'`);
     expect(logged.rows).toEqual([{ details: {} }]);
+  });
+});
+
+describe("what the organizer can learn from the record of what was done", () => {
+  it("never who sealed an offer or who took the gap on with Pay Later", async () => {
+    const circle = await visitorWithCircle(db);
+    const people = await seats(circle);
+    await asPerson(db.app, people.marcus, (tx) => sealMyOffer(tx, { circleId: circle.circleId, askId: people.askId, offer: { ...offer, monthlyCents: 40_000 } }));
+    await seal(people.ana, circle, people.askId);
+    expect(await asPerson(db.app, people.marcus, (tx) => takeQuietShareGap(tx, { circleId: circle.circleId, askId: people.askId }))).toBe("planned");
+    const logged = await asPerson(db.app, people.elena, (tx) =>
+      tx.execute<{ action: string; actor: string; member_id: string | null; details: unknown }>(
+        sql`select action, actor, member_id, details from audit_log where circle_id = ${circle.circleId} and action like 'quiet_share.%' order by sequence`,
+      ),
+    );
+    // The organizer does read the audit log, so this is exactly what they see.
+    expect(logged.rows.map((row) => row.action)).toEqual(["quiet_share.offer_sealed", "quiet_share.offer_sealed", "quiet_share.mediated", "quiet_share.gap_taken", "quiet_share.mediated"]);
+    for (const row of logged.rows) {
+      expect(row).toMatchObject({ actor: "service", member_id: null });
+      expect(JSON.stringify(row.details)).not.toContain(circle.members.marcus);
+      expect(JSON.stringify(row.details)).not.toContain(circle.members.ana);
+    }
+  });
+});
+
+describe("a part's figures reach their own person only", () => {
+  it("returns Ana's at-limit part, her share and her care to her alone, and none of it to the organizer or the other sharer", async () => {
+    const circle = await visitorWithCircle(db);
+    const people = await seats(circle);
+    await asPerson(db.app, people.marcus, (tx) => sealMyOffer(tx, { circleId: circle.circleId, askId: people.askId, offer: { ...offer, monthlyCents: 60_000 } }));
+    await asPerson(db.app, people.ana, (tx) => sealMyOffer(tx, { circleId: circle.circleId, askId: people.askId, offer: { ...offer, careTrips: 2, careMinutes: 180 } }));
+    const view = (userId: string, memberId: string) => asPerson(db.app, userId, (tx) => readQuietShares(tx, { circleId: circle.circleId, memberId }));
+    const [ana] = await view(people.ana, circle.members.ana);
+    expect(ana?.myPart).toMatchObject({ cents: 6_000, atLimit: true, shareCents: 18_000, careTrips: 2 });
+    // Even naming Ana's seat, another person reads back nothing of hers: row-level security decides, not the argument.
+    for (const [userId, own] of [[people.elena, 30_000], [people.marcus, 54_000]] as const) {
+      const [theirs] = await view(userId, circle.members.ana);
+      expect(theirs?.myPart).toBeNull();
+      expect(theirs?.myOffer).toBeNull();
+      const [mine] = await view(userId, userId === people.elena ? circle.members.elena : circle.members.marcus);
+      expect(mine?.myPart?.cents).toBe(own);
+      expect(mine?.myPart?.atLimit).toBe(false);
+      expect(JSON.stringify({ part: mine?.myPart, offer: mine?.myOffer })).not.toMatch(/[^0-9](6000|18000)[^0-9]/u);
+      const raw = await asPerson(db.app, userId, (tx) => tx.execute<{ member_id: string }>(sql`select member_id from quiet_share_parts where ask_id = ${people.askId}`));
+      expect(raw.rows.every((row) => row.member_id !== circle.members.ana)).toBe(true);
+    }
   });
 });
 

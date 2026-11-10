@@ -3518,6 +3518,7 @@
         ]
       },
       "caveat": "Two of you share this cost, so privacy cannot be total: when one of you is at your limit, the other can work it out from the total and their own part.",
+      "caveatShort": "If the others compare their parts, they could work out what's left for the last person. Kin shows only the gap.",
       "raise": {
         "title": "Ask the family",
         "text": "For a cost the pool cannot carry alone, such as a repair or a rise in the care budget. Everyone who shares the cost is asked privately.",
