@@ -1,4 +1,4 @@
-import { WISH_SUBSCRIPTION_TOPIC, asService, claimOutbox, finishMessage, readSubscriptionJob, recordSubscriptionMoved, retryMessageLater, type ClaimedMessage, type Database } from "@kin/db";
+import { WISH_SUBSCRIPTION_TOPIC, asService, claimOutbox, finishMessage, readSubscriptionJob, recordSubscriptionMoved, retryMessageLater, subscriptionIsParents, type ClaimedMessage, type Database } from "@kin/db";
 import { PayPalError, subscriptionChangeRequestId, subscriptionMoveOutcome, type PayPalPool } from "@kin/paypal";
 
 import type { InboxLog } from "../paypal-inbox/run-inbox.ts";
@@ -47,6 +47,26 @@ async function handle(deps: WishSubscriptionDeps, log: InboxLog, message: Claime
     return;
   }
   const paypalId = job.paypalSubscriptionId;
+  // Checked again before every change: the subscription must still be the parent's by PayPal's own word, or Kin never touches it.
+  let owned: boolean;
+  try {
+    const before = await deps.pool.getSubscription(paypalId);
+    const owner = { payerId: before.subscriberPayerId, circleId: before.reference?.circleId ?? null, memberId: before.reference?.memberId ?? null };
+    owned = await asService(deps.db, message.circleId, (tx) => subscriptionIsParents(tx, message.circleId, owner));
+  } catch (error) {
+    if (!(error instanceof PayPalError)) throw error;
+    await later(deps, log, message, job.id);
+    return;
+  }
+  if (!owned) {
+    await asService(deps.db, message.circleId, async (tx) => {
+      const locked = await readSubscriptionJob(tx, job.id);
+      if (locked !== null && locked.state === expected) await recordSubscriptionMoved(tx, locked, ask.action === "suspend" ? "active" : "suspended", "not_owned", deps.now());
+      await finishMessage(tx, message.id);
+    });
+    log({ level: "error", message: `wish_subscription.${ask.action}.not_owned`, circleId: message.circleId, subscriptionId: job.id });
+    return;
+  }
   let refused = false;
   try {
     await deps.pool.changeSubscription(paypalId, ask.action, REASONS[ask.action], subscriptionChangeRequestId(job.id, ask.action, message.id));

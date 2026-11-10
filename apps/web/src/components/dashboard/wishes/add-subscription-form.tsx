@@ -45,9 +45,9 @@ export function AddSubscriptionForm({ copy, demo }: Props) {
         {demo ? null : (
           <label htmlFor={`${id}-paypal`} className="flex min-w-0 flex-col gap-1 text-sm font-medium">
             {text.paypal}
-            <input id={`${id}-paypal`} name="paypal" required pattern="I-[A-Z0-9]{6,34}" className={FIELD} aria-describedby={`${id}-paypal-hint`} />
+            <input id={`${id}-paypal`} name="paypal" pattern="I-[A-Z0-9]{6,34}" className={FIELD} aria-describedby={`${id}-paypal-hint`} />
             <span id={`${id}-paypal-hint`} className="text-xs font-normal text-muted-foreground">
-              {text.paypalHint}
+              {text.paypalHint} {text.paypalOptional}
             </span>
           </label>
         )}

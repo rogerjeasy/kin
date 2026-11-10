@@ -14,7 +14,7 @@ CREATE TABLE "parent_subscriptions" (
 	CONSTRAINT "parent_subscriptions_cents" CHECK ("parent_subscriptions"."monthly_cents" > 0 and "parent_subscriptions"."monthly_cents" <= 10000000),
 	CONSTRAINT "parent_subscriptions_paypal_id" CHECK ("parent_subscriptions"."paypal_subscription_id" is null or "parent_subscriptions"."paypal_subscription_id" ~ '^I-[A-Z0-9]{6,34}$'),
 	CONSTRAINT "parent_subscriptions_state" CHECK (state in ('active', 'suspending', 'suspended', 'resuming')),
-	CONSTRAINT "parent_subscriptions_real" CHECK ("parent_subscriptions"."simulated" or "parent_subscriptions"."paypal_subscription_id" is not null)
+	CONSTRAINT "parent_subscriptions_simulated_unlinked" CHECK (not "parent_subscriptions"."simulated" or "parent_subscriptions"."paypal_subscription_id" is null)
 );
 --> statement-breakpoint
 CREATE TABLE "wish_attestations" (
@@ -126,6 +126,7 @@ ALTER TABLE "wish_triggers" ADD CONSTRAINT "wish_triggers_organizer_during_fk" F
 ALTER TABLE "wishes" ADD CONSTRAINT "wishes_circle_fk" FOREIGN KEY ("circle_id") REFERENCES "public"."circles"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "wishes" ADD CONSTRAINT "wishes_created_by_fk" FOREIGN KEY ("circle_id","created_by") REFERENCES "public"."members"("circle_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "wishes" ADD CONSTRAINT "wishes_recording_fk" FOREIGN KEY ("circle_id","recording_id") REFERENCES "public"."wish_recordings"("circle_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "parent_subscriptions_paypal_once" ON "parent_subscriptions" USING btree ("paypal_subscription_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "wish_triggers_one_open" ON "wish_triggers" USING btree ("circle_id") WHERE state in ('reported', 'active');--> statement-breakpoint
 CREATE UNIQUE INDEX "wishes_one_in_force" ON "wishes" USING btree ("circle_id","wish_key") WHERE state = 'in_force';--> statement-breakpoint
 CREATE UNIQUE INDEX "wishes_one_waiting" ON "wishes" USING btree ("circle_id","wish_key") WHERE state in ('draft', 'confirmed');--> statement-breakpoint

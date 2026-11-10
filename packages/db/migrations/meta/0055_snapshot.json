@@ -1,6 +1,6 @@
 {
-  "id": "6b680d02-ae50-4ed0-8e5d-6b975e10fd33",
-  "prevId": "5ed05f7f-b5c9-4901-a15e-cb780e71641b",
+  "id": "5ee7a3d8-a167-4ce8-a994-62269261bbce",
+  "prevId": "b5ab6ecb-ecec-485c-b749-3e78d6978e0d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -6954,7 +6954,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "parent_subscriptions_paypal_once": {
+          "name": "parent_subscriptions_paypal_once",
+          "columns": [
+            {
+              "expression": "paypal_subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
       "foreignKeys": {
         "parent_subscriptions_circle_fk": {
           "name": "parent_subscriptions_circle_fk",
@@ -7014,9 +7030,9 @@
           "name": "parent_subscriptions_state",
           "value": "state in ('active', 'suspending', 'suspended', 'resuming')"
         },
-        "parent_subscriptions_real": {
-          "name": "parent_subscriptions_real",
-          "value": "\"parent_subscriptions\".\"simulated\" or \"parent_subscriptions\".\"paypal_subscription_id\" is not null"
+        "parent_subscriptions_simulated_unlinked": {
+          "name": "parent_subscriptions_simulated_unlinked",
+          "value": "not \"parent_subscriptions\".\"simulated\" or \"parent_subscriptions\".\"paypal_subscription_id\" is null"
         }
       },
       "isRLSEnabled": false

@@ -14,6 +14,8 @@ export type Subscription = {
   readonly id: string;
   readonly status: SubscriptionStatus;
   readonly reference: ContributionReference | null;
+  /** The subscriber's PayPal payer ID, when PayPal gives it. */
+  readonly subscriberPayerId: string | null;
   readonly nextBillingAt: Date | null;
   readonly failedPayments: number;
 };
@@ -151,6 +153,7 @@ export function parseSubscription(value: unknown): Subscription {
     id: requiredText(record, "id"),
     status: STATUSES.find((each) => each === status) ?? "OTHER",
     reference: parseContributionReference(optionalText(record, "custom_id")),
+    subscriberPayerId: optionalText(optionalRecord(record["subscriber"]), "payer_id"),
     nextBillingAt: nextBillingAt === null || Number.isNaN(nextBillingAt.getTime()) ? null : nextBillingAt,
     failedPayments: typeof failed === "number" && Number.isSafeInteger(failed) && failed >= 0 ? failed : 0,
   };

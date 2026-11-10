@@ -1,5 +1,5 @@
 import type { CircleSnapshot, ShiftRecord, WishRecord, WishTriggerRecord } from "@kin/db";
-import { attestationStillNeeded, wishApprovalFor, type InForceWish } from "@kin/domain";
+import { attestationConflicts, attestationStillNeeded, wishApprovalFor, type AttestationConflicts, type InForceWish, type TriggerEvent } from "@kin/domain";
 
 import type { WishNameBook } from "@/components/dashboard/words/wish-words";
 
@@ -43,8 +43,15 @@ export const lastEnded = (circle: CircleSnapshot): WishTriggerRecord | null => c
 export const viewerSaid = (circle: CircleSnapshot, trigger: WishTriggerRecord, stance: "start" | "end"): boolean =>
   trigger.attestations.some((each) => each.memberId === circle.viewer.memberId && each.stance === stance);
 
+/** Who has a stake in `event` by her wishes in force: the successor they name, and the caregiver they keep paid. */
+export function conflictsOf(circle: CircleSnapshot, event: TriggerEvent): AttestationConflicts {
+  const memberOfPayee = (payeeId: string) => circle.payees.find((payee) => payee.id === payeeId)?.payee.member?.memberId ?? null;
+  return attestationConflicts(circle.wishes.wishes.filter((wish) => wish.state === "in_force"), event, memberOfPayee);
+}
+
 /** Who still must say so: anyone who may, or someone from the family when only the caregiver has. */
-export const stillNeeded = (trigger: WishTriggerRecord, stance: "start" | "end") => attestationStillNeeded(trigger.event, trigger.attestations, stance);
+export const stillNeeded = (circle: CircleSnapshot, trigger: WishTriggerRecord, stance: "start" | "end") =>
+  attestationStillNeeded(trigger.event, trigger.attestations, stance, conflictsOf(circle, trigger.event));
 
 /**
  * The wishes that ask more people before a waiting payment may go, as plain

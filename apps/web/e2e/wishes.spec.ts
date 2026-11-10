@@ -17,7 +17,12 @@ const SILENCE = Buffer.concat([Buffer.from("RIFF"), Buffer.from([36 + 8, 0, 0, 0
 
 async function tap(page: Page, name: string) {
   await page.goto(WISHES);
-  await page.getByRole("button", { name }).click();
+  // The buttons are live once the page has hydrated: a click before then sends nothing, so it is tried until one is answered.
+  await expect(async () => {
+    const answered = page.waitForResponse((response) => response.url().endsWith("/api/wishes"), { timeout: 3_000 });
+    await page.getByRole("button", { name }).click({ timeout: 3_000 });
+    expect((await answered).ok()).toBe(true);
+  }).toPass({ timeout: 20_000 });
 }
 
 for (const viewport of viewports) {
@@ -46,6 +51,22 @@ for (const viewport of viewports) {
     await expectNoHorizontalOverflow(page);
   });
 }
+
+test("Rose's own word that she is fine ends it at once, and only she is offered it", async ({ page }) => {
+  await startDemo(page);
+  await tap(page, "Rose is in hospital");
+  await expect(page.getByText(copy.trigger.youSaid)).toBeVisible();
+  await expect(page.getByRole("button", { name: copy.trigger.fine })).toHaveCount(0);
+  await seatAs(page, "Marcus");
+  await tap(page, "Rose is in hospital");
+  await expect(page.getByRole("heading", { name: copy.changed.title })).toBeVisible();
+  await seatAs(page, "Rose");
+  await page.goto(WISHES);
+  await page.getByRole("button", { name: copy.trigger.fine }).click();
+  await expect(page.getByRole("heading", { name: copy.changed.title })).toHaveCount(0);
+  await expect(page.getByText(/Rose came home on/)).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+});
 
 test("Elena and Marcus say Rose is in hospital: her wishes take effect, Amara's next shift is paid, and coming home undoes it", async ({ page }) => {
   await page.route("**/api/wishes/audio", (route) => route.fulfill({ status: 200, contentType: "audio/wav", body: SILENCE }));
@@ -174,11 +195,14 @@ for (const locale of ["he", "ar", "de"] as const) {
   });
 }
 
-test("Amara, Rose's caregiver, sees only the trigger: she may say Rose went into hospital, and reads none of her wishes", async ({ page }) => {
+test("Amara, Rose's caregiver, sees only the trigger, reads none of her wishes, and is not offered a word that would count for her own pay", async ({ page }) => {
   await startDemo(page);
   await seatAs(page, "Amara");
   await page.goto(WISHES);
-  await expect(page.getByRole("button", { name: "Rose is in hospital" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "If something happens to Rose" })).toBeVisible();
+  // Rose's wish keeps her paid, so she stands to gain: the family says when it happens.
+  await expect(page.getByRole("button", { name: "Rose is in hospital" })).toHaveCount(0);
+  await expect(page.getByText(english.dashboard.wishes.trigger.standsToGain.replace("{parent}", "Rose"))).toBeVisible();
   await expect(page.getByRole("button", { name: "Rose moved into a care home" })).toHaveCount(0);
   await expect(page.getByRole("article")).toHaveCount(0);
   await expect(page.getByText(KEEP_AMARA)).toHaveCount(0);

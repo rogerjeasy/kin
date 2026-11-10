@@ -7,6 +7,7 @@ import {
   attestWishTrigger,
   confirmWish,
   dismissWishTrigger,
+  parentSaysFine,
   isWishTrigger,
   readWishRecording,
   recordWish,
@@ -15,8 +16,10 @@ import {
   witnessWish,
   type CircleSnapshot,
   type Database,
+  type SubscriptionOwner,
   type WishReason,
 } from "@kin/db";
+import { PayPalError, isSubscriptionId, type PayPalPool } from "@kin/paypal";
 import { InvalidDecimalError, WishRuleError, centsFromDecimal, checkWishDraft, type WishContext, type WishRule, type WishRuleReason } from "@kin/domain";
 import { MAX_RECORDING_BYTES, SpeechUnavailableError, isSpeechLocale } from "@kin/speech";
 
@@ -31,6 +34,8 @@ export type WishesContext = {
   readonly accountTypes: BillingAccount;
   readonly model: StructuredModel | null;
   readonly services: SpeechServices | null;
+  /** PayPal, to ask whose a subscription is before Kin links it; `null` when this deployment has none. */
+  readonly paypal?: Pick<PayPalPool, "getSubscription"> | null;
   readonly limiter?: RateLimiter;
   readonly budget?: RateLimiter;
   readonly now?: () => number;
@@ -103,6 +108,12 @@ export async function runWishes(context: WishesContext, input: unknown): Promise
         const outcome = await asPerson(context.db, context.userId, (tx) => attestWishTrigger(tx, { circleId, event, stance }));
         return { ok: true, id: outcome.triggerId, state: outcome.state };
       }
+      case "fine": {
+        if (!may("wish_trigger.parent_fine")) return fail("refused");
+        if (!keys(row, ["operation"])) return fail("invalid");
+        const state = await asPerson(context.db, context.userId, (tx) => parentSaysFine(tx, { circleId }));
+        return { ok: true, state };
+      }
       case "dismiss": {
         if (!may("wish_trigger.dismiss")) return fail("refused");
         const triggerId = idIn(row, "triggerId");
@@ -117,7 +128,11 @@ export async function runWishes(context: WishesContext, input: unknown): Promise
         const name = row.name.replace(/\s+/g, " ").trim();
         if (paypal === undefined || name === "" || name.length > 80) return fail("invalid");
         const monthlyCents = centsFromDecimal(row.monthly.trim(), context.circle.circle.currency);
-        const id = await asPerson(context.db, context.userId, (tx) => addParentSubscription(tx, { circleId, name, monthlyCents, paypalSubscriptionId: paypal }));
+        if (paypal !== null && (!isSubscriptionId(paypal) || context.circle.circle.demo)) return fail("invalid");
+        const owner = paypal === null ? null : await ownerOf(context, paypal);
+        if (owner === "unavailable") return fail("unavailable");
+        if (paypal !== null && owner === null) return fail("not_owned");
+        const id = await asPerson(context.db, context.userId, (tx) => addParentSubscription(tx, { circleId, name, monthlyCents, paypalSubscriptionId: paypal, owner }));
         return { ok: true, id };
       }
       default:
@@ -126,6 +141,23 @@ export async function runWishes(context: WishesContext, input: unknown): Promise
   } catch (error) {
     if (error instanceof WishError || error instanceof WishRuleError) return fail(error.reason);
     if (error instanceof InvalidDecimalError) return fail("invalid");
+    throw error;
+  }
+}
+
+/**
+ * Who PayPal says a subscription belongs to, read from PayPal itself, never
+ * from the browser: `null` when PayPal knows no such subscription, and
+ * `unavailable` when it cannot be asked. The database decides whether that
+ * makes it the parent's.
+ */
+async function ownerOf(context: WishesContext, subscriptionId: string): Promise<SubscriptionOwner | null | "unavailable"> {
+  if (!context.paypal) return "unavailable";
+  try {
+    const read = await context.paypal.getSubscription(subscriptionId);
+    return { payerId: read.subscriberPayerId, circleId: read.reference?.circleId ?? null, memberId: read.reference?.memberId ?? null };
+  } catch (error) {
+    if (error instanceof PayPalError) return error.outcome === "rejected" ? null : "unavailable";
     throw error;
   }
 }

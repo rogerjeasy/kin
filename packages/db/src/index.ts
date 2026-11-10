@@ -180,6 +180,8 @@ export {
   confirmWish,
   dismissWishTrigger,
   isWishTrigger,
+  parentSaysFine,
+  subscriptionIsParents,
   jsonbText,
   parseWishRule,
   readDiscretionaryPause,
@@ -195,5 +197,5 @@ export {
   wishDigest,
   witnessWish,
 } from "./wishes.ts";
-export type { ParentSubscriptionRecord, SubscriptionJob, SubscriptionOutcome, WishReason, WishRecord, WishTriggerRecord, WishesSnapshot } from "./wishes.ts";
+export type { ParentSubscriptionRecord, SubscriptionJob, SubscriptionOutcome, SubscriptionOwner, WishReason, WishRecord, WishTriggerRecord, WishesSnapshot } from "./wishes.ts";
 export { MAX_RECORDING_STORED_BYTES, PARENT_SUBSCRIPTION_TRANSITIONS } from "./schema/wishes.ts";

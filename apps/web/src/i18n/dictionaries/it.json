@@ -3628,7 +3628,10 @@
         "ended": "{parent} è tornata a casa il {day}. Tutto ciò che le sue volontà avevano sospeso è ripartito.",
         "observer": "Qui puoi vedere che cosa cambia, e la famiglia dice quando succede.",
         "parentNote": "È la tua famiglia a dire quando succede. Non puoi attivarlo tu, e Kin non tira mai a indovinare.",
-        "caregiverHospital": "Come assistente familiare di {parent} puoi dire che è stata ricoverata in ospedale; deve dirlo anche qualcuno della famiglia."
+        "caregiverHospital": "Come assistente familiare di {parent} puoi dire che è stata ricoverata in ospedale; deve dirlo anche qualcuno della famiglia.",
+        "fine": "Sto bene. Non è così",
+        "fineNote": "La tua parola lo chiude subito, e tutto ciò che era sospeso riprende. La famiglia vede che sei stata tu.",
+        "standsToGain": "Le sue volontà cambierebbero qualcosa per te, quindi la tua parola non conta per attivarle. È la famiglia a dire quando succede; puoi sempre dire quando {parent} è tornata a casa."
       },
       "changed": {
         "title": "Che cosa è cambiato, e perché",
@@ -3646,7 +3649,8 @@
         },
         "newPayees": "Un pagamento oltre {amount} a qualcuno di nuovo ora richiede l’accordo di {approvers}.",
         "successor": "{member} gestisce il cerchio finché {parent} non torna a casa.",
-        "none": "Nessuna delle sue volontà riguarda questo. Tutto continua come al solito."
+        "none": "Nessuna delle sue volontà riguarda questo. Tutto continua come al solito.",
+        "notLinked": "{name} non è collegato a PayPal, quindi Kin non può sospenderlo. Chiedi all’azienda di sospenderlo."
       },
       "subscriptions": {
         "title": "Che cosa paga {parent} ogni mese",
@@ -3666,8 +3670,10 @@
           "paypal": "ID abbonamento PayPal",
           "paypalHint": "Inizia con I-. Kin lo sospende tramite PayPal.",
           "submit": "Aggiungi",
-          "added": "Aggiunto."
-        }
+          "added": "Aggiunto.",
+          "paypalOptional": "Facoltativo: Kin lo collega solo se PayPal dice che è del genitore. Altrimenti resta non collegato e Kin non lo tocca mai."
+        },
+        "notLinked": "Non collegato a PayPal"
       },
       "citation": "{parent} ha detto il {day}: «{quote}»",
       "approvalNeeds": "La sua volontà chiede l’accordo di {names} prima che questo parta.",
@@ -3698,7 +3704,9 @@
         "subscriptions": "Nomina un abbonamento che Kin non conosce.",
         "amount": "Non è stato possibile leggere quell’importo.",
         "approvers": "Servono almeno due persone della famiglia che dividono la spesa.",
-        "successor": "Nomina qualcuno che non può gestire il cerchio."
+        "successor": "Nomina qualcuno che non può gestire il cerchio.",
+        "not_owned": "PayPal non dice che questo abbonamento è del genitore, quindi Kin non lo toccherà.",
+        "taken": "Kin conosce già questo abbonamento PayPal."
       },
       "packet": {
         "title": "Le sue volontà",

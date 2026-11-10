@@ -31,7 +31,12 @@ export function WishCard({ copy, wish, history, book, format, locale, voice, can
   const own = voice === "you";
   const readBack = wishReadBack(copy, book, format, wish, voice);
   const parentSigned = wish.signatures.some((signature) => signature.capacity === "parent");
-  const witnesses = wish.signatures.filter((signature) => signature.capacity === "witness").map((signature) => book.members[signature.memberId] ?? "?");
+  // In the order the members joined: two witnesses can sign in the same second on the demo's clock.
+  const memberOrder = Object.keys(book.members);
+  const witnesses = wish.signatures
+    .filter((signature) => signature.capacity === "witness")
+    .toSorted((a, b) => memberOrder.indexOf(a.memberId) - memberOrder.indexOf(b.memberId))
+    .map((signature) => book.members[signature.memberId] ?? "?");
   const signed = !parentSigned
     ? copy.notConfirmed
     : wish.state === "in_force" || witnesses.length >= 2

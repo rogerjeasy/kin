@@ -30,9 +30,13 @@ export const WISH_SUBSCRIPTION_TOPIC = "wish.subscription";
  * `frozen`: a trigger is open, so her wishes stay as they are. `waiting`: a change of this wish already waits.
  * `closed`: the wish is not in a state for this. `active`: the trigger is active already, or not a report.
  * `other_event`: a different event is reported or active. `nothing_active`: nothing is active to end.
- * `busy`: too many recordings today.
+ * `busy`: too many recordings today. `not_owned`: PayPal does not say the subscription is the parent's.
+ * `taken`: that PayPal subscription is already known to Kin.
  */
-export type WishReason = "refused" | "invalid" | "frozen" | "waiting" | "closed" | "active" | "other_event" | "nothing_active" | "busy";
+export type WishReason = "refused" | "invalid" | "frozen" | "waiting" | "closed" | "active" | "other_event" | "nothing_active" | "busy" | "not_owned" | "taken";
+
+/** Who PayPal says a subscription belongs to: its subscriber's payer ID, and the circle and member its custom ID names when Kin made it. */
+export type SubscriptionOwner = { readonly payerId: string | null; readonly circleId: string | null; readonly memberId: string | null };
 
 /** A wish, a trigger or a subscription could not be written. Retrying the same request cannot help. */
 export class WishError extends Error {
@@ -82,6 +86,8 @@ export type ParentSubscriptionRecord = {
   readonly state: "active" | "suspending" | "suspended" | "resuming";
   readonly heldBy: string | null;
   readonly simulated: boolean;
+  /** A real subscription PayPal said is the parent's, which Kin may pause. A real one without is not linked. */
+  readonly linked: boolean;
   readonly changedAt: Date | null;
 };
 
@@ -94,6 +100,8 @@ export type WishesSnapshot = {
   readonly subscriptions: readonly ParentSubscriptionRecord[];
   /** What her wishes do now, by plain code, or `null` while no trigger is active. */
   readonly effects: WishEffects | null;
+  /** Whether the person reading stands to gain if each event started, so their word would not count toward it. */
+  readonly stake: Readonly<Record<TriggerEvent, boolean>>;
 };
 
 /** Reads her wishes, their triggers and her subscriptions, as the person (or the service) in `tx`. */
@@ -125,9 +133,19 @@ export async function readWishes(tx: Transaction, circleId: string): Promise<Wis
   return {
     wishes: records,
     triggers,
-    subscriptions: subscriptions.map((row) => ({ id: row.id, name: row.name, monthlyCents: row.monthlyCents, state: row.state, heldBy: row.heldBy, simulated: row.simulated, changedAt: row.changedAt })),
+    subscriptions: subscriptions.map((row) => ({ id: row.id, name: row.name, monthlyCents: row.monthlyCents, state: row.state, heldBy: row.heldBy, simulated: row.simulated, linked: row.paypalSubscriptionId !== null, changedAt: row.changedAt })),
     effects: wishEffects(records.filter((wish) => wish.state === "in_force"), activeOf(triggers)),
+    stake: await readStake(tx, circleId),
   };
+}
+
+// Asked of the database, which can read her wishes when a caregiver cannot, and tells them only this.
+async function readStake(tx: Transaction, circleId: string): Promise<Record<TriggerEvent, boolean>> {
+  const result = await tx.execute<{ hospital: boolean; care_home: boolean }>(
+    sql`select kin_private.my_wish_stake(${circleId}::uuid, 'hospital') as hospital, kin_private.my_wish_stake(${circleId}::uuid, 'care_home') as care_home`,
+  );
+  const row = result.rows[0];
+  return { hospital: row?.hospital === true, care_home: row?.care_home === true };
 }
 
 async function readTriggers(tx: Transaction, circleId: string): Promise<WishTriggerRecord[]> {
@@ -249,19 +267,37 @@ export async function attestWishTrigger(
   });
 }
 
+/**
+ * The parent's own word that she is fine: a report is dismissed and an active
+ * trigger ends at once, undoing what it started. The parent only. Returns the
+ * trigger's state after.
+ */
+export async function parentSaysFine(tx: Transaction, input: { readonly circleId: string }): Promise<"dismissed" | "ended"> {
+  return wishOperation(async () => {
+    const result = await tx.execute<{ state: "dismissed" | "ended" }>(sql`select kin_private.parent_says_fine(${input.circleId}::uuid) as state`);
+    const state = result.rows[0]?.state;
+    if (!state) throw new Error("Saying she is fine returned nothing");
+    return state;
+  });
+}
+
 /** Takes back a report nobody confirmed. */
 export async function dismissWishTrigger(tx: Transaction, input: { readonly circleId: string; readonly triggerId: string }): Promise<void> {
   await wishOperation(() => tx.execute(sql`select kin_private.dismiss_wish_trigger(${input.circleId}::uuid, ${input.triggerId}::uuid)`));
 }
 
-/** Tells Kin about a subscription the parent pays, as the organizer. */
+/**
+ * Tells Kin about a subscription the parent pays, as the organizer. A PayPal
+ * subscription ID is kept only with `owner`, what PayPal itself said of it,
+ * and only if that makes it the parent's; without an ID it is not linked.
+ */
 export async function addParentSubscription(
   tx: Transaction,
-  input: { readonly circleId: string; readonly name: string; readonly monthlyCents: number; readonly paypalSubscriptionId: string | null },
+  input: { readonly circleId: string; readonly name: string; readonly monthlyCents: number; readonly paypalSubscriptionId: string | null; readonly owner: SubscriptionOwner | null },
 ): Promise<string> {
   return wishOperation(async () => {
     const result = await tx.execute<{ id: string }>(
-      sql`select kin_private.add_parent_subscription(${input.circleId}::uuid, ${input.name}, ${input.monthlyCents}::bigint, ${input.paypalSubscriptionId}) as id`,
+      sql`select kin_private.add_parent_subscription(${input.circleId}::uuid, ${input.name}, ${input.monthlyCents}::bigint, ${input.paypalSubscriptionId}, ${JSON.stringify(input.owner)}::jsonb) as id`,
     );
     const id = result.rows[0]?.id;
     if (!id) throw new Error("Adding the subscription returned no ID");
@@ -281,6 +317,8 @@ const REASONS: Readonly<Record<string, WishReason>> = {
   KW005: "other_event",
   KW006: "nothing_active",
   KW007: "busy",
+  KW008: "not_owned",
+  KW009: "taken",
 };
 
 async function wishOperation<T>(work: () => Promise<T>): Promise<T> {
@@ -417,8 +455,14 @@ export async function readSubscriptionJob(tx: Transaction, subscriptionId: strin
   };
 }
 
+/** Whether PayPal's description of a subscription makes it the parent's, by the database's one rule. As Kin's service. */
+export async function subscriptionIsParents(tx: Transaction, circleId: string, owner: SubscriptionOwner): Promise<boolean> {
+  const result = await tx.execute<{ ok: boolean }>(sql`select kin_private.subscription_is_parents(${circleId}::uuid, ${JSON.stringify(owner)}::jsonb) as ok`);
+  return result.rows[0]?.ok === true;
+}
+
 /** Why a subscription's state is recorded: PayPal's record shows the move, PayPal refused it, or the subscription is gone (cancelled or expired). */
-export type SubscriptionOutcome = "confirmed" | "refused" | "gone";
+export type SubscriptionOutcome = "confirmed" | "refused" | "gone" | "not_owned";
 
 /**
  * Records what PayPal's record says a subscription is now, once Kin read it

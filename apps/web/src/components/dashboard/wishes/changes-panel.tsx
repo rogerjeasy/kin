@@ -49,7 +49,9 @@ export function ChangesPanel({ copy, book, format, locale, effects, kept, subscr
     ...effects.subscriptions.flatMap(({ subscriptionId, wish }) => {
       const subscription = subscriptions.find((each) => each.id === subscriptionId);
       if (subscription === undefined) return [];
-      return [{ key: `subscription-${subscriptionId}`, icon: RepeatIcon, lines: [fill(copy.changed.subscription[subscription.state], { name: subscription.name, amount: format.money(subscription.monthlyCents) })], tag: subscription.simulated ? copy.simulated : null, wish }];
+      // One not linked to PayPal keeps running: Kin says so, and who can stop it.
+      const line = !subscription.simulated && !subscription.linked ? fill(copy.changed.notLinked, { name: subscription.name }) : fill(copy.changed.subscription[subscription.state], { name: subscription.name, amount: format.money(subscription.monthlyCents) });
+      return [{ key: `subscription-${subscriptionId}`, icon: RepeatIcon, lines: [line], tag: subscription.simulated ? copy.simulated : null, wish }];
     }),
     ...(effects.discretionary === null ? [] : [{ key: "discretionary", icon: PauseCircleIcon, lines: [copy.changed.discretionary], tag: null, wish: effects.discretionary }]),
     ...effects.newPayees.map((rule) => ({

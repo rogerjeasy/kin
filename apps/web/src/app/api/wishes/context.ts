@@ -1,6 +1,7 @@
 import type { CircleRequest } from "@/server/circle-json-route";
 import { databases } from "@/server/database";
 import { createRateLimiter, structuredModel } from "@/server/model";
+import { topUpServices } from "@/server/paypal";
 import { speechServices } from "@/server/speech";
 import type { WishesContext } from "@/server/wishes";
 
@@ -17,6 +18,7 @@ export function wishesContext({ viewer, circle }: CircleRequest): WishesContext 
     accountTypes: viewer.kind === "visitor" ? "demo" : viewer.session.accountTypes,
     model: structuredModel(),
     services: speechServices(),
+    paypal: topUpServices()?.pool ?? null,
     limiter: wishLimiter,
     budget: wishBudget,
   };

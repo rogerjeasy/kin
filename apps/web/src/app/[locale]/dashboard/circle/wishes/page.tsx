@@ -80,8 +80,14 @@ export default async function WishesPage({ params, searchParams }: PageProps<"/[
         format={format}
         open={open}
         ended={lastEnded(circle)}
-        viewer={{ memberId: me, role: circle.viewer.role, mayAttest: may(circle, "wish_trigger.attest") }}
-        needs={{ start: open === null ? "anyone" : stillNeeded(open, "start") }}
+        viewer={{
+          memberId: me,
+          role: circle.viewer.role,
+          mayAttest: may(circle, "wish_trigger.attest"),
+          maySayFine: may(circle, "wish_trigger.parent_fine"),
+          gains: circle.wishes.stake,
+        }}
+        needs={{ start: open === null ? "anyone" : stillNeeded(circle, open, "start") }}
       />
       {effects !== null ? (
         <ChangesPanel
