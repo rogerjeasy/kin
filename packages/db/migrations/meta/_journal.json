@@ -407,6 +407,20 @@
       "when": 1794267336499,
       "tag": "0057_open-kin-access",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1794270811959,
+      "tag": "0058_wishes-tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1794270812456,
+      "tag": "0059_wishes-access",
+      "breakpoints": true
     }
   ]
 }

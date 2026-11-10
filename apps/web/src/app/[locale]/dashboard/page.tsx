@@ -28,7 +28,8 @@ import { givenRows } from "@/components/dashboard/words/given-rows";
 import { planLabel } from "@/components/dashboard/words/plan-words";
 import { ButtonLink } from "@/components/shared/button-link";
 import { Button } from "@/components/ui/button";
-import { agreementRoute, askRoute, connectionsRoute, dashboardRoutes, listenRoute, presenceRoute, quietSharesRoute } from "@/content/dashboard-routes";
+import { agreementRoute, askRoute, connectionsRoute, dashboardRoutes, listenRoute, presenceRoute, quietSharesRoute, wishesRoute } from "@/content/dashboard-routes";
+import { WishesCard } from "@/components/dashboard/wishes/wishes-card";
 import { askKinSuggestions } from "@/content/circle/ask-kin-suggestions";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
@@ -138,6 +139,15 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
       ) : null}
       {may(circle, "presence.check") ? <PresenceCard copy={dictionary.dashboard.presence.link} href={path(presenceRoute)} /> : null}
       {may(circle, "quiet_share.view") && quietAsk !== null ? <QuietShareCard copy={dictionary.dashboard.quietShares.card} ask={quietAsk} href={path(quietSharesRoute)} format={format} /> : null}
+      {may(circle, "wish.view") ? (
+        <WishesCard
+          title={fill(dictionary.dashboard.wishes.link.title, slots)}
+          text={dictionary.dashboard.wishes.link.text}
+          label={dictionary.dashboard.wishes.link.label}
+          href={path(wishesRoute)}
+          quote={circle.wishes.wishes.find((wish) => wish.state === "in_force")?.quote ?? null}
+        />
+      ) : null}
       <AskKinCard copy={dictionary.askKin} suggestions={askKinSuggestions(circle, dictionary.askKin.suggestions, format, names)} href={path(askRoute)} />
       <ConnectionsCard copy={dictionary.openKin.card} boundary={dictionary.openKin.boundary} href={path(connectionsRoute)} />
       <div className="grid gap-6 lg:grid-cols-3">

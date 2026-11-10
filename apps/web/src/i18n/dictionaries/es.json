@@ -1217,6 +1217,10 @@
       "careAgreements": {
         "title": "Acuerdos de cuidado · Kin",
         "description": "Acuerdos de cuidado escritos con firmas, y qué cubre cada uno."
+      },
+      "wishes": {
+        "title": "Deseos · Kin",
+        "description": "Lo que la madre o el padre pidió, con sus propias palabras, por si ingresa en un hospital o en una residencia, y lo que hace Kin cuando ocurre."
       }
     },
     "shell": {
@@ -2341,7 +2345,8 @@
         "above_ceiling": "Esta reposición supera el tope del acuerdo.",
         "paused": "Los pagos están en pausa. Inténtelo de nuevo cuando termine.",
         "no_agreement": "La familia aún no tiene un acuerdo en vigor.",
-        "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento."
+        "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento.",
+        "wish_hold": "Sus deseos pausan las reposiciones y las compras mientras ella no está en casa. No se pidió nada."
       },
       "mandatesLink": "Permisos permanentes",
       "underMandate": "Comprado con el permiso permanente. No hizo falta preguntar a nadie.",
@@ -3671,6 +3676,231 @@
         "phone": "Teléfono de {name}",
         "back": "Volver a partes discretas",
         "none": "Ahora no se está cubriendo nada. Empiece de nuevo desde el aviso de la demostración para recuperar el salvaescaleras."
+      }
+    },
+    "wishes": {
+      "title": "Los deseos de {parent}",
+      "titleOwn": "Mis deseos",
+      "lede": "Cuando {parent} todavía podía decidir, dijo qué debía pasar con su dinero el día en que ya no pudiera. Kin guarda sus palabras y las cumple tal como ella las dijo: reglas sencillas, nunca suposiciones.",
+      "ledeOwn": "Diga qué debe pasar con su dinero si ingresa en un hospital o en una residencia. Kin se lo lee en voz alta, usted lo confirma y dos personas de su familia lo atestiguan. Puede cambiarlo cuando quiera.",
+      "legal": "Estos deseos ayudan a la familia a cumplir lo que ella quería. No sustituyen un poder notarial, un testamento vital ni un testamento. Kin no es un despacho de abogados, y esto no es asesoramiento legal.",
+      "simulated": "Simulado",
+      "packetLink": "Expediente para su abogado",
+      "link": {
+        "title": "Los deseos de {parent}",
+        "text": "Lo que ella pidió, con sus propias palabras, por si ingresa en un hospital o en una residencia.",
+        "label": "Leer sus deseos"
+      },
+      "list": {
+        "title": "Sus deseos",
+        "titleOwn": "Sus deseos",
+        "empty": "{parent} todavía no ha expresado ningún deseo.",
+        "emptyOwn": "Usted todavía no ha expresado ningún deseo."
+      },
+      "said": "{parent} dijo el {day}",
+      "saidOwn": "Usted dijo el {day}",
+      "play": {
+        "recording": "Escuchar la grabación de {parent}",
+        "readByKin": "Escuchar las palabras de {parent}, leídas por Kin",
+        "playing": "Reproduciendo",
+        "stop": "Detener",
+        "voiceOwn": "Su propia voz",
+        "voiceKin": "Leído con la voz de Kin, no con la suya",
+        "unavailable": "Kin no puede reproducirlo ahora. Sus palabras están escritas arriba."
+      },
+      "states": {
+        "draft": "Leído en voz alta, aún sin confirmar",
+        "confirmed": "Esperando a los testigos",
+        "in_force": "En vigor",
+        "superseded": "Reemplazado",
+        "withdrawn": "Retirado"
+      },
+      "when": {
+        "she": {
+          "hospital": "Si {parent} está en el hospital",
+          "care_home": "Si {parent} se muda a una residencia",
+          "either": "Si {parent} está en el hospital o en una residencia"
+        },
+        "you": {
+          "hospital": "Si usted está en el hospital",
+          "care_home": "Si usted se muda a una residencia",
+          "either": "Si usted está en el hospital o en una residencia"
+        }
+      },
+      "does": {
+        "she": {
+          "keep_paying": "Kin sigue pagando a {payee}, digan lo que digan sus otros deseos.",
+          "pause_discretionary": "Kin retiene las reposiciones, las compras y todo lo que no sea cuidado hasta que ella vuelva a casa.",
+          "suspend_subscriptions": "Kin pausa {subscriptions} y las reanuda cuando ella vuelva a casa.",
+          "new_payee_approvals": "Un pago de más de {amount} a alguien nuevo espera hasta que {approvers} estén de acuerdo.",
+          "successor": "{member} lleva el círculo por la familia hasta que ella vuelva a casa."
+        },
+        "you": {
+          "keep_paying": "Kin sigue pagando a {payee}, digan lo que digan sus otros deseos.",
+          "pause_discretionary": "Kin retiene las reposiciones, las compras y todo lo que no sea cuidado hasta que usted vuelva a casa.",
+          "suspend_subscriptions": "Kin pausa {subscriptions} y las reanuda cuando usted vuelva a casa.",
+          "new_payee_approvals": "Un pago de más de {amount} a alguien nuevo espera hasta que {approvers} estén de acuerdo.",
+          "successor": "{member} lleva el círculo por la familia hasta que usted vuelva a casa."
+        }
+      },
+      "signed": "Confirmado por {parent}, con {names} como testigos",
+      "waitingWitnesses": "Confirmado por {parent}. Testigos hasta ahora: {count} de 2.",
+      "notConfirmed": "Aún sin confirmar",
+      "seal": "Sello {digest}",
+      "version": "Versión {version}",
+      "history": "Versiones anteriores",
+      "actions": {
+        "witness": "Soy testigo de este deseo",
+        "witnessHint": "Usted oyó a {parent} decirlo, y es lo que ella quiere.",
+        "witnessed": "Usted atestiguó este deseo.",
+        "withdraw": "Retirar",
+        "withdrawConfirm": "¿Retirar este deseo? Queda en el registro, pero deja de aplicarse.",
+        "withdrawYes": "Sí, retirarlo",
+        "keepIt": "Mantenerlo",
+        "change": "Decirlo de otra forma",
+        "done": "Hecho."
+      },
+      "frozen": "Mientras alguien haya dicho que {parent} está en el hospital o en una residencia, sus deseos se quedan exactamente como están. Nadie puede añadir, cambiar ni retirar ninguno hasta que ella vuelva a casa.",
+      "record": {
+        "title": "Expresar un deseo",
+        "text": "Hable como lo haría con su familia. Kin escribe sus palabras y luego se las lee como una regla para que usted la confirme.",
+        "speak": "Decir un deseo",
+        "stop": "He terminado",
+        "listening": "Kin le escucha. Diga su deseo y luego pulse «He terminado».",
+        "transcribing": "Kin está escribiendo sus palabras…",
+        "or": "O escríbalo",
+        "label": "Su deseo, con sus propias palabras",
+        "placeholder": "Sigan pagando siempre a Amara, aunque yo esté en el hospital.",
+        "readBack": "Léamelo en voz alta",
+        "reading": "Kin está leyendo sus palabras…",
+        "readBackTitle": "Esto es lo que Kin entendió",
+        "keep": "Sí, eso es lo que quiero",
+        "notThis": "No, déjelo fuera",
+        "kept": "Guardado. Se pedirá a dos personas de su familia que lo atestigüen.",
+        "recordingKept": "Su grabación se guarda con él, con su propia voz.",
+        "flagged": "Kin no puede cumplir este como una regla, así que no se guarda. Dígaselo a su familia o inclúyalo en su testamento vital.",
+        "changing": "Está cambiando: «{quote}»",
+        "cancelChange": "No cambiarlo",
+        "micDenied": "Kin no pudo usar el micrófono. Puede escribir su deseo en su lugar.",
+        "noSpeech": "Kin no puede transcribir la voz aquí. Su grabación se guarda; escriba su deseo abajo.",
+        "modelOff": "Kin no puede leerle sus palabras ahora mismo. Inténtelo de nuevo más tarde.",
+        "flagReasons": {
+          "not_a_rule": "No es algo que Kin pueda cumplir.",
+          "not_her_words": "Kin no encontró estas palabras en lo que usted dijo.",
+          "unknown_slot": "Nombra a alguien o algo que Kin no conoce.",
+          "quote": "Las palabras son demasiado largas o están vacías.",
+          "trigger": "Kin no pudo saber cuándo debe aplicarse.",
+          "kind": "No es algo que Kin pueda cumplir.",
+          "payee": "Nombra a alguien que no es quien la cuida.",
+          "subscriptions": "Nombra una suscripción que Kin no conoce.",
+          "amount": "Kin no encontró el importe en sus palabras.",
+          "approvers": "Hacen falta al menos dos personas de su familia que compartan el costo.",
+          "successor": "Nombra a alguien que no puede llevar el círculo."
+        }
+      },
+      "trigger": {
+        "title": "Si a {parent} le pasa algo",
+        "text": "Sus deseos solo se aplican cuando alguien lo dice: dos personas de la familia, o una de la familia y su cuidadora si se trata de una estancia en el hospital. Kin nunca lo decide por su voz ni por su silencio.",
+        "report": {
+          "hospital": "{parent} está en el hospital",
+          "care_home": "{parent} se mudó a una residencia"
+        },
+        "home": "{parent} ya está en casa",
+        "where": {
+          "hospital": "en el hospital",
+          "care_home": "en una residencia"
+        },
+        "reported": "{name} dijo que {parent} está {where}. Sus deseos se aplicarán cuando otra persona lo diga también.",
+        "reportedFamily": "{name} dijo que {parent} está {where}. Sus deseos se aplicarán cuando alguien de la familia lo diga también.",
+        "active": "{parent} está {where}. Sus deseos están en vigor desde el {when}.",
+        "endWaiting": "{name} dijo que {parent} ya está en casa. En cuanto otra persona lo diga también, todo lo que sus deseos pausaron se reanudará.",
+        "youSaid": "Usted lo dijo.",
+        "attestedBy": "Lo dijeron {names}",
+        "dismiss": "Fue un error",
+        "ended": "{parent} volvió a casa el {day}. Todo lo que sus deseos pausaron se reanudó.",
+        "observer": "Aquí puede ver qué cambia, y la familia dice cuándo ocurre.",
+        "parentNote": "Su familia dice cuándo ocurre esto. Usted no puede activarlo, y Kin nunca lo adivina.",
+        "caregiverHospital": "Como cuidadora de {parent}, puede decir que ella ingresó en el hospital; alguien de la familia también tiene que decirlo."
+      },
+      "changed": {
+        "title": "Qué cambió y por qué",
+        "text": "Cada cambio es código sencillo que lee su deseo tal como ella lo dijo. Toque para escuchar sus palabras.",
+        "kept": "{payee} sigue cobrando.",
+        "nextShift": "Próximo turno: {title}, {day}.",
+        "paid": "Se pagaron {amount} a {payee} el {day}.",
+        "onItsWay": "El pago de {amount} a {payee} está en camino.",
+        "discretionary": "Las reposiciones, las compras y otros gastos que no son de cuidado están en pausa.",
+        "subscription": {
+          "active": "{name} ({amount} al mes) está activa.",
+          "suspending": "{name} se está pausando a través de PayPal.",
+          "suspended": "{name} ({amount} al mes) está en pausa.",
+          "resuming": "{name} se está reanudando a través de PayPal."
+        },
+        "newPayees": "Un pago de más de {amount} a alguien nuevo ahora necesita el acuerdo de {approvers}.",
+        "successor": "{member} lleva el círculo hasta que {parent} vuelva a casa.",
+        "none": "Ninguno de sus deseos se aplica a esto. Todo sigue como siempre."
+      },
+      "subscriptions": {
+        "title": "Lo que {parent} paga cada mes",
+        "text": "Suscripciones que sus deseos pueden pausar. Una real se pausa a través de PayPal, y Kin solo lo registra cuando PayPal lo confirma.",
+        "empty": "Aún no hay suscripciones.",
+        "monthly": "{amount} al mes",
+        "states": {
+          "active": "Activa",
+          "suspending": "Pausando",
+          "suspended": "En pausa",
+          "resuming": "Reanudando"
+        },
+        "add": {
+          "title": "Añadir una suscripción",
+          "name": "Nombre",
+          "monthly": "Al mes",
+          "paypal": "ID de suscripción de PayPal",
+          "paypalHint": "Empieza por I-. Kin la pausa a través de PayPal.",
+          "submit": "Añadir",
+          "added": "Añadida."
+        }
+      },
+      "citation": "{parent} dijo el {day}: «{quote}»",
+      "approvalNeeds": "Su deseo pide que {names} estén de acuerdo antes de que esto salga.",
+      "banner": {
+        "reported": "{name} dijo que {parent} está {where}. Sus deseos se aplicarán cuando otra persona lo diga también.",
+        "active": "{parent} está {where}, y sus deseos están en vigor: Kin los cumple tal como ella los dijo.",
+        "link": "Qué cambió"
+      },
+      "reasons": {
+        "refused": "No puede hacer eso desde su puesto.",
+        "invalid": "Kin no pudo leer eso.",
+        "frozen": "Sus deseos se quedan como están mientras ella no está en casa.",
+        "waiting": "Ya hay un cambio de este deseo en espera.",
+        "closed": "Ese deseo ha cambiado desde que abrió esta pantalla.",
+        "active": "Eso ya está en vigor.",
+        "other_event": "Ya se ha avisado de otra cosa. Diga primero que ella ya está en casa.",
+        "nothing_active": "No hay nada en vigor que terminar.",
+        "busy": "Es suficiente por ahora. Inténtelo de nuevo más tarde.",
+        "unavailable": "Kin no pudo hacerlo ahora. Inténtelo de nuevo en un momento.",
+        "model_unavailable": "Kin no puede leerle sus palabras ahora mismo. Inténtelo de nuevo más tarde.",
+        "speech_unavailable": "Kin no puede oír la voz aquí. Escriba su deseo en su lugar.",
+        "recording": "No se pudo usar esa grabación. Inténtelo de nuevo.",
+        "unreadable": "Kin no pudo leer esas palabras. Intente decirlo de forma más sencilla.",
+        "quote": "Las palabras son demasiado largas o están vacías.",
+        "trigger": "Kin no pudo saber cuándo debe aplicarse.",
+        "kind": "No es algo que Kin pueda cumplir.",
+        "payee": "Nombra a alguien que no es cuidador.",
+        "subscriptions": "Nombra una suscripción que Kin no conoce.",
+        "amount": "No se pudo leer ese importe.",
+        "approvers": "Hacen falta al menos dos personas de la familia que compartan el costo.",
+        "successor": "Nombra a alguien que no puede llevar el círculo."
+      },
+      "packet": {
+        "title": "Sus deseos",
+        "text": "Cada deseo en vigor, tal como ella lo dijo, con la regla que lee Kin, quiénes fueron testigos y su sello. El historial completo está en wishes.csv.",
+        "chain": "Todos los sellos coinciden: el historial de sus deseos no se ha reescrito.",
+        "chainBroken": "Un sello no coincide. Consulte al soporte de Kin antes de fiarse de este historial."
+      },
+      "card": {
+        "when": "Cuándo",
+        "does": "Qué hace Kin"
       }
     }
   },

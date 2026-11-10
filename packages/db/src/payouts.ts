@@ -1,4 +1,4 @@
-import { HELP_PURPOSE, SHIFT_PURPOSE, billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, settlementPaidOut, type ExecutionState } from "@kin/domain";
+import { HELP_PURPOSE, SHIFT_PURPOSE, billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, settlementPaidOut, wishHoldFor, type ExecutionState, type SpendKind } from "@kin/domain";
 import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
@@ -8,6 +8,7 @@ import { laterOf, outgoingMoneyHeldByPresence } from "./presence.ts";
 import { auditLog, bills, circles, executions, ledgerEntries, outbox, payees, presenceChecks, proposals, settlements, trustedVoices } from "./schema/index.ts";
 import { markShiftPaid } from "./shifts.ts";
 import type { PayoutWallet } from "./values.ts";
+import { readWishEffects } from "./wishes.ts";
 
 /** The outbox topic that asks the worker to pay an approved caregiver or settlement payout. */
 export const PAYOUT_TOPIC = "payout.execute";
@@ -147,7 +148,13 @@ async function settlementReceiver(tx: Transaction, circleId: string, memberId: s
   return payee?.receiver ?? null;
 }
 
-export type BeginOutcome = "ready" | "paused" | "no_receiver" | "waiting_for_funds" | "not_verified";
+export type BeginOutcome = "ready" | "paused" | "no_receiver" | "waiting_for_funds" | "not_verified" | "wish_hold";
+
+/** How the parent's wishes sort a payout: a caregiver's pay, help for a family member, or a member's settlement. */
+export function payoutSpendKind(job: Pick<PayoutJob, "kind" | "purpose">): SpendKind {
+  if (job.kind === "member_payout") return "member_payout";
+  return job.purpose === HELP_PURPOSE ? "help_payout" : "caregiver_payout";
+}
 
 /** The address a ready payout is sent to: the one fixed on its execution. */
 export function payoutReceiver(job: PayoutJob): string | null {
@@ -163,6 +170,8 @@ export function payoutReceiver(job: PayoutJob): string | null {
  */
 export async function beginPayout(tx: Transaction, job: PayoutJob, feeReserveCents: number): Promise<BeginOutcome> {
   if (isPaused(job.pausedUntil, job.now)) return "paused";
+  // While a trigger is active, the parent's wishes hold what is not care; a caregiver she named is always paid.
+  if (wishHoldFor(await readWishEffects(tx, job.circleId), { kind: payoutSpendKind(job), payeeId: job.payeeId }).held) return "wish_hold";
   // Help for a family member goes only to the account they confirmed, and only while they stand by it.
   if (job.voiceId !== null && !(await helpIsVerified(tx, job))) return "not_verified";
   if (job.receiver === null && !job.simulated) {

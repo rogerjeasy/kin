@@ -31,6 +31,7 @@ import type {
   VersionStatus,
 } from "@kin/domain";
 
+import type { WishesSnapshot } from "./wishes.ts";
 import type { ApprovalMethod, ClaimVerdict, DocumentKind, InvitationStatus, NarrationState, PayoutWallet, ReceiptState, SettlementState } from "./values.ts";
 
 /**
@@ -82,6 +83,8 @@ export type CircleSnapshot = {
   readonly invoiceRequests: readonly InvoiceRequestRecord[];
   /** The written agreements between the parent and each caregiver, oldest first. A caregiver reads only their own. */
   readonly careAgreements: readonly CareAgreementRecord[];
+  /** The parent's wishes, their triggers and her subscriptions, with what they do now. A caregiver reads the triggers only. */
+  readonly wishes: WishesSnapshot;
 };
 
 /** One written care agreement with its signatures, and where it stands on the circle's calendar day. */

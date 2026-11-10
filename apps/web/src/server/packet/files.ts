@@ -14,6 +14,7 @@ import type { Dictionary } from "@/i18n/dictionary";
 import { englishDay, englishMoney } from "./english";
 import type { PacketNote } from "./note";
 import type { PaymentProof } from "./proofs";
+import { wishesCsv, wishesText } from "./wishes";
 
 type PacketInput = {
   readonly circle: CircleSnapshot;
@@ -232,6 +233,8 @@ function readme(input: PacketInput, today: string): string {
     "  look-back.csv            The same payment list, for a spreadsheet.",
     "  visit-proofs.csv         Each paid visit with the caregiver's check-in and out and the family's confirmation.",
     "  paypal-payments.csv      What PayPal's Transaction Search says about each payment.",
+    "  wishes.txt               The parent's wishes in her own words, what each does, who witnessed it, and its seal.",
+    "  wishes.csv               Every version of every wish, for a spreadsheet.",
     "  record/kin-record.json   The circle's record with its hash chain, checkable offline.",
     "  manifest.json            A SHA-256 fingerprint of every file here.",
     "",
@@ -262,6 +265,8 @@ export function buildPacket(input: PacketInput, today: string, now: Date): { rea
     { name: "look-back.csv", data: encoder.encode(lookbackCsv(input)) },
     { name: "visit-proofs.csv", data: encoder.encode([VISIT_HEADER.map((cell) => cell), ...visitRows(input.circle, input.names, input.view.summary.from)].map(csvRow).join("\r\n") + "\r\n") },
     { name: "paypal-payments.csv", data: encoder.encode(paymentsCsv(input)) },
+    { name: "wishes.txt", data: encoder.encode(wishesText(input.circle, input.dictionary)) },
+    { name: "wishes.csv", data: encoder.encode(wishesCsv(input.circle)) },
     { name: "record/kin-record.json", data: encoder.encode(JSON.stringify(input.bundle, null, 2)) },
     { name: "README.txt", data: encoder.encode(readme(input, today)) },
   ];

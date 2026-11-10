@@ -1,4 +1,4 @@
-import { BILL_TRANSITIONS, DELIVERY_TRANSITIONS, EXECUTION_TRANSITIONS, PRESENCE_TRANSITIONS, PROPOSAL_TRANSITIONS, QUIET_SHARE_TRANSITIONS, SHIFT_CALL_TRANSITIONS, SHIFT_TRANSITIONS, contributionReceived, reverseEntry } from "@kin/domain";
+import { BILL_TRANSITIONS, DELIVERY_TRANSITIONS, EXECUTION_TRANSITIONS, PRESENCE_TRANSITIONS, PROPOSAL_TRANSITIONS, QUIET_SHARE_TRANSITIONS, SHIFT_CALL_TRANSITIONS, SHIFT_TRANSITIONS, WISH_TRANSITIONS, WISH_TRIGGER_TRANSITIONS, contributionReceived, reverseEntry } from "@kin/domain";
 import { testHeader } from "@kin/domain/testing";
 import { and, eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
@@ -11,6 +11,7 @@ import { asService } from "../scope.ts";
 import { visitorWithCircle, type VisitorCircle } from "../testing/circles.ts";
 import { testDatabases } from "../testing/databases.ts";
 import { REFUSED, errorCode } from "../testing/sql.ts";
+import { PARENT_SUBSCRIPTION_TRANSITIONS } from "../schema/wishes.ts";
 
 const db = testDatabases();
 
@@ -109,7 +110,7 @@ describe("state machines only move forward (AGENTS.md section 5, rule 6)", () =>
       sql`select machine, from_state, to_state from kin_private.state_transitions`,
     );
     const stored = rows.rows.map((row) => `${row.machine} ${row.from_state}>${row.to_state}`).toSorted();
-    const listed = Object.entries({ proposal: PROPOSAL_TRANSITIONS, bill: BILL_TRANSITIONS, execution: EXECUTION_TRANSITIONS, delivery: DELIVERY_TRANSITIONS, shift: SHIFT_TRANSITIONS, shift_call: SHIFT_CALL_TRANSITIONS, presence: PRESENCE_TRANSITIONS, quiet_share: QUIET_SHARE_TRANSITIONS })
+    const listed = Object.entries({ proposal: PROPOSAL_TRANSITIONS, bill: BILL_TRANSITIONS, execution: EXECUTION_TRANSITIONS, delivery: DELIVERY_TRANSITIONS, shift: SHIFT_TRANSITIONS, shift_call: SHIFT_CALL_TRANSITIONS, presence: PRESENCE_TRANSITIONS, quiet_share: QUIET_SHARE_TRANSITIONS, wish: WISH_TRANSITIONS, wish_trigger: WISH_TRIGGER_TRANSITIONS, parent_subscription: PARENT_SUBSCRIPTION_TRANSITIONS })
       .flatMap(([machine, table]) => Object.entries(table).flatMap(([from, tos]) => (tos as readonly string[]).map((to) => `${machine} ${from}>${to}`)))
       .toSorted();
     expect(stored).toEqual(listed);

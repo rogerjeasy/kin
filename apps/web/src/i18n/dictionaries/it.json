@@ -1217,6 +1217,10 @@
       "careAgreements": {
         "title": "Accordi di assistenza · Kin",
         "description": "Accordi di assistenza scritti con le firme, e cosa copre ciascuno."
+      },
+      "wishes": {
+        "title": "Volontà · Kin",
+        "description": "Ciò che il genitore ha chiesto, con le sue parole, nel caso di un ricovero in ospedale o in una casa di riposo, e ciò che Kin fa quando succede."
       }
     },
     "shell": {
@@ -2341,7 +2345,8 @@
         "above_ceiling": "Questo rinnovo supera il tetto dell’accordo.",
         "paused": "I pagamenti sono in pausa. Riprova quando finisce.",
         "no_agreement": "La famiglia non ha ancora un accordo in vigore.",
-        "unavailable": "Kin non ha potuto farlo ora. Riprova tra un attimo."
+        "unavailable": "Kin non ha potuto farlo ora. Riprova tra un attimo.",
+        "wish_hold": "Le sue volontà sospendono rinnovi e acquisti mentre lei non è a casa. Non è stato ordinato nulla."
       },
       "mandatesLink": "Permessi permanenti",
       "underMandate": "Acquistato con il permesso permanente. Non è stato necessario chiedere a nessuno.",
@@ -3671,6 +3676,231 @@
         "phone": "Il telefono di {name}",
         "back": "Torna alle quote discrete",
         "none": "Al momento non si sta coprendo nulla. Ricomincia dal banner della demo per riportare il montascale."
+      }
+    },
+    "wishes": {
+      "title": "Le volontà di {parent}",
+      "titleOwn": "Le mie volontà",
+      "lede": "Quando {parent} poteva ancora decidere, ha detto che cosa dovesse succedere ai suoi soldi il giorno in cui non avesse più potuto farlo. Kin conserva le sue parole e le mette in pratica così come le ha dette: regole semplici, mai supposizioni.",
+      "ledeOwn": "Di’ che cosa deve succedere ai tuoi soldi se vai in ospedale o in una casa di riposo. Kin te lo rilegge, tu lo confermi e due persone della tua famiglia ne sono testimoni. Puoi cambiarlo quando vuoi.",
+      "legal": "Queste volontà aiutano la famiglia a rispettare ciò che lei voleva. Non sostituiscono una procura, le disposizioni anticipate di trattamento o un testamento. Kin non è uno studio legale, e questa non è una consulenza legale.",
+      "simulated": "Simulato",
+      "packetLink": "Fascicolo per il tuo avvocato",
+      "link": {
+        "title": "Le volontà di {parent}",
+        "text": "Ciò che ha chiesto, con le sue parole, nel caso vada in ospedale o in una casa di riposo.",
+        "label": "Leggi le sue volontà"
+      },
+      "list": {
+        "title": "Le sue volontà",
+        "titleOwn": "Le tue volontà",
+        "empty": "{parent} non ha ancora espresso nessuna volontà.",
+        "emptyOwn": "Non hai ancora espresso nessuna volontà."
+      },
+      "said": "{parent} ha detto il {day}",
+      "saidOwn": "Hai detto il {day}",
+      "play": {
+        "recording": "Ascolta la registrazione di {parent}",
+        "readByKin": "Ascolta le parole di {parent}, lette da Kin",
+        "playing": "In riproduzione",
+        "stop": "Ferma",
+        "voiceOwn": "La sua voce",
+        "voiceKin": "Letto dalla voce di Kin, non dalla sua",
+        "unavailable": "Kin non può riprodurlo ora. Le sue parole sono scritte qui sopra."
+      },
+      "states": {
+        "draft": "Riletta, non ancora confermata",
+        "confirmed": "In attesa dei testimoni",
+        "in_force": "In vigore",
+        "superseded": "Sostituita",
+        "withdrawn": "Ritirata"
+      },
+      "when": {
+        "she": {
+          "hospital": "Se {parent} è in ospedale",
+          "care_home": "Se {parent} si trasferisce in una casa di riposo",
+          "either": "Se {parent} è in ospedale o in una casa di riposo"
+        },
+        "you": {
+          "hospital": "Se sei in ospedale",
+          "care_home": "Se ti trasferisci in una casa di riposo",
+          "either": "Se sei in ospedale o in una casa di riposo"
+        }
+      },
+      "does": {
+        "she": {
+          "keep_paying": "Kin continua a pagare {payee}, qualunque cosa dicano le sue altre volontà.",
+          "pause_discretionary": "Kin sospende rinnovi, acquisti e tutto ciò che non è assistenza finché lei non torna a casa.",
+          "suspend_subscriptions": "Kin sospende {subscriptions} e li riattiva quando lei torna a casa.",
+          "new_payee_approvals": "Un pagamento oltre {amount} a qualcuno di nuovo aspetta finché {approvers} non sono d’accordo.",
+          "successor": "{member} gestisce il cerchio per la famiglia finché lei non torna a casa."
+        },
+        "you": {
+          "keep_paying": "Kin continua a pagare {payee}, qualunque cosa dicano le tue altre volontà.",
+          "pause_discretionary": "Kin sospende rinnovi, acquisti e tutto ciò che non è assistenza finché non torni a casa.",
+          "suspend_subscriptions": "Kin sospende {subscriptions} e li riattiva quando torni a casa.",
+          "new_payee_approvals": "Un pagamento oltre {amount} a qualcuno di nuovo aspetta finché {approvers} non sono d’accordo.",
+          "successor": "{member} gestisce il cerchio per la famiglia finché non torni a casa."
+        }
+      },
+      "signed": "Confermata da {parent}, con {names} come testimoni",
+      "waitingWitnesses": "Confermata da {parent}. Testimoni finora: {count} su 2.",
+      "notConfirmed": "Non ancora confermata",
+      "seal": "Sigillo {digest}",
+      "version": "Versione {version}",
+      "history": "Versioni precedenti",
+      "actions": {
+        "witness": "Faccio da testimone a questa volontà",
+        "witnessHint": "Hai sentito {parent} dirlo, ed è ciò che lei vuole.",
+        "witnessed": "Hai fatto da testimone a questa volontà.",
+        "withdraw": "Ritira",
+        "withdrawConfirm": "Ritirare questa volontà? Resta nel registro, ma non si applica più.",
+        "withdrawYes": "Sì, ritirala",
+        "keepIt": "Tienila",
+        "change": "Dillo in un altro modo",
+        "done": "Fatto."
+      },
+      "frozen": "Finché qualcuno ha detto che {parent} è in ospedale o in una casa di riposo, le sue volontà restano esattamente come sono. Nessuno può aggiungerne, cambiarne o ritirarne una finché lei non torna a casa.",
+      "record": {
+        "title": "Esprimi una volontà",
+        "text": "Parla come faresti con la tua famiglia. Kin scrive le tue parole e poi te le rilegge come una regola da confermare.",
+        "speak": "Di’ una volontà",
+        "stop": "Ho finito",
+        "listening": "Kin ti ascolta. Di’ la tua volontà, poi premi «Ho finito».",
+        "transcribing": "Kin sta scrivendo le tue parole…",
+        "or": "Oppure scrivila",
+        "label": "La tua volontà, con le tue parole",
+        "placeholder": "Continuate sempre a pagare Amara, anche se sono in ospedale.",
+        "readBack": "Rileggimela",
+        "reading": "Kin sta leggendo le tue parole…",
+        "readBackTitle": "Ecco che cosa ha capito Kin",
+        "keep": "Sì, è ciò che voglio",
+        "notThis": "No, lasciala fuori",
+        "kept": "Conservata. A due persone della tua famiglia verrà chiesto di farle da testimoni.",
+        "recordingKept": "La tua registrazione è conservata insieme a lei, con la tua voce.",
+        "flagged": "Kin non può mettere in pratica questa come regola, quindi non viene conservata. Dillo alla tua famiglia, oppure inseriscila nelle tue disposizioni anticipate di trattamento.",
+        "changing": "Stai cambiando: «{quote}»",
+        "cancelChange": "Non cambiarla",
+        "micDenied": "Kin non ha potuto usare il microfono. Puoi scrivere la tua volontà.",
+        "noSpeech": "Qui Kin non può trascrivere la voce. La tua registrazione è conservata; scrivi la tua volontà qui sotto.",
+        "modelOff": "In questo momento Kin non può rileggerti le tue parole. Riprova più tardi.",
+        "flagReasons": {
+          "not_a_rule": "Non è qualcosa che Kin mette in pratica.",
+          "not_her_words": "Kin non ha trovato queste parole in ciò che hai detto.",
+          "unknown_slot": "Nomina qualcuno o qualcosa che Kin non conosce.",
+          "quote": "Le parole sono troppo lunghe, o mancano.",
+          "trigger": "Kin non ha capito quando dovrebbe applicarsi.",
+          "kind": "Non è qualcosa che Kin mette in pratica.",
+          "payee": "Nomina qualcuno che non è la tua assistente familiare.",
+          "subscriptions": "Nomina un abbonamento che Kin non conosce.",
+          "amount": "Kin non ha trovato l’importo nelle tue parole.",
+          "approvers": "Servono almeno due persone della tua famiglia che dividono la spesa.",
+          "successor": "Nomina qualcuno che non può gestire il cerchio."
+        }
+      },
+      "trigger": {
+        "title": "Se succede qualcosa a {parent}",
+        "text": "Le sue volontà si applicano solo quando delle persone lo dicono: due della famiglia, oppure una della famiglia e la sua assistente familiare per un ricovero in ospedale. Kin non lo decide mai dalla sua voce o dal suo silenzio.",
+        "report": {
+          "hospital": "{parent} è in ospedale",
+          "care_home": "{parent} si è trasferita in una casa di riposo"
+        },
+        "home": "{parent} è tornata a casa",
+        "where": {
+          "hospital": "in ospedale",
+          "care_home": "in una casa di riposo"
+        },
+        "reported": "{name} ha detto che {parent} è {where}. Le sue volontà si applicano quando lo dice anche un’altra persona.",
+        "reportedFamily": "{name} ha detto che {parent} è {where}. Le sue volontà si applicano quando lo dice anche qualcuno della famiglia.",
+        "active": "{parent} è {where}. Le sue volontà sono in vigore dal {when}.",
+        "endWaiting": "{name} ha detto che {parent} è tornata a casa. Quando lo dirà anche un’altra persona, tutto ciò che le sue volontà hanno sospeso ripartirà.",
+        "youSaid": "L’hai detto tu.",
+        "attestedBy": "Detto da {names}",
+        "dismiss": "È stato un errore",
+        "ended": "{parent} è tornata a casa il {day}. Tutto ciò che le sue volontà avevano sospeso è ripartito.",
+        "observer": "Qui puoi vedere che cosa cambia, e la famiglia dice quando succede.",
+        "parentNote": "È la tua famiglia a dire quando succede. Non puoi attivarlo tu, e Kin non tira mai a indovinare.",
+        "caregiverHospital": "Come assistente familiare di {parent} puoi dire che è stata ricoverata in ospedale; deve dirlo anche qualcuno della famiglia."
+      },
+      "changed": {
+        "title": "Che cosa è cambiato, e perché",
+        "text": "Ogni cambiamento è codice semplice che legge la sua volontà così come lei l’ha detta. Tocca per ascoltare le sue parole.",
+        "kept": "Il pagamento a {payee} continua.",
+        "nextShift": "Prossimo turno: {title}, {day}.",
+        "paid": "Pagati {amount} a {payee} il {day}.",
+        "onItsWay": "Il pagamento di {amount} a {payee} è in arrivo.",
+        "discretionary": "Rinnovi, acquisti e altre spese che non sono assistenza sono sospesi.",
+        "subscription": {
+          "active": "{name} ({amount} al mese) è attivo.",
+          "suspending": "{name} è in fase di sospensione tramite PayPal.",
+          "suspended": "{name} ({amount} al mese) è sospeso.",
+          "resuming": "{name} è in fase di riattivazione tramite PayPal."
+        },
+        "newPayees": "Un pagamento oltre {amount} a qualcuno di nuovo ora richiede l’accordo di {approvers}.",
+        "successor": "{member} gestisce il cerchio finché {parent} non torna a casa.",
+        "none": "Nessuna delle sue volontà riguarda questo. Tutto continua come al solito."
+      },
+      "subscriptions": {
+        "title": "Che cosa paga {parent} ogni mese",
+        "text": "Abbonamenti che le sue volontà possono sospendere. Uno reale viene sospeso tramite PayPal, e Kin lo registra solo quando PayPal lo conferma.",
+        "empty": "Ancora nessun abbonamento.",
+        "monthly": "{amount} al mese",
+        "states": {
+          "active": "Attivo",
+          "suspending": "In sospensione",
+          "suspended": "Sospeso",
+          "resuming": "In riattivazione"
+        },
+        "add": {
+          "title": "Aggiungi un abbonamento",
+          "name": "Nome",
+          "monthly": "Al mese",
+          "paypal": "ID abbonamento PayPal",
+          "paypalHint": "Inizia con I-. Kin lo sospende tramite PayPal.",
+          "submit": "Aggiungi",
+          "added": "Aggiunto."
+        }
+      },
+      "citation": "{parent} ha detto il {day}: «{quote}»",
+      "approvalNeeds": "La sua volontà chiede l’accordo di {names} prima che questo parta.",
+      "banner": {
+        "reported": "{name} ha detto che {parent} è {where}. Le sue volontà si applicano quando lo dice anche un’altra persona.",
+        "active": "{parent} è {where}, e le sue volontà sono in vigore: Kin le mette in pratica così come lei le ha dette.",
+        "link": "Che cosa è cambiato"
+      },
+      "reasons": {
+        "refused": "Non puoi farlo dal tuo posto.",
+        "invalid": "Kin non è riuscito a leggerlo.",
+        "frozen": "Le sue volontà restano come sono mentre lei non è a casa.",
+        "waiting": "Una modifica di questa volontà è già in attesa.",
+        "closed": "Questa volontà è cambiata da quando hai aperto questa schermata.",
+        "active": "È già in vigore.",
+        "other_event": "È già stato segnalato qualcos’altro. Prima di’ che è tornata a casa.",
+        "nothing_active": "Non c’è niente in vigore da concludere.",
+        "busy": "Per ora basta così. Riprova più tardi.",
+        "unavailable": "Kin non ha potuto farlo ora. Riprova tra un attimo.",
+        "model_unavailable": "In questo momento Kin non può rileggerti le tue parole. Riprova più tardi.",
+        "speech_unavailable": "Qui Kin non può sentire la voce. Scrivi la tua volontà.",
+        "recording": "Non è stato possibile usare quella registrazione. Riprova.",
+        "unreadable": "Kin non è riuscito a leggere quelle parole. Prova a dirlo in modo più semplice.",
+        "quote": "Le parole sono troppo lunghe, o mancano.",
+        "trigger": "Kin non ha capito quando dovrebbe applicarsi.",
+        "kind": "Non è qualcosa che Kin mette in pratica.",
+        "payee": "Nomina qualcuno che non è un assistente familiare.",
+        "subscriptions": "Nomina un abbonamento che Kin non conosce.",
+        "amount": "Non è stato possibile leggere quell’importo.",
+        "approvers": "Servono almeno due persone della famiglia che dividono la spesa.",
+        "successor": "Nomina qualcuno che non può gestire il cerchio."
+      },
+      "packet": {
+        "title": "Le sue volontà",
+        "text": "Ogni volontà in vigore, così come lei l’ha detta, con la regola che Kin legge, chi ne è stato testimone e il suo sigillo. La cronologia completa è in wishes.csv.",
+        "chain": "Ogni sigillo corrisponde: la cronologia delle sue volontà non è stata riscritta.",
+        "chainBroken": "Un sigillo non corrisponde. Contatta l’assistenza di Kin prima di fidarti di questa cronologia."
+      },
+      "card": {
+        "when": "Quando",
+        "does": "Cosa fa Kin"
       }
     }
   },

@@ -92,3 +92,15 @@ export async function pauseMandates(db: TestDatabases, circleId: string): Promis
 export async function adminRun(db: TestDatabases, text: string, params: readonly unknown[] = []): Promise<void> {
   await db.admin.$client.query(text, [...params]);
 }
+
+/**
+ * Makes one of the demo's simulated subscriptions a real one with a PayPal subscription ID, for a test of the worker
+ * that suspends it through PayPal. A subscription never changes what it is in the app, so the trigger that fixes it
+ * is stepped around here, as nowhere in the app.
+ */
+export async function makeSubscriptionReal(db: TestDatabases, subscriptionId: string, paypalSubscriptionId: string): Promise<void> {
+  await db.admin.transaction(async (tx) => {
+    await tx.execute(sql`set local session_replication_role = replica`);
+    await tx.execute(sql`update parent_subscriptions set simulated = false, paypal_subscription_id = ${paypalSubscriptionId} where id = ${subscriptionId}`);
+  });
+}

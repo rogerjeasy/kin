@@ -195,3 +195,18 @@ export function parseSubscriptionPayments(value: unknown): SubscriptionPayment[]
   }
   return payments;
 }
+
+/**
+ * What PayPal's record says of a suspend or an activate Kin asked for: it
+ * `moved` to the status the action leads to, has `not_moved` yet (ask again,
+ * never assume), or is `gone` (cancelled or expired, so nothing can be resumed).
+ */
+export function subscriptionMoveOutcome(action: Extract<SubscriptionAction, "suspend" | "activate">, status: SubscriptionStatus): "moved" | "not_moved" | "gone" {
+  if (status === "CANCELLED" || status === "EXPIRED") return "gone";
+  return status === (action === "suspend" ? "SUSPENDED" : "ACTIVE") ? "moved" : "not_moved";
+}
+
+/** The request ID of one suspend or activate of one subscription row, so a retry after a lost answer never asks twice. */
+export function subscriptionChangeRequestId(rowId: string, action: SubscriptionAction, messageId: string): string {
+  return ["kin-sub", action, rowId, messageId].join("-").slice(0, 108);
+}

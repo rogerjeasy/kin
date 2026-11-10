@@ -23,6 +23,9 @@ export const shiftPermissionsRoute = "/dashboard/circle/shifts";
 /** Written care agreements with signatures: a screen within the circle's section, like the family agreement. */
 export const careAgreementsRoute = "/dashboard/circle/care-agreements";
 
+/** The parent's wishes, and what happens when a trigger is attested: a screen within the circle's section, open to every role (a caregiver sees the trigger only). */
+export const wishesRoute = "/dashboard/circle/wishes";
+
 /** The packet for an elder-law attorney: a screen of the record, not a section of its own. Its `/export` is the download. */
 export const packetRoute = "/dashboard/record/packet";
 

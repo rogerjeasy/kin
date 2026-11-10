@@ -20,6 +20,7 @@ import { demoTime, type DemoTime } from "./demo-time.ts";
 import { rekeyEntry, rowOf } from "./rekey.ts";
 import { writeOpenKin } from "./write-open-kin.ts";
 import { writeShifts } from "./write-shifts.ts";
+import { writeWishes } from "./write-wishes.ts";
 import { asProvisioner } from "../scope.ts";
 import {
   agreementAcceptances,
@@ -123,6 +124,7 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     await writeNews(tx, ids, ledger);
     await writeTrustedVoices(tx, ids);
     await writeOpenKin(tx, ids);
+    await writeWishes(tx, ids);
     await tx.insert(auditLog).values({
       id: randomUUID(),
       circleId: ids.circleId,

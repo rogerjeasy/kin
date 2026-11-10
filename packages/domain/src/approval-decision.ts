@@ -6,6 +6,7 @@ import {
 } from "./approval-plan.ts";
 import { isPaused } from "./pause.ts";
 import type { CircleRole } from "./roles.ts";
+import { wishApprovalMet, type WishApproval } from "./wishes.ts";
 
 /** One member's recorded answer to a proposal. */
 export type ApprovalVote = {
@@ -23,6 +24,13 @@ export type ApprovalTally = {
   /** When the circle's pause lifts, or `null` when it is not paused. */
   readonly pausedUntil: Date | null;
   readonly now: Date;
+  /**
+   * What the parent's wishes add while a trigger is active: a payment to a new
+   * payee over her amount waits for every member she named, and for two at
+   * least (`wishes.ts`). Read when the answer is given, so a proposal raised
+   * before the trigger is held to it too.
+   */
+  readonly wishApproval?: WishApproval | null;
 };
 
 export type ApprovalDecision =
@@ -47,7 +55,9 @@ export function decideApprovals(tally: ApprovalTally): ApprovalDecision {
   if (isPaused(tally.pausedUntil, now)) return "paused";
   if (now.getTime() >= plan.expiresAt.getTime()) return "expired";
 
-  const counted = tally.votes.filter((vote) => canDecide(plan, vote));
+  const wish = tally.wishApproval ?? null;
+  // A member her wish names has a say, whatever the plan's slots ask: their no rejects, and their yes is needed.
+  const counted = tally.votes.filter((vote) => canDecide(plan, vote) || (wish !== null && wish.memberIds.includes(vote.memberId)));
   if (counted.some((vote) => vote.decision === "reject")) return "rejected";
 
   const approvers = distinctApprovers(counted);
@@ -55,7 +65,8 @@ export function decideApprovals(tally: ApprovalTally): ApprovalDecision {
   const independent =
     plan.payeeMemberId === null ||
     approvers.some((approver) => approver.memberId !== plan.payeeMemberId);
-  return filled && independent ? "approved" : "pending";
+  if (!filled || !independent) return "pending";
+  return wish === null || wishApprovalMet(wish, counted.filter((vote) => vote.decision === "approve").map((vote) => vote.memberId), plan.payeeMemberId) ? "approved" : "pending";
 }
 
 function assertOneRoleEach(votes: readonly ApprovalVote[]): void {

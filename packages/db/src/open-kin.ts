@@ -10,7 +10,7 @@ import { agencyKeys, agencyVisitReports, delegationCalls, delegations, type Dele
  * Open Kin's records (docs/architecture.md sections 13.4 and 13.5): the
  * delegations members grant their own assistants, the calls those assistants
  * make, agencies' keys and the visits they report. Every write is an
- * operation in `kin_private` (migration 0055); the database keeps only the
+ * operation in `kin_private` (migration 0057); the database keeps only the
  * SHA-256 of a token or a secret.
  */
 

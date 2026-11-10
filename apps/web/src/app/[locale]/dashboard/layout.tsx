@@ -10,7 +10,8 @@ import { waitingProposals } from "@/content/circle/proposal-view";
 import { needsOf } from "@/content/circle/shift-views";
 import { shellCircle } from "@/content/circle/shell";
 import { circleSlots } from "@/content/circle/words";
-import { presenceRoute } from "@/content/dashboard-routes";
+import { presenceRoute, wishesRoute } from "@/content/dashboard-routes";
+import { openTrigger } from "@/content/circle/wishes";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
 import { may, sectionsFor, shellData } from "@/server/dashboard-context";
@@ -58,8 +59,21 @@ export default async function DashboardLayout({ children, params }: LayoutProps<
       ? { text: fill(shell.presenceHold.text, { until: format.dateTime(heldByPresenceUntil) }), link: may(circle, "money.view") ? { href: localizedPath(locale, presenceRoute), label: shell.presenceHold.link } : null }
       : null;
 
+  // Someone said the parent is in hospital or a care home: every screen says so while it is reported or in effect.
+  const trigger = openTrigger(circle);
+  const wishesCopy = dictionary.dashboard.wishes;
+  const reporter = trigger?.attestations.find((each) => each.stance === "start")?.memberId ?? null;
+  const wishesNotice =
+    trigger === null
+      ? null
+      : {
+          text: fill(trigger.state === "active" ? wishesCopy.banner.active : wishesCopy.banner.reported, { parent: slots.parent, name: names.member(reporter), where: wishesCopy.trigger.where[trigger.event] }),
+          link: { href: localizedPath(locale, wishesRoute), label: wishesCopy.banner.link },
+        };
+
   return (
     <AppShell
+      wishesNotice={wishesNotice}
       locale={locale}
       dictionary={dictionary}
       month={slots.month}

@@ -69,7 +69,34 @@ function offerReading(user: string): string {
   });
 }
 
+/**
+ * The parent's wishes, drafted the way the real model is asked to: each
+ * sentence of her words is one wish; "keep paying" a listed caregiver keeps
+ * them paid, "unless X and Y both agree" with an amount asks two people, a
+ * listed subscription's first word suspends it, "don't buy" pauses the extras,
+ * and anything else is not a rule.
+ */
+function wishDrafts(user: string): string {
+  const said = /<parent_words>\n([\s\S]*)\n<\/parent_words>/.exec(user)?.[1] ?? "";
+  const slots = [...user.matchAll(/^(c|m|s)(\d+): ([^(\n]+?)(?: \(.*\))?$/gm)].map((match) => ({ slot: `${match[1]}${match[2]}`, kind: match[1], name: (match[3] ?? "").trim() }));
+  const slotOf = (kind: string, sentence: string) => slots.filter((each) => each.kind === kind && sentence.toLowerCase().includes((each.name.split(" ")[0] ?? "").toLowerCase()));
+  const blank = { payee: null, subscriptions: [], amount: null, approvers: [], successor: null, why: null };
+  const wishes = (said.match(/[^.!?]+[.!?]?/g) ?? []).map((sentence) => sentence.trim()).filter((sentence) => sentence !== "").map((quote) => {
+    const trigger = /home/i.test(quote) && !/hospital/i.test(quote) ? "care_home" : /hospital/i.test(quote) && !/home/i.test(quote) ? "hospital" : "either";
+    const caregiver = slotOf("c", quote)[0];
+    if (/keep paying/i.test(quote) && caregiver) return { ...blank, quote, kind: "keep_paying", trigger, payee: caregiver.slot };
+    const amount = /(\$?\d[\d,]*(?: dollars)?)/.exec(quote)?.[1] ?? null;
+    if (/both agree/i.test(quote) && amount !== null) return { ...blank, quote, kind: "new_payee_approvals", trigger, amount, approvers: slotOf("m", quote).map((each) => each.slot) };
+    const subscriptions = slots.filter((each) => each.kind === "s" && each.name.split(" ").some((word) => word.length > 3 && quote.toLowerCase().includes(word.toLowerCase())));
+    if (subscriptions.length > 0) return { ...blank, quote, kind: "suspend_subscriptions", trigger, subscriptions: subscriptions.map((each) => each.slot) };
+    if (/don't buy|do not buy/i.test(quote)) return { ...blank, quote, kind: "pause_discretionary", trigger };
+    return { ...blank, quote, kind: "not_a_rule", trigger, why: "Not one of the rule kinds." };
+  });
+  return JSON.stringify({ wishes });
+}
+
 function answer(system: string, user: string): { stop_reason: string; text: string } {
+  if (/Split what she said into separate wishes/.test(system)) return { stop_reason: "end_turn", text: wishDrafts(user) };
   if (/decline/i.test(user)) return { stop_reason: "refusal", text: "" };
   if (/own private Kin agent/.test(system)) return { stop_reason: "end_turn", text: offerReading(user) };
   if (/You read one letter/.test(system)) return { stop_reason: "end_turn", text: reading(user) };

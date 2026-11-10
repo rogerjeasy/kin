@@ -396,3 +396,57 @@ export { VISIT_REPORT_SCHEMA, matchVisitReport, parseVisitReport } from "./visit
 export type { ReportableShift, VisitReport, VisitReportRefusal } from "./visit-report.ts";
 export { DELEGATION_SCOPES } from "./delegation-scope.ts";
 export type { DelegationScope } from "./delegation-scope.ts";
+export {
+  DECIDING_ROLES,
+  MAX_WISH_CHARS,
+  MAX_WISH_SUBSCRIPTIONS,
+  SPEND_KINDS,
+  TRIGGER_EVENTS,
+  WISH_RULE_KINDS,
+  WISH_STATES,
+  WISH_TRANSITIONS,
+  WISH_TRIGGERS,
+  WISH_WITNESSES,
+  WITNESS_ROLES,
+  WishRuleError,
+  checkWishDraft,
+  cleanQuote,
+  discretionaryPause,
+  wishApplies,
+  wishApprovalFor,
+  wishApprovalMet,
+  wishEffects,
+  wishHoldFor,
+  wishMoveAllowed,
+  witnessed,
+} from "./wishes.ts";
+export type {
+  ActiveTrigger,
+  DiscretionaryPause,
+  InForceWish,
+  SpendKind,
+  TriggerEvent,
+  WishApproval,
+  WishContext,
+  WishDraft,
+  WishEffects,
+  WishHold,
+  WishRule,
+  WishRuleKind,
+  WishRuleReason,
+  WishSignature,
+  WishState,
+  WishTrigger,
+} from "./wishes.ts";
+export {
+  ATTESTATIONS_NEEDED,
+  ATTESTATION_STANCES,
+  FAMILY_ATTESTERS,
+  WISH_TRIGGER_STATES,
+  WISH_TRIGGER_TRANSITIONS,
+  attestationMet,
+  attestationStillNeeded,
+  mayAttest,
+  wishTriggerMoveAllowed,
+} from "./wish-trigger.ts";
+export type { Attestation, AttestationStance, WishTriggerState } from "./wish-trigger.ts";

@@ -41,3 +41,6 @@ export { MAX_OFFER_MESSAGES, MAX_OFFER_MESSAGE_CHARS, MAX_OFFER_REPLY_CHARS, rea
 export type { DraftOffer, ReadOfferResult } from "./read-offer.ts";
 // Kin's MCP server: the same tools and gateway, for a member's own assistant under a delegation.
 export * from "./mcp/index.ts";
+export { WISH_DRAFT_KINDS, WISH_PROMPT_VERSION } from "./wish-prompt.ts";
+export { MAX_WISHES_SAID_CHARS, draftWishes } from "./draft-wishes.ts";
+export type { DraftWishesResult, DraftedWish, FlagReason, WishRecordNames } from "./draft-wishes.ts";

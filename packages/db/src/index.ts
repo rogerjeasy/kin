@@ -192,3 +192,29 @@ export {
 export { DELEGATION_CALL_OUTCOMES } from "./schema/open-kin.ts";
 export type { DelegationCallOutcome } from "./schema/open-kin.ts";
 export type { AgencyKeyRecord, AgencyReportRecord, DelegationCallInput, DelegationCallRecord, DelegationRecord, GrantDelegation, OpenKinReason, ReceivedVisit, ResolvedDelegation } from "./open-kin.ts";
+export {
+  StoredWishError,
+  WISH_SUBSCRIPTION_TOPIC,
+  WishError,
+  addParentSubscription,
+  attestWishTrigger,
+  confirmWish,
+  dismissWishTrigger,
+  isWishTrigger,
+  jsonbText,
+  parseWishRule,
+  readDiscretionaryPause,
+  readSubscriptionJob,
+  readWishEffects,
+  readWishRecording,
+  readWishes,
+  recordSubscriptionMoved,
+  recordWish,
+  storeWishRecording,
+  withdrawWish,
+  wishChainHolds,
+  wishDigest,
+  witnessWish,
+} from "./wishes.ts";
+export type { ParentSubscriptionRecord, SubscriptionJob, SubscriptionOutcome, WishReason, WishRecord, WishTriggerRecord, WishesSnapshot } from "./wishes.ts";
+export { MAX_RECORDING_STORED_BYTES, PARENT_SUBSCRIPTION_TRANSITIONS } from "./schema/wishes.ts";

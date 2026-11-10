@@ -1,0 +1,88 @@
+import type { WishTriggerRecord } from "@kin/db";
+import { mayAttest, type CircleRole } from "@kin/domain";
+import { HeartPulseIcon } from "lucide-react";
+
+import type { WishNameBook } from "@/components/dashboard/words/wish-words";
+import type { Dictionary } from "@/i18n/dictionary";
+import { fill } from "@/i18n/template";
+import type { Formatters } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+import { AttestButtons } from "./attest-buttons";
+
+type Copy = Dictionary["dashboard"]["wishes"];
+type Props = {
+  readonly copy: Copy;
+  readonly book: WishNameBook;
+  readonly format: Formatters;
+  readonly open: WishTriggerRecord | null;
+  readonly ended: WishTriggerRecord | null;
+  readonly viewer: { readonly memberId: string; readonly role: CircleRole; readonly mayAttest: boolean };
+  /** Who still must say so for the open trigger: anyone who may, or someone from the family. */
+  readonly needs: { readonly start: "none" | "family" | "anyone" };
+};
+
+const EVENTS = ["hospital", "care_home"] as const;
+
+/**
+ * When her wishes apply: only when people say so. The panel says who said
+ * what and when, offers the viewer their own word, and never offers the parent
+ * or an observer a way to set it off.
+ */
+export function TriggerPanel({ copy, book, format, open, ended, viewer, needs }: Props) {
+  const parent = book.parent;
+  const said = (stance: "start" | "end") => open?.attestations.some((each) => each.memberId === viewer.memberId && each.stance === stance) ?? false;
+  const who = (stance: "start" | "end") => format.allOf((open?.attestations ?? []).filter((each) => each.stance === stance).map((each) => book.members[each.memberId] ?? "?"));
+  const first = (stance: "start" | "end") => book.members[(open?.attestations ?? []).find((each) => each.stance === stance)?.memberId ?? ""] ?? "?";
+  const can = (event: "hospital" | "care_home") => viewer.mayAttest && mayAttest(viewer.role, event);
+  const active = open?.state === "active";
+  const tone = active ? "border-highlight/50 bg-highlight/10" : open ? "border-highlight/40 bg-card" : "bg-card";
+
+  const says =
+    open === null
+      ? EVENTS.filter(can).map((event) => ({ event, stance: "start" as const, label: fill(copy.trigger.report[event], { parent }) }))
+      : open.state === "reported"
+        ? can(open.event) && !said("start")
+          ? [{ event: open.event, stance: "start" as const, label: fill(copy.trigger.report[open.event], { parent }) }]
+          : []
+        : can(open.event) && !said("end")
+          ? [{ event: open.event, stance: "end" as const, label: fill(copy.trigger.home, { parent }) }]
+          : [];
+  const dismissable = open?.state === "reported" && (viewer.role === "organizer" || open.reportedBy === viewer.memberId);
+
+  return (
+    <section aria-labelledby="wish-trigger-title" className={cn("flex min-w-0 flex-col gap-4 rounded-2xl border p-5 shadow-xs sm:p-6", tone)}>
+      <div className="flex min-w-0 items-start gap-3">
+        <HeartPulseIcon aria-hidden="true" className="mt-1 size-6 shrink-0 text-highlight" />
+        <div className="min-w-0 flex-1">
+          <h2 id="wish-trigger-title" className="text-lg font-semibold text-balance">
+            {fill(copy.trigger.title, { parent })}
+          </h2>
+          <p className="mt-1 text-sm text-pretty text-muted-foreground">{copy.trigger.text}</p>
+        </div>
+      </div>
+      {open !== null ? (
+        <div role="status" className="flex min-w-0 flex-col gap-1">
+          <p className="text-lg font-semibold text-pretty">
+            {open.state === "reported"
+              ? fill(needs.start === "family" ? copy.trigger.reportedFamily : copy.trigger.reported, { name: first("start"), parent, where: copy.trigger.where[open.event] })
+              : fill(copy.trigger.active, { parent, where: copy.trigger.where[open.event], when: format.dateTime(open.activeAt ?? open.reportedAt) })}
+          </p>
+          <p className="text-sm text-muted-foreground">{fill(copy.trigger.attestedBy, { names: who("start") })}</p>
+          {active && open.attestations.some((each) => each.stance === "end") ? <p className="mt-1 text-pretty">{fill(copy.trigger.endWaiting, { name: first("end"), parent })}</p> : null}
+          {said(active ? "end" : "start") ? <p className="text-sm font-semibold">{copy.trigger.youSaid}</p> : null}
+        </div>
+      ) : ended !== null && ended.closedAt !== null ? (
+        <p role="status" className="text-pretty">
+          {fill(copy.trigger.ended, { parent, day: format.longDay(ended.closedAt) })}
+        </p>
+      ) : null}
+      {says.length > 0 || dismissable ? (
+        <AttestButtons says={says} dismiss={dismissable && open !== null ? { triggerId: open.id, label: copy.trigger.dismiss } : null} reasons={copy.reasons} />
+      ) : null}
+      {viewer.role === "parent" ? <p className="text-sm text-pretty text-muted-foreground">{copy.trigger.parentNote}</p> : null}
+      {viewer.role === "observer" ? <p className="text-sm text-pretty text-muted-foreground">{copy.trigger.observer}</p> : null}
+      {viewer.role === "caregiver" && open === null ? <p className="text-sm text-pretty text-muted-foreground">{fill(copy.trigger.caregiverHospital, { parent })}</p> : null}
+    </section>
+  );
+}

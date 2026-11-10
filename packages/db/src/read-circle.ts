@@ -20,6 +20,7 @@ import { outgoingMoneyHeldByPresence } from "./presence.ts";
 import { readMandateRecords } from "./mandates.ts";
 import { readPurchaseRecords } from "./purchases.ts";
 import { readShiftRecords } from "./shift-records.ts";
+import { readWishes } from "./wishes.ts";
 import {
   approvals,
   bills,
@@ -103,6 +104,7 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     monthlyShares: await readMonthlyShares(tx, circle.id, viewerRow.id),
     invoiceRequests: await readInvoiceRequests(tx, circle.id, viewerRow),
     careAgreements: await readCareAgreements(tx, circle.id, circle.now),
+    wishes: await readWishes(tx, circle.id),
   };
 }
 
