@@ -39,6 +39,7 @@ export function SubscriptionsPanel({ copy, parent, subscriptions, format, canAdd
                   {text.states[subscription.state]}
                 </StatusPill>
                 {subscription.simulated ? <StatusPill tone="neutral">{copy.simulated}</StatusPill> : null}
+                {!subscription.simulated && !subscription.linked ? <StatusPill tone="neutral">{text.notLinked}</StatusPill> : null}
               </div>
             </li>
           );

@@ -1,6 +1,7 @@
 import { fakeModel } from "@kin/agent/testing";
+import { PayPalError } from "@kin/paypal";
 import { asPerson, readCircle, type CircleSnapshot } from "@kin/db";
-import { seatPerson, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
+import { adminRun, seatPerson, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
 import { fakeTranscriber, fakeVoice } from "@kin/speech/testing";
 import { describe, expect, it } from "vitest";
 
@@ -105,6 +106,38 @@ describe("the parent's wishes, through the request boundary", () => {
     const ask = () => runWishes(context(seen, rose, { model, limiter }), { operation: "draft", said: "Hold the extras.", locale: "en" });
     expect(await ask()).toEqual({ ok: true, wishes: [] });
     expect(await ask()).toEqual({ ok: false, reason: "busy" });
+  });
+});
+
+describe("linking a subscription she pays", () => {
+  const read = (owner: { payerId: string | null; circleId: string | null; memberId: string | null }) => ({
+    getSubscription: async (id: string) => ({ id, status: "ACTIVE" as const, reference: owner.circleId === null || owner.memberId === null ? null : { circleId: owner.circleId, memberId: owner.memberId }, subscriberPayerId: owner.payerId, nextBillingAt: null, failedPayments: 0 }),
+  });
+  const add = (circle: CircleSnapshot, userId: string, paypal: WishesContext["paypal"], id: string | null) =>
+    runWishes(context(circle, userId, { paypal }), { operation: "subscription", name: "Gym", monthly: "39.00", paypalSubscriptionId: id });
+
+  it("links one only when PayPal itself says it is the parent's, never on the browser's word", async () => {
+    const circle = await visitorWithCircle(db);
+    await adminRun(db, "update circles set demo = false, clock_at = null where id = $1", [circle.circleId]);
+    const seen = await snapshot(circle, circle.userId);
+    expect(await add(seen, circle.userId, read({ payerId: "SOMEONE", circleId: null, memberId: null }), "I-OTHERS00001")).toEqual({ ok: false, reason: "not_owned" });
+    expect(await add(seen, circle.userId, read({ payerId: null, circleId: circle.circleId, memberId: circle.members.elena }), "I-OTHERS00001")).toEqual({ ok: false, reason: "not_owned" });
+    const missing = { getSubscription: async () => Promise.reject(new PayPalError({ outcome: "rejected", status: 404, issue: "RESOURCE_NOT_FOUND", debugId: null, operation: "subscriptions.get" })) };
+    expect(await add(seen, circle.userId, missing, "I-OTHERS00001")).toEqual({ ok: false, reason: "not_owned" });
+    const down = { getSubscription: async () => Promise.reject(new PayPalError({ outcome: "unavailable", status: 503, issue: null, debugId: null, operation: "subscriptions.get" })) };
+    expect(await add(seen, circle.userId, down, "I-OTHERS00001")).toEqual({ ok: false, reason: "unavailable" });
+    expect(await add(seen, circle.userId, null, "I-OTHERS00001")).toEqual({ ok: false, reason: "unavailable" });
+    expect(await add(seen, circle.userId, null, "not-an-id")).toEqual({ ok: false, reason: "invalid" });
+    expect(await add(seen, circle.userId, read({ payerId: null, circleId: circle.circleId, memberId: circle.members.rose }), "I-HERSKIN0001")).toMatchObject({ ok: true });
+    expect(await add(seen, circle.userId, read({ payerId: null, circleId: circle.circleId, memberId: circle.members.rose }), "I-HERSKIN0001")).toEqual({ ok: false, reason: "taken" });
+    // Without an ID it is kept, not linked, and PayPal is never asked.
+    expect(await add(seen, circle.userId, null, null)).toMatchObject({ ok: true });
+  });
+
+  it("refuses a PayPal subscription ID in a demo circle, whose subscriptions are simulated", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    expect(await add(seen, circle.userId, read({ payerId: null, circleId: circle.circleId, memberId: circle.members.rose }), "I-HERSKIN0001")).toEqual({ ok: false, reason: "invalid" });
   });
 });
 

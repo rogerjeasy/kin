@@ -15,7 +15,7 @@ import type { WebhookDelivery } from "../webhook.ts";
 type StoredOrder = { id: string; status: string; reference: ContributionReference; amount: Money; captures: Capture[]; requestIds: Set<string> };
 type StoredPayout = { batch: PayoutBatch; request: NewPayout };
 type StoredInvoice = { id: string; number: string; status: InvoiceStatus; request: NewInvoice; payments: InvoicePayment[]; requestIds: Set<string> };
-type StoredSubscription = { id: string; key: string; status: SubscriptionStatus; reference: ContributionReference; amount: Money; payments: SubscriptionPayment[]; failedPayments: number; requestIds: Set<string>; revisions?: Money[] };
+type StoredSubscription = { id: string; key: string; status: SubscriptionStatus; reference: ContributionReference; amount: Money; payments: SubscriptionPayment[]; failedPayments: number; requestIds: Set<string>; revisions?: Money[]; subscriberPayerId?: string | null };
 
 export type FakePool = PayPalPool & {
   /** The payer approves the order on PayPal's page. */
@@ -231,7 +231,7 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
     async getSubscription(subscriptionId): Promise<Subscription> {
       fail("getSubscription");
       const stored = findSubscription(subscriptionId);
-      return { id: stored.id, status: stored.status, reference: stored.reference, nextBillingAt: stored.status === "ACTIVE" ? now() : null, failedPayments: stored.failedPayments };
+      return { id: stored.id, status: stored.status, reference: stored.reference, subscriberPayerId: stored.subscriberPayerId ?? null, nextBillingAt: stored.status === "ACTIVE" ? now() : null, failedPayments: stored.failedPayments };
     },
     async listSubscriptionPayments(subscriptionId, from, until) {
       fail("listSubscriptionPayments");

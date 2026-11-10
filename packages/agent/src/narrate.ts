@@ -3,6 +3,7 @@ import { hasHiddenCharacters, spokenNumbers, spokenNumbersAreAllowed } from "@ki
 import { numbersIn } from "./number-values.ts";
 import { byClaude, reasonForFailure, type FallbackReason, type Provenance } from "./provenance.ts";
 import type { StructuredModel } from "./structured-model.ts";
+import { wrapData } from "./wrap-data.ts";
 
 /** The words and numbers a sentence may use: all of them come from the record. */
 export type NarrationFacts = {
@@ -70,7 +71,7 @@ export async function narrateWithProvenance(model: StructuredModel | null, facts
         "The statement is a fact Kin already decided. Say exactly what it says, do not add advice about money, and use only the figures and names it contains.",
         "Write every figure of the statement as digits, never in words: \"64\", not \"sixty-four\". Add no other number, not even an ordinal such as \"2nd\".",
       ].join("\n\n"),
-      user: `<statement>\n${facts.statement.replaceAll(/<\/?statement\s*>/giu, "")}\n</statement>`,
+      user: wrapData("statement", facts.statement),
       schema: WORDING_SCHEMA,
     });
     if (reply.kind === "refused") return fallback("model_refused");

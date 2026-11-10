@@ -188,8 +188,10 @@ export const wishAttestations = pgTable(
 
 /**
  * A subscription the parent pays, which a wish can name. A real one carries its
- * PayPal subscription ID, and Kin's worker suspends and resumes it through
- * PayPal; a demo circle's is simulated and labelled so.
+ * PayPal subscription ID only when PayPal said it is the parent's, and Kin's
+ * worker suspends and resumes it through PayPal after checking that again; a
+ * real one without an ID is not linked, and Kin tells the family to stop it
+ * themselves. A demo circle's is simulated and labelled so.
  */
 export const parentSubscriptions = pgTable(
   "parent_subscriptions",
@@ -214,7 +216,9 @@ export const parentSubscriptions = pgTable(
     check("parent_subscriptions_cents", sql`${t.monthlyCents} > 0 and ${t.monthlyCents} <= 10000000`),
     check("parent_subscriptions_paypal_id", sql`${t.paypalSubscriptionId} is null or ${t.paypalSubscriptionId} ~ '^I-[A-Z0-9]{6,34}$'`),
     check("parent_subscriptions_state", sql.raw(`state in (${quoted(PARENT_SUBSCRIPTION_STATES)})`)),
-    // A real subscription is suspended through PayPal, so it names one; a simulated one never does.
-    check("parent_subscriptions_real", sql`${t.simulated} or ${t.paypalSubscriptionId} is not null`),
+    // A simulated subscription never names a PayPal one. A real one names one only once Kin checked it is the parent's; without one it is "not linked" and Kin never calls PayPal for it.
+    check("parent_subscriptions_simulated_unlinked", sql`not ${t.simulated} or ${t.paypalSubscriptionId} is null`),
+    // One PayPal subscription sits in one circle once; monthly shares are refused by a trigger.
+    uniqueIndex("parent_subscriptions_paypal_once").on(t.paypalSubscriptionId),
   ],
 );

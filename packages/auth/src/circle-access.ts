@@ -81,6 +81,8 @@ export const CIRCLE_ACTIONS = {
   "wish_trigger.view": ["organizer", "contributor", "parent", "caregiver", "observer"],
   /** Say the parent went into hospital or a care home, or that she is home: the family, and the caregiver for a hospital admission, which the database decides. */
   "wish_trigger.attest": ["organizer", "contributor", "caregiver"],
+  /** Say she is fine: the parent's own word dismisses a report or ends a trigger at once. Hers alone. */
+  "wish_trigger.parent_fine": ["parent"],
   /** Take back a report nobody confirmed: the one who made it, or the organizer, which the database decides. */
   "wish_trigger.dismiss": ["organizer", "contributor", "caregiver"],
   /** Tell Kin about a subscription the parent pays, so a wish can name it. */

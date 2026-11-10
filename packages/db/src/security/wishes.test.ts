@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
 import { WISH_TRANSITIONS, WISH_TRIGGER_TRANSITIONS, discretionaryPause, wishEffects, type WishRule } from "@kin/domain";
@@ -6,7 +7,7 @@ import { WISH_TRANSITIONS, WISH_TRIGGER_TRANSITIONS, discretionaryPause, wishEff
 import { beginPayout, readPayoutJob } from "../payouts.ts";
 import { asPerson, asService } from "../scope.ts";
 import { checkInShift, checkOutShift, settleShift } from "../shifts.ts";
-import { addMember, seatPerson, snapshotFor, visitorWithCircle, type VisitorCircle } from "../testing/index.ts";
+import { addMember, insertShare, seatPerson, snapshotFor, visitorWithCircle, withoutTriggers, type VisitorCircle } from "../testing/index.ts";
 import { testDatabases } from "../testing/databases.ts";
 import { CLOCK, newShift } from "../testing/shifts.ts";
 import { REFUSED, errorCode } from "../testing/sql.ts";
@@ -17,6 +18,7 @@ import {
   attestWishTrigger,
   confirmWish,
   dismissWishTrigger,
+  parentSaysFine,
   readDiscretionaryPause,
   readWishEffects,
   readWishRecording,
@@ -27,6 +29,7 @@ import {
   wishChainHolds,
   wishDigest,
   witnessWish,
+  type SubscriptionOwner,
 } from "../wishes.ts";
 
 const db = testDatabases();
@@ -126,7 +129,7 @@ describe("who reads her wishes", () => {
     expect(await reason(attest(mine.userId, theirs, "hospital"))).toBe("refused");
     const [theirWish] = (await snapshotFor(db, theirs.userId, theirs.circleId)).wishes.wishes;
     expect(await reason(person(mine.userId, (tx) => witnessWish(tx, { circleId: theirs.circleId, wishId: theirWish?.id ?? "" })))).toBe("refused");
-    expect(await reason(person(mine.userId, (tx) => addParentSubscription(tx, { circleId: theirs.circleId, name: "Gym", monthlyCents: 100, paypalSubscriptionId: null })))).toBe("refused");
+    expect(await reason(person(mine.userId, (tx) => addParentSubscription(tx, { circleId: theirs.circleId, name: "Gym", monthlyCents: 100, paypalSubscriptionId: null, owner: null })))).toBe("refused");
     // No one writes the tables directly.
     for (const table of ["wishes", "wish_triggers", "parent_subscriptions"]) {
       expect(await errorCode(person(mine.userId, (tx) => tx.execute(sql`update ${sql.identifier(table)} set state = state where circle_id = ${mine.circleId}`)))).toBe(REFUSED.permission);
@@ -238,7 +241,7 @@ describe("a trigger, attested by people", () => {
 
     expect(await reason(attest(people.elena, circle, "hospital", "end"))).toBe("no error");
     expect((await wishesOf(people.elena, circle)).triggers[0]?.state).toBe("active");
-    // Amara may attest a hospital stay, so her word with Elena's ends it.
+    // Amara may attest a hospital stay, and saying Rose is home gains her nothing: her word with Elena's ends it.
     expect((await attest(people.amara, circle, "hospital", "end")).state).toBe("ended");
     const after = await wishesOf(people.elena, circle);
     expect(after.subscriptions.map((each) => each.state)).toEqual(["active", "active"]);
@@ -279,6 +282,74 @@ describe("a trigger, attested by people", () => {
     await attest(people.ana, circle, "hospital", "end");
     await attest(people.marcus, circle, "hospital", "end");
     expect([await role(circle.members.elena), await role(circle.members.marcus)]).toEqual(["organizer", "contributor"]);
+  });
+});
+
+describe("who stands to gain from a trigger", () => {
+  /** Rose names Marcus her successor for a hospital stay; Elena and Ana witness it. */
+  async function withSuccessor(circle: VisitorCircle, people: Awaited<ReturnType<typeof seats>>) {
+    const id = await person(people.rose, (tx) => recordWish(tx, { circleId: circle.circleId, quote: "If I can't decide, Marcus runs things.", trigger: "hospital", rule: { kind: "successor", memberId: circle.members.marcus }, recordingId: null, wishKey: null }));
+    await person(people.rose, (tx) => confirmWish(tx, { circleId: circle.circleId, wishId: id, method: "app" }));
+    await person(people.elena, (tx) => witnessWish(tx, { circleId: circle.circleId, wishId: id }));
+    await person(people.ana, (tx) => witnessWish(tx, { circleId: circle.circleId, wishId: id }));
+  }
+
+  it("never counts the word of the successor the trigger would seat", async () => {
+    const circle = await visitorWithCircle(db);
+    const people = await seats(circle);
+    await withSuccessor(circle, people);
+    await attest(people.elena, circle, "hospital");
+    expect((await attest(people.marcus, circle, "hospital")).state).toBe("reported");
+    expect((await attest(people.ana, circle, "hospital")).state).toBe("active");
+  });
+
+  it("never counts the caregiver her wish keeps paid, or the successor, toward starting it", async () => {
+    const circle = await visitorWithCircle(db);
+    const people = await seats(circle);
+    await withSuccessor(circle, people);
+    await attest(people.marcus, circle, "hospital");
+    expect((await attest(people.amara, circle, "hospital")).state).toBe("reported");
+    expect((await attest(people.elena, circle, "hospital")).state).toBe("reported");
+    // Two people who gain nothing make it count.
+    expect((await attest(people.ana, circle, "hospital")).state).toBe("active");
+  });
+
+  it("tells each person, and only of themselves, whether they stand to gain", async () => {
+    const circle = await visitorWithCircle(db);
+    const people = await seats(circle);
+    await withSuccessor(circle, people);
+    expect((await wishesOf(people.amara, circle)).stake).toEqual({ hospital: true, care_home: true });
+    expect((await wishesOf(people.marcus, circle)).stake).toEqual({ hospital: true, care_home: false });
+    expect((await wishesOf(people.elena, circle)).stake).toEqual({ hospital: false, care_home: false });
+  });
+
+  it("counts a caregiver her wishes do not keep paid, beside one of the family", async () => {
+    const circle = await visitorWithCircle(db);
+    const people = await seats(circle);
+    const keep = (await wishesOf(people.rose, circle)).wishes.find((wish) => wish.rule.kind === "keep_paying");
+    await person(people.rose, (tx) => withdrawWish(tx, { circleId: circle.circleId, wishId: keep?.id ?? "" }));
+    await attest(people.elena, circle, "hospital");
+    expect((await attest(people.amara, circle, "hospital")).state).toBe("active");
+  });
+});
+
+describe("her own word that she is fine", () => {
+  it("dismisses a report, ends an active trigger at once and undoes it, and is hers alone", async () => {
+    const circle = await visitorWithCircle(db);
+    const people = await seats(circle);
+    await attest(people.elena, circle, "hospital");
+    for (const userId of [people.elena, people.marcus, people.amara, people.daniel]) expect(await reason(person(userId, (tx) => parentSaysFine(tx, { circleId: circle.circleId })))).toBe("refused");
+    expect(await person(people.rose, (tx) => parentSaysFine(tx, { circleId: circle.circleId }))).toBe("dismissed");
+    await attest(people.elena, circle, "hospital");
+    await attest(people.marcus, circle, "hospital");
+    expect((await wishesOf(people.elena, circle)).subscriptions.map((each) => each.state)).toEqual(["suspended", "suspended"]);
+    expect(await person(people.rose, (tx) => parentSaysFine(tx, { circleId: circle.circleId }))).toBe("ended");
+    const after = await wishesOf(people.elena, circle);
+    expect(after.effects).toBeNull();
+    expect(after.subscriptions.map((each) => each.state)).toEqual(["active", "active"]);
+    expect(await reason(person(people.rose, (tx) => parentSaysFine(tx, { circleId: circle.circleId })))).toBe("nothing_active");
+    const said = await db.admin.execute<{ n: string }>(sql`select count(*) as n from audit_log where circle_id = ${circle.circleId} and action = 'wish_trigger.parent_fine'`);
+    expect(said.rows[0]?.n).toBe("2");
   });
 });
 
@@ -330,12 +401,69 @@ describe("subscriptions she pays", () => {
   it("are added by the organizer only, simulated in a demo circle, and never change what they are", async () => {
     const circle = await visitorWithCircle(db);
     const people = await seats(circle);
-    const add = (userId: string, paypal: string | null = null) => person(userId, (tx) => addParentSubscription(tx, { circleId: circle.circleId, name: "Daily paper", monthlyCents: 2200, paypalSubscriptionId: paypal }));
+    const add = (userId: string, paypal: string | null = null) =>
+      person(userId, (tx) => addParentSubscription(tx, { circleId: circle.circleId, name: "Daily paper", monthlyCents: 2200, paypalSubscriptionId: paypal, owner: { payerId: null, circleId: circle.circleId, memberId: circle.members.rose } }));
     for (const userId of [people.rose, people.marcus, people.daniel, people.amara]) expect(await reason(add(userId))).toBe("refused");
     expect(await reason(add(people.elena, "I-BW452GLLEP1G"))).toBe("invalid");
     const id = await add(people.elena);
     expect(await errorCode(db.admin.execute(sql`update parent_subscriptions set monthly_cents = 1 where id = ${id}`))).toBe(REFUSED.restrict);
     expect(await errorCode(db.admin.execute(sql`update parent_subscriptions set state = 'resuming' where id = ${id}`))).toBe(REFUSED.check);
+  });
+});
+
+describe("a real subscription linked to PayPal", () => {
+  const owner = (circle: VisitorCircle, change: Partial<SubscriptionOwner> = {}): SubscriptionOwner => ({ payerId: null, circleId: circle.circleId, memberId: circle.members.rose, ...change });
+  const add = (circle: VisitorCircle, paypal: string | null, who: SubscriptionOwner | null) =>
+    person(circle.userId, (tx) => addParentSubscription(tx, { circleId: circle.circleId, name: "Gym", monthlyCents: 3900, paypalSubscriptionId: paypal, owner: who }));
+  const makeReal = (circle: VisitorCircle) => db.admin.execute(sql`update circles set demo = false, clock_at = null where id = ${circle.circleId}`);
+
+  it("is linked only when PayPal says it is the parent's: one Kin made for her, or one her verified PayPal account pays", async () => {
+    const circle = await visitorWithCircle(db);
+    const rose = await seatPerson(db, circle.circleId, circle.members.rose);
+    await makeReal(circle);
+    expect(await reason(add(circle, "I-NOTHERS0001", null))).toBe("not_owned");
+    expect(await reason(add(circle, "I-NOTHERS0001", owner(circle, { memberId: circle.members.elena })))).toBe("not_owned");
+    expect(await reason(add(circle, "I-NOTHERS0001", owner(circle, { circleId: randomUUID() })))).toBe("not_owned");
+    expect(await reason(add(circle, "I-NOTHERS0001", { payerId: "PAYER123", circleId: null, memberId: null }))).toBe("not_owned");
+    expect(await reason(add(circle, "I-HERSKIN0001", owner(circle)))).toBe("no error");
+    // Her verified PayPal account, once Kin has one, makes one she pays to anyone hers too.
+    await db.admin.execute(sql`update users set paypal_payer_id = 'ROSEPAYER01' where id = ${rose}`);
+    expect(await reason(add(circle, "I-HERSGYM0001", { payerId: "ROSEPAYER01", circleId: null, memberId: null }))).toBe("no error");
+    // Without an ID it is kept, not linked: Kin never calls PayPal for it.
+    expect(await reason(add(circle, null, null))).toBe("no error");
+    const linked = (await wishesOf(circle.userId, circle)).subscriptions.map((each) => `${each.name}:${each.linked}`);
+    expect(linked.filter((each) => each === "Gym:true")).toHaveLength(2);
+    expect(linked.filter((each) => each === "Gym:false")).toHaveLength(1);
+  });
+
+  it("sits in one circle once, and is never also a member's monthly share", async () => {
+    const [mine, theirs] = await Promise.all([visitorWithCircle(db), visitorWithCircle(db)]);
+    await Promise.all([makeReal(mine), makeReal(theirs)]);
+    await add(mine, "I-ONCEONLY001", owner(mine));
+    expect(await reason(add(mine, "I-ONCEONLY001", owner(mine)))).toBe("taken");
+    expect(await reason(add(theirs, "I-ONCEONLY001", owner(theirs)))).toBe("taken");
+    await insertShare(db, theirs.circleId, { id: randomUUID(), memberId: theirs.members.marcus, cents: 5000, paypalSubscriptionId: "I-SHAREONLY01" });
+    expect(await reason(add(theirs, "I-SHAREONLY01", owner(theirs)))).toBe("taken");
+    // The database holds both rules again, whoever writes.
+    expect(await errorCode(db.admin.execute(sql`insert into parent_subscriptions (id, circle_id, name, monthly_cents, paypal_subscription_id, simulated) values (${randomUUID()}, ${theirs.circleId}, 'Copy', 100, 'I-ONCEONLY001', false)`))).toBe(REFUSED.unique);
+    expect(await errorCode(db.admin.execute(sql`insert into parent_subscriptions (id, circle_id, name, monthly_cents, paypal_subscription_id, simulated) values (${randomUUID()}, ${theirs.circleId}, 'Copy', 100, 'I-SHAREONLY01', false)`))).toBe(REFUSED.unique);
+    await expect(insertShare(db, mine.circleId, { id: randomUUID(), memberId: mine.members.marcus, cents: 5000, paypalSubscriptionId: "I-ONCEONLY001" })).rejects.toThrow();
+  });
+
+  it("is left running, and said so, when it is not linked and a trigger would pause it", async () => {
+    const circle = await visitorWithCircle(db);
+    const marcus = await seatPerson(db, circle.circleId, circle.members.marcus);
+    await makeReal(circle);
+    // Rose's gym, which her wish names, as a real one Kin could not link.
+    await withoutTriggers(db, (run) => run(sql`update parent_subscriptions set simulated = false where circle_id = ${circle.circleId} and name = 'Lakeside Fitness'`));
+    await attest(circle.userId, circle, "hospital");
+    await attest(marcus as string, circle, "hospital");
+    const after = await wishesOf(circle.userId, circle);
+    expect(after.subscriptions.map((each) => `${each.name} ${each.state} ${each.linked}`)).toEqual(["Lakeside Fitness active false", "Garden Monthly suspended false"]);
+    const said = await db.admin.execute<{ n: string }>(sql`select count(*) as n from audit_log where circle_id = ${circle.circleId} and action = 'wish.subscription_not_linked'`);
+    expect(said.rows[0]?.n).toBe("1");
+    const queued = await db.admin.execute<{ n: string }>(sql`select count(*) as n from outbox where circle_id = ${circle.circleId} and topic = 'wish.subscription'`);
+    expect(queued.rows[0]?.n).toBe("0");
   });
 });
 

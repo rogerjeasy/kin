@@ -7599,46 +7599,62 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "parent_subscriptions_paypal_once": {
+          "name": "parent_subscriptions_paypal_once",
+          "columns": [
+            {
+              "expression": "paypal_subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
       "foreignKeys": {
         "parent_subscriptions_circle_fk": {
           "name": "parent_subscriptions_circle_fk",
           "tableFrom": "parent_subscriptions",
-          "tableTo": "circles",
           "columnsFrom": [
             "circle_id"
           ],
+          "tableTo": "circles",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "parent_subscriptions_held_by_fk": {
           "name": "parent_subscriptions_held_by_fk",
           "tableFrom": "parent_subscriptions",
-          "tableTo": "wish_triggers",
           "columnsFrom": [
             "circle_id",
             "held_by"
           ],
+          "tableTo": "wish_triggers",
           "columnsTo": [
             "circle_id",
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "parent_subscriptions_circle_row": {
           "name": "parent_subscriptions_circle_row",
-          "nullsNotDistinct": false,
           "columns": [
             "circle_id",
             "id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -7659,9 +7675,9 @@
           "name": "parent_subscriptions_state",
           "value": "state in ('active', 'suspending', 'suspended', 'resuming')"
         },
-        "parent_subscriptions_real": {
-          "name": "parent_subscriptions_real",
-          "value": "\"parent_subscriptions\".\"simulated\" or \"parent_subscriptions\".\"paypal_subscription_id\" is not null"
+        "parent_subscriptions_simulated_unlinked": {
+          "name": "parent_subscriptions_simulated_unlinked",
+          "value": "not \"parent_subscriptions\".\"simulated\" or \"parent_subscriptions\".\"paypal_subscription_id\" is null"
         }
       },
       "isRLSEnabled": false

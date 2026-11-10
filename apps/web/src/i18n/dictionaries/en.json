@@ -3837,7 +3837,10 @@
         "ended": "{parent} came home on {day}. Everything her wishes paused started again.",
         "observer": "You can see what changes here, and the family says when it happens.",
         "parentNote": "Your family says when this happens. You cannot set it off yourself, and Kin never guesses.",
-        "caregiverHospital": "As {parent}’s caregiver you can say she went into hospital; a family member must say so too."
+        "caregiverHospital": "As {parent}’s caregiver you can say she went into hospital; a family member must say so too.",
+        "fine": "I’m fine. This is not right",
+        "fineNote": "Your own word ends it at once, and everything it paused starts again. The family sees that it was you.",
+        "standsToGain": "Her wishes would change things for you, so your word does not count toward setting them off. The family says when it happens; you can still say when {parent} is home."
       },
       "changed": {
         "title": "What changed, and why",
@@ -3855,7 +3858,8 @@
         },
         "newPayees": "A payment over {amount} to anyone new now needs {approvers}.",
         "successor": "{member} runs the circle until {parent} is home.",
-        "none": "None of her wishes apply to this. Everything goes on as usual."
+        "none": "None of her wishes apply to this. Everything goes on as usual.",
+        "notLinked": "{name} is not linked to PayPal, so Kin cannot pause it. Ask the company to pause it."
       },
       "subscriptions": {
         "title": "What {parent} pays each month",
@@ -3875,8 +3879,10 @@
           "paypal": "PayPal subscription ID",
           "paypalHint": "Starts with I-. Kin pauses it through PayPal.",
           "submit": "Add",
-          "added": "Added."
-        }
+          "added": "Added.",
+          "paypalOptional": "Optional: Kin links it only if PayPal says it is the parent’s. Without it, Kin keeps it as not linked and never touches it."
+        },
+        "notLinked": "Not linked to PayPal"
       },
       "citation": "{parent} said on {day}: “{quote}”",
       "approvalNeeds": "Her wish asks {names} to agree before this goes.",
@@ -3907,7 +3913,9 @@
         "subscriptions": "It names a subscription Kin does not know.",
         "amount": "That amount could not be read.",
         "approvers": "It needs at least two of the family who share the cost.",
-        "successor": "It names someone who cannot run the circle."
+        "successor": "It names someone who cannot run the circle.",
+        "not_owned": "PayPal does not say that subscription is the parent’s, so Kin will not touch it.",
+        "taken": "Kin already knows that PayPal subscription."
       },
       "packet": {
         "title": "Her wishes",

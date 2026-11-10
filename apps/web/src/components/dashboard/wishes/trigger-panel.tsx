@@ -9,6 +9,7 @@ import type { Formatters } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { AttestButtons } from "./attest-buttons";
+import { FineButton } from "./fine-button";
 
 type Copy = Dictionary["dashboard"]["wishes"];
 type Props = {
@@ -17,7 +18,14 @@ type Props = {
   readonly format: Formatters;
   readonly open: WishTriggerRecord | null;
   readonly ended: WishTriggerRecord | null;
-  readonly viewer: { readonly memberId: string; readonly role: CircleRole; readonly mayAttest: boolean };
+  readonly viewer: {
+    readonly memberId: string;
+    readonly role: CircleRole;
+    readonly mayAttest: boolean;
+    readonly maySayFine: boolean;
+    /** Whether her wishes would raise or protect the viewer if each event started, so their word does not count toward it. */
+    readonly gains: Readonly<Record<"hospital" | "care_home", boolean>>;
+  };
   /** Who still must say so for the open trigger: anyone who may, or someone from the family. */
   readonly needs: { readonly start: "none" | "family" | "anyone" };
 };
@@ -35,14 +43,17 @@ export function TriggerPanel({ copy, book, format, open, ended, viewer, needs }:
   const who = (stance: "start" | "end") => format.allOf((open?.attestations ?? []).filter((each) => each.stance === stance).map((each) => book.members[each.memberId] ?? "?"));
   const first = (stance: "start" | "end") => book.members[(open?.attestations ?? []).find((each) => each.stance === stance)?.memberId ?? ""] ?? "?";
   const can = (event: "hospital" | "care_home") => viewer.mayAttest && mayAttest(viewer.role, event);
+  // Someone who stands to gain is never offered the word that would start it; saying she is home gains them nothing.
+  const canStart = (event: "hospital" | "care_home") => can(event) && !viewer.gains[event];
+  const gainsHere = open === null ? EVENTS.some((event) => can(event) && viewer.gains[event]) : open.state === "reported" && can(open.event) && viewer.gains[open.event];
   const active = open?.state === "active";
   const tone = active ? "border-highlight/50 bg-highlight/10" : open ? "border-highlight/40 bg-card" : "bg-card";
 
   const says =
     open === null
-      ? EVENTS.filter(can).map((event) => ({ event, stance: "start" as const, label: fill(copy.trigger.report[event], { parent }) }))
+      ? EVENTS.filter(canStart).map((event) => ({ event, stance: "start" as const, label: fill(copy.trigger.report[event], { parent }) }))
       : open.state === "reported"
-        ? can(open.event) && !said("start")
+        ? canStart(open.event) && !said("start")
           ? [{ event: open.event, stance: "start" as const, label: fill(copy.trigger.report[open.event], { parent }) }]
           : []
         : can(open.event) && !said("end")
@@ -80,9 +91,11 @@ export function TriggerPanel({ copy, book, format, open, ended, viewer, needs }:
       {says.length > 0 || dismissable ? (
         <AttestButtons says={says} dismiss={dismissable && open !== null ? { triggerId: open.id, label: copy.trigger.dismiss } : null} reasons={copy.reasons} />
       ) : null}
+      {viewer.maySayFine && open !== null ? <FineButton label={copy.trigger.fine} note={copy.trigger.fineNote} reasons={copy.reasons} /> : null}
       {viewer.role === "parent" ? <p className="text-sm text-pretty text-muted-foreground">{copy.trigger.parentNote}</p> : null}
       {viewer.role === "observer" ? <p className="text-sm text-pretty text-muted-foreground">{copy.trigger.observer}</p> : null}
-      {viewer.role === "caregiver" && open === null ? <p className="text-sm text-pretty text-muted-foreground">{fill(copy.trigger.caregiverHospital, { parent })}</p> : null}
+      {gainsHere ? <p className="text-sm text-pretty text-muted-foreground">{fill(copy.trigger.standsToGain, { parent })}</p> : null}
+      {viewer.role === "caregiver" && open === null && !gainsHere ? <p className="text-sm text-pretty text-muted-foreground">{fill(copy.trigger.caregiverHospital, { parent })}</p> : null}
     </section>
   );
 }

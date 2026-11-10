@@ -3837,7 +3837,10 @@
         "ended": "{parent} volvió a casa el {day}. Todo lo que sus deseos pausaron se reanudó.",
         "observer": "Aquí puede ver qué cambia, y la familia dice cuándo ocurre.",
         "parentNote": "Su familia dice cuándo ocurre esto. Usted no puede activarlo, y Kin nunca lo adivina.",
-        "caregiverHospital": "Como cuidadora de {parent}, puede decir que ella ingresó en el hospital; alguien de la familia también tiene que decirlo."
+        "caregiverHospital": "Como cuidadora de {parent}, puede decir que ella ingresó en el hospital; alguien de la familia también tiene que decirlo.",
+        "fine": "Estoy bien. Esto no es correcto",
+        "fineNote": "Su propia palabra lo termina en el acto y todo lo pausado vuelve a empezar. La familia ve que fue usted.",
+        "standsToGain": "Sus deseos cambiarían algo para usted, así que su palabra no cuenta para activarlos. La familia dice cuándo ocurre; usted puede seguir diciendo cuándo {parent} está en casa."
       },
       "changed": {
         "title": "Qué cambió y por qué",
@@ -3855,7 +3858,8 @@
         },
         "newPayees": "Un pago de más de {amount} a alguien nuevo ahora necesita el acuerdo de {approvers}.",
         "successor": "{member} lleva el círculo hasta que {parent} vuelva a casa.",
-        "none": "Ninguno de sus deseos se aplica a esto. Todo sigue como siempre."
+        "none": "Ninguno de sus deseos se aplica a esto. Todo sigue como siempre.",
+        "notLinked": "{name} no está vinculada a PayPal, así que Kin no puede pausarla. Pida a la empresa que la pause."
       },
       "subscriptions": {
         "title": "Lo que {parent} paga cada mes",
@@ -3875,8 +3879,10 @@
           "paypal": "ID de suscripción de PayPal",
           "paypalHint": "Empieza por I-. Kin la pausa a través de PayPal.",
           "submit": "Añadir",
-          "added": "Añadida."
-        }
+          "added": "Añadida.",
+          "paypalOptional": "Opcional: Kin la vincula solo si PayPal indica que es del padre o la madre. Si no, queda sin vincular y Kin nunca la toca."
+        },
+        "notLinked": "Sin vincular a PayPal"
       },
       "citation": "{parent} dijo el {day}: «{quote}»",
       "approvalNeeds": "Su deseo pide que {names} estén de acuerdo antes de que esto salga.",
@@ -3907,7 +3913,9 @@
         "subscriptions": "Nombra una suscripción que Kin no conoce.",
         "amount": "No se pudo leer ese importe.",
         "approvers": "Hacen falta al menos dos personas de la familia que compartan el costo.",
-        "successor": "Nombra a alguien que no puede llevar el círculo."
+        "successor": "Nombra a alguien que no puede llevar el círculo.",
+        "not_owned": "PayPal no indica que esa suscripción sea del padre o la madre, así que Kin no la tocará.",
+        "taken": "Kin ya conoce esa suscripción de PayPal."
       },
       "packet": {
         "title": "Sus deseos",

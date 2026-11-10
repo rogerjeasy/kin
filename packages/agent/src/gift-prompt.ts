@@ -1,5 +1,7 @@
 import { PURSE_ROUTES } from "@kin/domain";
 
+import { wrapData } from "./wrap-data.ts";
+
 /**
  * The prompt that reads what the parent says she wants to send from her Purse.
  * A change to it runs the fixed evaluation set (`pnpm --filter @kin/agent run
@@ -26,10 +28,9 @@ export function giftSystemPrompt(): string {
   ].join("\n\n");
 }
 
-/** Her words, wrapped as data. Tags inside them are removed, so they cannot close the wrapper. */
+/** Her words, wrapped as data that nothing inside them can close. */
 export function giftUserMessage(words: string): string {
-  const inert = words.replaceAll(new RegExp(`</?${TAG}\\s*>`, "gi"), "");
-  return `<${TAG}>\n${inert}\n</${TAG}>`;
+  return wrapData(TAG, words);
 }
 
 /** The answer's shape, enforced by the API's structured output. */

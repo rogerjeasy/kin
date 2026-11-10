@@ -1,3 +1,5 @@
+import { wrapData } from "../wrap-data.ts";
+
 /** Changing the prompt or a tool's description changes this, and runs the agent evaluation set (`eval:agent`). */
 export const ASK_KIN_PROMPT_VERSION = "ask-kin-2026-11-10";
 
@@ -22,7 +24,7 @@ export function askKinSystem(language: string): string {
   ].join("\n\n");
 }
 
-/** The person's question, wrapped as data. A closing tag in it cannot end the wrapper. */
+/** The person's question, wrapped as data that nothing inside it can close. */
 export function askKinQuestion(question: string): string {
-  return `<question>\n${question.replaceAll(/<\/?question\s*>/giu, "")}\n</question>`;
+  return wrapData("question", question);
 }

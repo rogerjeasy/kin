@@ -13,7 +13,9 @@
 --
 -- A trigger is what people said: one reports it, a second confirms it (two
 -- family members, or one and the caregiver for a hospital admission), and the
--- same again ends it. Activating one suspends the subscriptions her wishes
+-- same again ends it. Nobody who stands to gain from it counts toward starting
+-- it: the successor a wish names, or the caregiver a wish keeps paid. The
+-- parent's own word that she is fine ends it at once. Activating one suspends the subscriptions her wishes
 -- name (a demo circle's at once, simulated; a real one's through PayPal by the
 -- worker) and seats the successor she named; ending it undoes both.
 --
@@ -27,6 +29,8 @@
 --   KW005  a different event is reported already
 --   KW006  nothing is active to end
 --   KW007  too many recordings today
+--   KW008  PayPal does not say that subscription is the parent's
+--   KW009  that PayPal subscription is already known to Kin
 ALTER TABLE public.wishes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wish_signatures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wish_recordings ENABLE ROW LEVEL SECURITY;
@@ -451,10 +455,50 @@ CREATE FUNCTION kin_private.withdraw_wish(p_circle uuid, p_wish uuid) RETURNS vo
   $$;
 --> statement-breakpoint
 
+-- Whether a PayPal subscription, as PayPal described it (`p_owner`: its
+-- subscriber's payer ID and the circle and member its custom ID names), is the
+-- parent's: one Kin made for this circle's parent, or one whose subscriber is
+-- the PayPal account the parent verified with Kin. The one rule, asked when a
+-- subscription is added and by the worker again before every change.
+CREATE FUNCTION kin_private.subscription_is_parents(p_circle uuid, p_owner jsonb) RETURNS boolean
+  LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog, public
+  AS $$
+    SELECT coalesce(bool_or(
+      (p_owner ->> 'circleId' = p_circle::text AND p_owner ->> 'memberId' = m.id::text)
+      OR (u.paypal_payer_id IS NOT NULL AND p_owner ->> 'payerId' = u.paypal_payer_id)
+    ), false)
+    FROM public.members m LEFT JOIN public.users u ON u.id = m.user_id
+    WHERE m.circle_id = p_circle AND m.role = 'parent' AND m.status = 'active' AND jsonb_typeof(p_owner) = 'object'
+  $$;
+--> statement-breakpoint
+
+-- A PayPal subscription is one family's and one purpose's: never a parent's
+-- subscription and a member's monthly share at once, in any circle.
+CREATE FUNCTION kin_private.assert_subscription_once() RETURNS trigger
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+  AS $$
+  BEGIN
+    IF NEW.paypal_subscription_id IS NOT NULL AND (
+      (TG_TABLE_NAME = 'parent_subscriptions' AND EXISTS (SELECT 1 FROM public.monthly_shares WHERE paypal_subscription_id = NEW.paypal_subscription_id))
+      OR (TG_TABLE_NAME = 'monthly_shares' AND EXISTS (SELECT 1 FROM public.parent_subscriptions WHERE paypal_subscription_id = NEW.paypal_subscription_id))) THEN
+      RAISE EXCEPTION 'kin: that PayPal subscription is already known to Kin' USING ERRCODE = 'unique_violation';
+    END IF;
+    RETURN NEW;
+  END
+  $$;
+
+CREATE TRIGGER paypal_subscription_once BEFORE INSERT OR UPDATE OF paypal_subscription_id ON public.parent_subscriptions
+  FOR EACH ROW EXECUTE FUNCTION kin_private.assert_subscription_once();
+CREATE TRIGGER paypal_subscription_once BEFORE INSERT OR UPDATE OF paypal_subscription_id ON public.monthly_shares
+  FOR EACH ROW EXECUTE FUNCTION kin_private.assert_subscription_once();
+--> statement-breakpoint
+
 -- Tells Kin about a subscription the parent pays, so a wish can name it. The
--- organizer only. A real circle's names its PayPal subscription, which the
--- worker suspends and resumes; a demo circle's is simulated and names none.
-CREATE FUNCTION kin_private.add_parent_subscription(p_circle uuid, p_name text, p_cents bigint, p_paypal_id text) RETURNS uuid
+-- organizer only. A demo circle's is simulated and names no PayPal
+-- subscription. A real circle's names one only when PayPal described it as the
+-- parent's (`p_owner`, read from PayPal by the web app); without one it is not
+-- linked, and Kin never calls PayPal for it.
+CREATE FUNCTION kin_private.add_parent_subscription(p_circle uuid, p_name text, p_cents bigint, p_paypal_id text, p_owner jsonb) RETURNS uuid
   LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
   AS $$
   DECLARE
@@ -469,8 +513,15 @@ CREATE FUNCTION kin_private.add_parent_subscription(p_circle uuid, p_name text, 
     IF NOT FOUND THEN
       RAISE EXCEPTION 'kin: adding a subscription refused' USING ERRCODE = 'insufficient_privilege';
     END IF;
-    IF v_circle.demo = (p_paypal_id IS NOT NULL) THEN
-      RAISE EXCEPTION 'kin: a real subscription names its PayPal subscription, and a simulated one none' USING ERRCODE = 'check_violation';
+    IF v_circle.demo AND p_paypal_id IS NOT NULL THEN
+      RAISE EXCEPTION 'kin: a simulated subscription names no PayPal subscription' USING ERRCODE = 'check_violation';
+    END IF;
+    IF p_paypal_id IS NOT NULL AND NOT kin_private.subscription_is_parents(p_circle, p_owner) THEN
+      RAISE EXCEPTION 'kin: PayPal does not say that subscription is the parent''s' USING ERRCODE = 'KW008';
+    END IF;
+    IF p_paypal_id IS NOT NULL AND (EXISTS (SELECT 1 FROM public.parent_subscriptions WHERE paypal_subscription_id = p_paypal_id)
+                                    OR EXISTS (SELECT 1 FROM public.monthly_shares WHERE paypal_subscription_id = p_paypal_id)) THEN
+      RAISE EXCEPTION 'kin: that PayPal subscription is already known to Kin' USING ERRCODE = 'KW009';
     END IF;
     INSERT INTO public.parent_subscriptions (id, circle_id, name, monthly_cents, paypal_subscription_id, simulated)
       VALUES (v_id, p_circle, btrim(p_name), p_cents, p_paypal_id, v_circle.demo);
@@ -503,6 +554,12 @@ CREATE FUNCTION kin_private.apply_wish_trigger(p_circle uuid, p_trigger uuid, p_
           WHERE w.circle_id = p_circle AND w.state = 'in_force' AND w.rule_kind = 'suspend_subscriptions' AND w.trigger IN (v_trigger.event, 'either'))
         ORDER BY s.created_at, s.id FOR UPDATE
       LOOP
+        -- One not linked to PayPal is left running: Kin cannot stop it, and the screen tells the family to.
+        IF NOT v_sub.simulated AND v_sub.paypal_subscription_id IS NULL THEN
+          INSERT INTO public.audit_log (id, circle_id, actor, action, subject_type, subject_id, details, origin)
+            VALUES (gen_random_uuid(), p_circle, 'service', 'wish.subscription_not_linked', 'parent_subscription', v_sub.id, jsonb_build_object('triggerId', p_trigger), 'web');
+          CONTINUE;
+        END IF;
         UPDATE public.parent_subscriptions SET state = 'suspending', held_by = p_trigger, changed_at = p_now WHERE id = v_sub.id;
         IF v_sub.simulated THEN
           UPDATE public.parent_subscriptions SET state = 'suspended' WHERE id = v_sub.id;
@@ -575,6 +632,8 @@ CREATE FUNCTION kin_private.attest_wish_trigger(p_circle uuid, p_event text, p_s
     v_now timestamptz;
     v_total integer;
     v_family integer;
+    v_excluded uuid[];
+    v_interested uuid[];
   BEGIN
     IF v_me IS NULL OR v_role IS NULL OR v_role NOT IN ('organizer', 'contributor', 'caregiver') THEN
       RAISE EXCEPTION 'kin: attesting refused' USING ERRCODE = 'insufficient_privilege';
@@ -616,10 +675,19 @@ CREATE FUNCTION kin_private.attest_wish_trigger(p_circle uuid, p_event text, p_s
       INSERT INTO public.audit_log (id, circle_id, actor, member_id, action, subject_type, subject_id, details, origin)
         VALUES (gen_random_uuid(), p_circle, 'member', v_me, 'wish_trigger.attested', 'wish_trigger', v_trigger.id, jsonb_build_object('stance', p_stance, 'role', v_role), 'web');
     END IF;
-    -- The domain's attestationMet: two different people who may attest it, one of them family.
+    -- The domain's attestationConflicts: her wishes are frozen while a trigger is open, so these stay as they were reported.
+    -- The successor a wish names is raised by the trigger; the caregiver a keep-paying wish names is protected by it.
+    SELECT coalesce(array_agg(DISTINCT (w.rule ->> 'memberId')::uuid), '{}') INTO v_excluded FROM public.wishes w
+      WHERE w.circle_id = p_circle AND w.state = 'in_force' AND w.rule_kind = 'successor' AND w.trigger IN (v_trigger.event, 'either');
+    SELECT coalesce(array_agg(DISTINCT p.member_id), '{}') INTO v_interested FROM public.wishes w
+      JOIN public.payees p ON p.circle_id = w.circle_id AND p.id = (w.rule ->> 'payeeId')::uuid
+      WHERE w.circle_id = p_circle AND w.state = 'in_force' AND w.rule_kind = 'keep_paying' AND w.trigger IN (v_trigger.event, 'either') AND p.member_id IS NOT NULL;
+    -- The domain's attestationMet: two different people who may attest it, one of them family. To start it,
+    -- nobody who stands to gain counts: neither the successor it would seat nor the caregiver it would keep paid.
     SELECT count(DISTINCT member_id), count(DISTINCT member_id) FILTER (WHERE role IN ('organizer', 'contributor'))
       INTO v_total, v_family FROM public.wish_attestations
-      WHERE trigger_id = v_trigger.id AND stance = p_stance AND (role IN ('organizer', 'contributor') OR (role = 'caregiver' AND v_trigger.event = 'hospital'));
+      WHERE trigger_id = v_trigger.id AND stance = p_stance AND (role IN ('organizer', 'contributor') OR (role = 'caregiver' AND v_trigger.event = 'hospital'))
+        AND (p_stance = 'end' OR NOT (member_id = ANY (v_excluded || v_interested)));
     IF v_total >= 2 AND v_family >= 1 THEN
       IF p_stance = 'start' AND v_trigger.state = 'reported' THEN
         UPDATE public.wish_triggers SET state = 'active', active_at = v_now WHERE id = v_trigger.id;
@@ -667,6 +735,62 @@ CREATE FUNCTION kin_private.dismiss_wish_trigger(p_circle uuid, p_trigger uuid) 
   $$;
 --> statement-breakpoint
 
+-- The parent's own word that she is fine. Her wishes are hers to lift: a report
+-- is dismissed and an active trigger ends at once, undoing what it started, and
+-- the record keeps that it was her word. The parent only, in her own seat.
+CREATE FUNCTION kin_private.parent_says_fine(p_circle uuid) RETURNS text
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+  AS $$
+  DECLARE
+    v_me uuid := kin_private.my_member_id(p_circle);
+    v_circle public.circles;
+    v_trigger public.wish_triggers;
+    v_now timestamptz;
+    v_to text;
+  BEGIN
+    IF kin_private.my_role(p_circle) IS DISTINCT FROM 'parent' OR v_me IS NULL THEN
+      RAISE EXCEPTION 'kin: only the parent says she is fine' USING ERRCODE = 'insufficient_privilege';
+    END IF;
+    SELECT * INTO v_circle FROM public.circles WHERE id = p_circle AND status = 'active' FOR UPDATE;
+    SELECT * INTO v_trigger FROM public.wish_triggers WHERE circle_id = p_circle AND state IN ('reported', 'active') FOR UPDATE;
+    IF v_circle.id IS NULL OR v_trigger.id IS NULL THEN
+      RAISE EXCEPTION 'kin: nothing is reported or in effect' USING ERRCODE = 'KW006';
+    END IF;
+    v_now := date_trunc('second', coalesce(v_circle.clock_at, now()));
+    v_to := CASE v_trigger.state WHEN 'reported' THEN 'dismissed' ELSE 'ended' END;
+    UPDATE public.wish_triggers SET state = v_to, closed_at = v_now WHERE id = v_trigger.id;
+    IF v_to = 'ended' THEN
+      PERFORM kin_private.apply_wish_trigger(p_circle, v_trigger.id, false, v_now);
+    END IF;
+    INSERT INTO public.audit_log (id, circle_id, actor, member_id, action, subject_type, subject_id, details, origin)
+      VALUES (gen_random_uuid(), p_circle, 'member', v_me, 'wish_trigger.parent_fine', 'wish_trigger', v_trigger.id, jsonb_build_object('state', v_to), 'web');
+    RETURN v_to;
+  END
+  $$;
+--> statement-breakpoint
+
+-- Whether the person asking stands to gain if `p_event` started, so their word
+-- would not count toward it: the same two rules attest_wish_trigger counts by.
+-- A caregiver cannot read her wishes; this tells them only that much, so the
+-- screen does not offer a word that would not count.
+CREATE FUNCTION kin_private.my_wish_stake(p_circle uuid, p_event text) RETURNS boolean
+  LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog, public
+  AS $$
+    SELECT EXISTS (
+      SELECT 1 FROM public.wishes w
+      LEFT JOIN public.payees p ON w.rule_kind = 'keep_paying' AND p.circle_id = w.circle_id AND p.id = (w.rule ->> 'payeeId')::uuid
+      WHERE w.circle_id = p_circle AND w.state = 'in_force' AND w.trigger IN (p_event, 'either')
+        AND kin_private.my_member_id(p_circle) IS NOT NULL
+        AND ((w.rule_kind = 'successor' AND w.rule ->> 'memberId' = kin_private.my_member_id(p_circle)::text)
+          OR (w.rule_kind = 'keep_paying' AND p.member_id = kin_private.my_member_id(p_circle)))
+    )
+  $$;
+--> statement-breakpoint
+
+REVOKE ALL ON FUNCTION kin_private.my_wish_stake(uuid, text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION kin_private.my_wish_stake(uuid, text) TO kin_app;
+REVOKE ALL ON FUNCTION kin_private.parent_says_fine(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION kin_private.parent_says_fine(uuid) TO kin_app;
 REVOKE ALL ON FUNCTION kin_private.assert_wish_rows_fixed() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.assert_wish_signature_fits() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.wish_digest(text, uuid, integer, text, date, text, jsonb) FROM PUBLIC;
@@ -677,7 +801,9 @@ REVOKE ALL ON FUNCTION kin_private.record_wish(uuid, jsonb) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.confirm_wish(uuid, uuid, public.approval_method) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.witness_wish(uuid, uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.withdraw_wish(uuid, uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION kin_private.add_parent_subscription(uuid, text, bigint, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION kin_private.add_parent_subscription(uuid, text, bigint, text, jsonb) FROM PUBLIC;
+REVOKE ALL ON FUNCTION kin_private.subscription_is_parents(uuid, jsonb) FROM PUBLIC;
+REVOKE ALL ON FUNCTION kin_private.assert_subscription_once() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.apply_wish_trigger(uuid, uuid, boolean, timestamptz) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.attest_wish_trigger(uuid, text, text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.dismiss_wish_trigger(uuid, uuid) FROM PUBLIC;
@@ -687,6 +813,7 @@ GRANT EXECUTE ON FUNCTION kin_private.record_wish(uuid, jsonb) TO kin_app;
 GRANT EXECUTE ON FUNCTION kin_private.confirm_wish(uuid, uuid, public.approval_method) TO kin_app;
 GRANT EXECUTE ON FUNCTION kin_private.witness_wish(uuid, uuid) TO kin_app;
 GRANT EXECUTE ON FUNCTION kin_private.withdraw_wish(uuid, uuid) TO kin_app;
-GRANT EXECUTE ON FUNCTION kin_private.add_parent_subscription(uuid, text, bigint, text) TO kin_app;
+GRANT EXECUTE ON FUNCTION kin_private.add_parent_subscription(uuid, text, bigint, text, jsonb) TO kin_app;
+GRANT EXECUTE ON FUNCTION kin_private.subscription_is_parents(uuid, jsonb) TO kin_service;
 GRANT EXECUTE ON FUNCTION kin_private.attest_wish_trigger(uuid, text, text) TO kin_app;
 GRANT EXECUTE ON FUNCTION kin_private.dismiss_wish_trigger(uuid, uuid) TO kin_app;

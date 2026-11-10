@@ -42,14 +42,15 @@ describe("a monthly subscription's requests", () => {
 
 describe("a subscription read back from PayPal", () => {
   it("says whose it is, where it stands and how its charges have gone", () => {
-    expect(parseSubscription({ id: "I-BW452GLLEP1G", status: "ACTIVE", custom_id: `kin1:${reference.circleId}:${reference.memberId}`, billing_info: { next_billing_time: "2026-11-20T10:00:00Z", failed_payments_count: 1 } })).toEqual({
+    expect(parseSubscription({ id: "I-BW452GLLEP1G", status: "ACTIVE", custom_id: `kin1:${reference.circleId}:${reference.memberId}`, subscriber: { payer_id: "QYR5Z8XDVJNXQ" }, billing_info: { next_billing_time: "2026-11-20T10:00:00Z", failed_payments_count: 1 } })).toEqual({
       id: "I-BW452GLLEP1G",
       status: "ACTIVE",
       reference,
+      subscriberPayerId: "QYR5Z8XDVJNXQ",
       nextBillingAt: new Date("2026-11-20T10:00:00Z"),
       failedPayments: 1,
     });
-    expect(parseSubscription({ id: "I-BW452GLLEP1G", status: "SOMETHING_NEW" })).toMatchObject({ status: "OTHER", reference: null, nextBillingAt: null, failedPayments: 0 });
+    expect(parseSubscription({ id: "I-BW452GLLEP1G", status: "SOMETHING_NEW" })).toMatchObject({ status: "OTHER", reference: null, subscriberPayerId: null, nextBillingAt: null, failedPayments: 0 });
   });
 
   it("maps PayPal's status to a share's state, leaving an unknown one as it was", () => {
