@@ -11,7 +11,7 @@ import { inertText, wrapData } from "./wrap-data.ts";
  * against the record, reads any amount from that wish's own quote, and she confirms
  * what Kin reads back before two family members witness it.
  */
-export const WISH_PROMPT_VERSION = "wishes-2026-11-10";
+export const WISH_PROMPT_VERSION = "wishes-2026-11-10b";
 
 const TAG = "parent_words";
 
@@ -32,7 +32,7 @@ export function wishSystemPrompt(): string {
       "successor: someone she names should run things for the family while she cannot. Give their slot in `successor`.",
       "not_a_rule: anything else, anything unclear, anything about her health, her body or her property, or a wish that would need a judgement at the moment it applies. Give a short reason in `why`. Never force a wish into a kind it does not fit.",
     ].join("\n"),
-    "trigger: `hospital` if she said it applies only in hospital, `care_home` if only in a care home, otherwise `either`.",
+    "trigger: `hospital` only if she made the wish depend on being in hospital (\"if I go into hospital, …\", \"while I'm in hospital\"), `care_home` only if she made it depend on a care home, otherwise `either`. A wish she says always holds (\"always\", \"whatever happens\", \"even if I'm in hospital\") is `either`: naming a place as a case where it still holds does not limit it to that place.",
     "quote: copy the words of each wish exactly from what she said, character for character, so it can be found in her words. Never translate, correct, shorten into new words, or add anything she did not say.",
     "Never decide whether she can decide, never judge her health, and never give an amount she did not say.",
   ].join("\n\n");
@@ -60,6 +60,9 @@ export function wishUserMessage(said: string, names: WishNames): string {
 
 const SLOT = { type: ["string", "null"] } as const;
 
+/** The most wishes one answer may hold; any more are dropped after parsing. */
+export const MAX_WISH_DRAFTS = 8;
+
 /** The answer's shape, enforced by the API's structured output. */
 export const WISH_SCHEMA = {
   type: "object",
@@ -67,8 +70,8 @@ export const WISH_SCHEMA = {
   required: ["wishes"],
   properties: {
     wishes: {
+      // No maxItems: structured output refuses it. draftWishes keeps the first MAX_WISH_DRAFTS.
       type: "array",
-      maxItems: 8,
       items: {
         type: "object",
         additionalProperties: false,

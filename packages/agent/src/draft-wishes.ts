@@ -1,7 +1,7 @@
 import { MAX_WISH_CHARS, WishRuleError, accountCents, checkWishDraft, cleanQuote, type WishContext, type WishDraft, type WishRule, type WishRuleReason, type WishTrigger } from "@kin/domain";
 
 import { ModelUnavailableError, type StructuredModel } from "./structured-model.ts";
-import { WISH_DRAFT_KINDS, WISH_SCHEMA, wishSystemPrompt, wishUserMessage, type WishNames } from "./wish-prompt.ts";
+import { MAX_WISH_DRAFTS, WISH_DRAFT_KINDS, WISH_SCHEMA, wishSystemPrompt, wishUserMessage, type WishNames } from "./wish-prompt.ts";
 
 /** The longest a parent may say at once for Kin to draft from: a few wishes. */
 export const MAX_WISHES_SAID_CHARS = 2_000;
@@ -53,7 +53,7 @@ export async function draftWishes(model: StructuredModel, said: string, record: 
   const wishes = value !== null && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>)["wishes"] : null;
   if (!Array.isArray(wishes)) throw new ModelUnavailableError("The model's answer did not follow the schema", { kind: "unusable" });
   const words = normalize(text);
-  return { kind: "drafts", wishes: wishes.slice(0, 8).flatMap((each) => drafted(each, words, slots, record)) };
+  return { kind: "drafts", wishes: wishes.slice(0, MAX_WISH_DRAFTS).flatMap((each) => drafted(each, words, slots, record)) };
 }
 
 type Slots = {
