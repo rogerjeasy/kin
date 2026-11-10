@@ -268,9 +268,9 @@ test.describe("the circle and its record in the demo", () => {
     await startDemo(page);
     await page.goto("/dashboard/record");
     const grid = page.getByRole("region", { name: dashboard.record.grid.label });
-    // Only the entries: the pinned columns and the totals row are rows of their own.
+    // Only the entries: the pinned columns and the totals row are rows of their own. Rose's month, and her Purse's float.
     const rows = grid.locator(".ag-grid-scrolling-rows .ag-row:not(.ag-full-width-row)");
-    await expect(rows).toHaveCount(19);
+    await expect(rows).toHaveCount(20);
     await page.getByRole("button", { name: dashboard.record.filters.care }).click();
     await expect(rows).toHaveCount(4);
     await rows.first().click();

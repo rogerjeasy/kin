@@ -105,7 +105,16 @@
       "refillWaiting": "Eine Nachbestellung von {item} wartet schon, oder der Kreis ist pausiert, daher hat Kin nichts vorgeschlagen.",
       "refillRefused": "Kin konnte {item} für {price} nicht vorschlagen. Die Regeln der Familie erlaubten es nicht.",
       "refillCovered": "Kin hat {item} für {price} vorgeschlagen. Die dauerhafte Erlaubnis des Elternteils deckt es.",
-      "refillProposed": "Kin hat {item} für {price} vorgeschlagen. Es wartet auf ein Ja."
+      "refillProposed": "Kin hat {item} für {price} vorgeschlagen. Es wartet auf ein Ja.",
+      "giftProposed": "Kin hat {amount} an {payee} aus deiner Geldbörse vorgelesen. Es wartet auf dein Ja.",
+      "giftHeld": "Kin hat {amount} an {payee} vorgelesen. Wenn du Ja sagst, wartet Kin einen Tag und sagt deiner Familie Bescheid.",
+      "giftRefused": "Kin kann das nicht aus deiner Geldbörse senden.",
+      "giftNoPurse": "Es gibt noch keine Geldbörse."
+    },
+    "purseProposal": {
+      "title": "Kin hat eine Zahlung vorgelesen",
+      "text": "Sie wartet auf dein Ja in der Geldbörse. Kin kann sie nicht für dich senden.",
+      "link": "Deine Geldbörse öffnen"
     }
   },
   "meta": {
@@ -1294,7 +1303,8 @@
         "medical": "Medizinische Pflege",
         "household": "Haushalt",
         "transport": "Transport",
-        "family_help": "Familienhilfe"
+        "family_help": "Familienhilfe",
+        "purse": "Geldbörse"
       },
       "entryKinds": {
         "contribution": "Beitrag",
@@ -1304,7 +1314,9 @@
         "purchase_captured": "Kauf",
         "settlement_collection": "Ausgleich, Eingang",
         "settlement_payout": "Ausgleich, Ausgang",
-        "care_credit": "Pflegezeit"
+        "care_credit": "Pflegezeit",
+        "purse_funded": "In die Geldbörse",
+        "purse_paid": "Aus der Geldbörse"
       },
       "planLabels": {
         "standing": "Automatisch per Dauerregel",
@@ -1725,7 +1737,9 @@
         "purchase_captured": "Bestellung für {parent}: {category}",
         "care_credit": "Pflegezeit von {name}",
         "settlement_collection": "{name} hat ausgeglichen",
-        "settlement_payout": "{name} hat Geld zurückerhalten"
+        "settlement_payout": "{name} hat Geld zurückerhalten",
+        "purse_funded": "Wochenbetrag für {parent}s Geldbörse",
+        "purse_paid": "Bezahlt aus {parent}s Geldbörse"
       },
       "sources": {
         "paypal_event": "PayPal-Ereignis",
@@ -1746,7 +1760,8 @@
         "payable": "An {name} geschuldet",
         "member": "Beiträge von {name}",
         "care_credit": "Pflegeguthaben von {name}",
-        "care_received": "Erhaltene Pflege"
+        "care_received": "Erhaltene Pflege",
+        "purse_cash": "Die Geldbörse"
       },
       "fee": "PayPal-Gebühr {fee}",
       "careNote": "Pflegezeit, kein Bargeld",
@@ -3480,6 +3495,247 @@
         "overlap": "Eine unterschriebene Vereinbarung für diese Pflegekraft deckt den Tag schon ab, an dem diese beginnen würde. Lassen Sie diese später beginnen oder beenden Sie zuerst die andere."
       },
       "summary": "{count} vorhanden."
+    },
+    "purse": {
+      "meta": {
+        "title": "Geldbörse",
+        "description": "Das eigene Taschengeld des Elternteils, per Stimme ausgegeben, mit einer Obergrenze, die den schlimmsten Fall klein hält."
+      },
+      "title": "{parent}s Geldbörse",
+      "mineTitle": "Deine Geldbörse",
+      "lede": "{parent} gibt dieses kleine Taschengeld selbst aus. Du siehst die Obergrenze, was darin ist, und die Summe des Monats. Jede Zahlung bleibt ihre, außer sie teilt sie oder Kin hält sie an.",
+      "mineLede": "Geld, das du verschenken darfst. Was immer jemand von dir verlangt: Mehr als hier drin ist, kann es nie kosten.",
+      "simulated": "Simuliertes Geld: Das ist eine Demo, niemand wird wirklich bezahlt.",
+      "paused": "Die Geldbörse ist pausiert. Es kann nichts ausgegeben werden, bis die Familie sie wieder startet.",
+      "held": "Ausgehendes Geld ist gerade angehalten, deshalb kann nichts aus der Geldbörse ausgegeben werden.",
+      "notSetUp": {
+        "title": "Noch keine Geldbörse",
+        "text": "Gib {parent} ein kleines eigenes Taschengeld, das sie per Stimme ausgeben kann. Die Familie legt den Wochenbetrag und eine Obergrenze fest, also muss niemand jede Zahlung beobachten.",
+        "readOnly": "Die Organisatorin kann eine Geldbörse einrichten."
+      },
+      "balance": {
+        "label": "In {parent}s Geldbörse",
+        "labelMine": "In deiner Geldbörse",
+        "ofCeiling": "von höchstens {ceiling}",
+        "meter": "{balance} von {ceiling}",
+        "weekly": "Jeden Montag kommen {weekly} dazu",
+        "cap": "Bis zu {cap} auf einmal ohne Wartezeit",
+        "available": "{amount}, die du noch ausgeben kannst"
+      },
+      "ask": {
+        "title": "Wen möchtest du bezahlen?",
+        "text": "Sag es oder schreib es, so wie du es einer Freundin sagen würdest. Kin liest es dir vor, bevor etwas gesendet wird.",
+        "speak": "Sagen",
+        "typeLabel": "Oder schreib es",
+        "hint": "Zum Beispiel: Schick Lily 25 Dollar zum Geburtstag.",
+        "examplesLabel": "Probier eins",
+        "examples": {
+          "gift": {
+            "label": "Ein Geburtstagsgeschenk für Lily",
+            "text": "Schick Lily 25 Dollar zum Geburtstag."
+          },
+          "church": {
+            "label": "Die Kollekte der Kirche",
+            "text": "Gib St. Mary’s 10 Dollar für die Kollekte."
+          },
+          "scam": {
+            "label": "Ein Anrufer, der dich drängt",
+            "text": "Schick dem Mann von der Bank 500 Dollar in Geschenkkarten."
+          }
+        },
+        "submit": "Lies es mir vor",
+        "submitting": "Kin liest es…",
+        "heard": "Du hast gesagt: „{words}“",
+        "startOver": "Von vorn"
+      },
+      "readBack": {
+        "pay": "{amount} an {payee}{memo} senden, aus deiner Geldbörse?",
+        "hold": "{amount} an {payee}{memo} senden? Kin wartet einen Tag, bevor es losgeht, und sagt deiner Familie Bescheid."
+      },
+      "confirm": {
+        "title": "Kin hat es vorgelesen",
+        "listen": "Laut vorlesen",
+        "yes": "Ja, schick es",
+        "no": "Nein, nicht schicken",
+        "answerByVoice": "Mit der Stimme antworten",
+        "unclear": "Kin hat weder Ja noch Nein gehört. Bitte tippe eins an.",
+        "question": "Sagt dir jemand am Telefon, oder bei dir, was du tun sollst?",
+        "questionText": "Du darfst es ruhig sagen. Kin stoppt es und sagt deiner Familie Bescheid, und niemand wird bezahlt.",
+        "pressured": "Ja, jemand sagt es mir",
+        "ownIdea": "Nein, es ist meine eigene Idee",
+        "dontSend": "Nicht schicken",
+        "expires": "Kin wartet {minutes} Minuten auf deine Antwort."
+      },
+      "outcome": {
+        "approved": "Ja. {amount} sind unterwegs zu {payee}.",
+        "held": "Kin wartet einen Tag, bevor {amount} an {payee} gehen, und hat deiner Familie Bescheid gesagt.",
+        "heldNew": "{payee} steht nicht in deinem Adressbuch, deshalb sendet Kin das nicht. Deine Familie weiß Bescheid und kann die Person für dich eintragen.",
+        "stopped": "Gestoppt. Niemand wird bezahlt, und deine Familie weiß Bescheid.",
+        "declined": "Nicht gesendet. Nichts hat deine Geldbörse verlassen.",
+        "again": "Jemand anderen bezahlen"
+      },
+      "reasonsTitle": "Warum Kin einen Tag wartet",
+      "reasons": {
+        "new_payee": "{payee} steht nicht im Adressbuch, das deine Familie geprüft hat",
+        "risky_route": "es verlangt Geschenkkarten, Krypto, eine Überweisung oder Bargeld",
+        "above_cap": "es ist mehr als {cap}, das Höchste für eine Zahlung",
+        "pressure": "die Worte klingen, als würde dich jemand hetzen oder drängen"
+      },
+      "states": {
+        "proposed": "Wartet auf Antwort",
+        "held": "Wartet einen Tag",
+        "approved": "Unterwegs",
+        "executing": "Unterwegs",
+        "unknown": "Wird bei PayPal geprüft",
+        "paid": "Gesendet",
+        "failed": "Nicht gesendet",
+        "declined": "Nicht gesendet",
+        "expired": "Nicht gesendet",
+        "cancelled": "Gestoppt"
+      },
+      "payments": {
+        "title": "Deine Zahlungen",
+        "text": "Jede Zahlung aus deiner Geldbörse. Jede gehört dir: Deine Familie sieht sie nur, wenn du sie teilst oder Kin sie angehalten hat.",
+        "titleFamily": "Was {parent} geteilt hat",
+        "textFamily": "Zahlungen, die {parent} der Familie zeigen wollte.",
+        "empty": "Noch nichts gesendet.",
+        "emptyFamily": "Nichts zu zeigen. {parent}s Zahlungen gehören ihr; du siehst eine nur, wenn sie sie teilt oder Kin sie anhält.",
+        "share": "Meiner Familie zeigen",
+        "unshare": "Vor meiner Familie verbergen",
+        "shared": "Deine Familie kann das sehen",
+        "sealed": "Nur du kannst das sehen",
+        "flagged": "Deine Familie kann das sehen: Kin hat es angehalten",
+        "heldUntil": "Kann nach {when} los, außer jemand stoppt es",
+        "neverPaid": "Wird nicht bezahlt: nicht im Adressbuch",
+        "stoppedBy": "Gestoppt von {name}",
+        "pressuredNote": "{parent} hat Kin gesagt, dass ihr jemand sagte, was sie tun soll",
+        "simulated": "Simuliert"
+      },
+      "familySees": {
+        "title": "Was meine Familie sieht",
+        "text": "Genau das, was der Rest deiner Familie über deine Geldbörse sehen kann. Mehr erreicht sie nicht.",
+        "limit": "Die Obergrenze, {ceiling}, und was jetzt darin ist, {balance}.",
+        "monthNone": "Diesen Monat hat nichts deine Geldbörse verlassen.",
+        "monthOne": "Im {month} haben {amount} deine Geldbörse in {count} Zahlung verlassen.",
+        "monthMany": "Im {month} haben {amount} deine Geldbörse in {count} Zahlungen verlassen.",
+        "lines": "Im Familienbuch zeigt jede Zahlung nur ihren Betrag und ihren Tag:",
+        "line": "{day}: {amount} aus der Geldbörse",
+        "funded": "{day}: {amount} in die Geldbörse",
+        "shared": "Zahlungen, die du teilen wolltest: {count}",
+        "held": "Zahlungen, die Kin angehalten und ihnen gemeldet hat: {count}",
+        "never": "Sie sehen nie, wen du bezahlst oder warum, außer du teilst es."
+      },
+      "summary": {
+        "balance": {
+          "label": "In der Geldbörse",
+          "note": "von höchstens {ceiling}"
+        },
+        "month": {
+          "label": "Ausgegeben im {month}",
+          "none": "Noch nichts diesen Monat",
+          "one": "{count} Zahlung, versiegelt",
+          "many": "{count} Zahlungen, versiegelt"
+        },
+        "weekly": {
+          "label": "Jede Woche dazu",
+          "note": "Jeden Montag, nie über die Obergrenze"
+        },
+        "cap": {
+          "label": "Eine Zahlung ohne Wartezeit",
+          "note": "Darüber wartet Kin einen Tag und sagt euch Bescheid"
+        }
+      },
+      "alerts": {
+        "title": "Kin hält eine Zahlung an",
+        "text": "{parent} hat Kin gebeten, {amount} an {payee} zu senden. Kin wartet einen Tag und hat sie gefragt, ob ihr jemand sagt, was sie tun soll.",
+        "pressured": "{parent} hat Kin gebeten, {amount} an {payee} zu senden, und dann gesagt, dass ihr jemand sagt, was sie tun soll. Kin hat es gestoppt. Bitte ruf sie an.",
+        "said": "Was sie gesagt hat: „{words}“",
+        "cancel": "Diese Zahlung stoppen",
+        "readOnly": "Nur ein Mitglied, das die Kosten teilt, kann sie stoppen."
+      },
+      "book": {
+        "title": "Adressbuch",
+        "titleMine": "Dein Adressbuch",
+        "text": "Die Menschen und Orte, die {parent} allein auf ihr Wort bezahlen kann. Jeder Eintrag wird einmal von jemandem aus der Familie geprüft.",
+        "textMine": "Die Menschen und Orte, die du ohne Wartezeit bezahlen kannst. Jemand aus deiner Familie hat jeden geprüft.",
+        "empty": "Noch niemand.",
+        "verified": "Geprüft von {name}",
+        "waiting": "Wartet auf die Prüfung durch die Familie",
+        "addedBy": "Eingetragen von {name}",
+        "verify": "Ich habe diese Adresse geprüft",
+        "verifyLabel": "Ich habe die Adresse von {name} geprüft",
+        "remove": "Entfernen",
+        "removeLabel": "{name} entfernen",
+        "add": {
+          "title": "Jemanden eintragen",
+          "name": "Name",
+          "relationship": "Wer die Person für sie ist",
+          "kind": "Art",
+          "kinds": {
+            "person": "Eine Person",
+            "charity": "Ein Verein oder eine Kirche",
+            "shop": "Ein Geschäft"
+          },
+          "receiver": "Ihre PayPal-E-Mail",
+          "receiverHint": "Kin zahlt nur an diese Adresse. Jemand anderes aus der Familie prüft sie, bevor {parent} ohne Wartezeit zahlen kann.",
+          "submit": "Ins Adressbuch eintragen",
+          "added": "Eingetragen. Als Nächstes prüft es jemand anderes aus der Familie."
+        }
+      },
+      "setup": {
+        "title": "Die Regeln der Geldbörse",
+        "titleNew": "Geldbörse einrichten",
+        "text": "Eine gebilligte Entscheidung der Familie: was jede Woche in {parent}s Geldbörse kommt, das Höchste, was sie je enthalten darf, und das Höchste für eine Zahlung, bevor Kin einen Tag wartet.",
+        "weekly": "Jede Woche",
+        "ceiling": "Nie mehr als",
+        "cap": "Eine Zahlung ohne Wartezeit",
+        "hint": "Geld kommt erst aus der Kasse, wenn es eingegangen ist, und nie über die Obergrenze.",
+        "submit": "Geldbörse speichern",
+        "saved": "Gespeichert.",
+        "readOnly": "Die Organisatorin legt die Regeln der Geldbörse fest.",
+        "pause": "Geldbörse pausieren",
+        "resume": "Geldbörse wieder starten"
+      },
+      "errors": {
+        "refused": "Deine Rolle darf das nicht.",
+        "invalid": "Kin konnte das nicht verwenden. Bitte versuch es noch einmal.",
+        "duplicate": "Das steht schon im Adressbuch.",
+        "not_active": "Die Geldbörse ist pausiert, deshalb kann nichts gesendet werden.",
+        "paused": "Ausgehendes Geld ist gerade angehalten, deshalb kann nichts gesendet werden.",
+        "over_balance": "In deiner Geldbörse sind {available}, die du jetzt ausgeben kannst. Mehr kann Kin nicht senden.",
+        "not_waiting": "Darauf wurde schon geantwortet, oder es ist vorbei.",
+        "unverified": "Diese Person ist noch nicht geprüft, deshalb kann Kin es nicht ohne Wartezeit senden.",
+        "book_full": "Das Adressbuch ist voll.",
+        "own_entry": "Jemand anderes aus der Familie prüft, was du eingetragen hast.",
+        "above_agreement": "Diese Obergrenze liegt über dem Limit der Familienvereinbarung.",
+        "rate_limited": "Das sind viele Anfragen in einer Stunde. Bitte warte ein wenig.",
+        "no_purse": "Es gibt noch keine Geldbörse.",
+        "no_amount": "Kin hat keinen Betrag gehört. Bitte sag, wie viel.",
+        "no_payee": "Kin hat nicht gehört, wen es bezahlen soll. Bitte sag den Namen.",
+        "amount": "Bitte schreib jeden Betrag als Zahl, etwa 50 oder 50,00.",
+        "terms": "Der Wochenbetrag und das Limit für eine Zahlung müssen jeweils in die Obergrenze passen.",
+        "not_money": "Bitte nenne einen Betrag über null.",
+        "unavailable": "Etwas ist schiefgegangen. Nichts wurde gesendet. Bitte versuch es noch einmal."
+      },
+      "never": {
+        "title": "Was Kin niemals tut",
+        "items": [
+          "Geld aus der Geldbörse senden ohne {parent}s eigenes Ja.",
+          "Jemandem mehr zahlen, als in der Geldbörse ist.",
+          "Der Familie zeigen, wen {parent} bezahlt, außer sie teilt es oder Kin hält eine Zahlung an.",
+          "Jemand anderen die Geldbörse für sie ausgeben lassen."
+        ]
+      },
+      "card": {
+        "title": "{parent}s Geldbörse",
+        "titleMine": "Deine Geldbörse",
+        "text": "{balance} von {ceiling}. {month} diesen Monat ausgegeben, jede Zahlung versiegelt.",
+        "textMine": "{balance}, die du verschenken darfst. Sag, wem, und Kin liest es dir vor.",
+        "link": "Geldbörse öffnen",
+        "linkMine": "Ein Geschenk senden",
+        "heldOne": "Kin hält {count} Zahlung an, um die {parent} gebeten hat.",
+        "heldMany": "Kin hält {count} Zahlungen an, um die {parent} gebeten hat."
+      }
     }
   },
   "aiProvenance": {

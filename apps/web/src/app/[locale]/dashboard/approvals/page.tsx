@@ -57,7 +57,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
     terms: circle.agreement?.approvals ?? null,
     parentId: parentOf(circle)?.id ?? null,
     parent: slots.parent,
-    poolCents: may(circle, "money.view") ? monthTotals(circle, period).poolCents : null,
+    poolCents: may(circle, "money.view") ? monthTotals(circle, period).freeCents : null,
     now: circle.circle.now,
     month: slots.month,
     receiverOf: (payeeId) => circle.payees.find((payee) => payee.id === payeeId)?.receiver ?? null,

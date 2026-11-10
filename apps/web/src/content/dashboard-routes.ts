@@ -38,6 +38,9 @@ export const askRoute = "/dashboard/ask";
 /** "Is it really you?": a caller says they are family and asks for money, and Kin asks the real person. A screen of the overview, not a section of its own. */
 export const presenceRoute = "/dashboard/presence";
 
+/** The parent's Purse: her own allowance, spent by her word. A screen of the overview, not a section of its own. */
+export const purseRoute = "/dashboard/purse";
+
 /** The family office line, where a demanding caller is handed to Kin: a screen of the bills, not a section of its own. */
 export const officeLineRoute = "/dashboard/office-line";
 /** Where the circle's record is checked again; its `/export` is the file anyone can check offline with `kin-verify`. */

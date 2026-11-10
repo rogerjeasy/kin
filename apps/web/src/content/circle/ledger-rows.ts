@@ -26,7 +26,7 @@ export function ledgerRows(circle: CircleSnapshot, dictionary: Dictionary, names
     const month = entry.occurredOn.slice(0, 7);
     const note = entry.kind === "care_credit" ? record.careNote : view.feeCents > 0 ? fill(record.fee, { fee: format.money(view.feeCents) }) : null;
     // A purchase is for the parent, whatever it bought, so it groups under the parent's name.
-    const person = entry.kind === "purchase_captured" ? { key: "parent", label: names.parent } : { key: view.subject, label: names.subject(view.subject) };
+    const person = entry.kind === "purchase_captured" || entry.kind === "purse_funded" || entry.kind === "purse_paid" ? { key: "parent", label: names.parent } : { key: view.subject, label: names.subject(view.subject) };
     return {
       rowKind: "entry",
       id: entry.id,

@@ -18,8 +18,8 @@ const PAGES = [
   { name: "the audit trail", path: "/dashboard/record/audit/view" },
 ] as const;
 
-/** The entries of Rose's demo circle, and what they did to the pool: $924.00 in, $530.00 out. */
-const ENTRIES = 19;
+/** The entries of Rose's demo circle (her month and this week's float into her Purse), and what they did to the pool: $924.00 in, $530.00 out. */
+const ENTRIES = 20;
 const NET = "$394.00";
 
 const toolbar = (page: Page) => ({

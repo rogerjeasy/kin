@@ -1,11 +1,12 @@
 import { createServer, type IncomingMessage } from "node:http";
 
-import { E2E_PORTS } from "./ports";
+import { E2E_PORTS } from "./ports.ts";
 
 /**
  * A stand-in for Claude on Amazon Bedrock's Messages endpoint, for the
  * end-to-end tests only, so the app's real SDK client runs unchanged. It
- * reads "Yesterday N hours" as N hours yesterday, quoting the caregiver, and
+ * reads "Yesterday N hours" as N hours yesterday, quoting the caregiver, copies a
+ * payment from the parent's Purse out of her words, and
  * declines any description that asks it to. It also reads a letter's first
  * line as its sender and its first amount as the amount (a photograph is
  * always a 120.00 bill from Hillside Clinic), and words a verdict by
@@ -46,9 +47,25 @@ function shiftWords(user: string): string {
   return (facts.candidates ?? []).map((candidate) => `${candidate.slot} is free and has ${candidate.hoursThisWeek} this week.`).join(" ");
 }
 
+/**
+ * A payment from the parent's Purse, copied out of her words the way the real
+ * model is asked to: "Send Lily 25 dollars for her birthday" names Lily, the
+ * amount and the memo; "... in gift cards to the man from the bank" names the
+ * man from the bank and gift cards. Every value is a piece of her own words.
+ */
+function gift(user: string): string {
+  const words = /<parent_request>\n([\s\S]*)\n<\/parent_request>/.exec(user)?.[1] ?? "";
+  const amountText = /\$?\d+(?:\.\d{2})?(?:\s*dollars?)?/i.exec(words)?.[0] ?? null;
+  const named = /\b(?:send|give)\s+([A-Z][\w.’']*(?:\s[A-Z][\w.’']*)*)\s+\$?\d/.exec(words)?.[1] ?? /\bto\s+(.+?)(?=\s+for\b|[.!?]|$)/i.exec(words)?.[1] ?? null;
+  const memo = /\b(for\s+[^.!?]+)/i.exec(words)?.[1] ?? null;
+  const route = /gift card/i.test(words) ? "gift_card" : /bitcoin|crypto/i.test(words) ? "crypto" : "paypal";
+  return JSON.stringify({ payeeName: named, relationship: null, amountText, memo, route });
+}
+
 function answer(system: string, user: string): { stop_reason: string; text: string } {
   if (/decline/i.test(user)) return { stop_reason: "refusal", text: "" };
   if (/You read one letter/.test(system)) return { stop_reason: "end_turn", text: reading(user) };
+  if (/send a small payment from her own allowance/.test(system)) return { stop_reason: "end_turn", text: gift(user) };
   if (/You put facts that Kin already decided into one calm/.test(system)) return { stop_reason: "end_turn", text: JSON.stringify({ text: shiftWords(user) }) };
   if (/You put a result into/.test(system)) return { stop_reason: "end_turn", text: JSON.stringify({ text: /<statement>\n([\s\S]*)\n<\/statement>/.exec(user)?.[1] ?? "" }) };
   const today = /Today is \w+, (\d{4}-\d{2}-\d{2})/.exec(system)?.[1];
@@ -73,7 +90,15 @@ function agentTurn(sent: Sent): { stop_reason: string; content: unknown[] } {
   }
   const question = typeof last?.content === "string" ? last.content : "";
   const offered = new Set((sent.tools ?? []).map((tool) => tool.name));
-  const wanted = /paid/i.test(question) ? { name: "get_paypal_payout_status", input: { payee: "Amara" } } : /owes/i.test(question) ? { name: "get_fairness", input: {} } : /reorder/i.test(question) ? { name: "propose_refill", input: {} } : null;
+  const wanted = /paid/i.test(question)
+    ? { name: "get_paypal_payout_status", input: { payee: "Amara" } }
+    : /owes/i.test(question)
+      ? { name: "get_fairness", input: {} }
+      : /reorder/i.test(question)
+        ? { name: "propose_refill", input: {} }
+        : /\bsend lily\b/i.test(question)
+          ? { name: "propose_gift", input: { payee: "Lily", amount: "25", memo: "for her birthday" } }
+          : null;
   if (wanted === null || !offered.has(wanted.name)) return { stop_reason: "end_turn", content: [{ type: "text", text: "Kin cannot show that from your seat." }] };
   return { stop_reason: "tool_use", content: [{ type: "tool_use", id: "toolu_stand_in", ...wanted }] };
 }

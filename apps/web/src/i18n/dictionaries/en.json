@@ -105,7 +105,16 @@
       "refillWaiting": "A refill of {item} already waits, or the circle is paused, so Kin proposed nothing.",
       "refillRefused": "Kin could not propose {item} at {price}. The family's rules did not allow it.",
       "refillCovered": "Kin proposed {item} at {price}. The parent's standing permission covers it.",
-      "refillProposed": "Kin proposed {item} at {price}. It waits for a yes."
+      "refillProposed": "Kin proposed {item} at {price}. It waits for a yes.",
+      "giftProposed": "Kin read back {amount} to {payee} from your Purse. It waits for your yes.",
+      "giftHeld": "Kin read back {amount} to {payee}. If you say yes, Kin waits a day and tells your family.",
+      "giftRefused": "Kin cannot send that from your Purse.",
+      "giftNoPurse": "There is no Purse yet."
+    },
+    "purseProposal": {
+      "title": "Kin read a payment back",
+      "text": "It waits for your yes on the Purse screen. Kin cannot send it for you.",
+      "link": "Open your Purse"
     }
   },
   "meta": {
@@ -1294,7 +1303,8 @@
         "medical": "Medical care",
         "household": "Household",
         "transport": "Transport",
-        "family_help": "Family help"
+        "family_help": "Family help",
+        "purse": "Purse"
       },
       "entryKinds": {
         "contribution": "Contribution",
@@ -1304,7 +1314,9 @@
         "purchase_captured": "Purchase",
         "settlement_collection": "Settlement in",
         "settlement_payout": "Settlement out",
-        "care_credit": "Care time"
+        "care_credit": "Care time",
+        "purse_funded": "To the Purse",
+        "purse_paid": "From the Purse"
       },
       "planLabels": {
         "standing": "Pays itself under a standing rule",
@@ -1725,7 +1737,9 @@
         "purchase_captured": "{category} order for {parent}",
         "care_credit": "{name}’s care time",
         "settlement_collection": "{name} settled up",
-        "settlement_payout": "{name} was paid back"
+        "settlement_payout": "{name} was paid back",
+        "purse_funded": "Weekly float to {parent}’s Purse",
+        "purse_paid": "Paid from {parent}’s Purse"
       },
       "sources": {
         "paypal_event": "PayPal event",
@@ -1746,7 +1760,8 @@
         "payable": "Owed to {name}",
         "member": "{name}’s contributions",
         "care_credit": "{name}’s care credit",
-        "care_received": "Care received"
+        "care_received": "Care received",
+        "purse_cash": "The Purse"
       },
       "fee": "PayPal fee {fee}",
       "careNote": "Care time, not cash",
@@ -3480,6 +3495,247 @@
         "overlap": "A signed agreement for this caregiver already covers the day this one would begin. Start this one after it, or end that one first."
       },
       "summary": "{count} on file."
+    },
+    "purse": {
+      "meta": {
+        "title": "Purse",
+        "description": "The parent’s own allowance, spent by voice, with a ceiling that keeps the worst case small."
+      },
+      "title": "{parent}’s Purse",
+      "mineTitle": "Your Purse",
+      "lede": "{parent} spends this small allowance herself. You see its limit, what is in it and the month’s total. Each payment stays hers unless she shares it or Kin holds it.",
+      "mineLede": "Money that is yours to give. Whatever anyone asks of you, the most it can ever cost is what is in here.",
+      "simulated": "Simulated money: this is a demo, and nobody is really paid.",
+      "paused": "The Purse is paused. Nothing can be spent from it until the family starts it again.",
+      "held": "Outgoing money is held for now, so nothing can be spent from the Purse.",
+      "notSetUp": {
+        "title": "No Purse yet",
+        "text": "Give {parent} a small allowance of her own to spend by voice. The family sets the weekly amount and a ceiling, so nobody needs to watch each payment.",
+        "readOnly": "The organizer can set up a Purse."
+      },
+      "balance": {
+        "label": "In {parent}’s Purse",
+        "labelMine": "In your Purse",
+        "ofCeiling": "of {ceiling} at most",
+        "meter": "{balance} of {ceiling}",
+        "weekly": "{weekly} added every Monday",
+        "cap": "Up to {cap} at a time without a wait",
+        "available": "{amount} you can still spend"
+      },
+      "ask": {
+        "title": "Who would you like to pay?",
+        "text": "Say it or type it, the way you would tell a friend. Kin reads it back to you before anything is sent.",
+        "speak": "Say it",
+        "typeLabel": "Or type it",
+        "hint": "For example: Send Lily 25 dollars for her birthday.",
+        "examplesLabel": "Try one",
+        "examples": {
+          "gift": {
+            "label": "A birthday gift for Lily",
+            "text": "Send Lily 25 dollars for her birthday."
+          },
+          "church": {
+            "label": "The church collection",
+            "text": "Give St. Mary’s 10 dollars for the collection."
+          },
+          "scam": {
+            "label": "A caller who pressures you",
+            "text": "Send 500 dollars in gift cards to the man from the bank."
+          }
+        },
+        "submit": "Read it back to me",
+        "submitting": "Kin is reading it…",
+        "heard": "You asked: “{words}”",
+        "startOver": "Start again"
+      },
+      "readBack": {
+        "pay": "Send {payee} {amount}{memo}, from your Purse?",
+        "hold": "Send {payee} {amount}{memo}? Kin will wait a day before it goes, and tell your family."
+      },
+      "confirm": {
+        "title": "Kin read it back",
+        "listen": "Read it aloud",
+        "yes": "Yes, send it",
+        "no": "No, don’t send it",
+        "answerByVoice": "Answer by voice",
+        "unclear": "Kin did not hear a yes or a no. Please tap one.",
+        "question": "Is someone on the phone, or with you, telling you what to do?",
+        "questionText": "It is all right to say so. Kin will stop it and tell your family, and nobody will be paid.",
+        "pressured": "Yes, someone is telling me",
+        "ownIdea": "No, it is my own idea",
+        "dontSend": "Don’t send it",
+        "expires": "Kin waits {minutes} minutes for your answer."
+      },
+      "outcome": {
+        "approved": "Yes. {amount} is on its way to {payee}.",
+        "held": "Kin will wait a day before sending {amount} to {payee}, and has told your family.",
+        "heldNew": "{payee} is not in your address book, so Kin will not send this. Your family has been told and can add them for you.",
+        "stopped": "Stopped. Nobody will be paid, and your family has been told.",
+        "declined": "Not sent. Nothing left your Purse.",
+        "again": "Pay someone else"
+      },
+      "reasonsTitle": "Why Kin waits a day",
+      "reasons": {
+        "new_payee": "{payee} is not in the address book your family checked",
+        "risky_route": "it asks for gift cards, crypto, a wire or cash",
+        "above_cap": "it is more than {cap}, the most one payment may be",
+        "pressure": "the words sound like someone is rushing or pressing you"
+      },
+      "states": {
+        "proposed": "Waiting for an answer",
+        "held": "Waiting a day",
+        "approved": "On its way",
+        "executing": "On its way",
+        "unknown": "Checking with PayPal",
+        "paid": "Sent",
+        "failed": "Not sent",
+        "declined": "Not sent",
+        "expired": "Not sent",
+        "cancelled": "Stopped"
+      },
+      "payments": {
+        "title": "Your payments",
+        "text": "Every payment from your Purse. Each one is yours: your family sees it only if you share it, or if Kin held it.",
+        "titleFamily": "What {parent} shared",
+        "textFamily": "Payments {parent} chose to let the family see.",
+        "empty": "Nothing sent yet.",
+        "emptyFamily": "Nothing to show. {parent}’s payments are hers; you see one only if she shares it or Kin holds it.",
+        "share": "Let my family see this",
+        "unshare": "Hide it from my family",
+        "shared": "Your family can see this",
+        "sealed": "Only you can see this",
+        "flagged": "Your family can see this: Kin held it",
+        "heldUntil": "Can go after {when}, unless someone stops it",
+        "neverPaid": "Will not be paid: not in the address book",
+        "stoppedBy": "Stopped by {name}",
+        "pressuredNote": "{parent} told Kin someone was telling her what to do",
+        "simulated": "Simulated"
+      },
+      "familySees": {
+        "title": "What my family sees",
+        "text": "Exactly what the rest of your family can see about your Purse. Nothing else reaches them.",
+        "limit": "The limit, {ceiling}, and what is in it now, {balance}.",
+        "monthNone": "This month, nothing has left your Purse.",
+        "monthOne": "In {month}, {amount} left your Purse in {count} payment.",
+        "monthMany": "In {month}, {amount} left your Purse in {count} payments.",
+        "lines": "In the family record, each payment shows only its amount and its day:",
+        "line": "{day}: {amount} from the Purse",
+        "funded": "{day}: {amount} into the Purse",
+        "shared": "Payments you chose to share: {count}",
+        "held": "Payments Kin held, which it told them about: {count}",
+        "never": "They never see who you pay or why, unless you share it."
+      },
+      "summary": {
+        "balance": {
+          "label": "In the Purse",
+          "note": "of {ceiling} at most"
+        },
+        "month": {
+          "label": "Spent in {month}",
+          "none": "Nothing yet this month",
+          "one": "{count} payment, sealed",
+          "many": "{count} payments, sealed"
+        },
+        "weekly": {
+          "label": "Added each week",
+          "note": "Every Monday, never past the limit"
+        },
+        "cap": {
+          "label": "One payment, no wait",
+          "note": "Above this, Kin waits a day and tells you"
+        }
+      },
+      "alerts": {
+        "title": "Kin is holding a payment",
+        "text": "{parent} asked Kin to send {amount} to {payee}. Kin is waiting a day, and asked her whether someone was telling her what to do.",
+        "pressured": "{parent} asked Kin to send {amount} to {payee}, then told Kin someone was telling her what to do. Kin stopped it. Please call her.",
+        "said": "What she said: “{words}”",
+        "cancel": "Stop this payment",
+        "readOnly": "Only a member who shares the cost can stop it."
+      },
+      "book": {
+        "title": "Address book",
+        "titleMine": "Your address book",
+        "text": "The people and places {parent} can pay on her word alone. Each is checked once by someone in the family.",
+        "textMine": "The people and places you can pay without a wait. Someone in your family checked each one.",
+        "empty": "Nobody yet.",
+        "verified": "Checked by {name}",
+        "waiting": "Waiting for the family to check",
+        "addedBy": "Added by {name}",
+        "verify": "I checked this address",
+        "verifyLabel": "I checked the address for {name}",
+        "remove": "Remove",
+        "removeLabel": "Remove {name}",
+        "add": {
+          "title": "Add someone",
+          "name": "Name",
+          "relationship": "Who they are to her",
+          "kind": "Kind",
+          "kinds": {
+            "person": "A person",
+            "charity": "A charity or church",
+            "shop": "A shop"
+          },
+          "receiver": "Their PayPal email",
+          "receiverHint": "Kin pays only this address. Someone else in the family checks it before {parent} can pay them without a wait.",
+          "submit": "Add to the address book",
+          "added": "Added. Someone else in the family checks it next."
+        }
+      },
+      "setup": {
+        "title": "The Purse’s rules",
+        "titleNew": "Set up the Purse",
+        "text": "An approved family decision: what moves into {parent}’s Purse each week, the most it may ever hold, and the most one payment may be before Kin waits a day.",
+        "weekly": "Each week",
+        "ceiling": "Never more than",
+        "cap": "One payment without a wait",
+        "hint": "Money moves from the pool only once it has arrived, and never past the limit.",
+        "submit": "Save the Purse",
+        "saved": "Saved.",
+        "readOnly": "The organizer sets the Purse’s rules.",
+        "pause": "Pause the Purse",
+        "resume": "Start the Purse again"
+      },
+      "errors": {
+        "refused": "Your role cannot do that.",
+        "invalid": "Kin could not use that. Please try again.",
+        "duplicate": "That is in the address book already.",
+        "not_active": "The Purse is paused, so nothing can be sent.",
+        "paused": "Outgoing money is held for now, so nothing can be sent.",
+        "over_balance": "Your Purse has {available} you can spend now. Kin cannot send more than that.",
+        "not_waiting": "That has already been answered or has ended.",
+        "unverified": "That person is not checked yet, so Kin cannot send it without a wait.",
+        "book_full": "The address book is full.",
+        "own_entry": "Someone else in the family checks what you added.",
+        "above_agreement": "That ceiling is above the family agreement’s limit.",
+        "rate_limited": "That is a lot of requests for one hour. Please wait a little.",
+        "no_purse": "There is no Purse yet.",
+        "no_amount": "Kin did not hear an amount. Please say how much.",
+        "no_payee": "Kin did not hear who to pay. Please say their name.",
+        "amount": "Please write each amount as a number, such as 50 or 50.00.",
+        "terms": "The weekly amount and the one-payment limit must each fit inside the ceiling.",
+        "not_money": "Please say an amount above zero.",
+        "unavailable": "Something went wrong. Nothing was sent. Please try again."
+      },
+      "never": {
+        "title": "What Kin will never do",
+        "items": [
+          "Send money from the Purse without {parent}’s own yes.",
+          "Pay anyone more than is in the Purse.",
+          "Show the family who {parent} pays, unless she shares it or Kin holds a payment.",
+          "Let anyone else spend the Purse for her."
+        ]
+      },
+      "card": {
+        "title": "{parent}’s Purse",
+        "titleMine": "Your Purse",
+        "text": "{balance} of {ceiling}. {month} spent this month, each payment sealed.",
+        "textMine": "{balance} that is yours to give. Say who, and Kin reads it back.",
+        "link": "Open the Purse",
+        "linkMine": "Send a gift",
+        "heldOne": "Kin is holding {count} payment {parent} asked for.",
+        "heldMany": "Kin is holding {count} payments {parent} asked for."
+      }
     }
   },
   "aiProvenance": {

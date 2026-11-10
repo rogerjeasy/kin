@@ -2,6 +2,7 @@ import type { ToolCallRecord, ToolContext, ToolImplementations } from "@kin/agen
 
 import { payoutStatus, shareStatus, topUpStatus } from "./paypal-tools";
 import { checkDemand, getFairness, getPool, getRecord, listBills, listProposals } from "./record-tools";
+import { proposeGift } from "./gift-tool";
 import { proposeRefill } from "./refill-tool";
 import type { AskKinWorld } from "./world";
 
@@ -58,6 +59,10 @@ export function askKinTools(world: AskKinWorld): ToolImplementations {
     propose_refill: async (args, context) => {
       ownCircle(context);
       return proposeRefill(world, args.item);
+    },
+    propose_gift: async (args, context) => {
+      ownCircle(context);
+      return proposeGift(world, args);
     },
   };
 }

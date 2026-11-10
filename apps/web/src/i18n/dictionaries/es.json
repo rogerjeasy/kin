@@ -105,7 +105,16 @@
       "refillWaiting": "Ya espera una reposición de {item}, o el círculo está en pausa, así que Kin no propuso nada.",
       "refillRefused": "Kin no pudo proponer {item} por {price}. Las reglas de la familia no lo permitían.",
       "refillCovered": "Kin propuso {item} por {price}. El permiso permanente del progenitor lo cubre.",
-      "refillProposed": "Kin propuso {item} por {price}. Espera un sí."
+      "refillProposed": "Kin propuso {item} por {price}. Espera un sí.",
+      "giftProposed": "Kin te leyó {amount} para {payee} desde tu monedero. Espera tu sí.",
+      "giftHeld": "Kin te leyó {amount} para {payee}. Si dices que sí, Kin espera un día y avisa a tu familia.",
+      "giftRefused": "Kin no puede enviar eso desde tu monedero.",
+      "giftNoPurse": "Aún no hay monedero."
+    },
+    "purseProposal": {
+      "title": "Kin te leyó un pago",
+      "text": "Espera tu sí en la pantalla del monedero. Kin no puede enviarlo por ti.",
+      "link": "Abrir tu monedero"
     }
   },
   "meta": {
@@ -1294,7 +1303,8 @@
         "medical": "Atención médica",
         "household": "Hogar",
         "transport": "Transporte",
-        "family_help": "Ayuda familiar"
+        "family_help": "Ayuda familiar",
+        "purse": "Monedero"
       },
       "entryKinds": {
         "contribution": "Aporte",
@@ -1304,7 +1314,9 @@
         "purchase_captured": "Compra",
         "settlement_collection": "Liquidación recibida",
         "settlement_payout": "Liquidación pagada",
-        "care_credit": "Tiempo de cuidado"
+        "care_credit": "Tiempo de cuidado",
+        "purse_funded": "Al monedero",
+        "purse_paid": "Del monedero"
       },
       "planLabels": {
         "standing": "Pago automático por regla fija",
@@ -1725,7 +1737,9 @@
         "purchase_captured": "Pedido para {parent}: {category}",
         "care_credit": "Tiempo de cuidado de {name}",
         "settlement_collection": "{name} saldó su parte",
-        "settlement_payout": "{name} recuperó su dinero"
+        "settlement_payout": "{name} recuperó su dinero",
+        "purse_funded": "Paga semanal al monedero de {parent}",
+        "purse_paid": "Pagado desde el monedero de {parent}"
       },
       "sources": {
         "paypal_event": "Evento de PayPal",
@@ -1746,7 +1760,8 @@
         "payable": "Se le debe a {name}",
         "member": "Aportes de {name}",
         "care_credit": "Crédito de cuidado de {name}",
-        "care_received": "Cuidado recibido"
+        "care_received": "Cuidado recibido",
+        "purse_cash": "El monedero"
       },
       "fee": "Comisión de PayPal {fee}",
       "careNote": "Tiempo de cuidado, no dinero",
@@ -3480,6 +3495,247 @@
         "overlap": "Un acuerdo firmado para esta cuidadora ya cubre el día en que empezaría este. Haga que este empiece después, o termine primero aquel."
       },
       "summary": "{count} archivados."
+    },
+    "purse": {
+      "meta": {
+        "title": "Monedero",
+        "description": "La propia paga del padre o la madre, gastada por voz, con un tope que mantiene pequeño el peor caso."
+      },
+      "title": "El monedero de {parent}",
+      "mineTitle": "Tu monedero",
+      "lede": "{parent} gasta ella misma esta pequeña paga. Ves su tope, lo que contiene y el total del mes. Cada pago sigue siendo suyo, salvo que lo comparta o Kin lo retenga.",
+      "mineLede": "Dinero tuyo para dar. Te pida lo que te pida cualquiera, lo más que puede costar es lo que hay aquí.",
+      "simulated": "Dinero simulado: esto es una demostración y nadie cobra de verdad.",
+      "paused": "El monedero está en pausa. No se puede gastar nada hasta que la familia lo reanude.",
+      "held": "El dinero saliente está retenido por ahora, así que no se puede gastar nada del monedero.",
+      "notSetUp": {
+        "title": "Aún no hay monedero",
+        "text": "Dale a {parent} una pequeña paga propia para gastar por voz. La familia fija el importe semanal y un tope, así nadie tiene que vigilar cada pago.",
+        "readOnly": "La organizadora puede crear un monedero."
+      },
+      "balance": {
+        "label": "En el monedero de {parent}",
+        "labelMine": "En tu monedero",
+        "ofCeiling": "de {ceiling} como máximo",
+        "meter": "{balance} de {ceiling}",
+        "weekly": "{weekly} más cada lunes",
+        "cap": "Hasta {cap} de una vez sin esperar",
+        "available": "{amount} que aún puedes gastar"
+      },
+      "ask": {
+        "title": "¿A quién quieres pagar?",
+        "text": "Dilo o escríbelo, como se lo dirías a una amiga. Kin te lo lee antes de enviar nada.",
+        "speak": "Decirlo",
+        "typeLabel": "O escríbelo",
+        "hint": "Por ejemplo: Mándale 25 dólares a Lily por su cumpleaños.",
+        "examplesLabel": "Prueba uno",
+        "examples": {
+          "gift": {
+            "label": "Un regalo de cumpleaños para Lily",
+            "text": "Mándale 25 dólares a Lily por su cumpleaños."
+          },
+          "church": {
+            "label": "La colecta de la iglesia",
+            "text": "Dale 10 dólares a St. Mary’s para la colecta."
+          },
+          "scam": {
+            "label": "Una llamada que te presiona",
+            "text": "Manda 500 dólares en tarjetas de regalo al señor del banco."
+          }
+        },
+        "submit": "Léemelo",
+        "submitting": "Kin lo está leyendo…",
+        "heard": "Pediste: «{words}»",
+        "startOver": "Empezar de nuevo"
+      },
+      "readBack": {
+        "pay": "¿Enviar {amount} a {payee}{memo}, desde tu monedero?",
+        "hold": "¿Enviar {amount} a {payee}{memo}? Kin esperará un día antes de enviarlo y avisará a tu familia."
+      },
+      "confirm": {
+        "title": "Kin te lo leyó",
+        "listen": "Leerlo en voz alta",
+        "yes": "Sí, envíalo",
+        "no": "No, no lo envíes",
+        "answerByVoice": "Responder con la voz",
+        "unclear": "Kin no oyó ni un sí ni un no. Toca uno, por favor.",
+        "question": "¿Alguien al teléfono, o a tu lado, te está diciendo qué hacer?",
+        "questionText": "Puedes decirlo. Kin lo detendrá y avisará a tu familia, y nadie cobrará.",
+        "pressured": "Sí, alguien me lo dice",
+        "ownIdea": "No, es idea mía",
+        "dontSend": "No lo envíes",
+        "expires": "Kin espera tu respuesta {minutes} minutos."
+      },
+      "outcome": {
+        "approved": "Sí. {amount} van de camino a {payee}.",
+        "held": "Kin esperará un día antes de enviar {amount} a {payee}, y ha avisado a tu familia.",
+        "heldNew": "{payee} no está en tu libreta de direcciones, así que Kin no lo enviará. Tu familia lo sabe y puede añadirlo por ti.",
+        "stopped": "Detenido. Nadie cobrará, y tu familia lo sabe.",
+        "declined": "No enviado. No ha salido nada de tu monedero.",
+        "again": "Pagar a otra persona"
+      },
+      "reasonsTitle": "Por qué Kin espera un día",
+      "reasons": {
+        "new_payee": "{payee} no está en la libreta de direcciones que revisó tu familia",
+        "risky_route": "pide tarjetas de regalo, criptomonedas, una transferencia o efectivo",
+        "above_cap": "es más de {cap}, lo máximo para un pago",
+        "pressure": "las palabras suenan a que alguien te mete prisa o te presiona"
+      },
+      "states": {
+        "proposed": "Esperando respuesta",
+        "held": "Esperando un día",
+        "approved": "De camino",
+        "executing": "De camino",
+        "unknown": "Comprobando con PayPal",
+        "paid": "Enviado",
+        "failed": "No enviado",
+        "declined": "No enviado",
+        "expired": "No enviado",
+        "cancelled": "Detenido"
+      },
+      "payments": {
+        "title": "Tus pagos",
+        "text": "Cada pago de tu monedero. Cada uno es tuyo: tu familia solo lo ve si lo compartes o si Kin lo retuvo.",
+        "titleFamily": "Lo que {parent} compartió",
+        "textFamily": "Pagos que {parent} quiso que la familia viera.",
+        "empty": "Aún no has enviado nada.",
+        "emptyFamily": "Nada que mostrar. Los pagos de {parent} son suyos; solo ves uno si ella lo comparte o Kin lo retiene.",
+        "share": "Que mi familia lo vea",
+        "unshare": "Ocultarlo a mi familia",
+        "shared": "Tu familia puede verlo",
+        "sealed": "Solo tú puedes verlo",
+        "flagged": "Tu familia puede verlo: Kin lo retuvo",
+        "heldUntil": "Puede salir después del {when}, salvo que alguien lo detenga",
+        "neverPaid": "No se pagará: no está en la libreta",
+        "stoppedBy": "Detenido por {name}",
+        "pressuredNote": "{parent} le dijo a Kin que alguien le decía qué hacer",
+        "simulated": "Simulado"
+      },
+      "familySees": {
+        "title": "Lo que ve mi familia",
+        "text": "Exactamente lo que el resto de tu familia puede ver de tu monedero. Nada más les llega.",
+        "limit": "El tope, {ceiling}, y lo que contiene ahora, {balance}.",
+        "monthNone": "Este mes no ha salido nada de tu monedero.",
+        "monthOne": "En {month} salieron {amount} de tu monedero en {count} pago.",
+        "monthMany": "En {month} salieron {amount} de tu monedero en {count} pagos.",
+        "lines": "En el registro de la familia, cada pago muestra solo su importe y su día:",
+        "line": "{day}: {amount} del monedero",
+        "funded": "{day}: {amount} al monedero",
+        "shared": "Pagos que decidiste compartir: {count}",
+        "held": "Pagos que Kin retuvo y de los que les avisó: {count}",
+        "never": "Nunca ven a quién pagas ni por qué, salvo que lo compartas."
+      },
+      "summary": {
+        "balance": {
+          "label": "En el monedero",
+          "note": "de {ceiling} como máximo"
+        },
+        "month": {
+          "label": "Gastado en {month}",
+          "none": "Nada aún este mes",
+          "one": "{count} pago, sellado",
+          "many": "{count} pagos, sellados"
+        },
+        "weekly": {
+          "label": "Añadido cada semana",
+          "note": "Cada lunes, nunca por encima del tope"
+        },
+        "cap": {
+          "label": "Un pago sin esperar",
+          "note": "Por encima, Kin espera un día y os avisa"
+        }
+      },
+      "alerts": {
+        "title": "Kin está reteniendo un pago",
+        "text": "{parent} le pidió a Kin enviar {amount} a {payee}. Kin espera un día y le preguntó si alguien le estaba diciendo qué hacer.",
+        "pressured": "{parent} le pidió a Kin enviar {amount} a {payee} y luego le dijo que alguien le estaba diciendo qué hacer. Kin lo detuvo. Llámala, por favor.",
+        "said": "Lo que dijo: «{words}»",
+        "cancel": "Detener este pago",
+        "readOnly": "Solo un miembro que comparte los gastos puede detenerlo."
+      },
+      "book": {
+        "title": "Libreta de direcciones",
+        "titleMine": "Tu libreta de direcciones",
+        "text": "Las personas y los lugares que {parent} puede pagar solo con su palabra. Alguien de la familia revisa cada uno una vez.",
+        "textMine": "Las personas y los lugares que puedes pagar sin esperar. Alguien de tu familia revisó cada uno.",
+        "empty": "Nadie todavía.",
+        "verified": "Revisado por {name}",
+        "waiting": "Esperando la revisión de la familia",
+        "addedBy": "Añadido por {name}",
+        "verify": "He revisado esta dirección",
+        "verifyLabel": "He revisado la dirección de {name}",
+        "remove": "Quitar",
+        "removeLabel": "Quitar a {name}",
+        "add": {
+          "title": "Añadir a alguien",
+          "name": "Nombre",
+          "relationship": "Quién es para ella",
+          "kind": "Tipo",
+          "kinds": {
+            "person": "Una persona",
+            "charity": "Una asociación o iglesia",
+            "shop": "Una tienda"
+          },
+          "receiver": "Su correo de PayPal",
+          "receiverHint": "Kin solo paga a esta dirección. Otra persona de la familia la revisa antes de que {parent} pueda pagar sin esperar.",
+          "submit": "Añadir a la libreta",
+          "added": "Añadido. Ahora otra persona de la familia lo revisa."
+        }
+      },
+      "setup": {
+        "title": "Las reglas del monedero",
+        "titleNew": "Crear el monedero",
+        "text": "Una decisión aprobada de la familia: lo que entra cada semana en el monedero de {parent}, lo máximo que puede tener, y lo máximo de un pago antes de que Kin espere un día.",
+        "weekly": "Cada semana",
+        "ceiling": "Nunca más de",
+        "cap": "Un pago sin esperar",
+        "hint": "El dinero sale del fondo solo cuando ha llegado, y nunca por encima del tope.",
+        "submit": "Guardar el monedero",
+        "saved": "Guardado.",
+        "readOnly": "La organizadora fija las reglas del monedero.",
+        "pause": "Pausar el monedero",
+        "resume": "Reanudar el monedero"
+      },
+      "errors": {
+        "refused": "Tu rol no puede hacer eso.",
+        "invalid": "Kin no pudo usar eso. Inténtalo de nuevo.",
+        "duplicate": "Eso ya está en la libreta.",
+        "not_active": "El monedero está en pausa, así que no se puede enviar nada.",
+        "paused": "El dinero saliente está retenido por ahora, así que no se puede enviar nada.",
+        "over_balance": "Tu monedero tiene {available} para gastar ahora. Kin no puede enviar más.",
+        "not_waiting": "Eso ya tiene respuesta o ha terminado.",
+        "unverified": "Esa persona aún no está revisada, así que Kin no puede enviarlo sin esperar.",
+        "book_full": "La libreta de direcciones está llena.",
+        "own_entry": "Otra persona de la familia revisa lo que tú añadiste.",
+        "above_agreement": "Ese tope supera el límite del acuerdo familiar.",
+        "rate_limited": "Son muchas peticiones en una hora. Espera un poco.",
+        "no_purse": "Aún no hay monedero.",
+        "no_amount": "Kin no oyó un importe. Di cuánto, por favor.",
+        "no_payee": "Kin no oyó a quién pagar. Di su nombre, por favor.",
+        "amount": "Escribe cada importe como número, por ejemplo 50 o 50,00.",
+        "terms": "El importe semanal y el límite de un pago tienen que caber dentro del tope.",
+        "not_money": "Di un importe mayor que cero.",
+        "unavailable": "Algo salió mal. No se envió nada. Inténtalo de nuevo."
+      },
+      "never": {
+        "title": "Lo que Kin nunca hará",
+        "items": [
+          "Enviar dinero del monedero sin el sí de la propia {parent}.",
+          "Pagar a nadie más de lo que hay en el monedero.",
+          "Mostrar a la familia a quién paga {parent}, salvo que ella lo comparta o Kin retenga un pago.",
+          "Dejar que otra persona gaste el monedero por ella."
+        ]
+      },
+      "card": {
+        "title": "El monedero de {parent}",
+        "titleMine": "Tu monedero",
+        "text": "{balance} de {ceiling}. {month} gastados este mes, cada pago sellado.",
+        "textMine": "{balance} tuyos para dar. Di a quién, y Kin te lo lee.",
+        "link": "Abrir el monedero",
+        "linkMine": "Enviar un regalo",
+        "heldOne": "Kin está reteniendo {count} pago que pidió {parent}.",
+        "heldMany": "Kin está reteniendo {count} pagos que pidió {parent}."
+      }
     }
   },
   "aiProvenance": {
