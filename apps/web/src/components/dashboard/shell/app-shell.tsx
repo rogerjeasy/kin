@@ -34,7 +34,7 @@ export function AppShell({ children, ...context }: AppShellProps) {
             {context.presenceHold ? <PresenceHoldBanner hold={context.presenceHold} /> : null}
             {context.wishesNotice ? <WishesBanner notice={context.wishesNotice} /> : null}
             <Suspense fallback={null}>
-              <NoticeBanner notices={context.dictionary.dashboard.notices} dismiss={context.dictionary.dashboard.notices.dismiss} />
+              <NoticeBanner notices={context.notices} dismiss={context.dictionary.dashboard.notices.dismiss} />
             </Suspense>
             {children}
           </div>

@@ -30,10 +30,12 @@ export function SettlementSections({ circle, dictionary, names, format, settleme
   const categories: Record<string, string> = dictionary.dashboard.common.categories;
   const today = calendarDay(circle.circle.now, circle.circle.timezone).occurredOn;
   const rows = receiptRows(circle, names, format, receiptsCopy);
-  const payments = settlementPayments(circle, names, format, run.states, settle.payout);
+  // A demo pays its members with simulated money, so it never says PayPal is paying them.
+  const { demo } = circle.circle;
+  const payments = settlementPayments(circle, names, format, demo ? { ...run.states, ...run.simulatedStates } : run.states, settle.payout);
   const canPropose = may(circle, "settlement.propose") && !hasLiveSettlement(circle, period) && settlement.plan.payouts.some((payout) => payout.releasableCents > 0);
   // Demo money is simulated and goes nowhere, so a demo member has no address to give.
-  const mayGiveAddress = may(circle, "settlement_receiver.set") && !circle.circle.demo;
+  const mayGiveAddress = may(circle, "settlement_receiver.set") && !demo;
   const ownAddress = circle.settlementReceivers.find((each) => each.memberId === circle.viewer.memberId)?.receiver ?? null;
 
   return (
@@ -60,7 +62,7 @@ export function SettlementSections({ circle, dictionary, names, format, settleme
       {canPropose || payments.length > 0 || mayGiveAddress ? (
         <SettlementRunPanel
           title={run.title}
-          description={run.text}
+          description={demo ? run.demoText : run.text}
           progressTitle={run.progressTitle}
           payments={payments}
           action={canPropose ? <SettlementSendButton copy={run} errors={errors} /> : null}

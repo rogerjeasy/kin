@@ -9,7 +9,7 @@ import type { AskKinAnswer as Answer } from "./use-ask-kin";
 
 type Props = { question: string; answer: Answer; copy: Dictionary["askKin"]["answer"] };
 
-/** The question asked, Kin's answer, and who wrote the words: Claude, or Kin's fixed wording from the record. */
+/** The question asked, Kin's answer, and who wrote the words: Claude, or Kin's fixed wording from the record and why. */
 export function AskKinAnswer({ question, answer, copy }: Props) {
   const byClaude = answer.source === "claude";
   return (
@@ -20,7 +20,7 @@ export function AskKinAnswer({ question, answer, copy }: Props) {
       <ChatBubble from="kin" className="space-y-3 px-5 py-4">
         <p className="font-serif text-xl leading-snug text-pretty">{answer.answer}</p>
         <StatusPill tone={byClaude ? "positive" : "neutral"} icon={byClaude ? SparklesIcon : ScrollTextIcon} className="wrap-anywhere">
-          {byClaude ? fill(copy.claude, { model: answer.model }) : copy.template}
+          {byClaude ? fill(copy.claude, { model: answer.model }) : answer.templateReason === null ? copy.template : copy.templateReasons[answer.templateReason]}
         </StatusPill>
       </ChatBubble>
     </div>

@@ -13,10 +13,11 @@ import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { givenRows, positionStatus } from "@/components/dashboard/words/given-rows";
+import { payoutReasonWords } from "@/components/dashboard/words/payout-reason-words";
 import { ShareBar } from "@/components/shared/share-bar";
 import { ShareLegend } from "@/components/shared/share-legend";
 import { agreementRoute, dashboardRoutes, quietSharesRoute } from "@/content/dashboard-routes";
-import { memberFairness, periodSettlement } from "@/content/circle/fairness";
+import { memberFairness, payoutReason, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
@@ -141,6 +142,7 @@ export default async function FairnessPage({ params }: PageProps<"/[locale]/dash
               who: fill(settle.payout, { name: names.member(payout.memberId) }),
               amount: format.money(payout.cents),
               detail: `${settle.now} ${format.money(payout.releasableCents)} · ${fill(settle.fee, { fee: format.money(payout.feeReservedCents) })}`,
+              note: payoutReasonWords(settle.reasons, payoutReason(circle, settlement, payout), format.money(payout.releasableCents), format),
             })),
           },
           {

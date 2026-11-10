@@ -1,7 +1,7 @@
 import { decimalAmount, describeAccount } from "@kin/domain";
 import type { CircleSnapshot } from "@kin/db";
 
-import { describeAccountCode, describeEntry } from "@/components/dashboard/words/entry-words";
+import { describeAccountCode, describeEntry, entrySource } from "@/components/dashboard/words/entry-words";
 import type { Dictionary } from "@/i18n/dictionary";
 import { csvRow } from "@/lib/csv-cell";
 
@@ -14,7 +14,7 @@ import { recordEntries } from "./record";
  * ID) and the entry it reverses, so a line can be traced to its evidence.
  */
 export function auditCsv(circle: CircleSnapshot, dictionary: Dictionary, names: CircleNames): string {
-  const { record, statement } = dictionary.dashboard;
+  const { statement } = dictionary.dashboard;
   const { csv } = statement.audit;
   const header = [csv.date, csv.id, csv.entry, csv.kind, csv.source, csv.reference, csv.reverses, csv.account, csv.debit, csv.credit, csv.currency, csv.simulated];
   const rows = recordEntries(circle)
@@ -30,7 +30,7 @@ export function auditCsv(circle: CircleSnapshot, dictionary: Dictionary, names: 
           entry.id,
           text,
           dictionary.dashboard.common.entryKinds[entry.kind],
-          record.sources[entry.source.type],
+          entrySource(dictionary, entry),
           entry.source.id,
           entry.reverses ?? "",
           describeAccountCode(dictionary, names, account.family, account.subject),

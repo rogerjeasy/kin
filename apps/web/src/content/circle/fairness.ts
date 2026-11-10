@@ -1,4 +1,4 @@
-import { settlePeriod, type MemberContribution, type MemberPosition, type Settlement } from "@kin/domain";
+import { cashAvailableForPayouts, settlePeriod, type MemberContribution, type MemberPosition, type Settlement } from "@kin/domain";
 import type { CircleSnapshot } from "@kin/db";
 import { payoutFeeReserve } from "@kin/paypal";
 
@@ -32,4 +32,27 @@ export function memberFairness(settlement: Settlement, circle: CircleSnapshot): 
     }
     return { memberId: share.memberId, shareBps: share.bps, shareIndex, input, position };
   });
+}
+
+type PlannedPayout = Settlement["plan"]["payouts"][number];
+
+export type PayoutReason = {
+  /** All of it can go now, part of it, part shared with others owed, or none yet. */
+  readonly kind: "all" | "part" | "shared" | "none";
+  /** The pool's confirmed cash less the bills it has promised, which the plan was bounded by. */
+  readonly availableCents: number;
+  /** What waits for more money to arrive. */
+  readonly restCents: number;
+};
+
+/**
+ * Why a payout can go now in full, in part or not yet, from the cash the
+ * money core bounded the plan by. It explains the plan and decides nothing.
+ */
+export function payoutReason(circle: CircleSnapshot, settlement: Settlement, payout: PlannedPayout): PayoutReason {
+  const availableCents = cashAvailableForPayouts(circle.ledger);
+  // Both are whole cents and the part released is never above the amount owed, so the rest is whole and not below zero.
+  const restCents = payout.cents - payout.releasableCents;
+  const kind = restCents === 0 ? "all" : payout.releasableCents === 0 ? "none" : settlement.plan.payouts.length > 1 ? "shared" : "part";
+  return { kind, availableCents, restCents };
 }

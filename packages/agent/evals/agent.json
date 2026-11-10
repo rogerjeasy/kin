@@ -8,6 +8,17 @@
         "paidIn": "$1,500.00",
         "paidOut": "$87.40",
         "fees": "$0.00",
+        "spentThisMonthByCategory": [
+          {
+            "category": "Pharmacy",
+            "amount": "$244.00"
+          },
+          {
+            "category": "Utilities",
+            "amount": "$61.00"
+          }
+        ],
+        "includes": "bills paid, receipts a member paid from their own pocket, and purchases",
         "simulated": true
       },
       "fact": "The pool holds $1,412.60."
@@ -290,6 +301,21 @@
       "include": [
         "$37.50",
         "$100.00"
+      ]
+    },
+    {
+      "name": "spending by category",
+      "role": "organizer",
+      "language": "English",
+      "question": "What did the family spend on pharmacy this month?",
+      "must": [
+        "get_pool"
+      ],
+      "mustNot": [
+        "propose_refill"
+      ],
+      "include": [
+        "$244.00"
       ]
     },
     {

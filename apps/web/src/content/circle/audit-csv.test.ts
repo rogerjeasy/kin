@@ -30,6 +30,18 @@ describe("the audit export", () => {
     expect(lines[1]).toContain(`,${first?.source.id},`);
   });
 
+  it("never calls a simulated entry's cause a PayPal event, and calls a real one so", async () => {
+    const english = await getDictionary("en");
+    const names = circleNames(circle, english);
+    const simulated = auditCsv(circle, english, names);
+    expect(simulated).not.toContain(",PayPal event,");
+    expect(simulated).toContain(",Simulated,");
+    expect(simulated).not.toContain("PayPal event");
+    const real = { ...circle, ledger: { ...circle.ledger, entries: circle.ledger.entries.map((entry) => ({ ...entry, simulated: false })) } };
+    expect(auditCsv(real, english, names)).toContain(",PayPal event,");
+    expect(auditCsv(real, english, names)).not.toContain(",Simulated,");
+  });
+
   it("writes the columns in the reader's language", async () => {
     const french = await getDictionary("fr");
     const [header] = rows(auditCsv(circle, french, circleNames(circle, french)));

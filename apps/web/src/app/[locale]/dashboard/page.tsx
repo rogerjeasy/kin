@@ -25,8 +25,10 @@ import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { activityItems } from "@/components/dashboard/words/activity-items";
 import { attentionItems } from "@/components/dashboard/words/attention-items";
+import { checkWords } from "@/components/dashboard/words/check-words";
 import { givenRows } from "@/components/dashboard/words/given-rows";
 import { planLabel } from "@/components/dashboard/words/plan-words";
+import { feesNote, poolNote, poolSplit } from "@/components/dashboard/words/pool-words";
 import { ButtonLink } from "@/components/shared/button-link";
 import { Button } from "@/components/ui/button";
 import { agreementRoute, askRoute, connectionsRoute, dashboardRoutes, listenRoute, presenceRoute, purseRoute, quietSharesRoute, wishesRoute } from "@/content/dashboard-routes";
@@ -34,9 +36,11 @@ import { WishesCard } from "@/components/dashboard/wishes/wishes-card";
 import { askKinSuggestions } from "@/content/circle/ask-kin-suggestions";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
+import { partOfDay } from "@/content/circle/greeting";
 import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
 import { waitingProposals } from "@/content/circle/proposal-view";
+import { feesKind, poolProvenance } from "@/content/circle/provenance";
 import { monthTotals, recordEntries, spendingByCategory } from "@/content/circle/record";
 import { needItems } from "@/content/circle/shift-needs";
 import { anythingMoving, needsOf } from "@/content/circle/shift-views";
@@ -75,7 +79,8 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
   const settlement = periodSettlement(circle, period);
   const fairness = settlement ? memberFairness(settlement, circle) : [];
   const contributors = fairness.filter((member) => member.input.paidInCents > 0);
-  const check = latestClaimCheck(circle);
+  const latestCheck = latestClaimCheck(circle);
+  const check = latestCheck ? checkWords({ dictionary, names, format, parent: slots.parent }, latestCheck, "overview") : null;
   const heard = parentHeard(circle);
   const activity = recordEntries(circle).slice(0, RECENT_ENTRIES);
   const upcoming = upcomingBills(circle);
@@ -90,7 +95,7 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
     <>
       <PageHeader
         eyebrow={format.longDay(circle.circle.now)}
-        title={fill(overview.greeting, { name: greeted })}
+        title={fill(overview.greetings[partOfDay(circle.circle.now, circle.circle.timezone)], { name: greeted })}
         lede={fill(overview.lede, slots)}
         actions={
           <>
@@ -117,7 +122,12 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
       />
       <StatRow
         label={fill(overview.stats.label, slots)}
-        pool={{ label: overview.stats.pool.label, value: format.money(totals.poolCents), note: overview.stats.pool.note }}
+        pool={{
+          label: overview.stats.pool.label,
+          value: format.money(totals.poolCents),
+          note: poolNote(overview.stats.pool, poolProvenance(circle), format),
+          detail: poolSplit(overview.stats.pool, totals, slots.parent, format),
+        }}
         paidIn={{
           label: overview.stats.paidIn.label,
           value: format.money(totals.paidInCents),
@@ -129,7 +139,7 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
         paidOut={{
           label: overview.stats.paidOut.label,
           value: format.money(totals.paidOutCents),
-          note: fill(overview.stats.paidOut.note, { fees: format.money(totals.feesCents) }),
+          note: feesNote(overview.stats.paidOut, feesKind(circle, period), format.money(totals.feesCents)),
         }}
         waiting={{
           label: overview.stats.waiting.label,
@@ -151,20 +161,8 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
         ) : (
           <EmptyPanel className="lg:col-span-2" title={overview.attention.title} text={empty.attention} />
         )}
-        {check && check.claimedCents !== null && check.lastPaid ? (
-          <SafetyPanel
-            title={overview.safety.title}
-            text={fill(overview.safety.text, {
-              parent: slots.parent,
-              payee: check.payeeId === null ? "" : names.payee(check.payeeId),
-              claimed: format.money(check.claimedCents),
-              paid: format.money(check.lastPaid.cents),
-              paidDay: format.day(check.lastPaid.day),
-              alerted: format.allOf(check.alerted.map(names.member)),
-            })}
-            rule={overview.safety.rule}
-            link={{ href: `${path(dashboardRoutes.bills)}#checks`, label: overview.safety.link }}
-          />
+        {check ? (
+          <SafetyPanel title={check.title} text={check.text} rule={overview.safety.rule} link={{ href: `${path(dashboardRoutes.bills)}#checks`, label: overview.safety.link }} />
         ) : (
           <EmptyPanel title={empty.safety.title} text={empty.safety.text} icon={ShieldCheckIcon} />
         )}

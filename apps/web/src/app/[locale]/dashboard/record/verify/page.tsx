@@ -11,11 +11,13 @@ import { Panel } from "@/components/dashboard/ui/panel";
 import { StatTile } from "@/components/dashboard/ui/stat-tile";
 import { describeEntry } from "@/components/dashboard/words/entry-words";
 import { LANGUAGE_NAMES } from "@/components/dashboard/words/letter-words";
+import { poolNote, poolSplit } from "@/components/dashboard/words/pool-words";
 import { Button } from "@/components/ui/button";
 import { circleBundle } from "@/content/circle/audit-bundle";
 import { reviewItems } from "@/content/circle/audit-findings";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
+import { poolProvenance } from "@/content/circle/provenance";
 import { entryView } from "@/content/circle/record";
 import { dashboardRoutes, verifyRoute } from "@/content/dashboard-routes";
 import { pageContext } from "@/i18n/page-context";
@@ -46,6 +48,15 @@ export default async function VerifyPage({ params, searchParams }: PageProps<"/[
 
   const bundle = circleBundle(circle, dictionary, names, format, await keptHeads(databases().app, viewer.userId, circle));
   const report = verifyBundle(bundle);
+  // A demo's pool is simulated, perhaps with real sandbox top-ups: it is never called confirmed money.
+  const provenance = poolProvenance(circle);
+  const stats = dictionary.dashboard.overview.stats.pool;
+  const poolTileNote =
+    provenance.kind === "paypal"
+      ? report.purseCents === 0
+        ? copy.poolNote
+        : fill(copy.poolSplit, { free: format.money(report.poolCashCents), purse: format.money(report.purseCents) })
+      : [poolNote(stats, provenance, format), poolSplit(stats, { freeCents: report.poolCashCents, purseCents: report.purseCents }, names.parent, format)].filter((part) => part !== null).join(" · ");
   // Kept after the check, so what was just checked stood against earlier heads only.
   await keepHead(databases().app, viewer.userId, circle, bundle, "verify");
   const { keptHeads: kept } = report;
@@ -94,7 +105,7 @@ export default async function VerifyPage({ params, searchParams }: PageProps<"/[
           note={report.ok ? fill(copy.passNote, { count: format.count(report.entryCount) }) : fill(copy.failNote, { failed: format.count(failed), total: format.count(rows.length) })}
           icon={report.ok ? ShieldCheckIcon : ShieldAlertIcon}
         />
-        <StatTile label={copy.pool} value={format.money(report.poolCents)} note={report.purseCents === 0 ? copy.poolNote : fill(copy.poolSplit, { free: format.money(report.poolCashCents), purse: format.money(report.purseCents) })} icon={ListChecksIcon} />
+        <StatTile label={copy.pool} value={format.money(report.poolCents)} note={poolTileNote} icon={ListChecksIcon} />
         <StatTile label={copy.head} value={`${report.head.slice(0, 12)}…`} note={copy.headNote} icon={HashIcon} />
       </dl>
       <div className="grid gap-6 lg:grid-cols-2">

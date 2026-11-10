@@ -16,10 +16,34 @@ import { named, type AskKinWorld } from "./world";
  * delegation, it never rides the standing permission: it always waits for a
  * person's yes in Kin.
  */
+/** Words of four letters or more, without accents or case: "Rose's refill" → ["rose", "refill"]. */
+function words(text: string): string[] {
+  return text
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((word) => word.length >= 4);
+}
+
+/**
+ * The refill rules the person's words point at. A name that is the rule's own
+ * name matches exactly. Otherwise a rule matches when it shares a word with
+ * what was asked ("Rose's refill" and "Monthly prescription refill"), but only
+ * when that leaves exactly one rule: an unclear name is asked about, never guessed.
+ */
+export function rulesNamed<T extends { readonly rule: { readonly item: string } }>(asked: string | undefined, rules: readonly T[]): T[] {
+  const exact = rules.filter((view) => named(asked, view.rule.item));
+  if (exact.length > 0 || asked === undefined) return exact;
+  const askedWords = new Set(words(asked));
+  const sharing = rules.filter((view) => words(view.rule.item).some((word) => askedWords.has(word)));
+  return sharing.length === 1 ? sharing : [];
+}
+
 export async function proposeRefill(world: AskKinWorld, item: string | undefined, delegationId?: string): Promise<ToolOutput> {
   const { format, copy } = world;
   const rules = refillViews(world.circle).rules;
-  const matching = rules.filter((view) => named(item, view.rule.item));
+  const matching = rulesNamed(item, rules);
   const choices = rules.map((view) => ({ item: view.rule.item, price: format.money(view.rule.priceCents) }));
   const [only] = matching;
   if (only === undefined || matching.length > 1) {

@@ -30,6 +30,28 @@ for (const viewport of viewports) {
   });
 }
 
+for (const viewport of [viewports[0], viewports[3]]) {
+  test(`a scam call for nobody on record is the check the bills and the overview tell, at ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await startDemo(page);
+    await page.goto("/dashboard/office-line");
+    await page.getByRole("button", { name: copy.submit }).click();
+    await expect(page.getByRole("status").filter({ hasText: copy.verdictTitle })).toContainText(copy.verdicts.no_match);
+
+    await page.goto("/dashboard/bills");
+    const checks = page.getByRole("region", { name: english.dashboard.bills.checks.title });
+    await expect(checks).toContainText(english.dashboard.checkStory.no_match.title);
+    await expect(checks).toContainText(copy.verdicts.no_match);
+    await expect(page.getByText(english.dashboard.empty.safety.text)).toHaveCount(0);
+    await expectNoHorizontalOverflow(page);
+
+    await page.goto("/dashboard");
+    await expect(page.getByText(english.dashboard.checkStory.no_match.title)).toBeVisible();
+    await expect(page.getByText(english.dashboard.empty.safety.text)).toHaveCount(0);
+    await expectNoHorizontalOverflow(page);
+  });
+}
+
 test("a bill already paid is not paid twice, and a real quote is recognised", async ({ page }) => {
   await startDemo(page);
   await page.goto("/dashboard/office-line");

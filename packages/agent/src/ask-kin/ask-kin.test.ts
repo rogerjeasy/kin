@@ -31,7 +31,7 @@ describe("Ask Kin's loop", () => {
       text: "Yes. Amara was paid $264.00 on Oct 6; it was simulated.",
       source: "claude",
       templateReason: null,
-      calls: [{ tool: "get_paypal_payout_status", outcome: "ok" }],
+      calls: [{ tool: "get_paypal_payout_status", outcome: "ok", raised: false }],
       proposal: null,
     });
     const second = model.requests[1]?.messages.at(-1);

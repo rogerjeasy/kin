@@ -1,3 +1,4 @@
+import type { Notice } from "@/content/dashboard-notices";
 import type { DashboardSection } from "@/content/dashboard-routes";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
@@ -30,6 +31,8 @@ export type ShellContext = {
   pauseState: { active: string | null; canPause: boolean; canResume: boolean };
   /** Outgoing money held by an "is it really you?" check, said on every screen while it lasts, with where to read the check. */
   presenceHold: { text: string; link: { href: string; label: string } | null } | null;
+  /** What an action did, in this circle's words: a demo never says PayPal will confirm. */
+  notices: Readonly<Record<Notice, string>>;
   /** Someone said the parent is in hospital or a care home: said on every screen while it is reported or active, with the way to what changed. */
   wishesNotice?: { text: string; link: { href: string; label: string } } | null;
 };

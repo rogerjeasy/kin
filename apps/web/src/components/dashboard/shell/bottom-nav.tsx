@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
-import { dashboardRoutes, phoneNav, sectionOf, type DashboardSection } from "@/content/dashboard-routes";
+import { dashboardRoutes, phoneSections, sectionOf, type DashboardSection } from "@/content/dashboard-routes";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 import { localizedPath } from "@/i18n/routing";
@@ -17,7 +17,7 @@ type BottomNavProps = {
   locale: Locale;
   copy: Dictionary["dashboard"]["shell"];
   badges: Partial<Record<DashboardSection, NavBadge>>;
-  /** The sections the viewer may open. The others are not offered. */
+  /** The sections the viewer may open, in their order for this role. The others are not offered. */
   sections: readonly DashboardSection[];
   className?: string;
 };
@@ -28,7 +28,7 @@ const columns = ["grid-cols-1", "grid-cols-1", "grid-cols-2", "grid-cols-3", "gr
 /** The circle's main sections, along the bottom of a phone or tablet, within thumb's reach. */
 export function BottomNav({ locale, copy, badges, sections, className }: BottomNavProps) {
   const current = sectionOf(useSelectedLayoutSegment());
-  const offered = phoneNav.filter((section) => sections.includes(section));
+  const offered = phoneSections(sections);
 
   return (
     <nav

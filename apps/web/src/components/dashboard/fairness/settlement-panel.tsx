@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 export type MovementGroup = {
   title: string;
   direction: "in" | "out";
-  /** `extra` is shown under a movement, such as the PayPal invoice behind a collection. */
-  items: readonly { id: string; who: string; amount: string; detail: string; extra?: ReactNode }[];
+  /** `note` says why, in a sentence; `extra` is shown under a movement, such as the PayPal invoice behind a collection. */
+  items: readonly { id: string; who: string; amount: string; detail: string; note?: string; extra?: ReactNode }[];
 };
 
 type SettlementPanelProps = {
@@ -52,6 +52,7 @@ export function SettlementPanel({ title, description, status, groups, core, link
                       </div>
                       <span className="font-serif text-2xl leading-none whitespace-nowrap tabular-nums">{item.amount}</span>
                     </div>
+                    {item.note ? <p className="mt-2 text-sm text-pretty text-muted-foreground">{item.note}</p> : null}
                     {item.extra}
                   </li>
                 ))}

@@ -1,7 +1,7 @@
 import { wrapData } from "../wrap-data.ts";
 
 /** Changing the prompt or a tool's description changes this, and runs the agent evaluation set (`eval:agent`). */
-export const ASK_KIN_PROMPT_VERSION = "ask-kin-2026-11-10";
+export const ASK_KIN_PROMPT_VERSION = "ask-kin-2026-11-10b";
 
 /** The longest answer the model is asked for. The number guard reads it sentence by sentence. */
 export const ANSWER_CHARACTERS = 350;

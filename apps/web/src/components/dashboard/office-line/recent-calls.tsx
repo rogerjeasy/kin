@@ -1,7 +1,7 @@
 import type { OfficeCallRecord } from "@kin/db";
 import { ChevronDownIcon, PhoneIncomingIcon } from "lucide-react";
 
-import { shownVerdict } from "@/components/dashboard/letters/verdict-pill";
+import { shownVerdict } from "@/content/circle/verdict";
 import { EmptyState } from "@/components/dashboard/ui/empty-state";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";

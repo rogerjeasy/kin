@@ -1,6 +1,7 @@
 import { AlertTriangleIcon, BanIcon, BellRingIcon, CheckCircle2Icon, HelpCircleIcon, PhoneIcon } from "lucide-react";
 
-import { shownVerdict, VerdictPill } from "@/components/dashboard/letters/verdict-pill";
+import { VerdictPill } from "@/components/dashboard/letters/verdict-pill";
+import { shownVerdict } from "@/content/circle/verdict";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
 import { cn } from "@/lib/utils";

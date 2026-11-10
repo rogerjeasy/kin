@@ -18,6 +18,8 @@ export const SECTION_ACCESS = {
   bills: "own_payments.view",
   fairness: "money.view",
   record: "money.view",
+  // Whoever may see the circle's money may hear it.
+  listen: "money.view",
   circle: "circle.view",
 } as const satisfies Record<DashboardSection, CircleAction>;
 
@@ -31,9 +33,14 @@ export function may(circle: CircleSnapshot, action: CircleAction): boolean {
   return authorize(seatOf(circle), action).allowed;
 }
 
-/** The sections a role may open, in the order of the navigation. */
+/**
+ * The sections a role may open, in the order of the navigation. The parent's
+ * seat puts Listen first: Kin is built around her hearing her money, so that
+ * is her first screen, and the family's dashboard is one tap away.
+ */
 export function sectionsForRole(role: CircleRole): DashboardSection[] {
-  return dashboardNav.filter((section) => authorize({ role, status: "active" }, SECTION_ACCESS[section]).allowed);
+  const allowed = dashboardNav.filter((section) => authorize({ role, status: "active" }, SECTION_ACCESS[section]).allowed);
+  return role === "parent" && allowed.includes("listen") ? ["listen", ...allowed.filter((section) => section !== "listen")] : allowed;
 }
 
 /** The sections the viewer may open in this circle. */

@@ -4,8 +4,13 @@ import { currentSession } from "../auth/session";
 import { createRateLimiter, type Allowance } from "../model";
 import type { Viewer } from "../viewer";
 
-/** How many questions a demo visitor who has not signed in may ask Kin in one demo session. */
-export const DEMO_QUESTIONS = 5;
+/**
+ * How many questions a demo visitor who has not signed in may ask Kin in one
+ * demo session: enough to try each seat (organizer, sibling, parent,
+ * caregiver, observer) and a refusal or two, while the server's hourly demo
+ * budget still bounds what the demo can spend (decision 96, amended).
+ */
+export const DEMO_QUESTIONS = 10;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

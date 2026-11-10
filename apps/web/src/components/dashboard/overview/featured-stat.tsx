@@ -3,13 +3,13 @@ import type { LucideIcon } from "lucide-react";
 import { KnotMark } from "@/components/brand/knot-mark";
 import { RisingFigure } from "@/components/motion/rising-figure";
 
-type FeaturedStatProps = { label: string; value: string; note: string; icon: LucideIcon };
+type FeaturedStatProps = { label: string; value: string; note: string; detail?: string | null; icon: LucideIcon };
 
 /**
  * The one figure the family looks for first: the pool, on an ink panel lit
  * from within, with the Kin knot turning slowly behind it.
  */
-export function FeaturedStat({ label, value, note, icon: Icon }: FeaturedStatProps) {
+export function FeaturedStat({ label, value, note, detail, icon: Icon }: FeaturedStatProps) {
   const theme = { "data-theme": "dark" };
 
   return (
@@ -24,13 +24,14 @@ export function FeaturedStat({ label, value, note, icon: Icon }: FeaturedStatPro
       <dd className="mt-4 min-w-0 font-serif text-4xl tracking-tight break-words text-highlight tabular-nums sm:text-5xl">
         <RisingFigure value={value} />
       </dd>
-      <dd className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
+      <dd className="mt-2 inline-flex max-w-full items-center gap-2 text-sm text-muted-foreground">
         <span aria-hidden="true" className="relative inline-flex size-2">
           <span className="absolute inset-0 rounded-full bg-positive opacity-60 motion-safe:animate-dot-ping" />
           <span className="relative size-2 rounded-full bg-positive" />
         </span>
-        {note}
+        <span className="min-w-0 text-pretty">{note}</span>
       </dd>
+      {detail ? <dd className="mt-1 max-w-prose text-sm text-pretty text-muted-foreground">{detail}</dd> : null}
     </div>
   );
 }

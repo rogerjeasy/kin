@@ -39,7 +39,8 @@ export function formatters(locale: Locale, currency: string, timeZone = "UTC") {
   const longDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone });
   const longCalendarDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
   const month = new Intl.DateTimeFormat(intlLocale, { month: "long", year: "numeric", timeZone: "UTC" });
-  const dayAndTime = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone });
+  // The zone is named ("Nov 6, 9:23 PM EST"), so a reader elsewhere does not read the family's clock as their own.
+  const dayAndTime = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short", timeZone });
   const clock = new Intl.DateTimeFormat(intlLocale, { hour: "numeric", minute: "2-digit", timeZone });
   const weekdayDay = new Intl.DateTimeFormat(intlLocale, { weekday: "long", day: "numeric", month: "long", timeZone });
   const dayRange = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });

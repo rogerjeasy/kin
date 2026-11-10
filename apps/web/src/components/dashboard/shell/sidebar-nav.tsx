@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
-import { dashboardNav, dashboardRoutes, sectionOf, type DashboardSection } from "@/content/dashboard-routes";
+import { dashboardRoutes, sectionOf, type DashboardSection } from "@/content/dashboard-routes";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 import { localizedPath } from "@/i18n/routing";
@@ -16,7 +16,7 @@ type SidebarNavProps = {
   locale: Locale;
   copy: Dictionary["dashboard"]["shell"];
   badges: Partial<Record<DashboardSection, NavBadge>>;
-  /** The sections the viewer may open. The others are not offered. */
+  /** The sections the viewer may open, in their order for this role. The others are not offered. */
   sections: readonly DashboardSection[];
 };
 
@@ -27,7 +27,7 @@ export function SidebarNav({ locale, copy, badges, sections }: SidebarNavProps) 
   return (
     <nav aria-label={copy.navLabel}>
       <ul className="space-y-1">
-        {dashboardNav.filter((section) => sections.includes(section)).map((section) => {
+        {sections.map((section) => {
           const Icon = sectionIcons[section];
           const badge = badges[section];
           return (

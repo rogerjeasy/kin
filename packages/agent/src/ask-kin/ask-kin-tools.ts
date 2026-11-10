@@ -19,13 +19,15 @@ export const ASK_KIN_TOOLS = {
   get_pool: {
     kind: "read",
     action: "money.view",
-    description: "The circle's pool: its confirmed balance now, and this month's money paid in, paid out and PayPal fees. Use it for any question about how much money there is.",
+    description:
+      "The circle's pool: its confirmed balance now, this month's money paid in, paid out and PayPal fees, and what this month's spending went on by category (bills, receipts members paid from their own pocket, and purchases). Use it for any question about how much money there is, or how much was spent on something this month.",
     inputSchema: NONE,
   },
   list_bills: {
     kind: "read",
     action: "own_payments.view",
-    description: "The circle's bills: those the family expects next, those waiting for approval, and those paid, with payee, amount and day. A caregiver sees only their own.",
+    description:
+      "The circle's bills: those the family expects next, those waiting for approval, and those paid, with payee, amount and day. A caregiver sees only their own. It does not hold receipts or purchases: for what was spent on something, use get_pool.",
     inputSchema: {
       type: "object",
       properties: { status: { type: "string", description: "Which bills: upcoming, waiting, paid or all.", maxLength: 8, enum: ["upcoming", "waiting", "paid", "all"] } },

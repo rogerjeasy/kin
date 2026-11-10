@@ -53,6 +53,16 @@ test("a receipt is filed by one member and decided by another, never by the memb
   await expect(receipts.getByRole("button", { name: "Approve" })).toHaveCount(0);
 });
 
+test("the receipts list shows the pharmacy receipts the member card counts for Elena", async ({ page }) => {
+  await startDemo(page);
+  await openFairness(page);
+  const receipts = page.getByRole("region", { name: "Receipts" });
+  await expect(receipts.getByText("Pharmacy receipt")).toHaveCount(3);
+  await expect(receipts).toContainText("$72.00");
+  await expect(receipts).toContainText("Counted toward Elena’s share");
+  await expect(page.getByText("That includes $180.00 paid from Elena’s own pocket", { exact: false })).toBeVisible();
+});
+
 test("a declined receipt stays declined", async ({ page }) => {
   await startDemo(page);
   await openFairness(page);
@@ -74,7 +84,9 @@ test("a receipt with an amount the money core refuses is not filed, and what was
   await form.getByRole("button", { name: "File receipt" }).click();
   await expect(form.getByRole("alert")).toHaveText("Check the amount, the day and the description, then try again.");
   await expect(form.getByLabel("What and where")).toHaveValue("A typo");
-  await expect(page.getByRole("region", { name: "Receipts" })).toContainText("No receipts have been filed yet.");
+  const receipts = page.getByRole("region", { name: "Receipts" });
+  await expect(receipts).not.toContainText("A typo");
+  await expect(receipts).not.toContainText("No receipts have been filed yet.");
 });
 
 test("the settlement's payments are followed on the same screen, and only members who share the cost file receipts", async ({ page }) => {

@@ -1,5 +1,6 @@
 import type { ProposalKind } from "@kin/domain";
 import { InfoIcon } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { proposalKindIcons } from "@/components/dashboard/ui/kind-icons";
@@ -20,6 +21,8 @@ export type ProposalCardProps = {
   meta: readonly string[];
   /** What is unusual about it: a new payee, a member being paid. */
   notes: readonly string[];
+  /** Where to read more, such as today's fairness when a settlement has moved since. */
+  link?: { href: string; label: string };
   slotsLabel: string;
   progress: string;
   slots: readonly SlotItem[];
@@ -28,7 +31,7 @@ export type ProposalCardProps = {
 };
 
 /** One movement of money waiting for its yeses. */
-export function ProposalCard({ id, kind, kindLabel, title, text, amount, meta, notes, slotsLabel, progress, slots, action }: ProposalCardProps) {
+export function ProposalCard({ id, kind, kindLabel, title, text, amount, meta, notes, link, slotsLabel, progress, slots, action }: ProposalCardProps) {
   return (
     <article id={id} aria-labelledby={`${id}-title`} className="surface lift glow-edge scroll-mt-24 rounded-3xl p-5 sm:p-6">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
@@ -62,6 +65,11 @@ export function ProposalCard({ id, kind, kindLabel, title, text, amount, meta, n
                 </li>
               ))}
             </ul>
+          ) : null}
+          {link ? (
+            <Link href={link.href} className="mt-3 inline-flex min-h-11 items-center self-start text-sm font-semibold underline-offset-4 hover:underline">
+              {link.label}
+            </Link>
           ) : null}
           <div className="mt-6 xl:mt-auto xl:pt-6">{action}</div>
         </div>

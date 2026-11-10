@@ -26,6 +26,13 @@
       "empty": "Ask a question, or pick one of the suggestions.",
       "claude": "Written by Claude ({model}), every figure checked against the record",
       "template": "Kin's fixed wording, filled from the record",
+      "templateReasons": {
+        "guard": "Claude's wording named a figure the record does not hold, so Kin used its fixed wording",
+        "refused": "Claude declined to word this, so Kin used its fixed wording",
+        "cut_off": "Claude's answer ran too long, so Kin used its fixed wording",
+        "turns": "Claude needed more steps than Kin allows, so Kin used its fixed wording",
+        "unavailable": "Claude stopped answering partway, so Kin used its fixed wording"
+      },
       "trace": "How Kin found this",
       "traceEmpty": "Kin answered without reading the record."
     },
@@ -53,6 +60,10 @@
       "get_subscription_status": "Checked the monthly shares with PayPal",
       "propose_refill": "Proposed a refill",
       "unknown": "Asked for a tool Kin does not have"
+    },
+    "toolsNothingRaised": {
+      "propose_refill": "Looked at the refills: nothing was proposed",
+      "propose_gift": "Looked at her Purse: nothing waits for her yes"
     },
     "outcomes": {
       "ok": "done",
@@ -219,7 +230,7 @@
       "eyebrow": "For families caring for an aging parent",
       "titleLead": "Nothing about Mom’s money",
       "titleEmphasis": "without Mom.",
-      "lede": "Siblings pay into one family pool. Kin pays the bills and the caregiver from it, settles the difference every month, and tells your parent about every dollar, out loud.",
+      "lede": "Siblings pay into one family pool through PayPal. Claude reads the bills and the caregiver's week and proposes each payment, the family says yes, PayPal moves the money, and Kin tells your parent about every dollar, out loud.",
       "circleNames": "Elena, Marcus, Ana and Amara",
       "circleNote": "Rose’s circle: three siblings and her caregiver.",
       "portraitAlt": "An older woman sitting on her bed, looking toward the window",
@@ -1039,6 +1050,7 @@
       "ariaLabelColumnMenu": "Column menu",
       "ariaLabelInputClear": "Clear",
       "ariaFilterColumn": "Press Ctrl Enter to open the filter",
+      "ariaFilterMenuOpen": "Open the filter menu",
       "ariaMenuColumn": "Press Alt Down to open the column menu",
       "ariaSortableColumn": "Press Enter to sort",
       "ariaColumnFiltered": "Column filtered",
@@ -1074,7 +1086,7 @@
       "export": "Download this view (CSV)",
       "reset": "Reset view",
       "shown": "Showing {shown} of {total} entries.",
-      "selected": "Selected: {count}. Net to the pool: {amount}."
+      "selected": "Selected: {count}. Net change to the pool: {amount}."
     },
     "columns": {
       "kind": "Kind",
@@ -1103,7 +1115,7 @@
       "entries": "Entries: {count}",
       "in": "Money in",
       "out": "Money out",
-      "net": "Net to the pool",
+      "net": "Net change to the pool",
       "debits": "Debits",
       "credits": "Credits",
       "balanced": "equal, so the entries balance",
@@ -1223,6 +1235,10 @@
         "title": "Record · Kin",
         "description": "Every movement of the circle’s money, in the order it happened."
       },
+      "listen": {
+        "title": "Listen · Kin",
+        "description": "What Kin tells you: each confirmed payment, purchase and contribution, said in one calm sentence."
+      },
       "circle": {
         "title": "Circle · Kin",
         "description": "The members, their roles, the family agreement and the payees."
@@ -1249,6 +1265,7 @@
         "bills": "Bills",
         "fairness": "Fairness",
         "record": "Record",
+        "listen": "Listen",
         "circle": "Circle"
       },
       "waiting": "{count} waiting",
@@ -1348,7 +1365,11 @@
       "sandbox": "PayPal sandbox"
     },
     "overview": {
-      "greeting": "Good evening, {name}",
+      "greetings": {
+        "morning": "Good morning, {name}",
+        "afternoon": "Good afternoon, {name}",
+        "evening": "Good evening, {name}"
+      },
       "lede": "Here is {month} in {circle}: the pool, what needs a yes, and what Kin did.",
       "actions": {
         "approvals": "Review approvals",
@@ -1358,7 +1379,10 @@
         "label": "{month} at a glance",
         "pool": {
           "label": "In the pool",
-          "note": "Confirmed by PayPal"
+          "note": "Confirmed by PayPal",
+          "simulated": "Simulated money, in the demo",
+          "mixed": "Simulated history, with {amount} of real PayPal sandbox top-ups",
+          "split": "That includes {purse} set aside in {parent}’s Purse. Bills can draw on {free}."
         },
         "paidIn": {
           "label": "Paid in",
@@ -1367,7 +1391,9 @@
         },
         "paidOut": {
           "label": "Paid out",
-          "note": "And {fees} in PayPal fees"
+          "note": "And {fees} in PayPal fees",
+          "simulatedNote": "And {fees} in simulated PayPal fees",
+          "mixedNote": "And {fees} in PayPal fees, some of them simulated"
         },
         "waiting": {
           "label": "Waiting for a yes",
@@ -1542,9 +1568,12 @@
       "notes": {
         "newPayee": "A new payee. Everyone in the circle was told.",
         "payeeIsMember": "{name} is being paid, so someone else must say yes too.",
-        "abovePool": "More than the pool holds today ({pool}). It is paid only once enough money has arrived.",
+        "abovePool": "More than the pool has free for bills today ({pool}, with {parent}’s Purse kept apart). It is paid only once enough money has arrived.",
         "receiver": "Paid by PayPal to {address}, the address {name} gave",
-        "noReceiver": "{name} has not added a PayPal address yet. The payment waits for one."
+        "noReceiver": "{name} has not added a PayPal address yet. The payment waits for one.",
+        "settlementBasis": "Worked out for {month} on {day}, from the record as it stood then.",
+        "settlementMoved": "Fairness has moved since: {name} is now owed {amount}.",
+        "fairnessLink": "See today’s fairness"
       },
       "answered": {
         "title": "Answered",
@@ -1598,7 +1627,9 @@
           "paid": "Paid",
           "fee": "PayPal fee",
           "amount": "Amount"
-        }
+        },
+        "simulatedText": "Simulated in the demo: no PayPal record stands behind these payments.",
+        "mixedText": "Those marked Simulated are the demo’s stand-ins; the others are confirmed by PayPal’s own record."
       },
       "checks": {
         "title": "Checked by Kin",
@@ -1607,7 +1638,6 @@
           "title": "A caller demanded {claimed} for {payee}",
           "text": "On {day} a caller told {parent} the {payee} account was overdue. Kin found no bill outstanding. The last one, {paid}, was paid on {paidDay}. {alerted} were alerted within seconds."
         },
-        "verdict": "Already paid",
         "noDuplicates": "No duplicate bills this month.",
         "noJumps": "No amount rose without a reason."
       }
@@ -1653,7 +1683,13 @@
         "invoice": "Collected by a PayPal invoice an organizer sends",
         "status": "Waiting for approval",
         "link": "Go to approvals",
-        "core": "Calculated by Kin’s money core, not by the AI. The same record always gives the same answer."
+        "core": "Calculated by Kin’s money core, not by the AI. The same record always gives the same answer.",
+        "reasons": {
+          "all": "The pool has {available} that bills have not claimed: enough to pay this now, with PayPal’s fee held back.",
+          "part": "The pool has {available} that bills have not claimed. With PayPal’s fee held back, {now} can go now; the other {rest} goes once more money arrives.",
+          "shared": "The pool has {available} that bills have not claimed. With PayPal’s fees held back, it is shared among everyone owed: {now} can go now, and the other {rest} once more money arrives.",
+          "none": "The pool has {available} that bills have not claimed, not enough once PayPal’s fee is held back. All {rest} goes once more money arrives."
+        }
       },
       "receipts": {
         "title": "Receipts",
@@ -1679,7 +1715,8 @@
         "approve": "Approve",
         "decline": "Decline",
         "working": "Working…",
-        "own": "Another member decides on yours."
+        "own": "Another member decides on yours.",
+        "recorded": "{category} receipt"
       },
       "settlementRun": {
         "title": "Pay out the settlement",
@@ -1707,7 +1744,12 @@
         "receiverPlaceholder": "name@example.com",
         "receiverSave": "Save address",
         "receiverSaving": "Saving…",
-        "receiverSaved": "Saved."
+        "receiverSaved": "Saved.",
+        "demoText": "Kin has worked out what each member is owed. Send it to the family for approval. In the demo, each approved payment is made with simulated money and labelled so.",
+        "simulatedStates": {
+          "executing": "Being paid in the demo, with simulated money",
+          "settled": "Paid in the demo, with simulated money"
+        }
       },
       "errors": {
         "refused": "Your role cannot do this, or it is not available in this circle.",
@@ -1795,7 +1837,8 @@
         "simulated": "Simulated",
         "yes": "yes",
         "no": "no"
-      }
+      },
+      "simulatedSource": "Simulated"
     },
     "circle": {
       "title": "Circle",
@@ -1935,7 +1978,9 @@
       "invalidCircle": "Please fill in every field to start the circle.",
       "dismiss": "Dismiss",
       "stepUpMissing": "Your yes was not recorded: that sign-in had no second factor. Set up an authenticator app for your Kin account, then try again.",
-      "stepUpStale": "Your yes was not recorded: that sign-in was not fresh. Please try again."
+      "stepUpStale": "Your yes was not recorded: that sign-in was not fresh. Please try again.",
+      "approvedSimulated": "Approved. This is the demo, so Kin pays it with simulated money and the record says so.",
+      "approvedSandbox": "Approved. This is the demo: a caregiver’s pay can go through PayPal’s sandbox as test money, and anything else is paid with simulated money. The record says which."
     },
     "empty": {
       "attention": "Nothing needs a yes right now.",
@@ -2230,8 +2275,17 @@
       }
     },
     "listen": {
-      "title": "What Kin tells you",
-      "lede": "Each confirmed payment, purchase and contribution, said in one calm sentence. Choose how often you hear it.",
+      "title": "Listen",
+      "lede": "What Kin tells you: each confirmed payment, purchase and contribution, said in one calm sentence. Choose how often you hear it.",
+      "today": {
+        "heading": "For you today",
+        "yes": "What waits for your yes",
+        "yesCount": "{count} waiting",
+        "yesNone": "Nothing waits for you",
+        "purse": "Your Purse",
+        "ask": "Ask Kin a question",
+        "overview": "The family's overview"
+      },
       "everyLabel": "How often",
       "every": {
         "now": "As it happens",
@@ -4177,6 +4231,26 @@
         "heldOne": "Kin is holding {count} payment {parent} asked for.",
         "heldMany": "Kin is holding {count} payments {parent} asked for."
       }
+    },
+    "checkStory": {
+      "match": {
+        "title": "Kin checked a demand: it matches a real bill",
+        "text": "On {day} Kin checked a demand made to {parent} against the record and found the real bill it is for."
+      },
+      "no_match": {
+        "title": "Kin flagged a demand that matches nothing on record",
+        "text": "On {day} someone asked {parent} for money. Kin found no payee and no bill on record that it could be for."
+      },
+      "already_paid": {
+        "title": "Kin checked a demand for {payee}: nothing is owed",
+        "text": "On {day} someone asked {parent} for money for {payee}. The record shows nothing owed to {payee}."
+      },
+      "unclear": {
+        "title": "Kin checked a demand it cannot confirm",
+        "text": "On {day} Kin checked a demand made to {parent} against the record and could not confirm it."
+      },
+      "alerted": "Kin alerted {alerted}.",
+      "said": "What was said: “{claim}”"
     }
   },
   "aiProvenance": {

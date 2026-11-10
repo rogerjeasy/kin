@@ -18,8 +18,14 @@ for (const viewport of viewports) {
     });
     await startDemo(page);
     await seatAs(page, "Rose");
-    await page.goto("/dashboard/listen");
-    await expect(page.getByRole("heading", { level: 1, name: "What Kin tells you" })).toBeVisible();
+    // Her seat opens on what Kin tells her, not on the family's dashboard.
+    await expect(page).toHaveURL(/\/dashboard\/listen/);
+    await expect(page.getByRole("heading", { level: 1, name: "Listen" })).toBeVisible();
+    const today = page.getByRole("navigation", { name: "For you today" });
+    await expect(today.getByRole("link", { name: /What waits for your yes/ })).toHaveAttribute("href", "/dashboard/approvals");
+    await expect(today.getByRole("link", { name: "Your Purse" })).toHaveAttribute("href", "/dashboard/purse");
+    await expect(today.getByRole("link", { name: "Ask Kin a question" })).toHaveAttribute("href", "/dashboard/ask");
+    await expect(today.getByRole("link", { name: "The family's overview" })).toHaveAttribute("href", "/dashboard");
     await expectNoHorizontalOverflow(page);
 
     // As it happens: one sentence, with the amount from the record.

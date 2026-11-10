@@ -23,12 +23,14 @@ import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
 import { waitingProposals } from "@/content/circle/proposal-view";
 import { refillViews } from "@/content/circle/refills";
+import { settlementBasis } from "@/content/circle/settlement-basis";
 import { monthTotals, recordEntries } from "@/content/circle/record";
 import { voteLine } from "@/content/circle/vote-words";
 import { circleSlots } from "@/content/circle/words";
 import { wishesAsking, wishNameBook } from "@/content/circle/wishes";
 import { wishCitation } from "@/components/dashboard/words/wish-words";
-import { mandatesRoute, shiftPermissionsRoute } from "@/content/dashboard-routes";
+import { circleNotices } from "@/content/dashboard-notices";
+import { dashboardRoutes, mandatesRoute, shiftPermissionsRoute } from "@/content/dashboard-routes";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
@@ -64,6 +66,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
     month: slots.month,
     receiverOf: (payeeId) => circle.payees.find((payee) => payee.id === payeeId)?.receiver ?? null,
     demoPayee: demoPayeeOf(circle),
+    settlement: { basisOf: (proposal) => settlementBasis(circle, proposal), fairnessHref: localizedPath(locale, dashboardRoutes.fairness) },
   };
   const wishBook = wishNameBook(circle);
   const waiting = waitingProposals(circle).toSorted((a, b) => Number(b.viewerCanAnswer) - Number(a.viewerCanAnswer));
@@ -119,7 +122,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
                     freshCheck={circle.circle.demo ? null : { note: approvals.freshCheckNote }}
                     voice={
                       circle.circle.demo && speechOn ? (
-                        <VoiceAnswer locale={locale} proposalId={view.proposal.id} copy={approvals.voice} speech={dictionary.dashboard.speech} outcomes={{ approved: notices.approved, rejected: notices.rejected, answered: notices.answered }} />
+                        <VoiceAnswer locale={locale} proposalId={view.proposal.id} copy={approvals.voice} speech={dictionary.dashboard.speech} outcomes={circleNotices(notices, context.demoPayee ?? null)} />
                       ) : undefined
                     }
                   />

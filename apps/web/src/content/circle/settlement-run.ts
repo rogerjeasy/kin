@@ -7,6 +7,7 @@ import { fill } from "@/i18n/template";
 
 import type { Formatters } from "@/lib/format";
 import type { CircleNames } from "./names";
+import { recordEntries } from "./record";
 
 type Fairness = Dictionary["dashboard"]["fairness"];
 
@@ -37,9 +38,14 @@ export type ReceiptRow = {
   readonly ownWaiting: boolean;
 };
 
-/** Each receipt as the screen words it, newest first. */
+/**
+ * Each receipt as the screen words it: those filed through Kin, newest first,
+ * then the ones the record holds with no filed receipt behind them, such as a
+ * demo circle's history. The member card and the record count both, so the
+ * list does too.
+ */
 export function receiptRows(circle: CircleSnapshot, names: CircleNames, format: Formatters, copy: Fairness["receipts"]): ReceiptRow[] {
-  return circle.receipts
+  const filed = circle.receipts
     .map((receipt): ReceiptRow => {
       const who = names.member(receipt.memberId);
       const own = receipt.memberId === circle.viewer.memberId;
@@ -55,6 +61,29 @@ export function receiptRows(circle: CircleSnapshot, names: CircleNames, format: 
       };
     })
     .toReversed();
+  return [...filed, ...recordedReceipts(circle, names, format, copy)];
+}
+
+/** Money spent from a member's own pocket that the ledger credits with no filed receipt, newest first. */
+function recordedReceipts(circle: CircleSnapshot, names: CircleNames, format: Formatters, copy: Fairness["receipts"]): ReceiptRow[] {
+  const linked = new Set(circle.receipts.map((receipt) => receipt.entryId));
+  const reversed = new Set(circle.ledger.entries.map((entry) => entry.reverses));
+  return recordEntries(circle)
+    .filter(({ entry }) => entry.kind === "out_of_pocket" && entry.reverses === null && !reversed.has(entry.id) && !linked.has(entry.id))
+    .map(({ entry, subject, category, cents }): ReceiptRow => {
+      const who = names.member(subject);
+      const what = names.category(category ?? "");
+      return {
+        id: entry.id,
+        title: fill(copy.recorded, { category: what }),
+        detail: fill(copy.line, { name: who, category: what, date: format.day(entry.occurredOn) }),
+        amount: format.money(cents),
+        stateText: fill(copy.states.credited, { name: who }),
+        tone: RECEIPT_TONES.credited,
+        decidable: false,
+        ownWaiting: false,
+      };
+    });
 }
 
 export type PaymentRow = { readonly id: string; readonly who: string; readonly amount: string; readonly stateText: string; readonly tone: PillTone };

@@ -9,11 +9,11 @@ const session = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock("../auth/session", () => ({ currentSession: async () => session.current }));
 
 describe("whose questions to Kin are counted", () => {
-  it("counts five for a demo visitor who has not signed in", async () => {
+  it("counts ten for a demo visitor who has not signed in", async () => {
     session.current = null;
-    expect(DEMO_QUESTIONS).toBe(5);
+    expect(DEMO_QUESTIONS).toBe(10);
     expect(await questionAllowanceFor({ kind: "visitor", userId: "demo:one" })).toBe(demoQuestions);
-    expect(demoQuestions.limit).toBe(5);
+    expect(demoQuestions.limit).toBe(DEMO_QUESTIONS);
   });
 
   it("counts none for a demo visitor who has also signed in", async () => {
@@ -42,7 +42,7 @@ describe("the demo's count when it is full", () => {
   it("still lets a new visitor ask, rather than shutting everyone out for the session's fourteen days", () => {
     for (let index = 0; index < 20_001; index++) demoQuestions.record(`demo:filler-${index}`, 0);
     expect(demoQuestions.allows("demo:newcomer", 1)).toBe(true);
-    expect(questionsLeft(demoQuestions, "demo:newcomer", 1)).toBe(5);
+    expect(questionsLeft(demoQuestions, "demo:newcomer", 1)).toBe(DEMO_QUESTIONS);
   });
 });
 

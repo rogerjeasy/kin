@@ -8,6 +8,8 @@ import { createRateLimiter } from "../model";
 import { runAskKin, type AskKinContext } from "./ask-kin";
 import { askKinTools } from "./tools";
 import { askKinWorld } from "./world";
+import { openPeriod } from "@/content/circle/period";
+import { spendingByCategory } from "@/content/circle/record";
 import { getDictionary } from "@/i18n/dictionary";
 import { testDatabases } from "../../../../../packages/db/src/testing/databases.ts";
 
@@ -42,6 +44,7 @@ describe("Ask Kin in a demo circle", () => {
       ok: true,
       answer: "Yes: Amara was paid $264.00 on Oct 6. It was simulated.",
       source: "claude",
+      templateReason: null,
       model: "fake-model",
       steps: [{ tool: "get_paypal_payout_status", label: "Checked the payouts with PayPal", outcome: "ok", outcomeLabel: "done" }],
       proposal: null,
@@ -79,7 +82,18 @@ describe("Ask Kin in a demo circle", () => {
     const circle = await visitorWithCircle(db);
     const model = turns(toolCalls({ name: "get_paypal_payout_status", input: { payee: "Amara" } }), finalTurn("Amara was paid $246.00."));
     const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, model), ask("Has Amara been paid?"));
-    expect(result).toMatchObject({ ok: true, source: "template", answer: "Here is what the record says: Amara was paid $264.00 on Oct 6. It was simulated." });
+    expect(result).toMatchObject({ ok: true, source: "template", templateReason: "guard", answer: "Here is what the record says: Amara was paid $264.00 on Oct 6. It was simulated." });
+  });
+
+  it("tells the model what the month's spending went on, from the same figures as the overview", async () => {
+    const circle = await visitorWithCircle(db);
+    const read = await snapshot(circle, circle.userId);
+    const model = turns(toolCalls({ name: "get_pool" }), finalTurn("Here is the month."));
+    await runAskKin(context(read, circle.userId, model), ask("What did the family spend on pharmacy this month?"));
+    const pool = toolResult(model, 1) as { spentThisMonthByCategory: { category: string; amount: string }[] };
+    const expected = spendingByCategory(read, openPeriod(read)).map((row) => row.cents);
+    expect(pool.spentThisMonthByCategory).toHaveLength(expected.length);
+    expect(pool.spentThisMonthByCategory.every((row) => /^\$[\d,]+\.\d{2}$/u.test(row.amount))).toBe(true);
   });
 
   it("lets the parent's question raise a refill proposal that waits for a yes, at the rule's price", async () => {
@@ -90,6 +104,25 @@ describe("Ask Kin in a demo circle", () => {
     expect(result).toMatchObject({ ok: true, proposal: { href: "/dashboard/approvals" }, steps: [{ tool: "propose_refill", outcome: "ok" }] });
     expect(toolResult(model, 1)).toMatchObject({ proposed: true, item: "Monthly prescription refill (30 days)", price: "$64.00" });
     expect(await serviceRows(db, circle.circleId, "select cents::int as cents from purchases where circle_id = $1", [circle.circleId])).toEqual([{ cents: 6400 }]);
+  });
+
+  it("reorders the circle's only refill when the parent names it in her own words", async () => {
+    const circle = await visitorWithCircle(db);
+    const rose = await seatPerson(db, circle.circleId, circle.members.rose);
+    const model = turns(toolCalls({ name: "propose_refill", input: { item: "Rose's refill" } }), finalTurn("Kin proposed the refill."));
+    const result = await runAskKin(context(await snapshot(circle, rose), rose, model), ask("Reorder Rose's refill"));
+    expect(result).toMatchObject({ ok: true, steps: [{ tool: "propose_refill", outcome: "ok", label: "Proposed a refill" }] });
+    expect(toolResult(model, 1)).toMatchObject({ proposed: true, item: "Monthly prescription refill (30 days)" });
+  });
+
+  it("never claims a refill it did not propose: an item no rule names is asked about, and the trace says nothing was proposed", async () => {
+    const circle = await visitorWithCircle(db);
+    const rose = await seatPerson(db, circle.circleId, circle.members.rose);
+    const model = turns(toolCalls({ name: "propose_refill", input: { item: "insulin pens" } }), finalTurn("Which refill do you mean?"));
+    const result = await runAskKin(context(await snapshot(circle, rose), rose, model), ask("Reorder her insulin pens"));
+    expect(result).toMatchObject({ ok: true, proposal: null, steps: [{ tool: "propose_refill", outcome: "ok", label: "Looked at the refills: nothing was proposed" }] });
+    expect(toolResult(model, 1)).toMatchObject({ proposed: false });
+    expect(await serviceRows(db, circle.circleId, "select count(*)::int as n from purchases where circle_id = $1", [circle.circleId])).toEqual([{ n: 0 }]);
   });
 });
 

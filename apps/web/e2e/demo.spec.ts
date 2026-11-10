@@ -8,6 +8,7 @@ import { openAccountMenu } from "./support/account-menu";
 import { seatAs, startDemo } from "./support/demo";
 import { demoDates } from "./support/demo-dates";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
+import { greetingFor } from "./support/greeting";
 import { laptop, phone, viewports } from "./support/viewports";
 
 const { dashboard } = english;
@@ -95,7 +96,7 @@ test.describe("the Demo button", () => {
 
   test("opens Rose's circle with no account, as Elena the organizer", async ({ page }) => {
     await startDemo(page);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(fill(dashboard.overview.greeting, { name: "Elena" }));
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(greetingFor(dashboard.overview.greetings, "Elena"));
     await expect(page.getByRole("note").getByRole("button", { name: /^You are Elena/ })).toBeVisible();
     // On a wide screen nothing is folded away: the explanation and both actions are always there.
     await expect(page.getByRole("note").getByRole("button", { name: dashboard.shell.demo.restart })).toBeVisible();
@@ -185,7 +186,9 @@ test.describe("every role of the demo", () => {
     await stairlift.getByRole("button", { name: dashboard.common.approve }).click();
 
     await expect(page).toHaveURL("/dashboard/approvals?notice=approved");
-    await expect(page.getByRole("status").filter({ hasText: dashboard.notices.approved })).toBeVisible();
+    // The demo's money is simulated, so the notice never says PayPal will confirm it.
+    await expect(page.getByRole("status").filter({ hasText: dashboard.notices.approvedSimulated })).toBeVisible();
+    await expect(page.getByText(dashboard.notices.approved)).toHaveCount(0);
     const answered = page.getByRole("region", { name: dashboard.approvals.answered.title });
     await expect(answered).toContainText(dashboard.approvals.purposes.stairlift.title);
     await expect(answered).toContainText("Marcus said yes in the app");
@@ -289,6 +292,33 @@ test.describe("the circle and its record in the demo", () => {
     await expect(detail.locator("p").first()).not.toHaveText(first ?? "");
   });
 
+  test("the overview says the demo's pool is simulated, and which figure it is", async ({ page }) => {
+    await startDemo(page);
+    const stats = page.getByRole("main").locator(`dl[aria-label="${fill(dashboard.overview.stats.label, { month: demoDates().monthName })}"]`);
+    await expect(stats).toContainText(dashboard.overview.stats.pool.simulated);
+    await expect(stats).toContainText(fill(dashboard.overview.stats.pool.split, { purse: "$50.00", parent: "Rose", free: "$310.18" }));
+    await expect(stats).toContainText(fill(dashboard.overview.stats.paidOut.simulatedNote, { fees: "$33.82" }));
+    await expect(stats).not.toContainText(dashboard.overview.stats.pool.note);
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test("the bills screen says its paid bills are simulated, beside the check Kin made", async ({ page }) => {
+    await startDemo(page);
+    await page.goto("/dashboard/bills");
+    await expect(page.getByText(dashboard.bills.paid.simulatedText).first()).toBeVisible();
+    await expect(page.getByText(dashboard.bills.paid.text)).toHaveCount(0);
+    await expect(page.getByRole("region", { name: dashboard.bills.checks.title })).toContainText(dashboard.letters.check.verdicts.already_paid);
+    await expect(page.getByText(dashboard.empty.safety.text)).toHaveCount(0);
+  });
+
+  test("a waiting settlement payout says when it was worked out", async ({ page }) => {
+    await startDemo(page);
+    await page.goto("/dashboard/approvals");
+    const notes = page.getByText(new RegExp(`^Worked out for ${demoDates().monthName} on `));
+    await expect(notes.first()).toBeVisible();
+    await expect(page.getByText(/^Fairness has moved since/)).toHaveCount(0);
+  });
+
   test("the fairness screen shows the settlement the money core planned", async ({ page }) => {
     await startDemo(page);
     await page.goto("/dashboard/fairness");
@@ -296,6 +326,8 @@ test.describe("the circle and its record in the demo", () => {
     await expect(settlement).toContainText(fill(dashboard.fairness.settlement.payout, { name: "Elena" }));
     await expect(settlement).toContainText("$126.00");
     await expect(settlement).toContainText("$166.00");
+    // Each payout says why it can go now, from the cash bills have not claimed.
+    await expect(settlement).toContainText(fill(dashboard.fairness.settlement.reasons.all, { available: "$310.18" }));
   });
 
   test("reads right to left in Arabic", async ({ page }) => {

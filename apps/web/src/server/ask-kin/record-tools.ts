@@ -4,7 +4,7 @@ import { InvalidDecimalError, centsFromDecimal, checkClaim } from "@kin/domain";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { openPeriod } from "@/content/circle/period";
 import { waitingProposals } from "@/content/circle/proposal-view";
-import { monthTotals, paidBills, recordEntries } from "@/content/circle/record";
+import { monthTotals, paidBills, recordEntries, spendingByCategory } from "@/content/circle/record";
 import { upcomingBills } from "@/content/circle/upcoming";
 import { fill } from "@/i18n/template";
 
@@ -22,12 +22,22 @@ import { simulatedNote, type AskKinWorld } from "./world";
 const LIST = 8;
 const OPEN_BILL_STATES: readonly string[] = ["received", "extracted", "needs_review", "ready", "proposed"];
 
+/**
+ * The pool and this month's money in and out, with what the month's spending
+ * went on by category: the same figures as the overview's "Where the money
+ * went", bills, receipts and purchases alike, so an answer about pharmacy
+ * spending agrees with the screen.
+ */
 export function getPool(world: AskKinWorld): ToolOutput {
   const period = openPeriod(world.circle);
   const totals = monthTotals(world.circle, period);
-  const { format } = world;
+  const { format, names } = world;
   const values = { pool: format.money(totals.poolCents), month: format.month(period), paidIn: format.money(totals.paidInCents), paidOut: format.money(totals.paidOutCents), fees: format.money(totals.feesCents) };
-  return { data: { ...values, simulated: world.circle.circle.demo }, fact: fill(world.copy.facts.pool, values) + simulatedNote(world) };
+  const spentOn = spendingByCategory(world.circle, period).map((row) => ({ category: names.category(row.category), amount: format.money(row.cents) }));
+  return {
+    data: { ...values, spentThisMonthByCategory: spentOn, includes: "bills paid, receipts a member paid from their own pocket, and purchases", simulated: world.circle.circle.demo },
+    fact: fill(world.copy.facts.pool, values) + simulatedNote(world),
+  };
 }
 
 export function listBills(world: AskKinWorld, status: string): ToolOutput {

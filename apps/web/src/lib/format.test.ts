@@ -39,9 +39,9 @@ describe("the dashboard's formatters", () => {
     const newYork = formatters("en", "USD", "America/New_York");
 
     expect(newYork.longDay(lateEvening)).toBe("Saturday, November 7, 2026");
-    expect(newYork.dateTime(lateEvening)).toBe("Nov 7, 9:00 PM");
+    expect(newYork.dateTime(lateEvening)).toBe("Nov 7, 9:00 PM EST");
     expect(english.longDay(lateEvening)).toBe("Sunday, November 8, 2026");
-    expect(formatters("en", "USD", "Pacific/Auckland").dateTime(lateEvening)).toBe("Nov 8, 3:00 PM");
+    expect(formatters("en", "USD", "Pacific/Auckland").dateTime(lateEvening)).toBe("Nov 8, 3:00 PM GMT+13");
   });
 
   it("agrees with the calendar day the database records for the same instant", () => {

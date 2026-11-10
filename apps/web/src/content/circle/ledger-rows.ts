@@ -3,7 +3,7 @@ import { describeAccount, sumCents } from "@kin/domain";
 
 import { FILTER_OF } from "@/components/dashboard/record/record-filters";
 import type { LedgerRow } from "@/components/dashboard/record/ledger-row";
-import { describeAccountCode, describeEntry, entryTag } from "@/components/dashboard/words/entry-words";
+import { describeAccountCode, describeEntry, entrySource, entryTag } from "@/components/dashboard/words/entry-words";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
 import type { Formatters } from "@/lib/format";
@@ -38,7 +38,7 @@ export function ledgerRows(circle: CircleSnapshot, dictionary: Dictionary, names
       day: format.day(entry.occurredOn),
       text: describeEntry(dictionary, names, view),
       kind: common.entryKinds[entry.kind],
-      source: record.sources[entry.source.type],
+      source: entrySource(dictionary, entry),
       sourceId: entry.source.id,
       reverses: entry.reverses,
       simulated: entry.simulated,

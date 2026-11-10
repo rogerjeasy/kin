@@ -1,3 +1,5 @@
+import type { LedgerEntry } from "@kin/domain";
+
 import type { CircleNames } from "@/content/circle/names";
 import type { EntryView } from "@/content/circle/record";
 import type { Dictionary } from "@/i18n/dictionary";
@@ -20,6 +22,15 @@ export function describeAccountCode(dictionary: Dictionary, names: CircleNames, 
   const accounts: Record<string, string> = dictionary.dashboard.record.accounts;
   const template = accounts[family] ?? family;
   return subject === null ? template : fill(template, { name: names.subject(subject) });
+}
+
+/**
+ * What caused an entry, in words. A simulated entry stands in for a PayPal
+ * event that never happened, so it is never called a PayPal event.
+ */
+export function entrySource(dictionary: Dictionary, entry: Pick<LedgerEntry, "simulated" | "source">): string {
+  const { record } = dictionary.dashboard;
+  return entry.simulated && entry.source.type === "paypal_event" ? record.simulatedSource : record.sources[entry.source.type];
 }
 
 /**

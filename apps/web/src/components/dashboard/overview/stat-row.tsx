@@ -8,7 +8,8 @@ type Stat = { label: string; value: string; note: string };
 
 type StatRowProps = {
   label: string;
-  pool: Stat;
+  /** The pool also says which figure it is: `detail` names the part bills can draw on. */
+  pool: Stat & { detail: string | null };
   paidIn: Stat;
   paidOut: Stat;
   waiting: Stat;

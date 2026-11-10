@@ -1,4 +1,4 @@
-import { MAX_HISTORY_TURNS, MAX_QUESTION_LENGTH, askKin, toolGateway, type AskKinTurn, type ToolModel, type ToolOutcome, type ToolRecorder } from "@kin/agent";
+import { MAX_HISTORY_TURNS, MAX_QUESTION_LENGTH, askKin, toolGateway, type AskKinCall, type AskKinTurn, type TemplateReason, type ToolModel, type ToolOutcome, type ToolRecorder } from "@kin/agent";
 import { authorize, type BillingAccount } from "@kin/auth";
 import { asPerson, readExecutions, type CircleSnapshot, type Database } from "@kin/db";
 
@@ -37,6 +37,8 @@ export type AskKinResponse =
       readonly ok: true;
       readonly answer: string;
       readonly source: "claude" | "template";
+      /** Why Kin's fixed wording was shown instead of Claude's, so the screen can say so; `null` when Claude's words stand. */
+      readonly templateReason: TemplateReason | null;
       /** The model that chose the tools, even when its wording was replaced. */
       readonly model: string;
       readonly steps: readonly AskKinStep[];
@@ -69,9 +71,18 @@ export function parseAskKin(input: unknown): AskKinInput | null {
   return { question: question.trim(), locale, history: turns };
 }
 
-function steps(copy: Dictionary["askKin"], calls: readonly { readonly tool: string; readonly outcome: ToolOutcome }[]): AskKinStep[] {
+/**
+ * Each call as the trace shows it. A proposing tool that ran but raised
+ * nothing (it asked which item, or one already waits) is labelled for what it
+ * did, never as a proposal: the trace must not claim a step that did not happen.
+ */
+export function steps(copy: Dictionary["askKin"], calls: readonly AskKinCall[]): AskKinStep[] {
   const labels: Readonly<Record<string, string>> = copy.tools;
-  return calls.map((call) => ({ tool: call.tool, label: labels[call.tool] ?? copy.tools.unknown, outcome: call.outcome, outcomeLabel: copy.outcomes[call.outcome] }));
+  const nothingRaised: Readonly<Record<string, string>> = copy.toolsNothingRaised;
+  return calls.map((call) => {
+    const quiet = call.outcome === "ok" && !call.raised ? nothingRaised[call.tool] : undefined;
+    return { tool: call.tool, label: quiet ?? labels[call.tool] ?? copy.tools.unknown, outcome: call.outcome, outcomeLabel: copy.outcomes[call.outcome] };
+  });
 }
 
 /**
@@ -123,6 +134,7 @@ export async function runAskKin(context: AskKinContext, input: unknown): Promise
     ok: true,
     answer: result.text,
     source: result.source,
+    templateReason: result.templateReason,
     model: context.model.label,
     steps: steps(copy, result.calls),
     // A payment from her Purse waits for her own yes on her Purse screen; anything else for the family's on Approvals.

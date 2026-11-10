@@ -14,11 +14,13 @@ import { DataTable } from "@/components/dashboard/ui/data-table";
 import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
+import { checkWords } from "@/components/dashboard/words/check-words";
 import { planLabel } from "@/components/dashboard/words/plan-words";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
 import { demoPayeeNote } from "@/content/circle/payout-proof";
+import { moneyKind } from "@/content/circle/provenance";
 import { paidBills } from "@/content/circle/record";
 import { latestClaimCheck } from "@/content/circle/safety";
 import { upcomingBills, upcomingMonth } from "@/content/circle/upcoming";
@@ -48,12 +50,13 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
   const dueMonth = upcomingMonth(upcoming);
   const upcomingTitle = dueMonth === null ? dictionary.dashboard.overview.comingUp.title : fill(bills.upcoming.title, { month: format.month(dueMonth) });
   const paidTitle = fill(bills.paid.title, { month: format.month(period) });
+  // Only rows PayPal's record stands behind are said to be confirmed by it.
+  const paidText = { paypal: bills.paid.text, simulated: bills.paid.simulatedText, mixed: bills.paid.mixedText }[moneyKind(paidThisMonth, circle.circle.demo)];
   const { columns: up } = bills.upcoming;
   const { columns: paid } = bills.paid;
-  // The panel tells the story of a false demand, so only a demand Kin found false is told that way.
+  // The latest demand Kin checked, whatever it found: one that matches nothing on record matters most.
   const latest = may(circle, "safety.view") ? latestClaimCheck(circle) : null;
-  const check = latest?.verdict === "no_match" ? latest : null;
-  const payeeOf = (payeeId: string | null) => (payeeId === null ? "" : names.payee(payeeId));
+  const check = latest ? checkWords({ dictionary, names, format, parent: slots.parent }, latest, "bills") : null;
 
   const upcomingTable = (
     <DataTable
@@ -129,35 +132,18 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
         ) : (
           <EmptyPanel title={upcomingTitle} description={bills.upcoming.text} text={empty.comingUp} />
         )}
-        {check && check.claimedCents !== null && check.lastPaid ? (
-          <ChecksPanel
-            title={bills.checks.title}
-            description={bills.checks.text}
-            demand={{
-              day: format.day(check.checkedOn),
-              title: fill(bills.checks.falseDemand.title, { claimed: format.money(check.claimedCents), payee: payeeOf(check.payeeId) }),
-              text: fill(bills.checks.falseDemand.text, {
-                parent: slots.parent,
-                payee: payeeOf(check.payeeId),
-                day: format.day(check.checkedOn),
-                paid: format.money(check.lastPaid.cents),
-                paidDay: format.day(check.lastPaid.day),
-                alerted: format.allOf(check.alerted.map(names.member)),
-              }),
-              verdict: bills.checks.verdict,
-            }}
-            passed={[bills.checks.noDuplicates, bills.checks.noJumps]}
-          />
+        {check ? (
+          <ChecksPanel title={bills.checks.title} description={bills.checks.text} demand={check} passed={[bills.checks.noDuplicates, bills.checks.noJumps]} />
         ) : may(circle, "safety.view") ? (
           <EmptyPanel title={empty.safety.title} text={empty.safety.text} icon={ShieldCheckIcon} />
         ) : null}
       </div>
       {paidThisMonth.length > 0 ? (
-        <Panel title={paidTitle} description={bills.paid.text} flush>
+        <Panel title={paidTitle} description={paidText} flush>
           {paidTable}
         </Panel>
       ) : (
-        <EmptyPanel title={paidTitle} description={bills.paid.text} text={empty.paid} />
+        <EmptyPanel title={paidTitle} description={paidText} text={empty.paid} />
       )}
     </>
   );

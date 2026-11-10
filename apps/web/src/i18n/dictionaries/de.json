@@ -26,6 +26,13 @@
       "empty": "Stellen Sie eine Frage oder wählen Sie einen Vorschlag.",
       "claude": "Von Claude ({model}) geschrieben, jede Zahl am Kassenbuch geprüft",
       "template": "Kins feste Formulierung, aus dem Kassenbuch gefüllt",
+      "templateReasons": {
+        "guard": "Claudes Formulierung nannte eine Zahl, die nicht im Kassenbuch steht, daher hat Kin seine feste Formulierung verwendet",
+        "refused": "Claude hat die Formulierung abgelehnt, daher hat Kin seine feste Formulierung verwendet",
+        "cut_off": "Claudes Antwort war zu lang, daher hat Kin seine feste Formulierung verwendet",
+        "turns": "Claude brauchte mehr Schritte, als Kin erlaubt, daher hat Kin seine feste Formulierung verwendet",
+        "unavailable": "Claude hat mitten in der Antwort aufgehört, daher hat Kin seine feste Formulierung verwendet"
+      },
       "trace": "So hat Kin es gefunden",
       "traceEmpty": "Kin hat geantwortet, ohne das Kassenbuch zu lesen."
     },
@@ -53,6 +60,10 @@
       "get_subscription_status": "Die Monatsanteile bei PayPal geprüft",
       "propose_refill": "Eine Nachbestellung vorgeschlagen",
       "unknown": "Ein Werkzeug verlangt, das Kin nicht hat"
+    },
+    "toolsNothingRaised": {
+      "propose_refill": "Nachbestellungen angesehen: nichts wurde vorgeschlagen",
+      "propose_gift": "Ihre Geldbörse angesehen: nichts wartet auf ihr Ja"
     },
     "outcomes": {
       "ok": "erledigt",
@@ -219,7 +230,7 @@
       "eyebrow": "Für Familien, die sich um einen Elternteil im Alter kümmern",
       "titleLead": "Nichts über Mamas Geld",
       "titleEmphasis": "ohne Mama.",
-      "lede": "Geschwister zahlen in eine gemeinsame Kasse ein. Kin bezahlt daraus die Rechnungen und die Pflegekraft, gleicht jeden Monat die Differenz aus und sagt Ihrer Mutter oder Ihrem Vater jeden Dollar laut an.",
+      "lede": "Geschwister zahlen über PayPal in eine gemeinsame Kasse ein. Claude liest die Rechnungen und die Woche der Pflegekraft und schlägt jede Zahlung vor, die Familie sagt Ja, PayPal bewegt das Geld, und Kin sagt Ihrer Mutter oder Ihrem Vater jeden Dollar laut an.",
       "circleNames": "Elena, Marcus, Ana und Amara",
       "circleNote": "Roses Kreis: drei Geschwister und ihre Pflegekraft.",
       "portraitAlt": "Eine ältere Frau sitzt auf ihrem Bett und blickt zum Fenster",
@@ -1039,6 +1050,7 @@
       "ariaLabelColumnMenu": "Spaltenmenü",
       "ariaLabelInputClear": "Löschen",
       "ariaFilterColumn": "Drücken Sie Strg Eingabe, um den Filter zu öffnen",
+      "ariaFilterMenuOpen": "Filtermenü öffnen",
       "ariaMenuColumn": "Drücken Sie Alt Pfeil nach unten, um das Spaltenmenü zu öffnen",
       "ariaSortableColumn": "Drücken Sie Eingabe zum Sortieren",
       "ariaColumnFiltered": "Spalte gefiltert",
@@ -1074,7 +1086,7 @@
       "export": "Diese Ansicht herunterladen (CSV)",
       "reset": "Ansicht zurücksetzen",
       "shown": "{shown} von {total} Einträgen angezeigt.",
-      "selected": "Ausgewählt: {count}. Netto für die Kasse: {amount}."
+      "selected": "Ausgewählt: {count}. Nettoveränderung der Kasse: {amount}."
     },
     "columns": {
       "kind": "Art",
@@ -1103,7 +1115,7 @@
       "entries": "Einträge: {count}",
       "in": "Geld herein",
       "out": "Geld hinaus",
-      "net": "Netto für die Kasse",
+      "net": "Nettoveränderung der Kasse",
       "debits": "Soll",
       "credits": "Haben",
       "balanced": "gleich, die Einträge sind also ausgeglichen",
@@ -1223,6 +1235,10 @@
         "title": "Verlauf · Kin",
         "description": "Jede Bewegung des Geldes im Kreis, in der Reihenfolge, in der sie geschah."
       },
+      "listen": {
+        "title": "Anhören · Kin",
+        "description": "Was Kin Ihnen sagt: jede bestätigte Zahlung, jeder Kauf und jeder Beitrag, in einem ruhigen Satz."
+      },
       "circle": {
         "title": "Kreis · Kin",
         "description": "Die Mitglieder, ihre Rollen, die Familienvereinbarung und die Zahlungsempfänger."
@@ -1249,6 +1265,7 @@
         "bills": "Rechnungen",
         "fairness": "Fairness",
         "record": "Verlauf",
+        "listen": "Anhören",
         "circle": "Kreis"
       },
       "waiting": "{count} offen",
@@ -1348,7 +1365,11 @@
       "sandbox": "PayPal-Sandbox"
     },
     "overview": {
-      "greeting": "Guten Abend, {name}",
+      "greetings": {
+        "morning": "Guten Morgen, {name}",
+        "afternoon": "Guten Tag, {name}",
+        "evening": "Guten Abend, {name}"
+      },
       "lede": "Hier ist {month} in {circle}: der Topf, was auf ein Ja wartet, und was Kin getan hat.",
       "actions": {
         "approvals": "Freigaben prüfen",
@@ -1358,7 +1379,10 @@
         "label": "{month} auf einen Blick",
         "pool": {
           "label": "In der Kasse",
-          "note": "Von PayPal bestätigt"
+          "note": "Von PayPal bestätigt",
+          "simulated": "Simuliertes Geld, in der Demo",
+          "mixed": "Simulierter Verlauf, mit {amount} echten Aufladungen in der PayPal-Sandbox",
+          "split": "Davon liegen {purse} in {parent}s Geldbörse. Rechnungen können auf {free} zugreifen."
         },
         "paidIn": {
           "label": "Eingezahlt",
@@ -1367,7 +1391,9 @@
         },
         "paidOut": {
           "label": "Ausgezahlt",
-          "note": "Dazu {fees} PayPal-Gebühren"
+          "note": "Dazu {fees} PayPal-Gebühren",
+          "simulatedNote": "Dazu {fees} simulierte PayPal-Gebühren",
+          "mixedNote": "Dazu {fees} PayPal-Gebühren, teils simuliert"
         },
         "waiting": {
           "label": "Wartet auf ein Ja",
@@ -1542,9 +1568,12 @@
       "notes": {
         "newPayee": "Ein neuer Zahlungsempfänger. Alle im Kreis wurden benachrichtigt.",
         "payeeIsMember": "{name} erhält das Geld, deshalb muss auch jemand anderes Ja sagen.",
-        "abovePool": "Mehr, als heute in der Kasse ist ({pool}). Es wird erst bezahlt, wenn genug Geld eingegangen ist.",
+        "abovePool": "Mehr, als heute in der Kasse für Rechnungen frei ist ({pool}, ohne {parent}s Geldbörse). Es wird erst bezahlt, wenn genug Geld eingegangen ist.",
         "receiver": "Über PayPal an {address}, die Adresse von {name}",
-        "noReceiver": "{name} hat noch keine PayPal-Adresse angegeben. Die Zahlung wartet darauf."
+        "noReceiver": "{name} hat noch keine PayPal-Adresse angegeben. Die Zahlung wartet darauf.",
+        "settlementBasis": "Berechnet für {month} am {day}, nach der Aufzeichnung von damals.",
+        "settlementMoved": "Die Fairness hat sich seitdem verschoben: {name} stehen jetzt {amount} zu.",
+        "fairnessLink": "Fairness von heute ansehen"
       },
       "answered": {
         "title": "Entschieden",
@@ -1598,7 +1627,9 @@
           "paid": "Bezahlt",
           "fee": "PayPal-Gebühr",
           "amount": "Betrag"
-        }
+        },
+        "simulatedText": "In der Demo simuliert: Hinter diesen Zahlungen stehen keine Aufzeichnungen von PayPal.",
+        "mixedText": "Die als Simuliert markierten sind Platzhalter der Demo; die übrigen sind durch die Aufzeichnungen von PayPal bestätigt."
       },
       "checks": {
         "title": "Von Kin geprüft",
@@ -1607,7 +1638,6 @@
           "title": "Ein Anrufer forderte {claimed} für {payee}",
           "text": "Am {day} sagte ein Anrufer {parent}, das Konto bei {payee} sei im Rückstand. Kin fand keine offene Rechnung. Die letzte, {paid}, wurde am {paidDay} bezahlt. {alerted} wurden innerhalb von Sekunden gewarnt."
         },
-        "verdict": "Bereits bezahlt",
         "noDuplicates": "Diesen Monat keine doppelten Rechnungen.",
         "noJumps": "Kein Betrag ist ohne Grund gestiegen."
       }
@@ -1653,7 +1683,13 @@
         "invoice": "Per PayPal-Rechnung eingezogen, die ein Organisator sendet",
         "status": "Wartet auf Freigabe",
         "link": "Zu den Freigaben",
-        "core": "Berechnet vom Rechenkern von Kin, nicht von der KI. Dieselben Aufzeichnungen ergeben immer dasselbe Ergebnis."
+        "core": "Berechnet vom Rechenkern von Kin, nicht von der KI. Dieselben Aufzeichnungen ergeben immer dasselbe Ergebnis.",
+        "reasons": {
+          "all": "Die Kasse hat {available}, die keine Rechnung beansprucht: genug, um das jetzt zu zahlen, mit zurückbehaltener PayPal-Gebühr.",
+          "part": "Die Kasse hat {available}, die keine Rechnung beansprucht. Nach Abzug der PayPal-Gebühr können {now} jetzt gehen; die übrigen {rest} folgen, wenn mehr Geld eingeht.",
+          "shared": "Die Kasse hat {available}, die keine Rechnung beansprucht. Nach Abzug der PayPal-Gebühren wird das unter allen aufgeteilt, denen etwas zusteht: {now} können jetzt gehen, die übrigen {rest} folgen, wenn mehr Geld eingeht.",
+          "none": "Die Kasse hat {available}, die keine Rechnung beansprucht, nach Abzug der PayPal-Gebühr nicht genug. Die ganzen {rest} folgen, wenn mehr Geld eingeht."
+        }
       },
       "receipts": {
         "title": "Belege",
@@ -1679,7 +1715,8 @@
         "approve": "Genehmigen",
         "decline": "Ablehnen",
         "working": "Wird bearbeitet…",
-        "own": "Über Ihren Beleg entscheidet ein anderes Mitglied."
+        "own": "Über Ihren Beleg entscheidet ein anderes Mitglied.",
+        "recorded": "Beleg: {category}"
       },
       "settlementRun": {
         "title": "Den Ausgleich auszahlen",
@@ -1707,7 +1744,12 @@
         "receiverPlaceholder": "name@example.com",
         "receiverSave": "Adresse speichern",
         "receiverSaving": "Wird gespeichert…",
-        "receiverSaved": "Gespeichert."
+        "receiverSaved": "Gespeichert.",
+        "demoText": "Kin hat berechnet, was jedem Mitglied zusteht. Schicken Sie ihn der Familie zur Genehmigung. In der Demo wird jede genehmigte Zahlung mit simuliertem Geld geleistet und so gekennzeichnet.",
+        "simulatedStates": {
+          "executing": "Wird in der Demo bezahlt, mit simuliertem Geld",
+          "settled": "In der Demo bezahlt, mit simuliertem Geld"
+        }
       },
       "errors": {
         "refused": "Ihre Rolle erlaubt das nicht, oder es ist in diesem Kreis nicht verfügbar.",
@@ -1795,7 +1837,8 @@
         "simulated": "Simuliert",
         "yes": "ja",
         "no": "nein"
-      }
+      },
+      "simulatedSource": "Simuliert"
     },
     "circle": {
       "title": "Kreis",
@@ -1935,7 +1978,9 @@
       "invalidCircle": "Bitte füllen Sie jedes Feld aus, um den Kreis zu gründen.",
       "dismiss": "Schließen",
       "stepUpMissing": "Ihr Ja wurde nicht gespeichert: Diese Anmeldung hatte keinen zweiten Faktor. Richten Sie eine Authenticator-App für Ihr Kin-Konto ein und versuchen Sie es erneut.",
-      "stepUpStale": "Ihr Ja wurde nicht gespeichert: Diese Anmeldung war nicht frisch. Bitte versuchen Sie es erneut."
+      "stepUpStale": "Ihr Ja wurde nicht gespeichert: Diese Anmeldung war nicht frisch. Bitte versuchen Sie es erneut.",
+      "approvedSimulated": "Zugestimmt. Das ist die Demo: Kin zahlt mit simuliertem Geld, und die Aufzeichnung sagt es.",
+      "approvedSandbox": "Zugestimmt. Das ist die Demo: Der Lohn einer Pflegekraft kann als Testgeld über die PayPal-Sandbox gehen, alles andere wird mit simuliertem Geld bezahlt. Die Aufzeichnung sagt, was davon."
     },
     "empty": {
       "attention": "Gerade wartet nichts auf ein Ja.",
@@ -2230,8 +2275,17 @@
       }
     },
     "listen": {
-      "title": "Was Kin Ihnen sagt",
-      "lede": "Jede bestätigte Zahlung, jeder Einkauf und jeder Beitrag, in einem ruhigen Satz. Wählen Sie, wie oft Sie es hören.",
+      "title": "Anhören",
+      "lede": "Was Kin Ihnen sagt: jede bestätigte Zahlung, jeder Kauf und jeder Beitrag, in einem ruhigen Satz. Wählen Sie, wie oft Sie es hören.",
+      "today": {
+        "heading": "Für Sie heute",
+        "yes": "Was auf Ihr Ja wartet",
+        "yesCount": "{count} wartend",
+        "yesNone": "Nichts wartet auf Sie",
+        "purse": "Ihre Geldbörse",
+        "ask": "Kin eine Frage stellen",
+        "overview": "Die Übersicht der Familie"
+      },
       "everyLabel": "Wie oft",
       "every": {
         "now": "Sofort",
@@ -4177,6 +4231,26 @@
         "heldOne": "Kin hält {count} Zahlung an, um die {parent} gebeten hat.",
         "heldMany": "Kin hält {count} Zahlungen an, um die {parent} gebeten hat."
       }
+    },
+    "checkStory": {
+      "match": {
+        "title": "Kin hat eine Forderung geprüft: Sie passt zu einer echten Rechnung",
+        "text": "Am {day} hat Kin eine Forderung an {parent} mit der Aufzeichnung abgeglichen und die echte Rechnung gefunden, zu der sie gehört."
+      },
+      "no_match": {
+        "title": "Kin hat eine Forderung gemeldet, die zu nichts in der Aufzeichnung passt",
+        "text": "Am {day} hat jemand {parent} um Geld gebeten. Kin fand in der Aufzeichnung keinen Empfänger und keine Rechnung, zu der es gehören könnte."
+      },
+      "already_paid": {
+        "title": "Kin hat eine Forderung für {payee} geprüft: Nichts ist offen",
+        "text": "Am {day} hat jemand {parent} um Geld für {payee} gebeten. Laut Aufzeichnung ist bei {payee} nichts offen."
+      },
+      "unclear": {
+        "title": "Kin hat eine Forderung geprüft, die sich nicht bestätigen lässt",
+        "text": "Am {day} hat Kin eine Forderung an {parent} mit der Aufzeichnung abgeglichen und konnte sie nicht bestätigen."
+      },
+      "alerted": "Kin hat {alerted} gewarnt.",
+      "said": "Was gesagt wurde: „{claim}“"
     }
   },
   "aiProvenance": {

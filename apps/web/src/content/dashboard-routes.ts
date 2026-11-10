@@ -6,6 +6,8 @@ export const dashboardRoutes = {
   bills: "/dashboard/bills",
   fairness: "/dashboard/fairness",
   record: "/dashboard/record",
+  /** What Kin says aloud about confirmed money, in very large type: the parent's own front door. */
+  listen: "/dashboard/listen",
   circle: "/dashboard/circle",
 } as const;
 
@@ -32,8 +34,8 @@ export const packetRoute = "/dashboard/record/packet";
 /** The door tag: a printable card whose code opens a caregiver's own shifts. A screen of the shifts, not a section of its own. */
 export const shiftDoorRoute = "/dashboard/shifts/door";
 
-/** What Kin says aloud about confirmed money: a screen of the overview, not a section of its own. */
-export const listenRoute = "/dashboard/listen";
+/** What Kin says aloud about confirmed money: a section of its own, and the parent's first screen. */
+export const listenRoute = dashboardRoutes.listen;
 
 /** Ask Kin, the agent that reads the record with tools: a screen of the overview, not a section of its own. */
 export const askRoute = "/dashboard/ask";
@@ -58,11 +60,16 @@ export const verifyRoute = "/dashboard/record/verify";
 /** Connected assistants: a member's own AI assistant and an agency's software, which read and propose and never approve. A screen within the circle's section. */
 export const connectionsRoute = "/dashboard/circle/connections";
 
-/** The sidebar, in order. */
-export const dashboardNav = ["overview", "shifts", "approvals", "bills", "fairness", "record", "circle"] as const satisfies readonly DashboardSection[];
+/** The sidebar, in order. The parent's seat moves Listen to the front (`sectionsForRole`). */
+export const dashboardNav = ["overview", "shifts", "approvals", "bills", "fairness", "record", "listen", "circle"] as const satisfies readonly DashboardSection[];
 
-/** A phone's bottom bar has room for five. The circle and the record are in the account menu. */
-export const phoneNav = ["overview", "shifts", "approvals", "bills", "fairness"] as const satisfies readonly DashboardSection[];
+/** Sections a phone reaches through the account menu instead of the bottom bar. */
+const MENU_SECTIONS: readonly DashboardSection[] = ["record", "circle"];
+
+/** A phone's bottom bar has room for five: the viewer's first five sections that are not in the account menu. */
+export function phoneSections(sections: readonly DashboardSection[]): DashboardSection[] {
+  return sections.filter((section) => !MENU_SECTIONS.includes(section)).slice(0, 5);
+}
 
 /** The section a route segment under /dashboard belongs to. */
 export function sectionOf(segment: string | null): DashboardSection {

@@ -10,11 +10,13 @@ import { waitingProposals } from "@/content/circle/proposal-view";
 import { needsOf } from "@/content/circle/shift-views";
 import { shellCircle } from "@/content/circle/shell";
 import { circleSlots } from "@/content/circle/words";
+import { circleNotices } from "@/content/dashboard-notices";
 import { presenceRoute, wishesRoute } from "@/content/dashboard-routes";
 import { openTrigger } from "@/content/circle/wishes";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
 import { may, sectionsFor, shellData } from "@/server/dashboard-context";
+import { demoPayeeOf } from "@/server/sandbox-payout";
 
 /**
  * The circle's screens, read from the database as the viewer. A demo visitor
@@ -74,6 +76,7 @@ export default async function DashboardLayout({ children, params }: LayoutProps<
   return (
     <AppShell
       wishesNotice={wishesNotice}
+      notices={circleNotices(notices, demoPayeeOf(circle))}
       locale={locale}
       dictionary={dictionary}
       month={slots.month}

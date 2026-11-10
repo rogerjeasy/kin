@@ -1,10 +1,12 @@
 import type { ApprovalTerms } from "@kin/domain";
+import type { ProposalRecord } from "@kin/db";
 
 import type { SlotItem } from "@/components/dashboard/approvals/approval-slots";
 import type { ProposalCardProps } from "@/components/dashboard/approvals/proposal-card";
 import type { CircleNames } from "@/content/circle/names";
 import { demoPayeeNote, type DemoPayee } from "@/content/circle/payout-proof";
 import type { ProposalView, SlotView } from "@/content/circle/proposal-view";
+import type { SettlementBasis } from "@/content/circle/settlement-basis";
 import { voteLine } from "@/content/circle/vote-words";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
@@ -28,6 +30,8 @@ export type CardContext = {
   readonly receiverOf: (payeeId: string) => string | null;
   /** How a demo circle pays caregivers, which then never waits for an address; `null` in a real circle. */
   readonly demoPayee?: DemoPayee;
+  /** What a settlement payout was worked out from, and where today's fairness is read. */
+  readonly settlement?: { readonly basisOf: (proposal: ProposalRecord) => SettlementBasis | null; readonly fairnessHref: string };
 };
 
 function slotTitle(dictionary: Dictionary, context: CardContext, slot: SlotView): string {
@@ -66,9 +70,27 @@ function notesFor(dictionary: Dictionary, context: CardContext, view: ProposalVi
     view.decision === "paused" ? dictionary.dashboard.common.planLabels.paused : null,
     plan.announceToCircle ? notes.newPayee : null,
     plan.payeeMemberId ? fill(notes.payeeIsMember, { name: names.member(plan.payeeMemberId) }) : null,
-    poolCents !== null && proposal.cents > poolCents ? fill(notes.abovePool, { pool: format.money(poolCents) }) : null,
+    poolCents !== null && proposal.cents > poolCents ? fill(notes.abovePool, { pool: format.money(poolCents), parent: context.parent }) : null,
     destination(dictionary, context, view),
+    ...settlementNotes(dictionary, context, view),
   ].filter((note) => note !== null);
+}
+
+// A settlement payout says when it was worked out, and, once the record has moved, today's figure.
+function settlementNotes(dictionary: Dictionary, context: CardContext, view: ProposalView): string[] {
+  const { notes } = dictionary.dashboard.approvals;
+  const basis = context.settlement?.basisOf(view.proposal) ?? null;
+  if (basis === null) return [];
+  const { format, names } = context;
+  const worked = fill(notes.settlementBasis, { month: format.month(basis.period), day: format.day(basis.calculatedOn) });
+  if (basis.nowOwedCents === null) return [worked];
+  return [worked, fill(notes.settlementMoved, { name: names.member(basis.memberId), amount: format.money(basis.nowOwedCents) })];
+}
+
+function fairnessLink(dictionary: Dictionary, context: CardContext, view: ProposalView): ProposalCardProps["link"] {
+  const basis = context.settlement?.basisOf(view.proposal) ?? null;
+  if (basis === null || basis.nowOwedCents === null || context.settlement === undefined) return undefined;
+  return { href: context.settlement.fairnessHref, label: dictionary.dashboard.approvals.notes.fairnessLink };
 }
 
 // A caregiver's pay goes where they said; the family sees where before saying yes.
@@ -100,6 +122,7 @@ export function proposalCardProps(dictionary: Dictionary, context: CardContext, 
       fill(approvals.expires, { when: format.hoursUntil(plan.expiresAt, context.now) }),
     ],
     notes: notesFor(dictionary, context, view),
+    link: fairnessLink(dictionary, context, view),
     slotsLabel: approvals.slots.label,
     progress: fill(approvals.progress, {
       done: format.count(slots.filter((slot) => slot.filledBy !== null).length),

@@ -34,7 +34,8 @@ export type AskKinRequest = {
   readonly template: (facts: readonly string[]) => string;
 };
 
-export type AskKinCall = { readonly tool: string; readonly outcome: ToolOutcome };
+/** One tool call as the person sees it. `raised` says whether a proposing tool actually raised a proposal. */
+export type AskKinCall = { readonly tool: string; readonly outcome: ToolOutcome; readonly raised: boolean };
 
 /** Why the answer is the fixed wording rather than the model's. */
 export type TemplateReason = "refused" | "cut_off" | "turns" | "guard" | "unavailable";
@@ -110,7 +111,7 @@ export async function askKin(model: ToolModel, request: AskKinRequest): Promise<
     // One at a time, in the model's order, so the record of calls reads in the order they ran.
     for (const use of reply.toolUses) {
       const done = await gateway.call(use);
-      calls.push({ tool: done.record.tool, outcome: done.record.outcome });
+      calls.push({ tool: done.record.tool, outcome: done.record.outcome, raised: done.output?.proposal !== undefined });
       results.push(done.block);
       if (done.output !== null) {
         facts.push(done.output.fact);

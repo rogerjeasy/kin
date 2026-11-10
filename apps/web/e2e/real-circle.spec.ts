@@ -4,6 +4,7 @@ import { dashboardNav, dashboardRoutes } from "../src/content/dashboard-routes";
 import english from "../src/i18n/dictionaries/en.json" with { type: "json" };
 import { fill } from "../src/i18n/template";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
+import { greetingFor } from "./support/greeting";
 import { IDENTITY_PROVIDER } from "./support/identity-provider";
 import { seedRealProposal } from "./support/real-proposal";
 import { laptop, viewports } from "./support/viewports";
@@ -28,7 +29,7 @@ test.describe("a person's own circle", () => {
 
     await expect(page).toHaveURL("/dashboard?notice=circleCreated");
     await expect(page.getByRole("status").filter({ hasText: dashboard.notices.circleCreated })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(fill(dashboard.overview.greeting, { name: IDENTITY_PROVIDER.person.name }));
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(greetingFor(dashboard.overview.greetings, IDENTITY_PROVIDER.person.name));
     await expect(page.getByRole("complementary")).toContainText("Mum’s circle");
   });
 
