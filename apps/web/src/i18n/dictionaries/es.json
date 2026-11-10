@@ -38,7 +38,8 @@
       "invalid": "Escriba una pregunta de hasta 500 caracteres.",
       "busy": "Ha hecho muchas preguntas a Kin en esta hora. Inténtelo más tarde.",
       "unavailable": "Kin no puede contactar con Claude ahora mismo. Inténtelo de nuevo en un momento.",
-      "refused": "Preguntar a Kin no está disponible desde su puesto en este círculo."
+      "refused": "Preguntar a Kin no está disponible desde su puesto en este círculo.",
+      "demo_limit": "Has hecho todas las preguntas de esta demo."
     },
     "tools": {
       "get_pool": "Consultó el saldo del fondo",
@@ -115,6 +116,13 @@
       "title": "Kin te leyó un pago",
       "text": "Espera tu sí en la pantalla del monedero. Kin no puede enviarlo por ti.",
       "link": "Abrir tu monedero"
+    },
+    "demoLimit": {
+      "left": "Preguntas restantes en esta demo: {left} de {total}",
+      "title": "Has hecho las {total} preguntas de esta demo",
+      "text": "Quien visita la demo puede hacerle a Kin algunas preguntas, para que todos puedan probarlo. En tu propio círculo, Kin responde todas las preguntas que tu familia necesite.",
+      "signUp": "Regístrate",
+      "stay": "Seguir explorando la demo"
     }
   },
   "meta": {

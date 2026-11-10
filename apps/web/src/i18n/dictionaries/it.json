@@ -38,7 +38,8 @@
       "invalid": "Scriva una domanda di al massimo 500 caratteri.",
       "busy": "Ha fatto molte domande a Kin in quest'ora. Riprovi più tardi.",
       "unavailable": "Kin non riesce a raggiungere Claude in questo momento. Riprovi tra poco.",
-      "refused": "Chiedi a Kin non è disponibile dal suo posto in questo cerchio."
+      "refused": "Chiedi a Kin non è disponibile dal suo posto in questo cerchio.",
+      "demo_limit": "Hai fatto tutte le domande di questa demo."
     },
     "tools": {
       "get_pool": "Ha consultato il saldo del fondo",
@@ -115,6 +116,13 @@
       "title": "Kin ti ha riletto un pagamento",
       "text": "Aspetta il tuo sì nella schermata del borsellino. Kin non può mandarlo al posto tuo.",
       "link": "Apri il tuo borsellino"
+    },
+    "demoLimit": {
+      "left": "Domande rimaste in questa demo: {left} su {total}",
+      "title": "Hai fatto le {total} domande di questa demo",
+      "text": "Chi visita la demo può fare a Kin qualche domanda, così tutti possono provarlo. Nel tuo cerchio, Kin risponde a tutte le domande di cui la tua famiglia ha bisogno.",
+      "signUp": "Registrati",
+      "stay": "Continua a esplorare la demo"
     }
   },
   "meta": {

@@ -38,7 +38,8 @@
       "invalid": "Écrivez une question de 500 caractères au plus.",
       "busy": "Vous avez posé beaucoup de questions à Kin cette heure-ci. Réessayez plus tard.",
       "unavailable": "Kin ne peut pas joindre Claude pour le moment. Réessayez dans un instant.",
-      "refused": "Demander à Kin n'est pas disponible depuis votre place dans ce cercle."
+      "refused": "Demander à Kin n'est pas disponible depuis votre place dans ce cercle.",
+      "demo_limit": "Vous avez posé toutes les questions de cette démo."
     },
     "tools": {
       "get_pool": "A consulté le solde de la cagnotte",
@@ -115,6 +116,13 @@
       "title": "Kin a relu un paiement",
       "text": "Il attend votre oui sur l’écran du porte-monnaie. Kin ne peut pas l’envoyer à votre place.",
       "link": "Ouvrir votre porte-monnaie"
+    },
+    "demoLimit": {
+      "left": "Questions restantes dans cette démo : {left} sur {total}",
+      "title": "Vous avez posé les {total} questions de cette démo",
+      "text": "Les visiteurs de la démo peuvent poser quelques questions à Kin, pour que chacun puisse l’essayer. Dans votre propre cercle, Kin répond à toutes les questions dont votre famille a besoin.",
+      "signUp": "S’inscrire",
+      "stay": "Continuer à explorer la démo"
     }
   },
   "meta": {

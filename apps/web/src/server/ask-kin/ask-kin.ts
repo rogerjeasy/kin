@@ -9,7 +9,8 @@ import { isLocale, type Locale } from "@/i18n/locales";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
 
-import { spendUse, type RateLimiter } from "../model";
+import { spendUse, type Allowance, type RateLimiter } from "../model";
+import { questionsLeft } from "./demo-questions";
 import { askKinTools, logToolCall } from "./tools";
 import { askKinWorld, type PayPalReader } from "./world";
 
@@ -23,6 +24,8 @@ export type AskKinContext = {
   readonly paypal: PayPalReader | null;
   readonly limiter?: RateLimiter;
   readonly budget?: RateLimiter;
+  /** The questions this person may still ask, when they are counted: a demo visitor who has not signed in. */
+  readonly questions?: Allowance;
   readonly recorder?: ToolRecorder;
   readonly now?: () => number;
 };
@@ -38,8 +41,10 @@ export type AskKinResponse =
       readonly model: string;
       readonly steps: readonly AskKinStep[];
       readonly proposal: { readonly id: string; readonly href: string; readonly kind: "proposal" | "purse_payment" } | null;
+      /** Questions left after this one, or `null` when this person's questions are not counted. */
+      readonly questionsLeft: number | null;
     }
-  | { readonly ok: false; readonly reason: "refused" | "invalid" | "busy" | "unavailable" };
+  | { readonly ok: false; readonly reason: "refused" | "invalid" | "busy" | "unavailable" | "demo_limit" };
 
 /** An answer from an earlier turn, as the browser sends it back. Longer ones were never shown. */
 const MAX_ANSWER_LENGTH = 1_000;
@@ -74,7 +79,8 @@ function steps(copy: Dictionary["askKin"], calls: readonly { readonly tool: stri
  * the tools their role may use are the only ones the model is offered. The
  * server keeps no conversation: the browser sends back the last few turns.
  * Each question spends one use of the person's and the server's model
- * limits, before the model is called.
+ * limits, before the model is called. A demo visitor who has not signed in
+ * has a fixed number of questions for their demo session as well.
  */
 export async function runAskKin(context: AskKinContext, input: unknown): Promise<AskKinResponse> {
   const { circle } = context;
@@ -83,7 +89,9 @@ export async function runAskKin(context: AskKinContext, input: unknown): Promise
   if (parsed === null) return { ok: false, reason: "invalid" };
   if (context.model === null) return { ok: false, reason: "unavailable" };
   const now = context.now ?? Date.now;
-  if (!spendUse({ limiter: context.limiter, budget: context.budget }, { userId: context.userId, accountTypes: context.accountTypes }, now())) return { ok: false, reason: "busy" };
+  if (context.questions !== undefined && !context.questions.allows(context.userId, now())) return { ok: false, reason: "demo_limit" };
+  const limits = { limiter: context.limiter, budget: context.budget, allowance: context.questions };
+  if (!spendUse(limits, { userId: context.userId, accountTypes: context.accountTypes }, now())) return { ok: false, reason: "busy" };
 
   const dictionary = await getDictionary(parsed.locale);
   const copy = dictionary.askKin;
@@ -124,5 +132,6 @@ export async function runAskKin(context: AskKinContext, input: unknown): Promise
         : result.proposal.kind === "purse_payment"
           ? { id: result.proposal.id, href: localizedPath(parsed.locale, purseRoute), kind: "purse_payment" }
           : { id: result.proposal.id, href: localizedPath(parsed.locale, dashboardRoutes.approvals), kind: "proposal" },
+    questionsLeft: questionsLeft(context.questions, context.userId, now()),
   };
 }

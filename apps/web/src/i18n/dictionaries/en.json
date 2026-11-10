@@ -38,7 +38,8 @@
       "invalid": "Write a question of up to 500 characters.",
       "busy": "You have asked Kin many questions this hour. Try again later.",
       "unavailable": "Kin cannot reach Claude just now. Try again in a moment.",
-      "refused": "Ask Kin is not available from your seat in this circle."
+      "refused": "Ask Kin is not available from your seat in this circle.",
+      "demo_limit": "You have asked all of this demo's questions."
     },
     "tools": {
       "get_pool": "Looked up the pool balance",
@@ -115,6 +116,13 @@
       "title": "Kin read a payment back",
       "text": "It waits for your yes on the Purse screen. Kin cannot send it for you.",
       "link": "Open your Purse"
+    },
+    "demoLimit": {
+      "left": "{left} of {total} questions left in this demo",
+      "title": "You have asked this demo's {total} questions",
+      "text": "Demo visitors may ask Kin a few questions, so everyone can try it. In a circle of your own, Ask Kin answers as many as your family needs.",
+      "signUp": "Sign up",
+      "stay": "Keep exploring the demo"
     }
   },
   "meta": {

@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import english from "../src/i18n/dictionaries/en.json" with { type: "json" };
 import { seatAs, startDemo } from "./support/demo";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
+import { maybeScreenshot } from "./support/screenshot";
 import { viewports } from "./support/viewports";
 
 const copy = english.askKin;
@@ -48,4 +49,67 @@ test("a caregiver can ask, and is offered only what concerns their own pay", asy
   await page.keyboard.press("Enter");
   await expect(page.getByText("Kin cannot show that from your seat.")).toBeVisible();
   await expect(page.getByText(copy.answer.traceEmpty)).toBeVisible();
+});
+
+test("a demo visitor has five questions, sees what is left, and is then invited to start a circle", async ({ page }) => {
+  await startDemo(page);
+  await page.goto("/dashboard/ask");
+  const status = page.getByRole("status").filter({ hasText: "questions left in this demo" });
+  await expect(status).toHaveText("5 of 5 questions left in this demo");
+
+  const box = page.getByLabel(copy.form.label);
+  for (let asked = 1; asked <= 5; asked += 1) {
+    await box.fill(`Has Amara been paid? (${asked})`);
+    await page.getByRole("button", { name: copy.form.ask }).click();
+    await expect(page.getByText("Kin read the record for you.")).toBeVisible();
+    if (asked < 5) await expect(status).toHaveText(`${5 - asked} of 5 questions left in this demo`);
+  }
+
+  // The last question opens a window: sign up or sign in to keep asking, or stay in the demo.
+  const dialog = page.getByRole("dialog", { name: "You have asked this demo's 5 questions" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText(copy.demoLimit.text);
+  await expect(dialog.getByRole("link", { name: copy.demoLimit.signUp })).toHaveAttribute("href", "/start");
+  await expect(dialog.getByRole("link", { name: english.common.nav.signIn })).toHaveAttribute("href", "/sign-in");
+  await expectNoHorizontalOverflow(page);
+  await maybeScreenshot(page, "ask-kin-demo-limit-window");
+  await dialog.getByRole("button", { name: copy.demoLimit.stay }).click();
+  await expect(dialog).toHaveCount(0);
+
+  // The fifth answer stays on screen; the question box gives way to the same invitation.
+  await expect(page.getByText("Kin read the record for you.")).toBeVisible();
+  const limit = page.getByRole("region", { name: "You have asked this demo's 5 questions" });
+  await expect(limit).toBeVisible();
+  await expect(box).toHaveCount(0);
+  await expect(limit.getByRole("link", { name: copy.demoLimit.signUp })).toHaveAttribute("href", "/start");
+  await expect(limit.getByRole("link", { name: english.common.nav.signIn })).toHaveAttribute("href", "/sign-in");
+  await expectNoHorizontalOverflow(page);
+  await maybeScreenshot(page, "ask-kin-demo-limit-card");
+
+  // The server is what holds the limit: a sixth question sent straight to it is refused.
+  const sixth = await page.request.post("/api/ask-kin", { data: { question: "Has Amara been paid?", locale: "en" }, headers: { origin: new URL(page.url()).origin } });
+  expect(await sixth.json()).toEqual({ ok: false, reason: "demo_limit" });
+
+  // And it holds across a reload, where the invitation waits without interrupting.
+  await page.reload();
+  await expect(page.getByRole("region", { name: "You have asked this demo's 5 questions" })).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
+test("the window for the last demo question fits a 320 pixel phone and closes with Escape", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await startDemo(page);
+  await page.goto("/dashboard/ask");
+  const box = page.getByLabel(copy.form.label);
+  for (let asked = 1; asked <= 5; asked += 1) {
+    await box.fill(`Has Amara been paid? (${asked})`);
+    await page.getByRole("button", { name: copy.form.ask }).click();
+    await expect(page.getByRole("button", { name: copy.form.asking })).toHaveCount(0);
+  }
+  const dialog = page.getByRole("dialog", { name: "You have asked this demo's 5 questions" });
+  await expect(dialog).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await maybeScreenshot(page, "ask-kin-demo-limit-window");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
 });

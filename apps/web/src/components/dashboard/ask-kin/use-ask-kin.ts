@@ -18,15 +18,19 @@ export type AskKinState =
 /** The browser keeps the conversation; the server keeps none. Never more than the server accepts. */
 const HISTORY = 6;
 
-const REASONS: readonly AskKinFailure[] = ["refused", "invalid", "busy", "unavailable"];
+const REASONS: readonly AskKinFailure[] = ["refused", "invalid", "busy", "unavailable", "demo_limit"];
 
 /**
  * Asks Kin one question at a time and keeps the last few turns to send with
  * the next, so a follow-up question has its context. A raised proposal
- * refreshes the screens, so the approvals badge shows it.
+ * refreshes the screens, so the approvals badge shows it. `initialLeft` is
+ * how many questions a demo visitor may still ask, or `null` when theirs are
+ * not counted; each answer brings the server's own count back, and
+ * `onLimitReached` runs once the last one is spent.
  */
-export function useAskKin(locale: Locale) {
+export function useAskKin(locale: Locale, initialLeft: number | null, onLimitReached: () => void) {
   const [state, setState] = useState<AskKinState>({ status: "idle" });
+  const [questionsLeft, setQuestionsLeft] = useState(initialLeft);
   const history = useRef<{ question: string; answer: string }[]>([]);
   const router = useRouter();
 
@@ -42,15 +46,21 @@ export function useAskKin(locale: Locale) {
       if (body?.ok === true) {
         history.current = [...history.current, { question, answer: body.answer }].slice(-HISTORY);
         setState({ status: "answered", question, answer: body });
+        setQuestionsLeft(body.questionsLeft);
+        if (body.questionsLeft === 0) onLimitReached();
         if (body.proposal !== null) router.refresh();
         return;
       }
       const reason = REASONS.find((each) => each === body?.reason) ?? "unavailable";
+      if (reason === "demo_limit") {
+        setQuestionsLeft(0);
+        onLimitReached();
+      }
       setState({ status: "failed", question, reason });
     } catch {
       setState({ status: "failed", question, reason: "unavailable" });
     }
   }
 
-  return { state, ask };
+  return { state, ask, questionsLeft };
 }

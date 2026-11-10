@@ -38,7 +38,8 @@
       "invalid": "Schreiben Sie eine Frage mit höchstens 500 Zeichen.",
       "busy": "Sie haben Kin in dieser Stunde viele Fragen gestellt. Versuchen Sie es später noch einmal.",
       "unavailable": "Kin erreicht Claude gerade nicht. Versuchen Sie es gleich noch einmal.",
-      "refused": "Kin fragen ist von Ihrem Platz in diesem Kreis aus nicht verfügbar."
+      "refused": "Kin fragen ist von Ihrem Platz in diesem Kreis aus nicht verfügbar.",
+      "demo_limit": "Sie haben alle Fragen dieser Demo gestellt."
     },
     "tools": {
       "get_pool": "Den Kassenstand nachgeschlagen",
@@ -115,6 +116,13 @@
       "title": "Kin hat eine Zahlung vorgelesen",
       "text": "Sie wartet auf dein Ja in der Geldbörse. Kin kann sie nicht für dich senden.",
       "link": "Deine Geldbörse öffnen"
+    },
+    "demoLimit": {
+      "left": "Verbleibende Fragen in dieser Demo: {left} von {total}",
+      "title": "Sie haben die {total} Fragen dieser Demo gestellt",
+      "text": "Besucher der Demo können Kin einige Fragen stellen, damit alle es ausprobieren können. In Ihrem eigenen Kreis beantwortet Kin so viele Fragen, wie Ihre Familie braucht.",
+      "signUp": "Registrieren",
+      "stay": "Die Demo weiter erkunden"
     }
   },
   "meta": {

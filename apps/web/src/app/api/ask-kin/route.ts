@@ -1,4 +1,5 @@
 import { runAskKin } from "@/server/ask-kin/ask-kin";
+import { questionAllowanceFor } from "@/server/ask-kin/demo-questions";
 import { paypalReader } from "@/server/ask-kin/world";
 import { circleJsonRoute } from "@/server/circle-json-route";
 import { databases } from "@/server/database";
@@ -11,7 +12,7 @@ const MAX_ASK_BYTES = 16_384;
 const paypalOf = (services: TopUpServices | null) => (services === null ? null : paypalReader(services.pool));
 
 export function POST(request: Request): Promise<Response> {
-  return circleJsonRoute(request, { maxBytes: MAX_ASK_BYTES, label: "ask_kin" }, ({ viewer, circle }, input) =>
+  return circleJsonRoute(request, { maxBytes: MAX_ASK_BYTES, label: "ask_kin" }, async ({ viewer, circle }, input) =>
     runAskKin(
       {
         db: databases().app,
@@ -22,6 +23,7 @@ export function POST(request: Request): Promise<Response> {
         paypal: paypalOf(topUpServices()),
         limiter: askKinLimiter,
         budget: askKinBudget,
+        questions: await questionAllowanceFor(viewer),
       },
       input,
     ),

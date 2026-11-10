@@ -45,6 +45,8 @@ describe("Ask Kin in a demo circle", () => {
       model: "fake-model",
       steps: [{ tool: "get_paypal_payout_status", label: "Checked the payouts with PayPal", outcome: "ok", outcomeLabel: "done" }],
       proposal: null,
+      // Nobody's questions are counted in this context: no demo allowance was given.
+      questionsLeft: null,
     });
     expect(toolResult(model, 1)).toMatchObject({ paid: [{ to: "Amara", amount: "$264.00", day: "Oct 6", simulated: true, paypal: "simulated: no PayPal transaction stands behind it" }] });
     expect(records).toMatchObject([{ tool: "get_paypal_payout_status", args: { payee: "[text:5]" }, outcome: "ok" }]);
@@ -160,5 +162,60 @@ describe("Ask Kin's request boundary", () => {
     const model = turns(finalTurn("Hello."));
     expect(await runAskKin({ ...context(seen, circle.userId, model), limiter }, ask("Hi"))).toMatchObject({ ok: true });
     expect(await runAskKin({ ...context(seen, circle.userId, model), limiter }, ask("Hi again"))).toEqual({ ok: false, reason: "busy" });
+  });
+});
+
+describe("a demo visitor's questions", () => {
+  const answers = (count: number) => turns(...Array.from({ length: count }, (_, index) => finalTurn(`Answer ${index + 1}.`)));
+
+  it("are counted down with each answer, and the sixth is refused before the model is asked", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    const questions = createRateLimiter(5, 14 * 86_400_000);
+    const model = answers(6);
+    const left: (number | null)[] = [];
+    for (let index = 0; index < 5; index++) {
+      const result = await runAskKin({ ...context(seen, circle.userId, model), questions }, ask(`Question ${index + 1}`));
+      if (!result.ok) throw new Error(`question ${index + 1} was refused: ${result.reason}`);
+      left.push(result.questionsLeft);
+    }
+    expect(left).toEqual([4, 3, 2, 1, 0]);
+    expect(await runAskKin({ ...context(seen, circle.userId, model), questions }, ask("Question 6"))).toEqual({ ok: false, reason: "demo_limit" });
+    expect(model.requests).toHaveLength(5);
+  });
+
+  it("belong to the visitor: another visitor still has all of theirs", async () => {
+    const first = await visitorWithCircle(db);
+    const second = await visitorWithCircle(db);
+    const questions = createRateLimiter(1, 14 * 86_400_000);
+    const model = answers(2);
+    expect(await runAskKin({ ...context(await snapshot(first, first.userId), first.userId, model), questions }, ask("Hi"))).toMatchObject({ ok: true, questionsLeft: 0 });
+    expect(await runAskKin({ ...context(await snapshot(first, first.userId), first.userId, model), questions }, ask("Hi again"))).toEqual({ ok: false, reason: "demo_limit" });
+    expect(await runAskKin({ ...context(await snapshot(second, second.userId), second.userId, model), questions }, ask("Hi"))).toMatchObject({ ok: true, questionsLeft: 0 });
+  });
+
+  it("are not spent by a question the hourly limit refuses, and the demo limit spends no hourly use", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    const questions = createRateLimiter(1, 14 * 86_400_000);
+    const limiter = createRateLimiter(1, 3_600_000);
+    limiter.record(circle.userId, 1_000);
+    expect(await runAskKin({ ...context(seen, circle.userId, answers(1)), questions, limiter }, ask("Hi"))).toEqual({ ok: false, reason: "busy" });
+    expect(questions.used(circle.userId, 1_000)).toBe(0);
+
+    const spent = createRateLimiter(1, 14 * 86_400_000);
+    spent.record(circle.userId, 1_000);
+    const hourly = createRateLimiter(10, 3_600_000);
+    expect(await runAskKin({ ...context(seen, circle.userId, answers(1)), questions: spent, limiter: hourly }, ask("Hi"))).toEqual({ ok: false, reason: "demo_limit" });
+    expect(hourly.used(circle.userId, 1_000)).toBe(0);
+  });
+
+  it("are not counted for a person who signed in: no allowance, and no count is reported", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    const model = answers(7);
+    for (let index = 0; index < 7; index++) {
+      expect(await runAskKin(context(seen, circle.userId, model), ask(`Question ${index + 1}`))).toMatchObject({ ok: true, questionsLeft: null });
+    }
   });
 });

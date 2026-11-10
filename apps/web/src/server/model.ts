@@ -30,7 +30,14 @@ const MAX_KEYS = 20_000;
  * expired keys are swept at most ten times a window, and when it is full a
  * key it does not know is refused.
  */
-export function createRateLimiter(limit: number, windowMs: number): RateLimiter {
+/** A limiter that can also say how much of it a key has used, for a screen that shows what is left. */
+export type Allowance = RateLimiter & {
+  readonly limit: number;
+  /** How many uses `key` has spent in the window ending `now`. */
+  used(key: string, now: number): number;
+};
+
+export function createRateLimiter(limit: number, windowMs: number): Allowance {
   const uses = new Map<string, number[]>();
   let lastSweep = Number.NEGATIVE_INFINITY;
   const recentAt = (key: string, now: number) => (uses.get(key) ?? []).filter((at) => now - at < windowMs);
@@ -40,6 +47,8 @@ export function createRateLimiter(limit: number, windowMs: number): RateLimiter 
     for (const [key, times] of uses) if (times.every((at) => now - at >= windowMs)) uses.delete(key);
   };
   return {
+    limit,
+    used: (key, now) => recentAt(key, now).length,
     allows(key, now) {
       if (!uses.has(key) && uses.size >= MAX_KEYS) {
         sweep(now);
@@ -77,9 +86,14 @@ export const quietWordsBudget = createRateLimiter(300, 60 * 60 * 1000);
  * have one. Every limit is asked before any is used, so a refused request
  * costs nothing.
  */
-export function spendUse(limits: { readonly limiter?: RateLimiter; readonly budget?: RateLimiter }, who: { readonly userId: string; readonly accountTypes: BillingAccount }, at: number): boolean {
+export function spendUse(
+  limits: { readonly limiter?: RateLimiter; readonly budget?: RateLimiter; readonly allowance?: RateLimiter },
+  who: { readonly userId: string; readonly accountTypes: BillingAccount },
+  at: number,
+): boolean {
   const pool = who.accountTypes === "demo" ? "demo" : "people";
   const asked = [
+    ...(limits.allowance ? [{ limiter: limits.allowance, key: who.userId }] : []),
     ...(limits.limiter ? [{ limiter: limits.limiter, key: who.userId }] : []),
     ...(limits.budget ? [{ limiter: limits.budget, key: pool }] : []),
   ];
