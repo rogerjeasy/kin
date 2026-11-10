@@ -104,6 +104,20 @@ export const CIRCLE_ACTIONS = {
   "invoice.request": ["organizer"],
   /** Say where one's own settlement payout goes. Nobody else may, so nobody can redirect it. */
   "settlement_receiver.set": ["organizer", "contributor", "parent"],
+  /** The parent's Purse as the family sees it: its ceiling, balance and month's total, and any payment that raised a flag. Never a sealed item. */
+  "purse.view": ["organizer", "contributor", "parent", "observer"],
+  /** Spend from the Purse: ask Kin to send a payment, say yes or no to it, and share one with the family. Hers alone; nobody may spend it for her. */
+  "purse.spend": ["parent"],
+  /** Set up the Purse's weekly amount, ceiling and per-payment cap, or start it again after a pause: an approved family decision. */
+  "purse.setup": ["organizer"],
+  /** Hold the Purse still: stopping is always safe, so anyone who answers for the family may, and the parent herself. */
+  "purse.stop": ["organizer", "contributor", "parent"],
+  /** Cancel a held payment during its cooling-off: the parent, or a member who answers for the family. Nobody else can make one. */
+  "purse.cancel": ["organizer", "contributor", "parent"],
+  /** Put someone in the Purse's address book, to be verified once by the family. */
+  "purse_payee.add": ["organizer", "contributor", "parent"],
+  /** Verify an address-book entry: a member who answers for the family and did not add it. */
+  "purse_payee.verify": ["organizer", "contributor"],
 } as const satisfies Record<string, readonly CircleRole[]>;
 
 export type CircleAction = keyof typeof CIRCLE_ACTIONS;

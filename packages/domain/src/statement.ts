@@ -65,7 +65,7 @@ function expenseOf(entry: LedgerEntry): StatementAmount[] {
   });
 }
 
-const SPENDING_KINDS: readonly EntryKind[] = ["bill_approved", "purchase_captured", "out_of_pocket"];
+const SPENDING_KINDS: readonly EntryKind[] = ["bill_approved", "purchase_captured", "out_of_pocket", "purse_paid"];
 
 /**
  * Every figure of a set of entries, read from the ledger and nothing else.

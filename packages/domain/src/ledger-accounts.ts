@@ -20,6 +20,8 @@ type AccountFamily = {
 const ACCOUNT_FAMILIES = {
   pool_cash: { type: "asset", normal: "debit", scoped: false },
   pool_clearing: { type: "asset", normal: "debit", scoped: false },
+  // The parent's Purse: money set aside from the pool for her to spend, still held in the pool's PayPal account.
+  purse_cash: { type: "asset", normal: "debit", scoped: false },
   fees: { type: "expense", normal: "debit", scoped: false },
   expense: { type: "expense", normal: "debit", scoped: true },
   payable: { type: "liability", normal: "credit", scoped: true },
@@ -43,6 +45,7 @@ export const POOL_CASH: AccountCode = "pool_cash";
 export const POOL_CLEARING: AccountCode = "pool_clearing";
 export const FEES: AccountCode = "fees";
 export const CARE_RECEIVED: AccountCode = "care_received";
+export const PURSE_CASH: AccountCode = "purse_cash";
 
 export function memberAccount(memberId: string): AccountCode {
   return `member:${memberId}`;

@@ -1,4 +1,4 @@
-import { POOL_CASH, describeAccount } from "./ledger-accounts.ts";
+import { POOL_CASH, PURSE_CASH, describeAccount } from "./ledger-accounts.ts";
 import { assertValidEntry, opposite, type LedgerEntry, type LedgerLine } from "./ledger-entry.ts";
 import { accountBalances } from "./ledger.ts";
 import { LedgerError } from "./ledger-error.ts";
@@ -26,6 +26,7 @@ export type LedgerAudit = {
   readonly problems: readonly LedgerProblem[];
   /** Every account's balance, recomputed from the lines alone, in cents. */
   readonly balances: ReadonlyMap<string, number>;
+  /** What the pool's PayPal account holds by the ledger: the pool's cash and the parent's Purse, which is kept in it. */
   readonly poolCents: number;
 };
 
@@ -58,6 +59,7 @@ export function auditLedger(circleId: string, currency: string, entries: readonl
   const sources = new Set<string>();
   const reversed = new Set<string>();
   let pool = 0;
+  let purse = 0;
   const poolNormal = describeAccount(POOL_CASH).normal;
 
   for (const entry of entries) {
@@ -75,6 +77,7 @@ export function auditLedger(circleId: string, currency: string, entries: readonl
     if (refusal !== null) problem("bad_reversal", entry, refusal);
     for (const line of entry.lines) {
       if (line.account === POOL_CASH) pool += line.direction === poolNormal ? line.cents : -line.cents;
+      if (line.account === PURSE_CASH) purse += line.direction === poolNormal ? line.cents : -line.cents;
     }
     if (pool < 0) problem("pool_overdrawn", entry, "more money left the pool than had arrived");
     earlier.set(entry.id, entry);
@@ -82,7 +85,7 @@ export function auditLedger(circleId: string, currency: string, entries: readonl
     if (entry.reverses !== null) reversed.add(entry.reverses);
   }
 
-  return { problems, balances: safeBalances({ circleId, currency, entries }), poolCents: pool };
+  return { problems, balances: safeBalances({ circleId, currency, entries }), poolCents: pool + purse };
 }
 
 /** Balances of the entries, or none when an account in them is not one the ledger knows (reported as an invalid entry). */
