@@ -63,10 +63,10 @@ export function AskCard({ screen, ask }: Props) {
         </div>
       ) : null}
       {ask.payLaterUsed && ask.state !== "short" ? <p className="text-sm text-muted-foreground">{copy.payLaterUsed}</p> : null}
-      {ask.privacyCaveat && ask.state !== "withdrawn" ? (
+      {ask.privacyCaveat !== null ? (
         <p className="flex items-start gap-2 rounded-xl bg-secondary p-3 text-sm">
           <InfoIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-          <span className="min-w-0">{copy.caveat}</span>
+          <span className="min-w-0">{ask.privacyCaveat === "pair" ? copy.caveat : copy.caveatShort}</span>
         </p>
       ) : null}
       <OwnArea screen={screen} ask={ask} />

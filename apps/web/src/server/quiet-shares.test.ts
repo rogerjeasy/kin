@@ -44,6 +44,13 @@ describe("quiet shares at the request boundary", () => {
       ["Ana", 6_000, true],
     ]);
     expect(seats?.find((seat) => seat.name === "Ana")?.asks[0]?.myOffer).toMatchObject({ monthlyCents: 6_000, careTrips: 2, careMinutes: 180 });
+    // The other phones carry none of Ana's figures: not her part, her share, her care or that she is at her limit.
+    for (const seat of seats?.filter((each) => each.name !== "Ana") ?? []) {
+      const figures = JSON.stringify({ part: seat.asks[0]?.myPart, offer: seat.asks[0]?.myOffer, shortfall: seat.asks[0]?.shortfallCents });
+      expect(figures).not.toMatch(/[^0-9](6000|18000|180)[^0-9]/u);
+      expect(seat.asks[0]?.myPart?.atLimit).toBe(false);
+      expect(seat.asks[0]?.privacyCaveat).toBeNull();
+    }
     // The visitor is Elena again, and reads only her own offer and part.
     const mine = await stairliftOf({ ...context, circle: await reload() });
     expect(mine.myOffer?.monthlyCents).toBe(30_000);

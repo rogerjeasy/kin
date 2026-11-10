@@ -3508,6 +3508,7 @@
         ]
       },
       "caveat": "Este gasto lo comparten dos personas, así que la privacidad no puede ser total: cuando una de ustedes llega a su límite, la otra puede deducirlo del total y de su propia parte.",
+      "caveatShort": "Si los demás comparan sus partes, podrían deducir la de la última persona. Kin solo muestra lo que falta.",
       "raise": {
         "title": "Pedir a la familia",
         "text": "Para un gasto que el fondo no puede asumir solo, como una reparación o un aumento del presupuesto de cuidados. A cada persona que comparte el gasto se le pregunta en privado.",

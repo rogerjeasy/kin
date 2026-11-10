@@ -3508,6 +3508,7 @@
         ]
       },
       "caveat": "Vous êtes deux à partager cette dépense, la confidentialité ne peut donc pas être totale : quand l’un de vous est à sa limite, l’autre peut le déduire du total et de sa propre part.",
+      "caveatShort": "Si les autres comparent leurs parts, ils pourraient en déduire celle de la dernière personne. Kin n’indique que l’écart.",
       "raise": {
         "title": "Demander à la famille",
         "text": "Pour une dépense que la cagnotte ne peut pas porter seule, comme une réparation ou une hausse du budget des soins. Chaque personne qui partage la dépense est sollicitée en privé.",

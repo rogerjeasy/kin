@@ -418,8 +418,10 @@ CREATE FUNCTION kin_private.seal_my_offer(p_circle uuid, p_ask uuid, p_offer jso
         WHERE id = v_existing.id;
       v_answered := v_ask.answered_count;
     END IF;
+    -- The record says that an offer was sealed, never whose or what: the organizer reads the audit log, and who sealed
+    -- again, and when, would hint at who is near their limit. The person's own row holds when they sealed it.
     INSERT INTO public.audit_log (id, circle_id, actor, member_id, action, subject_type, subject_id, details, origin)
-      VALUES (gen_random_uuid(), p_circle, 'member', v_me, 'quiet_share.offer_sealed', 'quiet_share', p_ask, '{}'::jsonb, 'web');
+      VALUES (gen_random_uuid(), p_circle, 'service', NULL, 'quiet_share.offer_sealed', 'quiet_share', p_ask, '{}'::jsonb, 'mediator');
     IF v_answered = cardinality(v_ask.asked) THEN
       RETURN kin_private.mediate_quiet_share(p_circle, p_ask);
     END IF;
@@ -475,8 +477,9 @@ CREATE FUNCTION kin_private.take_quiet_share_gap(p_circle uuid, p_ask uuid) RETU
       RAISE EXCEPTION 'kin: only a short one-off cost has a gap to take' USING ERRCODE = 'KQ001';
     END IF;
     UPDATE public.sealed_offers SET takes_shortfall = true WHERE circle_id = p_circle AND ask_id = p_ask AND member_id = v_me;
+    -- Who took the gap on stays in their own offer row alone; the record says only that someone did.
     INSERT INTO public.audit_log (id, circle_id, actor, member_id, action, subject_type, subject_id, details, origin)
-      VALUES (gen_random_uuid(), p_circle, 'member', v_me, 'quiet_share.gap_taken', 'quiet_share', p_ask, '{}'::jsonb, 'web');
+      VALUES (gen_random_uuid(), p_circle, 'service', NULL, 'quiet_share.gap_taken', 'quiet_share', p_ask, '{}'::jsonb, 'mediator');
     RETURN kin_private.mediate_quiet_share(p_circle, p_ask);
   END
   $$;
