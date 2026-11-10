@@ -33,9 +33,10 @@ export function LanguageMenu({ locale, label, display, className }: LanguageMenu
           variant={display === "code" ? "ghost" : "outline"}
           size="sm"
           className={className}
-          aria-label={`${label}: ${localeNames[locale]}`}
         >
           <GlobeIcon />
+          {/* The name is built from the button's own words, so it holds what is on it ("EN") and a person who says what they see can press it (WCAG 2.5.3). */}
+          <span className="sr-only">{display === "code" ? `${label}: ${localeNames[locale]}, ` : `${label}: `}</span>
           <span className={display === "code" ? "uppercase" : undefined}>
             {display === "code" ? locale : localeNames[locale]}
           </span>

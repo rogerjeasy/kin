@@ -23,7 +23,16 @@ export type LedgerGridContext = {
  * at the foot. It is a real grid row, so the keyboard reaches it in order and
  * a screen reader reads it as a row of its own.
  */
-export function LedgerSectionRow({ data, context }: CustomCellRendererProps<LedgerGridRow, unknown, LedgerGridContext>) {
+export function LedgerSectionRow(props: CustomCellRendererProps<LedgerGridRow, unknown, LedgerGridContext>) {
+  // AG Grid draws a full-width row as a row with no cell in it; a row must hold cells to be read as one (WCAG 1.3.1).
+  return (
+    <div role="gridcell" className="h-full min-w-0">
+      <SectionContent {...props} />
+    </div>
+  );
+}
+
+function SectionContent({ data, context }: CustomCellRendererProps<LedgerGridRow, unknown, LedgerGridContext>) {
   const { rows, sections, overall } = useLedgerSnapshot(context.store);
   if (data?.rowKind === "group") {
     const totals = sections.get(data.key);

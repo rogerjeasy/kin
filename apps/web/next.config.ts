@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 
 import { BRYNTUM_URL_DIR } from "./src/components/dashboard/shifts/bryntum-files.ts";
 import { bryntumVersion } from "./scripts/vendor-bryntum.ts";
+import { SECURITY_HEADERS } from "./security-headers.ts";
 
 const nextConfig: NextConfig = {
   // Workspace packages export TypeScript source, so Next compiles them.
@@ -17,6 +18,7 @@ const nextConfig: NextConfig = {
   env: { NEXT_PUBLIC_BRYNTUM_VERSION: bryntumVersion() },
   async headers() {
     return [
+      { source: "/:path*", headers: [...SECURITY_HEADERS] },
       {
         // Each file's name carries the version, so a file never changes under its name.
         source: `${BRYNTUM_URL_DIR}/:file*`,

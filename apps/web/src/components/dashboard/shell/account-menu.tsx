@@ -37,9 +37,12 @@ export function AccountMenu({ locale, copy, leaveLabel, viewer, record, links }:
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" variant="ghost" size="sm" aria-label={`${copy.menu}: ${name}`} className="gap-2 px-1.5 sm:pe-3">
+        <Button type="button" variant="ghost" size="sm" className="gap-2 px-1.5 sm:pe-3">
           <InitialsAvatar name={name} />
+          {/* The name comes from the button's own words, so it holds the name shown on it (WCAG 2.5.3); on a phone, where the name is not shown, it is read all the same. */}
+          <span className="sr-only">{`${copy.menu}: `}</span>
           <span className="hidden max-w-36 truncate text-foreground sm:inline">{name}</span>
+          <span className="sr-only sm:hidden">{name}</span>
           <ChevronDownIcon className="hidden size-4 sm:block" />
         </Button>
       </DropdownMenuTrigger>
