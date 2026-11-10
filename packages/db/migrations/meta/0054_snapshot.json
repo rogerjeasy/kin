@@ -7435,7 +7435,7 @@
         },
         "purse_payments_texts": {
           "name": "purse_payments_texts",
-          "value": "length(btrim(payee_name)) between 1 and 80 and length(words) between 1 and 400 and (memo is null or length(memo) between 1 and 120) and length(read_back) between 1 and 600"
+          "value": "length(btrim(payee_name)) between 1 and 80 and length(words) between 1 and 500 and (memo is null or length(memo) between 1 and 120) and length(read_back) between 1 and 600"
         },
         "purse_payments_read_back_source": {
           "name": "purse_payments_read_back_source",

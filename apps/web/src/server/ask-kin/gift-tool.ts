@@ -13,11 +13,12 @@ import type { AskKinWorld } from "./world";
  * screen. Only the parent is ever offered the tool; the boundary and the
  * database refuse anyone else again.
  */
-export async function proposeGift(world: AskKinWorld, args: { readonly payee: string; readonly amount: string; readonly memo?: string }): Promise<ToolOutput> {
+export async function proposeGift(world: AskKinWorld, args: { readonly payee: string; readonly amount: string; readonly memo?: string }, question: string): Promise<ToolOutput> {
   const { copy, format } = world;
   const result = await askPurse(
     { db: world.db, userId: world.userId, circle: world.circle },
-    { words: [args.payee, args.amount, args.memo].filter((each) => each !== undefined).join(" "), locale: world.locale, payee: args.payee, amount: args.amount, memo: args.memo ?? null },
+    // Her own question, from the request, is what the Purse reads for pressure and is kept with the payment; the model's arguments only name who and how much.
+    { words: question.trim() === "" ? [args.payee, args.amount, args.memo].filter((each) => each !== undefined).join(" ") : question, locale: world.locale, payee: args.payee, amount: args.amount, memo: args.memo ?? null },
   );
   if (!result.ok || result.payment === undefined) {
     const reason = result.ok ? "unavailable" : result.reason;

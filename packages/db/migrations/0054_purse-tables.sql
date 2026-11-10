@@ -67,7 +67,7 @@ CREATE TABLE "purse_payments" (
 	CONSTRAINT "purse_payments_state" CHECK (state in ('proposed', 'held', 'approved', 'executing', 'unknown', 'paid', 'failed', 'declined', 'expired', 'cancelled')),
 	CONSTRAINT "purse_payments_route" CHECK (route is null or route in ('paypal', 'gift_card', 'crypto', 'wire', 'cash', 'unknown')),
 	CONSTRAINT "purse_payments_reasons" CHECK (hold_reasons <@ array['new_payee', 'risky_route', 'above_cap', 'pressure']::text[]),
-	CONSTRAINT "purse_payments_texts" CHECK (length(btrim(payee_name)) between 1 and 80 and length(words) between 1 and 400 and (memo is null or length(memo) between 1 and 120) and length(read_back) between 1 and 600),
+	CONSTRAINT "purse_payments_texts" CHECK (length(btrim(payee_name)) between 1 and 80 and length(words) between 1 and 500 and (memo is null or length(memo) between 1 and 120) and length(read_back) between 1 and 600),
 	CONSTRAINT "purse_payments_read_back_source" CHECK ("purse_payments"."read_back_source" in ('model', 'template')),
 	CONSTRAINT "purse_payments_answer" CHECK (("purse_payments"."answered_at" is null) = ("purse_payments"."answer_method" is null) and ("purse_payments"."answer_method" is null or "purse_payments"."answer_method" in ('app', 'voice'))),
 	CONSTRAINT "purse_payments_hold" CHECK (("purse_payments"."held_at" is null) = ("purse_payments"."hold_ends_at" is null) and ("purse_payments"."held_at" is null or cardinality("purse_payments"."hold_reasons") > 0)),

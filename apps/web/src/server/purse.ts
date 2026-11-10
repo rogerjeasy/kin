@@ -149,7 +149,8 @@ export async function purseScreen(context: PurseReadContext): Promise<PurseScree
     spendingAllowed: await readPurseSpendingAllowed(tx, circleId),
   }));
   const ledger = purseLedger(circle);
-  const isParent = circle.viewer.role === "parent";
+  // The parent whose Purse it is: a second member with the parent's role sees it as family does.
+  const isParent = circle.viewer.role === "parent" && (purse === null || purse.parentMemberId === circle.viewer.memberId);
   const mayVerify = authorize(seat, "purse_payee.verify").allowed;
   return {
     purse: purse === null ? null : { weeklyCents: purse.weeklyCents, ceilingCents: purse.ceilingCents, perPaymentCents: purse.perPaymentCents, status: purse.status, setByName: nameOf(purse.setBy), setAt: purse.setAt.toISOString(), simulated: purse.simulated },

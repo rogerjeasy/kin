@@ -62,7 +62,7 @@ export function askKinTools(world: AskKinWorld): ToolImplementations {
     },
     propose_gift: async (args, context) => {
       ownCircle(context);
-      return proposeGift(world, args);
+      return proposeGift(world, args, context.question ?? "");
     },
   };
 }

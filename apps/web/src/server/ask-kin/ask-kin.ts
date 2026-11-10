@@ -98,7 +98,7 @@ export async function runAskKin(context: AskKinContext, input: unknown): Promise
     executions: () => asPerson(context.db, context.userId, (tx) => readExecutions(tx, circle.circle.id)),
   });
   const gateway = toolGateway({
-    context: { circleId: circle.circle.id, memberId: circle.viewer.memberId, role: circle.viewer.role },
+    context: { circleId: circle.circle.id, memberId: circle.viewer.memberId, role: circle.viewer.role, question: parsed.question },
     implementations: askKinTools(world),
     recorder: context.recorder ?? logToolCall,
     clock: now,

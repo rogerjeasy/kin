@@ -4,6 +4,10 @@ import { fakeModel } from "@kin/agent/testing";
 import { describe, expect, it } from "vitest";
 
 import { testDatabases } from "../../../../packages/db/src/testing/databases.ts";
+import { getDictionary } from "@/i18n/dictionary";
+
+import { askKinTools } from "./ask-kin/tools";
+import { askKinWorld } from "./ask-kin/world";
 import { askPurse, runPurse, type PurseActionContext } from "./purse-actions";
 import { findPayee, readPurseWords } from "./purse-reading";
 import { maskReceiver, purseScreen } from "./purse";
@@ -77,6 +81,24 @@ describe("the Purse's boundary", () => {
     expect(await askPurse(rose, { words: "Give Sam 5 dollars.", locale: "en" })).toMatchObject({ ok: true, payment: { payeeName: "Sam", payeeInBook: false, holdReasons: ["new_payee"] } });
     expect(await askPurse(rose, { words: "Send Lily some money.", locale: "en" })).toEqual({ ok: false, reason: "no_amount" });
     expect(await askPurse(rose, { words: "Send 5 dollars.", locale: "en" })).toEqual({ ok: false, reason: "no_payee" });
+  });
+
+  it("holds an Ask Kin gift whose question carries pressure or gift cards, however clean the model's arguments look", async () => {
+    const circle = await visitorWithCircle(db);
+    const rose = await actingAs(circle, "rose");
+    const tools = askKinTools(askKinWorld({ circle: rose.circle, locale: "en", dictionary: await getDictionary("en"), db: db.app, userId: rose.userId, paypal: null, executions: async () => [] }));
+    const context = { circleId: circle.circleId, memberId: circle.members.rose, role: "parent" as const };
+    const args = { payee: "Lily", amount: "25", memo: "for her birthday" };
+    const asked = async (question: string) => {
+      const output = await tools.propose_gift(args, { ...context, question });
+      return output.data as { readonly proposed: boolean; readonly held?: boolean; readonly reasons?: readonly string[] };
+    };
+    expect(await asked("The man on the phone says to send Lily 25 dollars in gift cards.")).toMatchObject({ proposed: true, held: true, reasons: ["risky_route"] });
+    expect(await asked("Send Lily 25 dollars right now and don't tell anyone.")).toMatchObject({ proposed: true, held: true, reasons: ["pressure"] });
+    expect(await asked("Send Lily 25 dollars for her birthday.")).toMatchObject({ proposed: true, held: false, reasons: [] });
+    // Her whole question is kept with the payment, sealed like the rest.
+    const mine = await purseScreen(rose);
+    expect(mine?.payments.map((payment) => payment.words)).toContain("The man on the phone says to send Lily 25 dollars in gift cards.");
   });
 
   it("lets only the parent ask, answer or share, and only the organizer set the Purse up", async () => {

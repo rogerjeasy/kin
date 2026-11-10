@@ -13,8 +13,12 @@ import { parseArgs, type ArgsOf, type ToolArgs } from "./tool-schema.ts";
  * sees a short result or a short reason; never an exception's text.
  */
 
-/** Who is asking, resolved by the caller from the verified session, never from the model. */
-export type ToolContext = { readonly circleId: string; readonly memberId: string; readonly role: CircleRole };
+/**
+ * Who is asking, resolved by the caller from the verified session, never from the model. `question` is the person's
+ * own words for this turn, as they sent them: a tool that must read them (the Purse scans them for signs of pressure)
+ * takes them from here, never from arguments the model could leave out.
+ */
+export type ToolContext = { readonly circleId: string; readonly memberId: string; readonly role: CircleRole; readonly question?: string };
 
 export type JsonValue = string | number | boolean | null | readonly JsonValue[] | { readonly [key: string]: JsonValue };
 

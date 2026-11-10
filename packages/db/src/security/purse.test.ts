@@ -1,9 +1,11 @@
 import { sql } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
 import { PurseError, addPursePayee, answerPursePayment, cancelPursePayment, proposePursePayment, readPurse, readPursePayees, readPursePayments, setPurse, setPurseStatus, sharePursePayment, verifyPursePayee, type ProposePursePaymentInput } from "../purse.ts";
-import { pursePayments } from "../schema/index.ts";
+import { members, pursePayments } from "../schema/index.ts";
 import { asPerson, asService } from "../scope.ts";
+import { createDemoVisitor } from "../people.ts";
 import { seatPerson, visitorWithCircle, type VisitorCircle } from "../testing/index.ts";
 import { testDatabases } from "../testing/databases.ts";
 import { REFUSED, countIn, errorCode } from "../testing/sql.ts";
@@ -143,6 +145,27 @@ describe("the parent's Purse is hers alone (AGENTS.md section 6)", () => {
     expect((await person(people.elena, (tx) => readPursePayments(tx, circle.circleId))).find((payment) => payment.id === held)?.pressured).toBe(false);
   });
 
+  it("shows her payments to the parent whose Purse it is, not to another member with the parent's role", async () => {
+    const circle = await visitorWithCircle(db);
+    const people = await seats(circle);
+    // A second member seated with the parent's role, as a circle for two parents would hold.
+    const other = { userId: await createDemoVisitor(db.app) };
+    await asService(db.service, circle.circleId, (tx) => tx.insert(members).values({ id: randomUUID(), circleId: circle.circleId, userId: other.userId, displayName: "Walter", role: "parent", parentLevel: "decides" }));
+    const gift = await giftToLily(circle, people.rose);
+    expect(await visible(people.rose, circle)).toEqual([gift]);
+    expect(await visible(other.userId, circle)).toEqual([]);
+    expect(await person(other.userId, (tx) => countIn(tx, "purse_payments", circle.circleId))).toBe(0);
+    // Nor may they spend her Purse, answer for her or share for her.
+    const lily = await payeeId(circle, people.rose, "Lily");
+    expect(await reason(propose(other.userId, request(circle, { payeeId: lily })))).toBe("refused");
+    const { id } = await propose(people.rose, request(circle, { payeeId: lily, cents: 1_000 }));
+    expect(await reason(answer(other.userId, circle, id))).toBe("refused");
+    expect(await reason(person(other.userId, (tx) => sharePursePayment(tx, { circleId: circle.circleId, paymentId: gift, share: true })))).toBe("refused");
+    // A payment she shares, or Kin holds, they see as the family does.
+    await person(people.rose, (tx) => sharePursePayment(tx, { circleId: circle.circleId, paymentId: gift, share: true }));
+    expect(await visible(other.userId, circle)).toEqual([gift]);
+  });
+
   it("gives no person a way to write a payment except through her operations", async () => {
     const circle = await visitorWithCircle(db);
     const people = await seats(circle);
@@ -191,6 +214,18 @@ describe("the rules a payment keeps, whatever the app sends", () => {
     expect(await reason(propose(people.rose, request(circle, { payeeId: lily, cents: 1_500 })))).toBe("over_balance");
     const second = await propose(people.rose, request(circle, { payeeId: lily, cents: 1_000 }));
     expect(await answer(people.rose, circle, second.id)).toBe("approved");
+  });
+
+  it("refuses a risky way to pay that is not held for it, whatever the other reasons", async () => {
+    const circle = await visitorWithCircle(db);
+    const people = await seats(circle);
+    const lily = await payeeId(circle, people.rose, "Lily");
+    for (const route of ["gift_card", "crypto", "wire", "cash"] as const) {
+      expect(await reason(propose(people.rose, request(circle, { payeeId: lily, route })))).toBe("unverified");
+      expect(await reason(propose(people.rose, request(circle, { payeeId: null, payeeName: "the man from the bank", route, holdReasons: ["new_payee"] })))).toBe("unverified");
+      expect(await reason(propose(people.rose, request(circle, { payeeId: lily, route, holdReasons: ["risky_route"] })))).toBe("no error");
+    }
+    expect(await reason(propose(people.rose, request(circle, { payeeId: lily, route: "paypal" })))).toBe("no error");
   });
 
   it("never changes what she asked for, and never lowers a hold", async () => {

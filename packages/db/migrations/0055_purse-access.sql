@@ -26,7 +26,8 @@
 --   KU002  outgoing money is held: the circle is paused, or a check holds it
 --   KU003  more than she may still spend
 --   KU004  the payment is not waiting for this (answered, expired, not held)
---   KU005  the request leaves out a reason to hold it, or names an unverified payee
+--   KU005  the request leaves out a reason to hold it (a new payee, an amount above the
+--          cap, a risky way to pay), or names an unverified payee
 --   KU006  the address book is full
 --   KU007  a member cannot verify an entry they added
 --   KU008  the ceiling is above the family agreement's
@@ -51,10 +52,24 @@ CREATE POLICY app_member_read ON public.purses FOR SELECT TO kin_app
   USING (kin_private.sees_circle_money(circle_id));
 CREATE POLICY app_member_read ON public.purse_payees FOR SELECT TO kin_app
   USING (kin_private.sees_circle_money(circle_id));
--- Her payments are hers: the parent reads every one; the rest of the family only
--- those she shared, and those that raised a flag by being held. A caregiver none.
+-- Whether the person asking is the parent whose Purse this is: not any member
+-- with the parent's role, but the one the Purse names.
+CREATE FUNCTION kin_private.is_purse_parent(p_circle uuid, p_purse uuid) RETURNS boolean
+  LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog, public
+  AS $$
+    SELECT EXISTS (
+      SELECT 1 FROM public.purses p
+      WHERE p.circle_id = p_circle AND p.id = p_purse
+        AND p.parent_member_id = kin_private.my_member_id(p_circle)
+    )
+  $$;
+--> statement-breakpoint
+
+-- Her payments are hers: the parent whose Purse it is reads every one; the rest
+-- of the family only those she shared, and those that raised a flag by being
+-- held. A caregiver none.
 CREATE POLICY app_parent_read ON public.purse_payments FOR SELECT TO kin_app
-  USING (coalesce(kin_private.my_role(circle_id) = 'parent', false));
+  USING (kin_private.is_purse_parent(circle_id, purse_id));
 CREATE POLICY app_family_read ON public.purse_payments FOR SELECT TO kin_app
   USING (kin_private.sees_circle_money(circle_id) AND (shared_at IS NOT NULL OR held_at IS NOT NULL));
 --> statement-breakpoint
@@ -418,6 +433,9 @@ CREATE FUNCTION kin_private.propose_purse_payment(
     IF p_cents > v_purse.per_payment_cents AND NOT ('above_cap' = ANY (p_reasons)) THEN
       RAISE EXCEPTION 'kin: an amount above the cap is held' USING ERRCODE = 'KU005';
     END IF;
+    IF p_route IN ('gift_card', 'crypto', 'wire', 'cash') AND NOT ('risky_route' = ANY (p_reasons)) THEN
+      RAISE EXCEPTION 'kin: a risky way to pay is held' USING ERRCODE = 'KU005';
+    END IF;
     IF cardinality(p_reasons) = 0 AND p_cents > kin_private.purse_available(p_circle) THEN
       RAISE EXCEPTION 'kin: more than she may still spend' USING ERRCODE = 'KU003';
     END IF;
@@ -585,6 +603,7 @@ CREATE FUNCTION kin_private.purse_circles() RETURNS SETOF uuid
   $$;
 --> statement-breakpoint
 
+REVOKE ALL ON FUNCTION kin_private.is_purse_parent(uuid, uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.purse_spending_allowed(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.purse_available(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.set_purse(uuid, bigint, bigint, bigint) FROM PUBLIC;
@@ -600,6 +619,7 @@ REVOKE ALL ON FUNCTION kin_private.purse_circles() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.assert_purse_payment_fixed() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.assert_purse_payment_move() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.assert_purse_payee_fixed() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION kin_private.is_purse_parent(uuid, uuid) TO kin_app;
 GRANT EXECUTE ON FUNCTION kin_private.purse_spending_allowed(uuid) TO kin_app, kin_service;
 GRANT EXECUTE ON FUNCTION kin_private.set_purse(uuid, bigint, bigint, bigint) TO kin_app;
 GRANT EXECUTE ON FUNCTION kin_private.set_purse_status(uuid, text) TO kin_app;
