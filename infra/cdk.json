@@ -6,7 +6,7 @@
     "kin:region": "us-east-1",
     "kin:monthlyBudgetUsd": 150,
     "kin:databaseCapacityAcu": {
-      "min": 0,
+      "min": 0.5,
       "max": 4
     },
     "kin:webOrigins": [
