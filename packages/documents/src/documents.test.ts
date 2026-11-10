@@ -34,8 +34,14 @@ describe("checking what the model says a document holds", () => {
     }
   });
 
-  it("cannot check a photograph's words, so it says so with a lower confidence", () => {
-    expect(settleReading(raw, { ...context, text: null })).toMatchObject({ amountCents: 8_640, confidence: 0.7, source: "model_photo" });
+  it("cannot check a photograph's words, so it keeps an amount only from the words the model says it read, with a lower confidence", () => {
+    expect(settleReading({ ...raw, quote: "Amount due: $86.40" }, { ...context, text: null })).toMatchObject({ amountCents: 8_640, confidence: 0.7, source: "model_photo" });
+  });
+
+  it("drops a photograph's amount the model cannot point to, so a person fills it in", () => {
+    for (const quote of [null, "Greenway Power, account 4471", "Amount due: $68.40"]) {
+      expect(settleReading({ ...raw, quote }, { ...context, text: null }), String(quote)).toMatchObject({ amountCents: null, kind: "letter", source: "model_photo" });
+    }
   });
 
   it("drops an impossible or implausible due date", () => {

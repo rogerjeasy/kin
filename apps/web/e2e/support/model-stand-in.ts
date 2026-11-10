@@ -21,7 +21,7 @@ async function body(request: IncomingMessage): Promise<string> {
 }
 
 function reading(user: string): string {
-  if (/attached photograph/.test(user)) return JSON.stringify({ kind: "bill", sender: "Hillside Clinic", amount: "120.00", dueOn: null, demandsPayment: true, pressure: false, quote: "Hillside Clinic" });
+  if (/attached photograph/.test(user)) return JSON.stringify({ kind: "bill", sender: "Hillside Clinic", amount: "120.00", dueOn: null, demandsPayment: true, pressure: false, quote: "Hillside Clinic Amount due: $120.00" });
   const words = /<document>\n([\s\S]*)\n<\/document>/.exec(user)?.[1] ?? "";
   const sender = words.split("\n")[0]?.trim() ?? "";
   const amount = /(\d+\.\d{2})/.exec(words)?.[1] ?? null;

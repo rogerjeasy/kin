@@ -55,7 +55,7 @@ function plausibleDue(value: string, today: string): boolean {
 export function settleReading(raw: RawReading, context: ReadingContext): Reading {
   const words = context.text === null ? null : normalize(context.text);
   const sender = checkedSender(raw.sender, words);
-  const amountCents = checkedAmount(raw.amount, context);
+  const amountCents = checkedAmount(raw.amount, context, raw.quote);
   const dueOn = raw.dueOn !== null && isDay(raw.dueOn) && plausibleDue(raw.dueOn, context.today) ? raw.dueOn : null;
   // A bill with no amount to pay is only a letter.
   const kind = raw.kind === "bill" && amountCents === null ? "letter" : raw.kind;
@@ -106,7 +106,13 @@ function checkedSender(sender: string | null, words: string | null): string | nu
   return words !== null && !words.includes(normalize(name)) ? null : readableName(name);
 }
 
-function checkedAmount(amount: string | null, context: ReadingContext): number | null {
+/**
+ * The amount, only when it can be traced. Typed text is the source itself, so
+ * the amount must be printed in it. A photograph has no text to check, so the
+ * amount must at least be in the words the model says it read it from: an
+ * amount the model cannot point to on the page is dropped for a person to fill in.
+ */
+function checkedAmount(amount: string | null, context: ReadingContext, quote: string | null): number | null {
   if (amount === null) return null;
   let cents: number;
   try {
@@ -115,5 +121,6 @@ function checkedAmount(amount: string | null, context: ReadingContext): number |
     return null;
   }
   if (cents <= 0 || cents > MAX_DOCUMENT_CENTS) return null;
-  return context.text !== null && !amountsIn(context.text, context.currency).includes(cents) ? null : cents;
+  const evidence = context.text ?? quote;
+  return evidence === null || !amountsIn(evidence, context.currency).includes(cents) ? null : cents;
 }
