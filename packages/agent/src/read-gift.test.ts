@@ -36,7 +36,7 @@ describe("reading what the parent asks to send from her Purse", () => {
 
   it("reads nothing too long or empty, and tells a refusal or a cut-off apart", async () => {
     expect(await readGift(fakeModel(), "   ")).toEqual({ kind: "unreadable" });
-    expect(await readGift(fakeModel(), "x".repeat(401))).toEqual({ kind: "unreadable" });
+    expect(await readGift(fakeModel(), "x".repeat(501))).toEqual({ kind: "unreadable" });
     expect(await readGift(fakeModel({ kind: "refused" }), WORDS)).toEqual({ kind: "refused" });
     expect(await readGift(fakeModel({ kind: "cut_off" }), WORDS)).toEqual({ kind: "unreadable" });
   });

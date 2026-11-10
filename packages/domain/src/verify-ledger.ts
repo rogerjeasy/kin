@@ -11,6 +11,7 @@ export const LEDGER_PROBLEMS = [
   "wrong_currency",
   "bad_reversal",
   "pool_overdrawn",
+  "purse_overdrawn",
 ] as const;
 
 export type LedgerProblemCode = (typeof LEDGER_PROBLEMS)[number];
@@ -28,6 +29,10 @@ export type LedgerAudit = {
   readonly balances: ReadonlyMap<string, number>;
   /** What the pool's PayPal account holds by the ledger: the pool's cash and the parent's Purse, which is kept in it. */
   readonly poolCents: number;
+  /** The part of it free for the family's bills: the pool's cash alone. */
+  readonly poolCashCents: number;
+  /** The part of it set aside in the parent's Purse. */
+  readonly purseCents: number;
 };
 
 const mirrors = (reversal: readonly LedgerLine[], original: readonly LedgerLine[]): boolean =>
@@ -80,12 +85,13 @@ export function auditLedger(circleId: string, currency: string, entries: readonl
       if (line.account === PURSE_CASH) purse += line.direction === poolNormal ? line.cents : -line.cents;
     }
     if (pool < 0) problem("pool_overdrawn", entry, "more money left the pool than had arrived");
+    if (purse < 0) problem("purse_overdrawn", entry, "more left the Purse than was moved into it");
     earlier.set(entry.id, entry);
     sources.add(source);
     if (entry.reverses !== null) reversed.add(entry.reverses);
   }
 
-  return { problems, balances: safeBalances({ circleId, currency, entries }), poolCents: pool + purse };
+  return { problems, balances: safeBalances({ circleId, currency, entries }), poolCents: pool + purse, poolCashCents: pool, purseCents: purse };
 }
 
 /** Balances of the entries, or none when an account in them is not one the ledger knows (reported as an invalid entry). */

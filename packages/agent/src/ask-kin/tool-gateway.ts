@@ -23,6 +23,12 @@ export type ToolContext = {
    * delegation the member granted. Its scope can only narrow the role.
    */
   readonly delegation?: { readonly id: string; readonly scope: DelegationScope };
+  /**
+   * The person's own words for this turn, as they sent them: a tool that must
+   * read them (the Purse scans them for signs of pressure) takes them from
+   * here, never from arguments the model could leave out.
+   */
+  readonly question?: string;
 };
 
 export type JsonValue = string | number | boolean | null | readonly JsonValue[] | { readonly [key: string]: JsonValue };

@@ -21,8 +21,8 @@ export const PURSE_HOLD_HOURS = 24;
 export const PURSE_CONFIRM_MINUTES = 15;
 /** The longest memo kept with a payment: "for her birthday", "church collection". */
 export const MAX_PURSE_MEMO_CHARS = 120;
-/** The longest request Kin reads, spoken or typed. */
-export const MAX_PURSE_WORDS_CHARS = 400;
+/** The longest request Kin reads, spoken, typed or asked of Ask Kin (whose questions are at most this long too). */
+export const MAX_PURSE_WORDS_CHARS = 500;
 /** The most people the family may put in her address book. */
 export const MAX_PURSE_PAYEES = 24;
 

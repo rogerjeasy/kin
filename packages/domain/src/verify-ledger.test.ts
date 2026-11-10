@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { rosesMonth } from "./examples/roses-month.ts";
 import type { LedgerEntry } from "./ledger-entry.ts";
+import { purseFunded, pursePaid } from "./postings.ts";
+import { forAll, testHeader, type Random } from "./testing/index.ts";
 import { auditLedger } from "./verify-ledger.ts";
 
 const { ledger } = rosesMonth;
@@ -12,6 +14,31 @@ describe("auditing an exported ledger", () => {
     const result = audit(ledger.entries);
     expect(result.problems).toEqual([]);
     expect(result.poolCents).toBe(result.balances.get("pool_cash"));
+    expect(result.poolCashCents).toBe(result.poolCents);
+    expect(result.purseCents).toBe(0);
+  });
+
+  it("flags every entry that leaves the Purse below zero, and no other, whatever the order of its floats and payments", () => {
+    forAll(
+      (random: Random) => Array.from({ length: random.int(1, 12) }, () => ({ funded: random.pick([true, false]), cents: random.int(1, 9_000) })),
+      (steps) => {
+        const entries = steps.map((step, index) => {
+          const header = { ...testHeader(`purse-${index}`), circleId: ledger.circleId, currency: ledger.currency, period: rosesMonth.period };
+          return step.funded ? purseFunded(header, { cents: step.cents }) : pursePaid(header, { cents: step.cents, feeCents: 0 });
+        });
+        // Rose's month first, so the pool has the money each float takes from it.
+        const result = audit([...ledger.entries, ...entries]);
+        let purse = 0;
+        const below: string[] = [];
+        steps.forEach((step, index) => {
+          purse += step.funded ? step.cents : -step.cents;
+          if (purse < 0) below.push(`entry-purse-${index}`);
+        });
+        expect(result.problems.filter((problem) => problem.code === "purse_overdrawn").map((problem) => problem.entryId)).toEqual(below);
+        expect(result.purseCents).toBe(purse);
+        expect(result.poolCents).toBe(result.poolCashCents + result.purseCents);
+      },
+    );
   });
 
   it("reports an entry that does not balance, a repeated cause and an unknown account without throwing", () => {

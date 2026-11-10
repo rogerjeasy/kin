@@ -22,7 +22,7 @@ import {
   type Database,
   type PurseReason,
 } from "@kin/db";
-import { InvalidDecimalError, MAX_PURSE_WORDS_CHARS, PURSE_CASH, PurseTermsError, accountBalance, centsFromDecimal, checkPurseTerms, decidePursePayment, purseReservedCents, type PurseRefusal } from "@kin/domain";
+import { InvalidDecimalError, MAX_PURSE_WORDS_CHARS, PURSE_CASH, PurseTermsError, accountBalance, centsFromDecimal, checkPurseTerms, decidePursePayment, purseMarkers, purseReservedCents, type PurseRefusal, type PurseRoute } from "@kin/domain";
 
 import { LANGUAGE_NAMES } from "@/components/dashboard/words/letter-words";
 import { circleFormatters } from "@/content/circle/format";
@@ -100,8 +100,10 @@ export async function askPurse(context: PurseActionContext, ask: GiftAsk): Promi
   const now = (context.now ?? Date.now)();
   const model = context.model ?? null;
   const mayUseModel = model !== null && context.accountTypes !== undefined && spendUse(context, { userId: context.userId, accountTypes: context.accountTypes }, now);
+  // From Ask Kin the payee and amount come as the tool's arguments; her words (the question she asked) are still what is
+  // scanned for pressure and a risky way to pay, so arguments that look clean cannot drop a hold.
   const reading = ask.payee !== undefined && ask.amount !== undefined
-    ? await readPurseWords(null, `${ask.payee} ${ask.amount}${ask.memo ? ` ${ask.memo}` : ""}`, state.payees, currency, ask.locale).then((read) => ({ ...read, payeeName: read.payee?.name ?? ask.payee ?? null, memo: ask.memo ?? null, cents: safeCents(ask.amount ?? "", currency) }))
+    ? await readPurseWords(null, `${ask.payee} ${ask.amount}${ask.memo ? ` ${ask.memo}` : ""}`, state.payees, currency, ask.locale).then((read) => ({ ...read, payeeName: read.payee?.name ?? ask.payee ?? null, memo: ask.memo ?? null, cents: safeCents(ask.amount ?? "", currency), route: routeOf(ask.words) }))
     : await readPurseWords(mayUseModel ? model : null, ask.words, state.payees, currency, ask.locale);
   if (reading.payeeName === null) return fail("no_payee");
   if (reading.cents === null) return fail("no_amount");
@@ -140,6 +142,15 @@ export async function askPurse(context: PurseActionContext, ask: GiftAsk): Promi
     if (error instanceof PurseError) return fail(error.reason);
     throw error;
   }
+}
+
+/** A risky way to pay named in her words, by the scam markers' own rules: what the database then insists is held. */
+function routeOf(words: string): PurseRoute | null {
+  const markers = purseMarkers([words]);
+  if (markers.includes("gift_cards")) return "gift_card";
+  if (markers.includes("crypto_atm")) return "crypto";
+  if (markers.includes("wire")) return "wire";
+  return null;
 }
 
 function safeCents(amount: string, currency: string): number | null {

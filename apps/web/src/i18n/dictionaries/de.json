@@ -3026,7 +3026,8 @@
         "reversal": "Eine Korrektur vom {day} hebt einen früheren Eintrag über {amount} auf.",
         "payout_above_usual": "Eine Zahlung von {amount} am {day} liegt deutlich über dem, was dieser Empfänger üblicherweise erhält.",
         "simulated_and_real": "Die Aufzeichnung mischt simulierte Einträge mit echten Sandbox-Transaktionen."
-      }
+      },
+      "poolSplit": "Bestätigtes Geld laut Buch: {free} frei für die Rechnungen der Familie und {purse} in der Geldbörse des Elternteils."
     },
     "shiftLinks": {
       "open": "Einstempel-Link",

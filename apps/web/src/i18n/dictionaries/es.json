@@ -3026,7 +3026,8 @@
         "reversal": "Una corrección del {day} anula un asiento anterior de {amount}.",
         "payout_above_usual": "Un pago de {amount} el {day} supera claramente lo que este beneficiario suele recibir.",
         "simulated_and_real": "El registro mezcla asientos simulados con transacciones reales del entorno de pruebas."
-      }
+      },
+      "poolSplit": "Dinero confirmado, según el registro: {free} libres para las facturas de la familia y {purse} en el monedero del padre o la madre."
     },
     "shiftLinks": {
       "open": "Enlace de entrada",

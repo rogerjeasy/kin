@@ -94,7 +94,7 @@ export default async function VerifyPage({ params, searchParams }: PageProps<"/[
           note={report.ok ? fill(copy.passNote, { count: format.count(report.entryCount) }) : fill(copy.failNote, { failed: format.count(failed), total: format.count(rows.length) })}
           icon={report.ok ? ShieldCheckIcon : ShieldAlertIcon}
         />
-        <StatTile label={copy.pool} value={format.money(report.poolCents)} note={copy.poolNote} icon={ListChecksIcon} />
+        <StatTile label={copy.pool} value={format.money(report.poolCents)} note={report.purseCents === 0 ? copy.poolNote : fill(copy.poolSplit, { free: format.money(report.poolCashCents), purse: format.money(report.purseCents) })} icon={ListChecksIcon} />
         <StatTile label={copy.head} value={`${report.head.slice(0, 12)}…`} note={copy.headNote} icon={HashIcon} />
       </dl>
       <div className="grid gap-6 lg:grid-cols-2">
