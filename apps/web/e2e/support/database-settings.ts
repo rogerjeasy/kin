@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { E2E_PORTS } from "./ports";
+import { E2E_PORTS } from "./ports.ts";
 
 /** Where the end-to-end database listens, and where it reports that it is ready. */
 export const E2E_DATABASE = { port: E2E_PORTS.database, healthPort: E2E_PORTS.databaseHealth, envKey: "KIN_E2E_DATABASE" } as const;
