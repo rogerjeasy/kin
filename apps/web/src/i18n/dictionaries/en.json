@@ -3016,7 +3016,8 @@
         "reversal": "A correction on {day} cancels an earlier entry of {amount}.",
         "payout_above_usual": "A payment of {amount} on {day} is well above what this payee usually receives.",
         "simulated_and_real": "The record mixes simulated entries with real sandbox transactions."
-      }
+      },
+      "poolSplit": "Confirmed money, from the record: {free} free for the family’s bills and {purse} in the parent’s Purse."
     },
     "shiftLinks": {
       "open": "Check-in link",

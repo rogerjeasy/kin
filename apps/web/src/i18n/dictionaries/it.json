@@ -3016,7 +3016,8 @@
         "reversal": "Una correzione del {day} annulla una registrazione precedente di {amount}.",
         "payout_above_usual": "Un pagamento di {amount} il {day} supera nettamente ciò che questo beneficiario riceve di solito.",
         "simulated_and_real": "Il registro mescola registrazioni simulate e vere transazioni sandbox."
-      }
+      },
+      "poolSplit": "Denaro confermato, dal registro: {free} liberi per le bollette della famiglia e {purse} nel borsellino del genitore."
     },
     "shiftLinks": {
       "open": "Link per l’entrata",

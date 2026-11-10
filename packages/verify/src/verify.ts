@@ -32,7 +32,10 @@ export type VerificationReport = {
   readonly head: string;
   /** How many heads Kin had kept before this export, and the oldest one's time (ISO), so a reader can say what the check stood against. */
   readonly keptHeads: { readonly count: number; readonly oldest: string | null };
+  /** What the pool's PayPal account holds: the pool's free cash and the parent's Purse, which is kept in it. */
   readonly poolCents: number;
+  readonly poolCashCents: number;
+  readonly purseCents: number;
   readonly currency: string;
   readonly checks: readonly Check[];
   readonly observations: readonly Observation[];
@@ -83,7 +86,7 @@ function checkLedger(bundle: AuditBundle, audit: ReturnType<typeof auditLedger>)
   if (audit.problems.length > 0) {
     return fail("ledger", `${audit.problems.length} rule(s) broken: ${audit.problems.map((problem) => `${problem.code} at ${problem.entryId}`).join("; ")}`, audit.problems.map((problem) => problem.entryId), audit.problems.map((problem) => problem.code));
   }
-  return pass("ledger", `Every entry balances, no cause repeats, every reversal mirrors its original and the pool never went below zero (${bundle.entries.length} entries, balances recomputed from the lines)`);
+  return pass("ledger", `Every entry balances, no cause repeats, every reversal mirrors its original and neither the pool nor the Purse ever went below zero (${bundle.entries.length} entries, balances recomputed from the lines)`);
 }
 
 function checkSettlement(bundle: AuditBundle): Check {
@@ -212,6 +215,8 @@ export function verifyBundle(bundle: AuditBundle, options: VerifyOptions = {}): 
     head: bundle.head,
     keptHeads: { count: bundle.heads.length, oldest: bundle.heads.map((stored) => stored.recordedAt).toSorted()[0] ?? null },
     poolCents: audit.poolCents,
+    poolCashCents: audit.poolCashCents,
+    purseCents: audit.purseCents,
     currency: bundle.currency,
     checks,
     observations: observe(bundle.entries),

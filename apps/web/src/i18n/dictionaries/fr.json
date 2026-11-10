@@ -3016,7 +3016,8 @@
         "reversal": "Une correction du {day} annule une écriture antérieure de {amount}.",
         "payout_above_usual": "Un paiement de {amount} le {day} dépasse nettement ce que ce bénéficiaire reçoit d’habitude.",
         "simulated_and_real": "Le registre mélange des écritures simulées et de vraies transactions du bac à sable."
-      }
+      },
+      "poolSplit": "Argent confirmé, d’après le registre : {free} libres pour les factures de la famille et {purse} dans le porte-monnaie du parent."
     },
     "shiftLinks": {
       "open": "Lien d’arrivée",
