@@ -14,11 +14,16 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * lasts. Kept in this server's memory like the other model limits: it shapes
  * the demo and bounds its cost, and is not a guarantee across instances.
  *
+ * Its window is the demo session's fourteen days, so it must never refuse a
+ * newcomer for being full: whoever filled it would shut every new visitor out
+ * of Ask Kin for two weeks. When full it forgets the visitor who asked least
+ * recently instead; spending stays bounded by the server's hourly demo budget.
+ *
  * Held on `globalThis` because a production build gives the Ask Kin route and
  * the Ask Kin page their own copy of this module; both must read one count.
  */
 const shared = globalThis as typeof globalThis & { kinDemoQuestions?: Allowance };
-export const demoQuestions: Allowance = (shared.kinDemoQuestions ??= createRateLimiter(DEMO_QUESTIONS, DEMO_SESSION_DAYS * DAY_MS));
+export const demoQuestions: Allowance = (shared.kinDemoQuestions ??= createRateLimiter(DEMO_QUESTIONS, DEMO_SESSION_DAYS * DAY_MS, { whenFull: "forgetOldest" }));
 
 /**
  * The allowance this viewer's questions count against: a demo visitor's,

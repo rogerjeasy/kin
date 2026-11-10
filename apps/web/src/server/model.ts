@@ -20,16 +20,9 @@ export type RateLimiter = {
   record(key: string, now: number): void;
 };
 
-/** The most people one limiter tracks; past it, newcomers are refused rather than memory growing. */
+/** The most people one limiter tracks, unless it is given its own capacity. */
 const MAX_KEYS = 20_000;
 
-/**
- * At most `limit` uses per key in any `windowMs`. Kept in this server's
- * memory: it bounds what can be spent on the model from one instance, and
- * is not a guarantee across instances. Its memory and work are bounded:
- * expired keys are swept at most ten times a window, and when it is full a
- * key it does not know is refused.
- */
 /** A limiter that can also say how much of it a key has used, for a screen that shows what is left. */
 export type Allowance = RateLimiter & {
   readonly limit: number;
@@ -37,7 +30,29 @@ export type Allowance = RateLimiter & {
   used(key: string, now: number): number;
 };
 
-export function createRateLimiter(limit: number, windowMs: number): Allowance {
+export type LimiterOptions = {
+  /** The most keys it tracks. */
+  readonly capacity?: number;
+  /**
+   * What happens to a key it does not know once it is full: `refuse` it (the
+   * default, for short windows whose keys soon expire), or forget the key that
+   * was used least recently to make room (for a long window, where refusing
+   * would let anyone who fills it lock everyone else out for the whole window).
+   */
+  readonly whenFull?: "refuse" | "forgetOldest";
+};
+
+/**
+ * At most `limit` uses per key in any `windowMs`. Kept in this server's
+ * memory: it bounds what can be spent on the model from one instance, and
+ * is not a guarantee across instances. Its memory and work are bounded:
+ * expired keys are swept at most ten times a window, and it never holds more
+ * than its capacity (see `whenFull`).
+ */
+export function createRateLimiter(limit: number, windowMs: number, options: LimiterOptions = {}): Allowance {
+  const capacity = options.capacity ?? MAX_KEYS;
+  const forgetOldest = options.whenFull === "forgetOldest";
+  // A Map keeps insertion order; each use moves its key to the end, so the first key is the one used least recently.
   const uses = new Map<string, number[]>();
   let lastSweep = Number.NEGATIVE_INFINITY;
   const recentAt = (key: string, now: number) => (uses.get(key) ?? []).filter((at) => now - at < windowMs);
@@ -46,18 +61,26 @@ export function createRateLimiter(limit: number, windowMs: number): Allowance {
     lastSweep = now;
     for (const [key, times] of uses) if (times.every((at) => now - at >= windowMs)) uses.delete(key);
   };
+  const full = (key: string, now: number) => {
+    if (uses.has(key) || uses.size < capacity) return false;
+    sweep(now);
+    return uses.size >= capacity;
+  };
   return {
     limit,
     used: (key, now) => recentAt(key, now).length,
     allows(key, now) {
-      if (!uses.has(key) && uses.size >= MAX_KEYS) {
-        sweep(now);
-        if (uses.size >= MAX_KEYS) return false;
-      }
+      if (full(key, now) && !forgetOldest) return false;
       return recentAt(key, now).length < limit;
     },
     record(key, now) {
-      uses.set(key, [...recentAt(key, now), now]);
+      const times = [...recentAt(key, now), now];
+      if (full(key, now)) {
+        const oldest = uses.keys().next();
+        if (!oldest.done) uses.delete(oldest.value);
+      }
+      uses.delete(key);
+      uses.set(key, times);
     },
   };
 }

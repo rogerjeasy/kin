@@ -37,3 +37,12 @@ describe("what is left", () => {
     expect(questionsLeft(undefined, "a", 0)).toBeNull();
   });
 });
+
+describe("the demo's count when it is full", () => {
+  it("still lets a new visitor ask, rather than shutting everyone out for the session's fourteen days", () => {
+    for (let index = 0; index < 20_001; index++) demoQuestions.record(`demo:filler-${index}`, 0);
+    expect(demoQuestions.allows("demo:newcomer", 1)).toBe(true);
+    expect(questionsLeft(demoQuestions, "demo:newcomer", 1)).toBe(5);
+  });
+});
+

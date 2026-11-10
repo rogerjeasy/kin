@@ -27,4 +27,25 @@ describe("the limit on asking the model", () => {
     expect(limiter.allows("visitor-1", 10)).toBe(false);
     expect(limiter.allows("newcomer", 1_500)).toBe(true);
   });
+
+  it("when told to, forgets the key used least recently instead of refusing a newcomer, and never holds more than its capacity", () => {
+    const limiter = createRateLimiter(1, 1_000, { capacity: 3, whenFull: "forgetOldest" });
+    expect([take(limiter, "a", 0), take(limiter, "b", 1), take(limiter, "c", 2)]).toEqual([true, true, true]);
+    // Full of live keys, a newcomer is still taken, and the least recent ("a") makes room.
+    expect(take(limiter, "newcomer", 3)).toBe(true);
+    expect(limiter.used("a", 3)).toBe(0);
+    expect([limiter.used("b", 3), limiter.used("c", 3), limiter.used("newcomer", 3)]).toEqual([1, 1, 1]);
+    // Those still held keep their count: a key that has spent its use is still refused.
+    expect(take(limiter, "b", 4)).toBe(false);
+  });
+
+  it("counts a key's latest use as recent, so an active key is not the one forgotten", () => {
+    const limiter = createRateLimiter(2, 1_000, { capacity: 2, whenFull: "forgetOldest" });
+    take(limiter, "a", 0);
+    take(limiter, "b", 1);
+    take(limiter, "a", 2);
+    take(limiter, "c", 3);
+    expect([limiter.used("a", 3), limiter.used("b", 3), limiter.used("c", 3)]).toEqual([2, 0, 1]);
+  });
 });
+
