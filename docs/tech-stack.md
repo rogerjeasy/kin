@@ -103,20 +103,20 @@ Three small services share one codebase:
 
 | Kin feature | PayPal product | How Kin reaches it |
 |---|---|---|
-| Monthly sibling contributions | Subscriptions | Agent Toolkit for plans, PayPal's approval link for the sibling's consent |
+| Monthly sibling contributions | Subscriptions and Catalog | Direct REST calls for the product and plan, PayPal's approval link for the sibling's consent |
 | One-off top-ups | Orders v2 | JavaScript SDK v6, with capture on the server |
-| Top-up and settlement requests to siblings | Invoicing v2 | Agent Toolkit |
+| Top-up and settlement requests to siblings | Invoicing v2 | Direct REST calls |
 | Purchases for the parent | Vault payment token and Orders v2 at a linked merchant | Direct REST calls by the merchant |
 | Paying caregivers and rebalancing siblings | Payouts | Direct REST calls |
 | Spreading a large cost | Pay Later | JavaScript SDK v6 |
-| The record of what happened | Transaction Search and webhooks | Agent Toolkit and a webhook endpoint |
-| Following a delivery | Shipment tracking | Agent Toolkit |
-| Contesting a wrong charge | Disputes | Agent Toolkit |
+| The record of what happened | Webhooks, read-backs (Payments v2) and Transaction Search | A webhook endpoint, and direct REST reads |
+| Following a delivery | Shipment tracking | Planned, not built |
+| Contesting a wrong charge | Disputes | Planned, not built |
 | Signing in with PayPal | Log in with PayPal | Federated through Cognito, see section 9 |
 
-**Status in this build.** Called by the code today: Orders v2 with the JavaScript SDK v6 (and Pay Later when PayPal offers it), Subscriptions, Payouts, webhooks with signature verification, and the vault-backed Orders request in the demo pharmacy. Everything reached through the "Agent Toolkit" column, and Shipment tracking, Disputes, Transaction Search and Log in with PayPal, is **Planned, not built**; every PayPal call in the code is a direct REST call. Invoicing is covered in `architecture.md` section 8.2.
+**Status in this build.** Called by the code today, all by direct REST calls from `packages/paypal`: Orders v2 with the JavaScript SDK v6 (and Pay Later when PayPal offers it), Payments v2 (reading a capture or a refund back), Subscriptions with Catalog products and plans (create, read, transactions, suspend, activate, cancel, revise), Payouts (batch and item), Invoicing v2, Transaction Search (the nightly reconciliation of real Purse payments, architecture section 8.6a), webhooks with signature verification (including refunds, decision 97), and the vault-backed Orders request in the demo pharmacy. Shipment tracking, Disputes, creating a refund and Log in with PayPal are **Planned, not built**. Invoicing is covered in `architecture.md` section 8.2.
 
-**Packages and endpoints (the toolkit and MCP lines are Planned, not built):**
+**Packages and endpoints (the toolkit and MCP lines are Planned, not built; neither has a Payouts tool, and the model never holds a PayPal write, so Kin exposes its own MCP server instead, architecture decision 93):**
 
 - `@paypal/agent-toolkit` for the agent's PayPal tools.
 - The hosted sandbox MCP server at `https://mcp.sandbox.paypal.com`, with `/sse` and `/http` transports. It can also run locally with `npx @paypal/mcp --tools=all`.
@@ -133,17 +133,17 @@ Three small services share one codebase:
 
 ## 6. AI
 
-- **Model: Claude Opus 5.5 (`claude-opus-5-5`) as the target; the hosted app runs Opus 4.6 until the account is granted 5.5 (see the Bedrock paragraph below).** Used for the agent's reasoning, for reading bills, letters and receipts from photographs, and for writing statements and spoken sentences.
-- **SDK: `@anthropic-ai/sdk`**, using its tool runner with typed tools, so the SDK drives the tool-calling loop and Kin supplies the tools and the approval checks. **As built:** Ask Kin (`packages/agent/src/ask-kin`, architecture decision 74) runs a manual tool loop on `@anthropic-ai/bedrock-sdk`, non-streaming, with strict tool schemas; Bedrock's strict mode refuses integer minimum and maximum bounds, so Kin's own gateway enforces them. The tool runner is not used.
+- **Model, as built: Claude Opus 4.6 on Bedrock InvokeModel (`us.anthropic.claude-opus-4-6-v1`); Opus 5.5 (`claude-opus-5-5`) is the target once the account is granted it (see the Bedrock paragraph below).** Used for the agent's reasoning, for reading bills, letters and receipts from photographs, and for writing statements and spoken sentences.
+- **SDK, as built: `@anthropic-ai/bedrock-sdk`.** Ask Kin (`packages/agent/src/ask-kin`, architecture decision 74) runs a manual tool loop on `@anthropic-ai/bedrock-sdk`, non-streaming, with strict tool schemas; Bedrock's strict mode refuses integer minimum and maximum bounds, so Kin's own gateway enforces them. The `@anthropic-ai/sdk` tool runner, the first design, is not used.
 - **Structured outputs** for anything Kin stores, such as the amount, payee and due date read from a bill.
-- **Streaming** for spoken replies, so the parent hears the first words quickly.
+- **Streaming** for spoken replies was the design; **as built, no call streams** (each answer is short and non-streaming stays inside the SDK's timeout).
 
 **Settings to get right from the start:**
 
 - Set the effort level explicitly. Its default on this model is medium. Use low for short spoken turns and high for the monthly statement and for reading difficult documents.
 - Do not force a specific tool call. Opus 5.5 rejects forced tool choice. Use automatic tool choice with strict tool schemas.
-- Check the stop reason on every response and handle a refusal cleanly. Enable server-side fallbacks so a declined request is rerouted.
-- If spoken replies feel slow at low effort, test Claude Haiku 5.5 (`claude-haiku-5-5`) for those turns only.
+- Check the stop reason on every response and handle a refusal cleanly (built: a refusal or a cut-off falls back to fixed wording). Server-side fallbacks are not configured (decision 58).
+- If spoken replies feel slow at low effort, test Claude Haiku 5.5 (`claude-haiku-5-5`) for those turns only. Not done: every call uses one model.
 
 **Two calls that differ from the settings above.** The care calendar's assistant (architecture decision 82) sends the model its tools with thinking switched off and effort medium, because the calendar widget holds the conversation and cannot carry thinking blocks between requests; it needs a model that allows thinking off (Opus 4.6, which the hosted app runs; Opus 5.5 would need this revisited). The shift wording (decision 81) uses the one-shot structured call at low effort, with no tools.
 

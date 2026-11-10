@@ -361,7 +361,7 @@ The submission demonstrates one complete month for one family, end to end, in th
 1. A circle is created, shares are agreed and monthly contributions begin.
 2. The parent hears a bill being paid.
 3. The caregiver bills by voice and is paid the same day.
-4. The parent approves a refill by voice, and the agent buys it.
+4. The parent approves a refill by voice, and it is bought from a simulated pharmacy.
 5. The parent holds up a letter and hears it read.
 6. A false payment demand is checked and caught.
 7. A sibling's out-of-pocket receipts are credited and the month is settled with a real payout.
@@ -371,7 +371,7 @@ The submission demonstrates one complete month for one family, end to end, in th
 
 **How it answers the judging criteria:**
 
-- **Technological implementation.** Nine PayPal capabilities and the agent toolkit, each doing a job the product cannot work without.
+- **Technological implementation.** Seven PayPal APIs (Orders with the JavaScript SDK v6, Payments, Payouts, Subscriptions, Invoicing, Transaction Search and webhooks), each doing a job the product cannot work without, and a Claude agent bounded by deterministic code.
 - **Design.** A complete product for five kinds of user, with a voice experience built for the person hardest to serve.
 - **Potential impact.** A named, enormous, well-documented problem, and a demonstration that addresses each part of it.
 - **Innovation.** Fairness settled by payout and payment events delivered as speech, neither of which exists in current products.

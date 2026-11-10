@@ -29,7 +29,7 @@ One TypeScript repository. `architecture.md` section 5 is the authority on layou
 
 ```
 apps/      web (Next.js UI, HTTP API, webhooks, the Kin MCP server at /api/mcp and the agency API at /api/v1) · voice · worker · demo-merchant
-packages/  domain · db · paypal · agent · documents · speech · telephony · auth · notify · config
+packages/  domain · db · paypal · agent · documents · speech · telephony · auth · notify · config · verify
 infra/     AWS CDK stacks
 docs/
 ```
@@ -39,7 +39,7 @@ docs/
 - `packages/domain` imports nothing outside itself: no database, no network, no AI, no clock. Time and randomness are passed in.
 - Every other package may depend on `domain`. Apps depend on packages. Apps never import each other.
 - Each outside system (PayPal, Claude, speech, telephony, the merchant) is reached through an interface defined beside the code that needs it. The real adapter lives in its own package, and tests use a fake.
-- `packages/paypal` is the only code that talks to PayPal. `packages/auth` is the only code that decides access. `packages/agent` is the only code that calls the model.
+- `packages/paypal` is the only code that talks to PayPal. The one exception is `apps/demo-merchant`, a stand-in for an outside pharmacy, which charges a saved wallet with its own PayPal app as a real merchant would. `packages/auth` is the only code that decides access. `packages/agent` is the only code that calls the model.
 
 ---
 

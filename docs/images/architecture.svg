@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" font-family="Helvetica, Arial, sans-serif">
+  <title>Kin: how the money, the AI and the people connect</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4b5563"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="#fbf8f2"/>
+
+  <text x="40" y="48" font-size="26" font-weight="700" fill="#14213d">Kin: the AI proposes, people approve, PayPal's record decides</text>
+  <text x="40" y="76" font-size="15" fill="#4b5563">Every arrow into the money core is deterministic code. The model never holds a tool that moves money.</text>
+
+  <!-- People -->
+  <g>
+    <rect x="40" y="110" width="220" height="560" rx="16" fill="#ffffff" stroke="#d6cfc2" stroke-width="2"/>
+    <text x="60" y="142" font-size="16" font-weight="700" fill="#14213d">People</text>
+    <g font-size="14" fill="#1f2937">
+      <rect x="58" y="160" width="184" height="78" rx="10" fill="#f3efe6"/>
+      <text x="72" y="184" font-weight="700">Siblings</text>
+      <text x="72" y="204">top up through PayPal,</text>
+      <text x="72" y="222">approve with a fresh MFA</text>
+      <rect x="58" y="252" width="184" height="78" rx="10" fill="#fdf1d8"/>
+      <text x="72" y="276" font-weight="700">Rose, the parent</text>
+      <text x="72" y="296">hears every dollar,</text>
+      <text x="72" y="314">says yes or no aloud</text>
+      <rect x="58" y="344" width="184" height="78" rx="10" fill="#f3efe6"/>
+      <text x="72" y="368" font-weight="700">Caregiver</text>
+      <text x="72" y="388">describes her week,</text>
+      <text x="72" y="406">is paid by PayPal Payouts</text>
+      <rect x="58" y="436" width="184" height="96" rx="10" fill="#f3efe6"/>
+      <text x="72" y="460" font-weight="700">A member's own AI</text>
+      <text x="72" y="480">assistant or an agency,</text>
+      <text x="72" y="498">through Kin's MCP server</text>
+      <text x="72" y="516">and signed agency API</text>
+      <rect x="58" y="546" width="184" height="104" rx="10" fill="#f3efe6"/>
+      <text x="72" y="570" font-weight="700">A scam caller</text>
+      <text x="72" y="590">meets the office line:</text>
+      <text x="72" y="608">fixed sentences, the claim</text>
+      <text x="72" y="626">check decides, family told</text>
+    </g>
+  </g>
+
+  <!-- Kin -->
+  <g>
+    <rect x="300" y="110" width="520" height="452" rx="16" fill="#14213d"/>
+    <text x="322" y="142" font-size="16" font-weight="700" fill="#f5c76b">Kin on AWS</text>
+    <rect x="320" y="160" width="230" height="160" rx="12" fill="#1f2f52"/>
+    <text x="336" y="186" font-size="15" font-weight="700" fill="#ffffff">Web app (App Runner)</text>
+    <g font-size="13" fill="#d7deea">
+      <text x="336" y="208">Next.js, 7 languages, RTL</text>
+      <text x="336" y="228">one authorize() for 5 roles</text>
+      <text x="336" y="248">PayPal JS SDK v6 checkout</text>
+      <text x="336" y="268">webhook intake: raw bytes to</text>
+      <text x="336" y="286">SQS FIFO, nothing written</text>
+      <text x="336" y="306">MCP server, agency API</text>
+    </g>
+    <rect x="570" y="160" width="230" height="160" rx="12" fill="#2b2140"/>
+    <text x="586" y="186" font-size="15" font-weight="700" fill="#ffffff">Agent layer</text>
+    <g font-size="13" fill="#e5dcf2">
+      <text x="586" y="208">Ask Kin: Claude picks tools</text>
+      <text x="586" y="228">tool gateway: role, schema,</text>
+      <text x="586" y="248">call and time limits, log</text>
+      <text x="586" y="268">9 tools read, 2 propose</text>
+      <text x="586" y="288">number guard, 7 languages</text>
+      <text x="586" y="308">8 eval sets, all recorded</text>
+    </g>
+    <rect x="320" y="338" width="230" height="194" rx="12" fill="#f5c76b"/>
+    <text x="336" y="364" font-size="15" font-weight="700" fill="#14213d">Money core (no I/O, no AI)</text>
+    <g font-size="13" fill="#14213d">
+      <text x="336" y="386">integer cents, double entry</text>
+      <text x="336" y="406">fairness and settlement</text>
+      <text x="336" y="426">approval engine: no one</text>
+      <text x="336" y="444">approves a payment to self</text>
+      <text x="336" y="464">forward-only state machines</text>
+      <text x="336" y="484">claim check, mandates</text>
+      <text x="336" y="504">property tests</text>
+    </g>
+    <rect x="570" y="338" width="230" height="210" rx="12" fill="#1f2f52"/>
+    <text x="586" y="364" font-size="15" font-weight="700" fill="#ffffff">Worker (Fargate)</text>
+    <g font-size="13" fill="#d7deea">
+      <text x="586" y="386">verifies each webhook with</text>
+      <text x="586" y="404">PayPal, then reads the order,</text>
+      <text x="586" y="422">capture or batch back</text>
+      <text x="586" y="444">outbox: one idempotency key</text>
+      <text x="586" y="462">per payment, SKIP LOCKED</text>
+      <text x="586" y="484">timeout = unknown: ask PayPal,</text>
+      <text x="586" y="502">never retry blindly</text>
+      <text x="586" y="522">a refund is read back, then</text>
+      <text x="586" y="540">reversed exactly or held</text>
+    </g>
+  </g>
+
+  <!-- Data -->
+  <rect x="300" y="580" width="520" height="90" rx="16" fill="#ffffff" stroke="#d6cfc2" stroke-width="2"/>
+  <text x="322" y="610" font-size="15" font-weight="700" fill="#14213d">Aurora PostgreSQL 17</text>
+  <g font-size="13" fill="#1f2937">
+    <text x="322" y="632">append-only ledger by trigger, balance checked at commit,</text>
+    <text x="322" y="652">row-level security on every table, hash chain checked offline by kin-verify</text>
+  </g>
+
+  <!-- External -->
+  <g>
+    <rect x="860" y="110" width="300" height="250" rx="16" fill="#ffffff" stroke="#0070e0" stroke-width="3"/>
+    <text x="880" y="142" font-size="16" font-weight="700" fill="#003087">PayPal (sandbox)</text>
+    <g font-size="13" fill="#1f2937">
+      <text x="880" y="166">Orders v2 + JS SDK v6, Pay Later</text>
+      <text x="880" y="188">Payouts: caregivers, settlements</text>
+      <text x="880" y="210">Invoicing v2: shares asked of siblings</text>
+      <text x="880" y="232">Subscriptions + Catalog: monthly shares</text>
+      <text x="880" y="254">Webhooks, verified signature</text>
+      <text x="880" y="276">Transaction Search: reconciliation</text>
+      <text x="880" y="298">Payments v2: capture read-back</text>
+      <text x="880" y="326" font-weight="700" fill="#003087">PayPal's record decides what happened</text>
+    </g>
+    <rect x="860" y="380" width="300" height="110" rx="16" fill="#ffffff" stroke="#c96442" stroke-width="3"/>
+    <text x="880" y="410" font-size="16" font-weight="700" fill="#8a3a1e">Claude Opus 4.6, Bedrock</text>
+    <g font-size="13" fill="#1f2937">
+      <text x="880" y="434">reads letters, photos, a caregiver's words</text>
+      <text x="880" y="454">words answers; structured output only</text>
+      <text x="880" y="474">never computes or decides an amount</text>
+    </g>
+    <rect x="860" y="510" width="300" height="70" rx="16" fill="#ffffff" stroke="#d6cfc2" stroke-width="2"/>
+    <text x="880" y="538" font-size="15" font-weight="700" fill="#14213d">Transcribe, Polly, Twilio</text>
+    <text x="880" y="560" font-size="13" fill="#1f2937">speech in and out; the phone lines</text>
+    <rect x="860" y="600" width="300" height="70" rx="16" fill="#ffffff" stroke="#d6cfc2" stroke-width="2"/>
+    <text x="880" y="628" font-size="15" font-weight="700" fill="#14213d">Cognito</text>
+    <text x="880" y="650" font-size="13" fill="#1f2937">PKCE sign-in, step-up before real money</text>
+  </g>
+
+  <!-- Arrows -->
+  <g stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <path d="M260 240 L318 240"/>
+    <path d="M550 240 L568 240"/>
+    <path d="M685 320 L685 336"/>
+    <path d="M435 320 L435 336"/>
+    <path d="M800 420 L858 300"/>
+    <path d="M858 200 L822 200"/>
+    <path d="M800 240 L858 430"/>
+    <path d="M560 562 L560 578"/>
+    <path d="M800 280 L858 545"/>
+  </g>
+  <text x="40" y="720" font-size="13" fill="#4b5563">Simulated money in a demo circle is labelled "Simulated" in the ledger, the CSV and the screens; a real PayPal sandbox payment is labelled "PayPal sandbox".</text>
+  <text x="40" y="742" font-size="13" fill="#4b5563">Source: docs/architecture.md sections 3 to 9 and 14. Built for the PayPal AI Hackathon 2026.</text>
+</svg>
