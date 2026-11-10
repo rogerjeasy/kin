@@ -8,7 +8,7 @@ import type { TestDatabases } from "./databases.ts";
 
 export { testDatabases } from "./databases.ts";
 export type { TestDatabases } from "./databases.ts";
-export { addMember, seatPerson, signedIn, visitorWithCircle } from "./circles.ts";
+export { DEMO_LEDGER_ENTRIES, addMember, seatPerson, signedIn, visitorWithCircle } from "./circles.ts";
 export type { VisitorCircle } from "./circles.ts";
 export { agreeWithoutCare, confirmedVisit } from "./visits.ts";
 export type { ConfirmedVisit } from "./visits.ts";
@@ -92,3 +92,4 @@ export async function pauseMandates(db: TestDatabases, circleId: string): Promis
 export async function adminRun(db: TestDatabases, text: string, params: readonly unknown[] = []): Promise<void> {
   await db.admin.$client.query(text, [...params]);
 }
+export { payPurseAsWorker } from "./purse.ts";

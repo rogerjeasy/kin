@@ -379,6 +379,20 @@
       "when": 1794258961165,
       "tag": "0053_payment-app-marker",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1794266288107,
+      "tag": "0054_purse-tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1794266288515,
+      "tag": "0055_purse-access",
+      "breakpoints": true
     }
   ]
 }

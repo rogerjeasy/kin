@@ -1,4 +1,3 @@
-import { rosesMonth } from "@kin/domain";
 import { sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
@@ -6,12 +5,12 @@ import { describe, expect, it } from "vitest";
 import { readAuditHeads, recordAuditHead } from "../audit-heads.ts";
 import { auditHeads } from "../schema/index.ts";
 import { asPerson, asService } from "../scope.ts";
-import { addMember, seatPerson, visitorWithCircle } from "../testing/circles.ts";
+import { DEMO_LEDGER_ENTRIES, addMember, seatPerson, visitorWithCircle } from "../testing/circles.ts";
 import { testDatabases } from "../testing/databases.ts";
 import { REFUSED, countIn, errorCode } from "../testing/sql.ts";
 
 const db = testDatabases();
-const COUNT = rosesMonth.ledger.entries.length;
+const COUNT = DEMO_LEDGER_ENTRIES;
 const HEAD = "ab".repeat(32);
 
 describe("audit_heads: the heads of the hash chain Kin kept", () => {

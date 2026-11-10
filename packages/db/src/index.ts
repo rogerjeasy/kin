@@ -171,3 +171,37 @@ export type {
 } from "./presence.ts";
 export { proposeHelp } from "./presence-help.ts";
 export type { ProposeHelpInput } from "./presence-help.ts";
+export {
+  PurseError,
+  addPursePayee,
+  answerPursePayment,
+  beginPursePayment,
+  cancelPursePayment,
+  confirmPursePayment,
+  expireUnanswered,
+  failPursePayment,
+  fundPurse,
+  lockPurseJob,
+  proposePursePayment,
+  purseCircles,
+  readPurse,
+  readPurseContext,
+  readPurseJobs,
+  readPursePayees,
+  readPursePayment,
+  readPursePayments,
+  readPurseSpendingAllowed,
+  readUnreconciledPurse,
+  recordPurseMismatch,
+  recordPurseReconciled,
+  recordPurseSubmitted,
+  recordPurseUnknown,
+  releaseHolds,
+  removePursePayee,
+  setPurse,
+  setPurseStatus,
+  sharePursePayment,
+  verifyPursePayee,
+} from "./purse.ts";
+export type { AddPursePayeeInput, ProposePursePaymentInput, PurseAnswer, PurseBegin, PurseContext, PurseJob, PursePayeeKind, PursePayeeRecord, PursePaymentRecord, PurseReason, PurseRecord } from "./purse.ts";
+export { PURSE_PAYEE_KINDS } from "./schema/purse.ts";

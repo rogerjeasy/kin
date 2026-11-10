@@ -1,9 +1,8 @@
-import { rosesMonth } from "@kin/domain";
 import { describe, expect, it } from "vitest";
 
 import { CircleNotFoundError, readCircle } from "../read-circle.ts";
 import { asPerson, asService } from "../scope.ts";
-import { visitorWithCircle } from "../testing/circles.ts";
+import { DEMO_LEDGER_ENTRIES, visitorWithCircle } from "../testing/circles.ts";
 import { testDatabases } from "../testing/databases.ts";
 import { PUBLIC_TABLES_SQL, countIn } from "../testing/sql.ts";
 
@@ -25,7 +24,7 @@ describe("one family never sees another", () => {
     });
     // Their own circle is there in the tables any member reads.
     await asPerson(db.app, theirs.userId, async (tx) => {
-      expect(await countIn(tx, "ledger_entries", theirs.circleId)).toBe(rosesMonth.ledger.entries.length);
+      expect(await countIn(tx, "ledger_entries", theirs.circleId)).toBe(DEMO_LEDGER_ENTRIES);
       expect(await countIn(tx, "members", theirs.circleId)).toBe(6);
     });
   });
@@ -54,7 +53,7 @@ describe("one family never sees another", () => {
       for (const table of tables) {
         expect({ table, rows: await countIn(tx, table, other.circleId) }).toEqual({ table, rows: 0 });
       }
-      expect(await countIn(tx, "ledger_entries", one.circleId)).toBe(rosesMonth.ledger.entries.length);
+      expect(await countIn(tx, "ledger_entries", one.circleId)).toBe(DEMO_LEDGER_ENTRIES);
     });
   });
 
