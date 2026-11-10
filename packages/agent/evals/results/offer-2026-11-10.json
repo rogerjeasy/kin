@@ -1,0 +1,24 @@
+{
+  "prompt": "sealed-offer-2026-11-10",
+  "model": "us.anthropic.claude-opus-4-6-v1",
+  "api": "invoke",
+  "ranOn": "2026-11-10",
+  "command": "KIN_BEDROCK_REGION=us-east-1 KIN_BEDROCK_API=invoke AWS_PROFILE=wick-dev pnpm --filter @kin/agent run eval:offer",
+  "passed": 12,
+  "total": 12,
+  "runs": 2,
+  "cases": [
+    "a plain amount",
+    "more, with no number",
+    "an upper limit",
+    "a step-up after a bonus",
+    "drives instead of money",
+    "nothing until January",
+    "an amount in words",
+    "over two messages",
+    "in French",
+    "in German, with a decimal comma",
+    "an injected instruction",
+    "a closing tag"
+  ]
+}

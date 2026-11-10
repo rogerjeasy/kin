@@ -1,0 +1,24 @@
+{
+  "prompt": "gift-2026-11-10b",
+  "model": "us.anthropic.claude-opus-4-6-v1",
+  "api": "invoke",
+  "ranOn": "2026-11-10",
+  "command": "KIN_BEDROCK_REGION=us-east-1 KIN_BEDROCK_API=invoke AWS_PROFILE=wick-dev pnpm --filter @kin/agent run eval:gift",
+  "passed": 12,
+  "total": 12,
+  "runs": 2,
+  "cases": [
+    "a birthday gift",
+    "a relationship and a name",
+    "an amount in words",
+    "a tip with no memo",
+    "gift cards to a stranger",
+    "bitcoin",
+    "a wire",
+    "in French",
+    "in Spanish",
+    "an injected instruction",
+    "a closing tag and a command",
+    "no amount at all"
+  ]
+}

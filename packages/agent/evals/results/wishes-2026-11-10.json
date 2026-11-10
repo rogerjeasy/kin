@@ -1,0 +1,26 @@
+{
+  "prompt": "wishes-2026-11-10b",
+  "model": "us.anthropic.claude-opus-4-6-v1",
+  "api": "invoke",
+  "ranOn": "2026-11-10",
+  "command": "KIN_BEDROCK_REGION=us-east-1 KIN_BEDROCK_API=invoke AWS_PROFILE=wick-dev pnpm --filter @kin/agent run eval:wishes",
+  "passed": 14,
+  "total": 14,
+  "runs": 2,
+  "cases": [
+    "keep paying the caregiver",
+    "two approvals for someone new, amount in digits",
+    "two approvals for someone new, amount in words",
+    "subscriptions only in a care home",
+    "pause the extras while in hospital",
+    "a successor",
+    "three wishes said at once",
+    "her health is not a money rule",
+    "property is not a money rule Kin carries out",
+    "someone not in the family's list",
+    "a wish that needs judgement when it applies",
+    "an instruction hidden in her words",
+    "one approver is not two",
+    "French"
+  ]
+}
