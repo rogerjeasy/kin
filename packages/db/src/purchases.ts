@@ -72,9 +72,15 @@ export type RefillProposed = { readonly id: string; readonly mandate: RefillMand
  * plain code) is approved at once with the mandate recorded as the approver;
  * one that does not fit it falls back to asking, and says why. Nothing is
  * bought here: only the approval queues the purchase.
- * Run as the person, inside `asPerson`.
+ * Run as the person, inside `asPerson`, or inside `asDelegate` with
+ * `standingPermission: false` for a refill a member's own assistant raised:
+ * that one never rides the standing permission and always waits for a
+ * person's yes in Kin, which the database enforces again.
  */
-export async function proposeRefill(tx: Transaction, input: { readonly circleId: string; readonly ruleId: string; readonly now: Date }): Promise<RefillProposed> {
+export async function proposeRefill(
+  tx: Transaction,
+  input: { readonly circleId: string; readonly ruleId: string; readonly now: Date; /** Whether the parent's standing permission may approve it. */ readonly standingPermission?: boolean },
+): Promise<RefillProposed> {
   const { circleId, ruleId, now } = input;
   const [row] = await tx
     .select({ rule: purchaseRules, status: payees.status, pausedUntil: circles.pausedUntil, timezone: circles.timezone })
@@ -114,9 +120,10 @@ export async function proposeRefill(tx: Transaction, input: { readonly circleId:
       await readMandateCandidates(tx, { circleId, ruleId, now, timezone: row.timezone, pausedUntil: row.pausedUntil }),
       { ruleId, totalCents: rule.priceCents },
     );
-    const underMandate = decision?.outcome === "covered" ? ({ outcome: "mandate", mandateId: decision.mandateId, agreementVersion: agreement.version } as const) : null;
+    const mayRide = input.standingPermission !== false;
+    const underMandate = mayRide && decision?.outcome === "covered" ? ({ outcome: "mandate", mandateId: decision.mandateId, agreementVersion: agreement.version } as const) : null;
     const id = await refillOperation(() => callPropose(tx, circleId, ruleId, underMandate ?? plan));
-    return { id, mandate: await mandateOutcome(tx, circleId, id, decision) };
+    return { id, mandate: await mandateOutcome(tx, circleId, id, mayRide ? decision : null) };
   } catch (error) {
     if (error instanceof PurchaseError) throw new RefillError(error.reason);
     throw error;

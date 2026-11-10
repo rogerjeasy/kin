@@ -3667,7 +3667,7 @@
       },
       "propose": {
         "title": "Può proporre, se lei lo consente",
-        "text": "Un rinnovo che propone attende i sì indicati dall’accordo di famiglia."
+        "text": "Un rinnovo che propone attende sempre il sì di una persona in Kin, anche se un permesso permanente lo coprirebbe."
       },
       "never": {
         "title": "Non approva e non paga mai",
@@ -3860,7 +3860,7 @@
       "eyebrow": "Il limite",
       "title": "Cosa nessun chiamante esterno può fare",
       "items": [
-        "Nessuno strumento approva, paga, firma o sposta denaro. Uno strumento che propone restituisce l’ID della proposta e la schermata in cui una persona la approva.",
+        "Nessuno strumento approva, paga, firma o sposta denaro. Uno strumento che propone restituisce l’ID della proposta e la schermata in cui una persona la approva, e la proposta attende quella persona anche se il permesso permanente del genitore la coprirebbe.",
         "Gli strumenti propri di PayPal, quelli di scrittura compresi, restano sul server di Kin e non vengono mai offerti qui.",
         "L’ambito del token restringe soltanto il ruolo del membro. Revocarlo fa rifiutare la chiamata successiva.",
         "Il testo del registro (nomi, note, lettere) torna etichettato come dato, dentro un tag che non può chiudere.",

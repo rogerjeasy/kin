@@ -3667,7 +3667,7 @@
       },
       "propose": {
         "title": "Darf vorschlagen, wenn Sie es erlauben",
-        "text": "Eine von ihm vorgeschlagene Nachbestellung wartet auf die Zustimmungen, die die Familienvereinbarung nennt."
+        "text": "Eine von ihm vorgeschlagene Nachbestellung wartet immer auf die Zustimmung eines Menschen in Kin, auch wenn eine dauerhafte Erlaubnis sie abdecken würde."
       },
       "never": {
         "title": "Genehmigt und bezahlt nie",
@@ -3860,7 +3860,7 @@
       "eyebrow": "Die Grenze",
       "title": "Was kein externer Aufrufer kann",
       "items": [
-        "Kein Werkzeug genehmigt, bezahlt, unterschreibt oder bewegt Geld. Ein Werkzeug, das vorschlägt, gibt die ID des Vorschlags zurück und den Bildschirm, auf dem ein Mensch ihn genehmigt.",
+        "Kein Werkzeug genehmigt, bezahlt, unterschreibt oder bewegt Geld. Ein Werkzeug, das vorschlägt, gibt die ID des Vorschlags zurück und den Bildschirm, auf dem ein Mensch ihn genehmigt, und der Vorschlag wartet auf diesen Menschen, auch wenn die dauerhafte Erlaubnis des Elternteils ihn abdecken würde.",
         "PayPals eigene Werkzeuge, auch die zum Schreiben, bleiben auf Kins Server und werden hier nie angeboten.",
         "Der Umfang des Tokens schränkt die Rolle des Mitglieds nur ein. Wird er widerrufen, wird schon der nächste Aufruf abgelehnt.",
         "Text aus dem Kassenbuch (Namen, Notizen, Briefe) kommt als Daten gekennzeichnet zurück, in einem Tag, den er nicht schließen kann.",

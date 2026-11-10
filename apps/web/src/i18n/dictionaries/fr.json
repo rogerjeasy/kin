@@ -3667,7 +3667,7 @@
       },
       "propose": {
         "title": "Peut proposer, si vous l’autorisez",
-        "text": "Un renouvellement qu’il propose attend les oui que nomme l’accord de la famille."
+        "text": "Un renouvellement qu’il propose attend toujours le oui d’une personne dans Kin, même si une autorisation permanente le couvrirait."
       },
       "never": {
         "title": "N’approuve ni ne paie jamais",
@@ -3860,7 +3860,7 @@
       "eyebrow": "La limite",
       "title": "Ce qu’aucun appelant extérieur ne peut faire",
       "items": [
-        "Aucun outil n’approuve, ne paie, ne signe ni ne déplace d’argent. Un outil qui propose renvoie l’identifiant de la proposition et l’écran où une personne l’approuve.",
+        "Aucun outil n’approuve, ne paie, ne signe ni ne déplace d’argent. Un outil qui propose renvoie l’identifiant de la proposition et l’écran où une personne l’approuve, et la proposition attend cette personne même si l’autorisation permanente du parent la couvrirait.",
         "Les propres outils de PayPal, écritures comprises, restent sur le serveur de Kin et ne sont jamais proposés ici.",
         "La portée du jeton ne fait que restreindre le rôle du membre. Le révoquer fait refuser l’appel suivant.",
         "Le texte issu du registre (noms, notes, courriers) revient étiqueté comme donnée, dans une balise qu’il ne peut pas fermer.",

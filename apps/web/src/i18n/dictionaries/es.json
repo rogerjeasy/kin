@@ -3667,7 +3667,7 @@
       },
       "propose": {
         "title": "Puede proponer, si usted lo permite",
-        "text": "Una reposición que proponga espera los síes que nombra el acuerdo familiar."
+        "text": "Una reposición que proponga siempre espera el sí de una persona en Kin, aunque un permiso permanente la cubriría."
       },
       "never": {
         "title": "Nunca aprueba ni paga",
@@ -3860,7 +3860,7 @@
       "eyebrow": "El límite",
       "title": "Lo que ningún llamante externo puede hacer",
       "items": [
-        "Ninguna herramienta aprueba, paga, firma ni mueve dinero. Una herramienta que propone devuelve el ID de la propuesta y la pantalla donde una persona la aprueba.",
+        "Ninguna herramienta aprueba, paga, firma ni mueve dinero. Una herramienta que propone devuelve el ID de la propuesta y la pantalla donde una persona la aprueba, y la propuesta espera a esa persona aunque el permiso permanente del padre o la madre la cubriría.",
         "Las herramientas propias de PayPal, incluidas las de escritura, se quedan en el servidor de Kin y nunca se ofrecen aquí.",
         "El alcance del token solo reduce el rol del propio miembro. Revocarlo hace que se rechace la llamada siguiente.",
         "El texto del registro (nombres, notas, cartas) vuelve etiquetado como dato, dentro de una etiqueta que no puede cerrar.",

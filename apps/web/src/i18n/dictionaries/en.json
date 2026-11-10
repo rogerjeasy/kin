@@ -3667,7 +3667,7 @@
       },
       "propose": {
         "title": "May propose, if you allow it",
-        "text": "A refill it proposes waits for the yeses the family agreement names."
+        "text": "A refill it proposes always waits for a person's yes in Kin, even where a standing permission would cover it."
       },
       "never": {
         "title": "Never approves or pays",
@@ -3860,7 +3860,7 @@
       "eyebrow": "The boundary",
       "title": "What no outside caller can do",
       "items": [
-        "No tool approves, pays, signs or moves money. A tool that proposes returns the proposal's ID and the screen where a person approves it.",
+        "No tool approves, pays, signs or moves money. A tool that proposes returns the proposal's ID and the screen where a person approves it, and the proposal waits for that person even where the parent's standing permission would cover it.",
         "PayPal's own tools, writes included, stay on Kin's server and are never offered here.",
         "The token's scope only narrows the member's own role. Revoking it refuses the very next call.",
         "Text from the record (names, notes, letters) comes back labelled as data, inside a tag it cannot close.",

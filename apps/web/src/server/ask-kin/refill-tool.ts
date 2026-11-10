@@ -12,9 +12,11 @@ import { named, type AskKinWorld } from "./world";
  * an item; the rule, its price and the seller come from the record, and the
  * database refuses a plan the agreement does not allow. Nothing is bought:
  * the refill waits for the yeses the agreement names, unless the parent's
- * standing permission covers it.
+ * standing permission covers it. Raised by a member's own assistant under a
+ * delegation, it never rides the standing permission: it always waits for a
+ * person's yes in Kin.
  */
-export async function proposeRefill(world: AskKinWorld, item: string | undefined): Promise<ToolOutput> {
+export async function proposeRefill(world: AskKinWorld, item: string | undefined, delegationId?: string): Promise<ToolOutput> {
   const { format, copy } = world;
   const rules = refillViews(world.circle).rules;
   const matching = rules.filter((view) => named(item, view.rule.item));
@@ -26,11 +28,16 @@ export async function proposeRefill(world: AskKinWorld, item: string | undefined
   const values = { item: only.rule.item, price: format.money(only.rule.priceCents) };
   if (!only.askable) return { data: { proposed: false, reason: "a refill for this item already waits, or the circle is paused", ...values }, fact: fill(copy.facts.refillWaiting, values) };
 
-  const result = await runRefill({ db: world.db, userId: world.userId, circle: world.circle }, { ruleId: only.rule.id });
+  const result = await runRefill({ db: world.db, userId: world.userId, circle: world.circle, ...(delegationId === undefined ? {} : { delegationId }) }, { ruleId: only.rule.id });
   if (!result.ok) return { data: { proposed: false, reason: result.reason, ...values }, fact: fill(copy.facts.refillRefused, values) };
   const covered = result.mandate.outcome === "covered";
   return {
-    data: { proposed: true, ...values, approval: covered ? "the parent's standing permission covers it" : "waits for the yeses the family agreement names", simulated: world.circle.circle.demo },
+    data: {
+      proposed: true,
+      ...values,
+      approval: covered ? "the parent's standing permission covers it" : delegationId === undefined ? "waits for the yeses the family agreement names" : "waits for a person's yes in Kin: a refill an outside assistant proposes never uses the standing permission",
+      simulated: world.circle.circle.demo,
+    },
     fact: fill(covered ? copy.facts.refillCovered : copy.facts.refillProposed, values),
     proposal: { id: result.id },
   };

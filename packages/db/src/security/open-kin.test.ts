@@ -18,7 +18,7 @@ import {
   revokeDelegation,
   type GrantDelegation,
 } from "../open-kin.ts";
-import { asPerson } from "../scope.ts";
+import { asDelegate, asPerson } from "../scope.ts";
 import { realCircle, seatPerson, visitorWithCircle, type VisitorCircle } from "../testing/index.ts";
 import { testDatabases } from "../testing/databases.ts";
 import { errorCode } from "../testing/sql.ts";
@@ -201,6 +201,21 @@ describe("what the app's role may touch directly", () => {
     expect(await run(sql`update delegations set scope = 'propose'`)).toBe("42501");
     expect(await run(sql`insert into delegation_calls (id, circle_id, delegation_id, tool, outcome, duration_ms, at) select gen_random_uuid(), circle_id, id, 'approve', 'ok', 1, now() from delegations limit 1`)).toBe("42501");
     expect(await run(sql`insert into agency_visit_reports (id, circle_id, agency_key_id, raw_body, body_sha256, state, refusal) select gen_random_uuid(), circle_id, id, 'x', ${sha("x")}, 'refused', 'shape' from agency_keys limit 1`)).toBe("42501");
+  });
+});
+
+describe("an approval while a member's assistant acts", () => {
+  it("is refused by the database, whoever would give it, the standing permission included", async () => {
+    const circle = await visitorWithCircle(db);
+    const [proposal] = (await db.admin.execute<{ id: string }>(sql`select id from proposals where circle_id = ${circle.circleId} and state = 'pending_approval' limit 1`)).rows;
+    const approve = (scope: typeof asPerson) =>
+      scope(db.app, circle.userId, (tx) =>
+        tx.execute(sql`insert into approvals (id, circle_id, proposal_id, member_id, role, decision, method, decided_at)
+          values (gen_random_uuid(), ${circle.circleId}, ${proposal?.id ?? ""}, ${circle.members.elena}, 'organizer', 'approve', 'app', now())`),
+      );
+    expect(await errorCode(approve((database, userId, work) => asDelegate(database, userId, "a-delegation", work)))).toBe("42501");
+    // Outside a delegation the same yes is the person's own, and the usual rules decide it.
+    expect(await errorCode(approve(asPerson))).not.toBe("42501");
   });
 });
 
