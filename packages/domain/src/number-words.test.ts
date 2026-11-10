@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { hasHiddenCharacters, spokenNumbers, spokenNumbersAreAllowed } from "./number-words.ts";
+import { hasHiddenCharacters, saysOne, spokenNumbers, spokenNumbersAreAllowed } from "./number-words.ts";
 import { SPELLERS } from "./testing/spell-out.ts";
 
 const values = (text: string) => spokenNumbers(text).map((number) => number.readings);
@@ -328,5 +328,18 @@ describe("a language drops only its own ordinary words, never another language's
   it("still reads Italian 'due' and Spanish 'once' as numbers in their own language", () => {
     expect(inLanguage("it", "Sono due euro.", "64")).toBe(false);
     expect(inLanguage("es", "Son once euros.", "64")).toBe(false);
+  });
+});
+
+describe("saying one with a word that is also an article", () => {
+  it("is found in every language Kin speaks, though spokenNumbers leaves it out", () => {
+    for (const text of ["I can do one visit.", "une visite", "eine Fahrt", "una visita", "uno", "ביקור אחד", "زيارة واحدة"]) {
+      expect(saysOne(text), text).toBe(true);
+      expect(spokenNumbers(text), text).toEqual([]);
+    }
+  });
+
+  it("is not found in other numbers or in none", () => {
+    for (const text of ["two visits", "100", "one hundred", "nothing at all", ""]) expect(saysOne(text), text).toBe(text === "one hundred");
   });
 });

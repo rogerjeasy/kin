@@ -1,4 +1,4 @@
-import { MAX_CARE_MINUTES, MAX_CARE_TRIPS, MAX_OFFER_CENTS, addMonths, centsFromDecimal, decimalAmount, isMonth, spokenNumbers } from "@kin/domain";
+import { MAX_CARE_MINUTES, MAX_CARE_TRIPS, MAX_OFFER_CENTS, addMonths, centsFromDecimal, decimalAmount, isMonth, saysOne, spokenNumbers } from "@kin/domain";
 
 import { passesNumberGuard } from "./narrate.ts";
 import { numbersIn } from "./number-values.ts";
@@ -88,7 +88,7 @@ export async function readOffer(model: StructuredModel, messages: readonly strin
   const stepUp = stepCents !== null && stepMonth !== null && stepCents > (monthlyCents ?? 0) ? { cents: stepCents, fromMonth: stepMonth } : null;
   if (stepUp === null && (stepCents !== null || stepMonth !== null)) dropped += 1;
   const trips = row["careTrips"];
-  const careTrips = trips === null || trips === undefined ? 0 : typeof trips === "number" && Number.isSafeInteger(trips) && trips >= 0 && trips <= MAX_CARE_TRIPS && heard.has(String(trips)) ? trips : (drop<number>() ?? 0);
+  const careTrips = trips === null || trips === undefined ? 0 : typeof trips === "number" && Number.isSafeInteger(trips) && trips >= 0 && trips <= MAX_CARE_TRIPS && (heard.has(String(trips)) || (trips === 1 && saysOne(words, context.language))) ? trips : (drop<number>() ?? 0);
   // Hours are read as hundredths, from their digits, so 1.5 hours is exactly 90 minutes.
   const hundredths = grounded(row["careHours"], "USD");
   const careMinutes = hundredths === null ? 0 : Math.min(MAX_CARE_MINUTES, Math.round((hundredths * 60) / 100));

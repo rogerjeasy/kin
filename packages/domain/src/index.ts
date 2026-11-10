@@ -204,7 +204,7 @@ export { LEDGER_PROBLEMS, auditLedger } from "./verify-ledger.ts";
 export type { LedgerAudit, LedgerProblem, LedgerProblemCode } from "./verify-ledger.ts";
 export { COVER_BUFFER_MINUTES, coverCandidates, coverIsTaken, coverKindOf, shiftNeedsCover } from "./cover.ts";
 export type { CoverCandidate, CoverKind, CoverMember, CoverRequest, CoverShift } from "./cover.ts";
-export { hasHiddenCharacters, spokenNumbers, spokenNumbersAreAllowed } from "./number-words.ts";
+export { hasHiddenCharacters, saysOne, spokenNumbers, spokenNumbersAreAllowed } from "./number-words.ts";
 export type { SpokenNumber } from "./number-words.ts";
 export {
   MAX_SHIFT_CALL_ATTEMPTS,

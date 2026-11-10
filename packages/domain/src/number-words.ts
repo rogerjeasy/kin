@@ -570,6 +570,21 @@ export function spokenNumbers(text: string, language?: string): SpokenNumber[] {
 }
 
 /**
+ * Whether the text says "one" with a word that is also an article ("one", "un",
+ * "ein", "uno", "אחד", "واحد"), which spokenNumbers leaves out on purpose. For a
+ * count the person gave ("I can do one visit"), where reading an article as 1 is
+ * still what they meant; never for an amount.
+ */
+export function saysOne(text: string, language?: string): boolean {
+  const code = languageCode(language);
+  return tokens(text).some((token) => {
+    if (typeof token !== "object") return false;
+    const found = resolve(token.word, code);
+    return found !== null && "atoms" in found && found.atoms.length === 1 && found.atoms[0]?.one === true;
+  });
+}
+
+/**
  * Whether every number the text writes in words has a reading the record
  * supplied. A run with two readings ("five cents": five, or French 500)
  * passes only when every reading is held, so a guess is never the one accepted.

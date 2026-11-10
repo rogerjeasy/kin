@@ -29,6 +29,16 @@ describe("a person's own agent, reading what they can give", () => {
     expect(result).toMatchObject({ kind: "draft", draft: { monthlyCents: null, stepUp: null, careTrips: 0, careMinutes: 0 }, dropped: 5 });
   });
 
+  it("keeps one trip said as \"one\" or \"a\", which is never read as an amount, and still drops a 1 nobody said", async () => {
+    for (const words of [["OK, 80 now and I can do one visit."], ["Je peux faire une visite."], ["Ich kann eine Fahrt machen."]]) {
+      const result = await readOffer(fakeModel(answer({ careTrips: 1 })), words, context);
+      expect(result).toMatchObject({ kind: "draft", draft: { careTrips: 1 }, dropped: 0 });
+    }
+    expect(await readOffer(fakeModel(answer({ careTrips: 1 })), ["I can give 80."], context)).toMatchObject({ kind: "draft", draft: { careTrips: 0 }, dropped: 1 });
+    // A lone "one" proves only a count of one, never two.
+    expect(await readOffer(fakeModel(answer({ careTrips: 2 })), ["I can do one visit."], context)).toMatchObject({ kind: "draft", draft: { careTrips: 0 }, dropped: 1 });
+  });
+
   it("reads a number said in words, and refuses a month that is not one of the next twelve", async () => {
     const model = fakeModel(answer({ monthly: "sixty" }), answer({ monthly: "60", earliestMonth: "2030-01", stepUpAmount: "80", stepUpMonth: "2026-10" }));
     expect(await readOffer(model, ["I could do sixty"], context)).toMatchObject({ draft: { monthlyCents: null }, dropped: 1 });
