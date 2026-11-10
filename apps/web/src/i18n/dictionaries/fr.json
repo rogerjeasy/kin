@@ -3915,7 +3915,8 @@
         "approvers": "Il faut au moins deux membres de la famille qui partagent les frais.",
         "successor": "Il nomme quelqu’un qui ne peut pas gérer le cercle.",
         "not_owned": "PayPal n’indique pas que cet abonnement est celui du parent : Kin n’y touchera pas.",
-        "taken": "Kin connaît déjà cet abonnement PayPal."
+        "taken": "Kin connaît déjà cet abonnement PayPal.",
+        "stake": "Ses souhaits changeraient des choses pour vous : vous ne pouvez donc pas le signaler. C’est la famille qui le dit."
       },
       "packet": {
         "title": "Ses souhaits",

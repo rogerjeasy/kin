@@ -3915,7 +3915,8 @@
         "approvers": "Hacen falta al menos dos personas de la familia que compartan el costo.",
         "successor": "Nombra a alguien que no puede llevar el círculo.",
         "not_owned": "PayPal no indica que esa suscripción sea del padre o la madre, así que Kin no la tocará.",
-        "taken": "Kin ya conoce esa suscripción de PayPal."
+        "taken": "Kin ya conoce esa suscripción de PayPal.",
+        "stake": "Sus deseos cambiarían cosas para usted, así que no puede avisar de esto. Lo dice la familia."
       },
       "packet": {
         "title": "Sus deseos",

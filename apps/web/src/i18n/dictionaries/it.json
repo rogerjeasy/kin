@@ -3915,7 +3915,8 @@
         "approvers": "Servono almeno due persone della famiglia che dividono la spesa.",
         "successor": "Nomina qualcuno che non può gestire il cerchio.",
         "not_owned": "PayPal non dice che questo abbonamento è del genitore, quindi Kin non lo toccherà.",
-        "taken": "Kin conosce già questo abbonamento PayPal."
+        "taken": "Kin conosce già questo abbonamento PayPal.",
+        "stake": "I suoi desideri cambierebbero qualcosa per te, quindi non puoi segnalarlo. Lo dice la famiglia."
       },
       "packet": {
         "title": "Le sue volontà",

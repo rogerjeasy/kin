@@ -3915,7 +3915,8 @@
         "approvers": "Er braucht mindestens zwei aus der Familie, die sich die Kosten teilen.",
         "successor": "Er nennt jemanden, der den Kreis nicht führen kann.",
         "not_owned": "Laut PayPal gehört dieses Abo nicht dem Elternteil, deshalb rührt Kin es nicht an.",
-        "taken": "Dieses PayPal-Abo ist Kin schon bekannt."
+        "taken": "Dieses PayPal-Abo ist Kin schon bekannt.",
+        "stake": "Ihre Wünsche würden für Sie etwas ändern, deshalb können Sie das nicht melden. Die Familie sagt, wann es so weit ist."
       },
       "packet": {
         "title": "Die Wünsche im Einzelnen",

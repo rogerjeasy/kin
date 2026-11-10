@@ -113,7 +113,7 @@ describe("who reads her wishes", () => {
     const amaras = await wishesOf(people.amara, circle);
     expect(amaras.wishes).toEqual([]);
     expect(amaras.subscriptions).toEqual([]);
-    await attest(people.amara, circle, "hospital");
+    await attest(people.elena, circle, "hospital");
     expect((await wishesOf(people.amara, circle)).triggers).toHaveLength(1);
     const raw = (table: string) => person(people.amara, (tx) => tx.execute<{ n: string }>(sql`select count(*) as n from ${sql.identifier(table)}`));
     for (const table of ["wishes", "wish_signatures", "wish_recordings", "parent_subscriptions"]) expect((await raw(table)).rows[0]?.n).toBe("0");
@@ -294,23 +294,27 @@ describe("who stands to gain from a trigger", () => {
     await person(people.ana, (tx) => witnessWish(tx, { circleId: circle.circleId, wishId: id }));
   }
 
-  it("never counts the word of the successor the trigger would seat", async () => {
+  it("refuses the word of the successor the trigger would seat, and counts the others", async () => {
     const circle = await visitorWithCircle(db);
     const people = await seats(circle);
     await withSuccessor(circle, people);
     await attest(people.elena, circle, "hospital");
-    expect((await attest(people.marcus, circle, "hospital")).state).toBe("reported");
+    expect(await reason(attest(people.marcus, circle, "hospital"))).toBe("stake");
     expect((await attest(people.ana, circle, "hospital")).state).toBe("active");
   });
 
-  it("never counts the caregiver her wish keeps paid, or the successor, toward starting it", async () => {
+  it("refuses a report from the caregiver her wish keeps paid, or the successor, before anything opens", async () => {
     const circle = await visitorWithCircle(db);
     const people = await seats(circle);
     await withSuccessor(circle, people);
-    await attest(people.marcus, circle, "hospital");
-    expect((await attest(people.amara, circle, "hospital")).state).toBe("reported");
-    expect((await attest(people.elena, circle, "hospital")).state).toBe("reported");
+    expect(await reason(attest(people.marcus, circle, "hospital"))).toBe("stake");
+    expect(await reason(attest(people.amara, circle, "hospital"))).toBe("stake");
+    // Nothing opened, so nothing froze her wishes: she can still change them.
+    expect((await wishesOf(people.elena, circle)).triggers).toEqual([]);
+    const [first] = (await wishesOf(people.rose, circle)).wishes;
+    expect(await reason(person(people.rose, (tx) => withdrawWish(tx, { circleId: circle.circleId, wishId: first?.id ?? "" })))).toBe("no error");
     // Two people who gain nothing make it count.
+    expect((await attest(people.elena, circle, "hospital")).state).toBe("reported");
     expect((await attest(people.ana, circle, "hospital")).state).toBe("active");
   });
 

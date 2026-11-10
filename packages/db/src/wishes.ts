@@ -33,7 +33,7 @@ export const WISH_SUBSCRIPTION_TOPIC = "wish.subscription";
  * `busy`: too many recordings today. `not_owned`: PayPal does not say the subscription is the parent's.
  * `taken`: that PayPal subscription is already known to Kin.
  */
-export type WishReason = "refused" | "invalid" | "frozen" | "waiting" | "closed" | "active" | "other_event" | "nothing_active" | "busy" | "not_owned" | "taken";
+export type WishReason = "refused" | "invalid" | "frozen" | "waiting" | "closed" | "active" | "other_event" | "nothing_active" | "busy" | "not_owned" | "taken" | "stake";
 
 /** Who PayPal says a subscription belongs to: its subscriber's payer ID, and the circle and member its custom ID names when Kin made it. */
 export type SubscriptionOwner = { readonly payerId: string | null; readonly circleId: string | null; readonly memberId: string | null };
@@ -319,6 +319,7 @@ const REASONS: Readonly<Record<string, WishReason>> = {
   KW007: "busy",
   KW008: "not_owned",
   KW009: "taken",
+  KW010: "stake",
 };
 
 async function wishOperation<T>(work: () => Promise<T>): Promise<T> {

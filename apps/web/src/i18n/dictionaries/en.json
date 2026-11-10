@@ -3915,7 +3915,8 @@
         "approvers": "It needs at least two of the family who share the cost.",
         "successor": "It names someone who cannot run the circle.",
         "not_owned": "PayPal does not say that subscription is the parent’s, so Kin will not touch it.",
-        "taken": "Kin already knows that PayPal subscription."
+        "taken": "Kin already knows that PayPal subscription.",
+        "stake": "Her wishes would change things for you, so you cannot report this. The family says when it happens."
       },
       "packet": {
         "title": "Her wishes",
