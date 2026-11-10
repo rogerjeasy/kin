@@ -1,6 +1,6 @@
 import { entryHeadline } from "./entry-headline.ts";
 import { FEES, describeAccount } from "./ledger-accounts.ts";
-import type { EntryKind, LedgerEntry } from "./ledger-entry.ts";
+import { signedCents as signed, type EntryKind, type LedgerEntry } from "./ledger-entry.ts";
 import type { Ledger } from "./ledger.ts";
 import { sumCents } from "./money.ts";
 
@@ -25,11 +25,6 @@ export type PeriodFigures = {
   readonly settlementPaidCents: number;
   readonly entryCount: number;
 };
-
-/** A reversal keeps its original's kind and cancels it, so it counts against the total. */
-function signed(entry: LedgerEntry, cents: number): number {
-  return entry.reverses === null ? cents : -cents;
-}
 
 function byKind(entries: readonly LedgerEntry[], kind: EntryKind): LedgerEntry[] {
   return entries.filter((entry) => entry.kind === kind);

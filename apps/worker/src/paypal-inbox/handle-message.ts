@@ -1,8 +1,9 @@
 import { ContributionMismatchError, asService, settlePayPalEvent, storePayPalEvent, type Database } from "@kin/db";
-import { CAPTURE_COMPLETED, INVOICE_EVENTS, PayPalError, SUBSCRIPTION_EVENTS, captureRequestId, parseWebhookEnvelope, type InboxMessage, type PayPalPool, type WebhookDelivery } from "@kin/paypal";
+import { CAPTURE_COMPLETED, INVOICE_EVENTS, PayPalError, SUBSCRIPTION_EVENTS, captureRequestId, parseWebhookEnvelope, type InboxMessage, type PayPalPool, type WebhookDelivery, type WebhookEnvelope } from "@kin/paypal";
 
 import { applyCapture, type CaptureOutcome } from "./apply-capture.ts";
 import { syncInvoice, type InvoiceOutcome } from "./apply-invoice.ts";
+import { applyRefund } from "./apply-refund.ts";
 import { syncShare, type ShareOutcome } from "./apply-share.ts";
 
 export type InboxDeps = {
@@ -22,6 +23,8 @@ export type InboxOutcome =
   /** PayPal did not vouch for it. Logged with its IDs for inspection, and stored nowhere. */
   | { readonly result: "rejected"; readonly eventId: string; readonly transmissionId: string }
   | { readonly result: "applied"; readonly circleId: string; readonly captures: readonly CaptureOutcome[] }
+  /** A refund PayPal confirmed is in the ledger as the reversal of its top-up: written now, or found there. */
+  | { readonly result: "refunded"; readonly circleId: string; readonly refund: "reversed" | "already_reversed" }
   | { readonly result: "failed"; readonly circleId: string; readonly reason: string }
   | ShareOutcome
   | InvoiceOutcome;
@@ -56,8 +59,9 @@ async function handleWebhook(deps: InboxDeps, delivery: WebhookDelivery): Promis
   }
   // PayPal signed the body, so the circle it names is the one Kin's server
   // put on the order. The capture is still read back before any money moves.
-  // A subscription's charge names only the subscription, and an invoice event
-  // only the invoice; PayPal says whose it is when it is read back.
+  // A subscription's charge names only the subscription, an invoice event
+  // only the invoice, and a refund only the capture it returns; PayPal says
+  // whose it is when it is read back.
   const circleId = envelope.reference?.circleId ?? (await placeByPayPal(pool, envelope));
   if (circleId === undefined) return { result: "unplaced" };
 
@@ -75,6 +79,8 @@ async function handleWebhook(deps: InboxDeps, delivery: WebhookDelivery): Promis
   if (stored.state === "processed" || stored.state === "rejected" || stored.state === "failed") return { result: "duplicate" };
 
   await asService(db, circleId, (tx) => settlePayPalEvent(tx, stored.id, "verified"));
+
+  if (envelope.refundId !== null) return settleRefundEvent(deps, circleId, stored.id, envelope.refundId);
 
   if (envelope.subscriptionId !== null && (SUBSCRIPTION_EVENTS as readonly string[]).includes(envelope.eventType)) {
     return settleShareEvent(deps, circleId, stored.id, envelope.subscriptionId);
@@ -112,16 +118,48 @@ async function settleShareEvent(deps: InboxDeps, circleId: string, eventId: stri
   }
 }
 
-/** The circle a verified event belongs to, by asking PayPal about the subscription or invoice it names. */
-async function placeByPayPal(pool: PayPalPool, envelope: { readonly subscriptionId: string | null; readonly invoiceId: string | null }): Promise<string | undefined> {
-  if (envelope.subscriptionId !== null) return (await pool.getSubscription(envelope.subscriptionId)).reference?.circleId;
-  if (envelope.invoiceId === null) return undefined;
+/** The circle a verified event belongs to, by asking PayPal about the subscription, invoice or refunded capture it names. */
+async function placeByPayPal(pool: PayPalPool, envelope: WebhookEnvelope): Promise<string | undefined> {
+  const { subscriptionId, invoiceId, refundId, captureId } = envelope;
+  if (subscriptionId !== null) return (await pool.getSubscription(subscriptionId)).reference?.circleId;
+  if (refundId !== null) return captureId === null ? undefined : unlessRefused(async () => (await pool.getCapture(captureId)).reference?.circleId);
+  if (invoiceId === null) return undefined;
+  return unlessRefused(async () => (await pool.getInvoice(invoiceId)).reference?.circleId);
+}
+
+// A resource PayPal will not show the pool is no resource of Kin's. Only an outage is retried.
+async function unlessRefused<T>(read: () => Promise<T>): Promise<T | undefined> {
   try {
-    return (await pool.getInvoice(envelope.invoiceId)).reference?.circleId;
+    return await read();
   } catch (error) {
-    // An invoice PayPal will not show the pool is no invoice of Kin's. Only an outage is retried.
     if (error instanceof PayPalError && error.outcome === "rejected") return undefined;
     throw error;
+  }
+}
+
+/**
+ * A verified refund or reversal: the refund and the capture it returns are
+ * read back from PayPal, never taken from the event's own body. A refund the
+ * ledger cannot state exactly is kept as failed for a person, with the reason,
+ * and nothing is written (docs/architecture.md decision 97).
+ */
+async function settleRefundEvent({ db, pool }: InboxDeps, circleId: string, eventId: string, refundId: string): Promise<InboxOutcome> {
+  const refund = await unlessRefused(() => pool.getRefund(refundId));
+  if (refund === undefined || refund.captureId === null) {
+    await asService(db, circleId, (tx) => settlePayPalEvent(tx, eventId, "failed"));
+    return { result: "failed", circleId, reason: "unknown_refund" };
+  }
+  const capture = await pool.getCapture(refund.captureId);
+  try {
+    const outcome = await asService(db, circleId, async (tx) => {
+      const applied = await applyRefund(tx, circleId, capture, refund);
+      await settlePayPalEvent(tx, eventId, applied === "reversed" || applied === "already_reversed" ? "processed" : "failed");
+      return applied;
+    });
+    if (outcome === "reversed" || outcome === "already_reversed") return { result: "refunded", circleId, refund: outcome };
+    return { result: "failed", circleId, reason: outcome };
+  } catch (error) {
+    return failed(db, circleId, eventId, error);
   }
 }
 

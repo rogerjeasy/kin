@@ -6,6 +6,7 @@ import { contributionOrderBody, parseOrder, type NewContributionOrder, type Orde
 import { cancelBody, invoiceBody, isInvoiceId, numberSearchBody, parseInvoice, parseInvoiceCreated, parseNumberSearch, SEND_BODY, type Invoice, type NewInvoice } from "./invoice.ts";
 import { requiredText, asRecord } from "./json.ts";
 import { PayPalError } from "./paypal-error.ts";
+import { parseRefund, type Refund } from "./refund.ts";
 import { parsePayoutBatch, parsePayoutCreated, payoutBody, type NewPayout, type PayoutBatch } from "./payout.ts";
 import {
   actionBody,
@@ -38,6 +39,8 @@ export type PayPalPool = {
   /** Captures an approved order. PayPal's answer is never taken as proof the money arrived. */
   readonly captureOrder: (orderId: string, requestId: string) => Promise<Order>;
   readonly getCapture: (captureId: string) => Promise<Capture>;
+  /** Reads a refund of a capture back from PayPal: what went back to the payer, and the part of the fee PayPal returned. */
+  readonly getRefund: (refundId: string) => Promise<Refund>;
   /** Asks PayPal whether a delivery really came from it, for this pool's webhook. */
   readonly verifyWebhook: (delivery: WebhookDelivery) => Promise<boolean>;
   /**
@@ -103,6 +106,9 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
     },
     async getCapture(captureId) {
       return parseCapture(await client.send({ method: "GET", path: `/v2/payments/captures/${pathId(captureId)}`, operation: "captures.get" }));
+    },
+    async getRefund(refundId) {
+      return parseRefund(await client.send({ method: "GET", path: `/v2/payments/refunds/${pathId(refundId)}`, operation: "refunds.get" }));
     },
     async createPayout(payout, requestId) {
       try {

@@ -116,6 +116,14 @@ export function reverseEntry(
   });
 }
 
+/**
+ * An amount of an entry as a total counts it. A reversal keeps its original's
+ * kind and cancels it, so it counts against the total.
+ */
+export function signedCents(entry: LedgerEntry, cents: number): number {
+  return entry.reverses === null ? cents : -cents;
+}
+
 export function opposite(direction: Direction): Direction {
   return direction === "debit" ? "credit" : "debit";
 }

@@ -24,7 +24,8 @@ const DAY_MS = 86_400_000;
  * latest event; a day or a week gathers every event since that many days ago.
  */
 export function announcements(circle: CircleSnapshot, every: AnnounceEvery): EntryView[] {
-  const events = recordEntries(circle).filter((view) => ANNOUNCED_KINDS.some((kind) => kind === view.entry.kind));
+  // A reversal keeps its original's kind, so a refunded top-up would be read aloud as money that arrived. It is not announced.
+  const events = recordEntries(circle).filter((view) => view.entry.reverses === null && ANNOUNCED_KINDS.some((kind) => kind === view.entry.kind));
   if (every === "now") return events.slice(0, 1);
   const since = calendarDay(new Date(circle.circle.now.getTime() - DAYS_BACK[every] * DAY_MS), circle.circle.timezone).occurredOn;
   return events.filter((view) => view.entry.occurredOn >= since);

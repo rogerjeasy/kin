@@ -7,6 +7,7 @@ import type { Invoice, InvoicePayment, InvoiceStatus, NewInvoice } from "../invo
 import type { Order } from "../order.ts";
 import { PayPalError } from "../paypal-error.ts";
 import type { PayPalPool } from "../pool.ts";
+import type { Refund, RefundStatus } from "../refund.ts";
 import type { TransactionRecord } from "../transaction-search.ts";
 import { payoutBody, type NewPayout, type PayoutBatch, type PayoutItemStatus } from "../payout.ts";
 import type { Subscription, SubscriptionAction, SubscriptionPayment, SubscriptionStatus } from "../subscription.ts";
@@ -31,6 +32,16 @@ export type FakePool = PayPalPool & {
   /** A delivery of PAYMENT.CAPTURE.COMPLETED for a capture, as PayPal would send it. */
   readonly completedEvent: (captureId: string, eventId?: string) => WebhookDelivery;
   readonly orders: Map<string, StoredOrder>;
+  /**
+   * The pool's owner refunds a completed capture, all that is left of it
+   * unless `cents` says less. PayPal gives back `feeReturnedCents` of the
+   * capture's fee (none unless said), and turns the capture `REFUNDED` once
+   * nothing is left of it and `PARTIALLY_REFUNDED` before. A refund whose
+   * `status` is not `COMPLETED` leaves the capture as it was.
+   */
+  readonly refundCapture: (captureId: string, refund?: { readonly cents?: number; readonly feeReturnedCents?: number; readonly status?: RefundStatus }) => Refund;
+  /** A delivery of PAYMENT.CAPTURE.REFUNDED, or PAYMENT.CAPTURE.REVERSED, as PayPal would send it: the refund, linking its capture. */
+  readonly refundEvent: (refundId: string, eventType?: "PAYMENT.CAPTURE.REFUNDED" | "PAYMENT.CAPTURE.REVERSED", eventId?: string) => WebhookDelivery;
   /** The next call to this method fails as PayPal being unreachable would. */
   failNext: keyof PayPalPool | null;
   /** The next call to this method takes effect at PayPal, but its answer is lost on the way back. */
@@ -78,6 +89,7 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
   const now = options.now ?? (() => new Date("2026-10-16T15:00:00Z"));
   const orders = new Map<string, StoredOrder>();
   const captures = new Map<string, Capture>();
+  const refunds = new Map<string, Refund>();
   // PayPal's IDs are unique everywhere, so each fake draws its own.
   const instance = randomBytes(4).toString("hex").toUpperCase();
   let sequence = 0;
@@ -178,6 +190,55 @@ export function fakePool(options: { now?: () => Date } = {}): FakePool {
       const capture = captures.get(captureId);
       if (!capture) throw new PayPalError({ outcome: "rejected", status: 404, issue: "RESOURCE_NOT_FOUND", debugId: "fake", operation: "captures.get" });
       return capture;
+    },
+    async getRefund(refundId) {
+      fail("getRefund");
+      const refund = refunds.get(refundId);
+      if (!refund) throw new PayPalError({ outcome: "rejected", status: 404, issue: "RESOURCE_NOT_FOUND", debugId: "fake", operation: "refunds.get" });
+      return refund;
+    },
+    refundCapture(captureId, request = {}) {
+      const capture = captures.get(captureId);
+      if (!capture) throw new Error(`No capture ${captureId}`);
+      const currency = capture.gross.currency;
+      const before = [...refunds.values()].filter((each) => each.captureId === captureId && each.status === "COMPLETED").reduce((total, each) => total + each.gross.cents, 0);
+      const cents = request.cents ?? capture.gross.cents - before;
+      if (cents <= 0 || before + cents > capture.gross.cents) throw new Error(`Capture ${captureId} has ${capture.gross.cents - before} cents left to refund`);
+      const status = request.status ?? "COMPLETED";
+      const feeReturned = request.feeReturnedCents ?? 0;
+      const totalRefunded = status === "COMPLETED" ? before + cents : before;
+      const refund: Refund = {
+        id: nextId("REFUND"),
+        status,
+        captureId,
+        gross: { cents, currency },
+        feeReturned: { cents: feeReturned, currency },
+        net: { cents: cents - feeReturned, currency },
+        totalRefunded: { cents: totalRefunded, currency },
+        createdAt: now(),
+      };
+      refunds.set(refund.id, refund);
+      if (status === "COMPLETED") captures.set(captureId, { ...capture, status: totalRefunded === capture.gross.cents ? "REFUNDED" : "PARTIALLY_REFUNDED" });
+      return refund;
+    },
+    refundEvent(refundId, eventType = "PAYMENT.CAPTURE.REFUNDED", eventId = `WH-${eventType}-${refundId}`) {
+      const refund = refunds.get(refundId);
+      if (!refund) throw new Error(`No refund ${refundId}`);
+      return delivery(eventId, {
+        id: eventId,
+        event_type: eventType,
+        resource_type: "refund",
+        resource: {
+          id: refund.id,
+          status: refund.status,
+          // The event's own amounts are never read: the refund is read back from PayPal.
+          amount: { currency_code: refund.gross.currency, value: "0.00" },
+          links: [
+            { href: `https://api.sandbox.paypal.com/v2/payments/refunds/${refund.id}`, rel: "self", method: "GET" },
+            { href: `https://api.sandbox.paypal.com/v2/payments/captures/${refund.captureId ?? ""}`, rel: "up", method: "GET" },
+          ],
+        },
+      });
     },
     async verifyWebhook() {
       fail("verifyWebhook");

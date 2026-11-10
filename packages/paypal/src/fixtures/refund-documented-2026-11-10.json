@@ -1,0 +1,143 @@
+{
+  "_note": "Derived from PayPal's documentation (Payments v2 refund schema and its examples, and the webhook event list), not recorded from the sandbox. The capture is the recorded top-up in order-completed.json ($100.00 gross, $3.98 fee). Which part of the fee PayPal returns on a refund, and the exact payload of PAYMENT.CAPTURE.REVERSED, are UNVERIFIED. IDs are placeholders.",
+  "refundedEvent": {
+    "id": "WH-4KT83470P9813574D-1HE74537WC401473K",
+    "event_version": "1.0",
+    "create_time": "2026-11-10T09:12:44.512Z",
+    "resource_type": "refund",
+    "resource_version": "2.0",
+    "event_type": "PAYMENT.CAPTURE.REFUNDED",
+    "summary": "A $ 100.0 USD capture payment was refunded",
+    "resource": {
+      "id": "6YB24758LT1462817",
+      "status": "COMPLETED",
+      "amount": { "currency_code": "USD", "value": "100.00" },
+      "seller_payable_breakdown": {
+        "gross_amount": { "currency_code": "USD", "value": "100.00" },
+        "paypal_fee": { "currency_code": "USD", "value": "0.00" },
+        "net_amount": { "currency_code": "USD", "value": "100.00" },
+        "total_refunded_amount": { "currency_code": "USD", "value": "100.00" }
+      },
+      "create_time": "2026-11-10T01:12:40-08:00",
+      "update_time": "2026-11-10T01:12:40-08:00",
+      "links": [
+        { "href": "https://api.sandbox.paypal.com/v2/payments/refunds/6YB24758LT1462817", "rel": "self", "method": "GET" },
+        { "href": "https://api.sandbox.paypal.com/v2/payments/captures/3RG65204E9591424Y", "rel": "up", "method": "GET" }
+      ]
+    },
+    "links": [
+      { "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-4KT83470P9813574D-1HE74537WC401473K", "rel": "self", "method": "GET" },
+      { "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-4KT83470P9813574D-1HE74537WC401473K/resend", "rel": "resend", "method": "POST" }
+    ]
+  },
+  "reversedEvent": {
+    "id": "WH-9JX10284MV2253047-3UH46391DS8826517",
+    "event_version": "1.0",
+    "create_time": "2026-11-10T09:20:02.118Z",
+    "resource_type": "refund",
+    "resource_version": "2.0",
+    "event_type": "PAYMENT.CAPTURE.REVERSED",
+    "summary": "A $ 100.0 USD capture payment was reversed",
+    "resource": {
+      "id": "8MC59130TF4471126",
+      "status": "COMPLETED",
+      "note_to_payer": "Payment reversed",
+      "amount": { "currency_code": "USD", "value": "100.00" },
+      "create_time": "2026-11-10T01:19:58-08:00",
+      "update_time": "2026-11-10T01:19:58-08:00",
+      "links": [
+        { "href": "https://api.sandbox.paypal.com/v2/payments/refunds/8MC59130TF4471126", "rel": "self", "method": "GET" },
+        { "href": "https://api.sandbox.paypal.com/v2/payments/captures/3RG65204E9591424Y", "rel": "up", "method": "GET" }
+      ]
+    }
+  },
+  "refundFeeKept": {
+    "id": "6YB24758LT1462817",
+    "status": "COMPLETED",
+    "amount": { "currency_code": "USD", "value": "100.00" },
+    "seller_payable_breakdown": {
+      "gross_amount": { "currency_code": "USD", "value": "100.00" },
+      "paypal_fee": { "currency_code": "USD", "value": "0" },
+      "net_amount": { "currency_code": "USD", "value": "100.00" },
+      "total_refunded_amount": { "currency_code": "USD", "value": "100.00" }
+    },
+    "create_time": "2026-11-10T01:12:40-08:00",
+    "update_time": "2026-11-10T01:12:40-08:00",
+    "links": [
+      { "href": "https://api.sandbox.paypal.com/v2/payments/refunds/6YB24758LT1462817", "rel": "self", "method": "GET" },
+      { "href": "https://api.sandbox.paypal.com/v2/payments/captures/3RG65204E9591424Y", "rel": "up", "method": "GET" }
+    ]
+  },
+  "refundFeeReturned": {
+    "id": "6YB24758LT1462817",
+    "status": "COMPLETED",
+    "amount": { "currency_code": "USD", "value": "100.00" },
+    "seller_payable_breakdown": {
+      "gross_amount": { "currency_code": "USD", "value": "100.00" },
+      "paypal_fee": { "currency_code": "USD", "value": "3.98" },
+      "net_amount": { "currency_code": "USD", "value": "96.02" },
+      "total_refunded_amount": { "currency_code": "USD", "value": "100.00" }
+    },
+    "create_time": "2026-11-10T01:12:40-08:00",
+    "update_time": "2026-11-10T01:12:40-08:00",
+    "links": [
+      { "href": "https://api.sandbox.paypal.com/v2/payments/refunds/6YB24758LT1462817", "rel": "self", "method": "GET" },
+      { "href": "https://api.sandbox.paypal.com/v2/payments/captures/3RG65204E9591424Y", "rel": "up", "method": "GET" }
+    ]
+  },
+  "refundPartial": {
+    "id": "1JU08902781691411",
+    "status": "COMPLETED",
+    "amount": { "currency_code": "USD", "value": "30.00" },
+    "seller_payable_breakdown": {
+      "gross_amount": { "currency_code": "USD", "value": "30.00" },
+      "paypal_fee": { "currency_code": "USD", "value": "1.05" },
+      "net_amount": { "currency_code": "USD", "value": "28.95" },
+      "total_refunded_amount": { "currency_code": "USD", "value": "30.00" }
+    },
+    "create_time": "2026-11-10T01:05:11-08:00",
+    "update_time": "2026-11-10T01:05:11-08:00",
+    "links": [
+      { "href": "https://api.sandbox.paypal.com/v2/payments/refunds/1JU08902781691411", "rel": "self", "method": "GET" },
+      { "href": "https://api.sandbox.paypal.com/v2/payments/captures/3RG65204E9591424Y", "rel": "up", "method": "GET" }
+    ]
+  },
+  "captureRefunded": {
+    "id": "3RG65204E9591424Y",
+    "status": "REFUNDED",
+    "amount": { "currency_code": "USD", "value": "100.00" },
+    "final_capture": true,
+    "seller_receivable_breakdown": {
+      "gross_amount": { "currency_code": "USD", "value": "100.00" },
+      "paypal_fee": { "currency_code": "USD", "value": "3.98" },
+      "net_amount": { "currency_code": "USD", "value": "96.02" }
+    },
+    "custom_id": "kin1:0b6f4c3e-8d1a-4f6e-9c2b-5a7d3e1f9a40:7c2e9a14-3b5d-4e8f-a1c6-d9b0f2e4a738",
+    "supplementary_data": { "related_ids": { "order_id": "1SN482215K962041J" } },
+    "links": [
+      { "href": "https://api.sandbox.paypal.com/v2/payments/captures/3RG65204E9591424Y", "rel": "self", "method": "GET" },
+      { "href": "https://api.sandbox.paypal.com/v2/checkout/orders/1SN482215K962041J", "rel": "up", "method": "GET" }
+    ],
+    "create_time": "2026-10-16T10:03:15Z",
+    "update_time": "2026-11-10T09:12:40Z"
+  },
+  "capturePartiallyRefunded": {
+    "id": "3RG65204E9591424Y",
+    "status": "PARTIALLY_REFUNDED",
+    "amount": { "currency_code": "USD", "value": "100.00" },
+    "final_capture": true,
+    "seller_receivable_breakdown": {
+      "gross_amount": { "currency_code": "USD", "value": "100.00" },
+      "paypal_fee": { "currency_code": "USD", "value": "3.98" },
+      "net_amount": { "currency_code": "USD", "value": "96.02" }
+    },
+    "custom_id": "kin1:0b6f4c3e-8d1a-4f6e-9c2b-5a7d3e1f9a40:7c2e9a14-3b5d-4e8f-a1c6-d9b0f2e4a738",
+    "supplementary_data": { "related_ids": { "order_id": "1SN482215K962041J" } },
+    "links": [
+      { "href": "https://api.sandbox.paypal.com/v2/payments/captures/3RG65204E9591424Y", "rel": "self", "method": "GET" },
+      { "href": "https://api.sandbox.paypal.com/v2/checkout/orders/1SN482215K962041J", "rel": "up", "method": "GET" }
+    ],
+    "create_time": "2026-10-16T10:03:15Z",
+    "update_time": "2026-11-10T09:05:11Z"
+  }
+}

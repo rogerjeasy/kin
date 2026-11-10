@@ -1,5 +1,6 @@
 import { parseContributionReference, type ContributionReference } from "./contribution-reference.ts";
 import { isInvoiceId } from "./invoice.ts";
+import { refundedCaptureId } from "./refund.ts";
 import { isSubscriptionId } from "./subscription.ts";
 import { asRecord, optionalRecord, optionalText, parseJson, requiredText } from "./json.ts";
 
@@ -14,6 +15,13 @@ export type WebhookDelivery = { readonly body: string; readonly headers: Webhook
 /** PayPal's event for money that has arrived: the one Kin records. */
 export const CAPTURE_COMPLETED = "PAYMENT.CAPTURE.COMPLETED";
 
+/**
+ * PayPal's events for money that went back from a capture to its payer: a
+ * refund the pool's owner made, or a reversal PayPal made itself. The resource
+ * is the refund, which links the capture it returns.
+ */
+export const REFUND_EVENTS = ["PAYMENT.CAPTURE.REFUNDED", "PAYMENT.CAPTURE.REVERSED"] as const;
+
 /** PayPal's events about a monthly subscription: its state changes and its charges. */
 export const SUBSCRIPTION_EVENTS = [
   "BILLING.SUBSCRIPTION.ACTIVATED",
@@ -27,7 +35,7 @@ export const SUBSCRIPTION_EVENTS = [
 export const INVOICE_EVENTS = ["INVOICING.INVOICE.PAID", "INVOICING.INVOICE.CANCELLED"] as const;
 
 /** The event types Kin subscribes the pool's webhook to. */
-export const WEBHOOK_EVENT_TYPES = [CAPTURE_COMPLETED, ...SUBSCRIPTION_EVENTS, ...INVOICE_EVENTS] as const;
+export const WEBHOOK_EVENT_TYPES = [CAPTURE_COMPLETED, ...REFUND_EVENTS, ...SUBSCRIPTION_EVENTS, ...INVOICE_EVENTS] as const;
 
 /**
  * What Kin reads from an event's envelope before it is verified: enough to
@@ -37,8 +45,10 @@ export const WEBHOOK_EVENT_TYPES = [CAPTURE_COMPLETED, ...SUBSCRIPTION_EVENTS, .
 export type WebhookEnvelope = {
   readonly eventId: string;
   readonly eventType: string;
-  /** The capture the event is about, for capture events. */
+  /** The capture the event is about: a capture event's own resource, or the capture a refund event's resource links. */
   readonly captureId: string | null;
+  /** The refund a refund or reversal event is about. */
+  readonly refundId: string | null;
   /** The subscription a subscription event is about, or whose charge a sale event reports. */
   readonly subscriptionId: string | null;
   /** The invoice an invoicing event is about, or the one a capture paid. Whose it is, PayPal says when it is read back. */
@@ -51,6 +61,8 @@ export function parseWebhookEnvelope(body: string): WebhookEnvelope {
   const eventType = requiredText(record, "event_type");
   const resource = optionalRecord(record["resource"]);
   const isCapture = optionalText(record, "resource_type") === "capture";
+  // Known by its event type, not its resource type: PayPal's documentation shows no reversal's payload.
+  const isRefund = (REFUND_EVENTS as readonly string[]).includes(eventType);
   const subscriptionId =
     eventType === "PAYMENT.SALE.COMPLETED" ? optionalText(resource, "billing_agreement_id") : eventType.startsWith("BILLING.SUBSCRIPTION.") ? optionalText(resource, "id") : null;
   // PayPal's simulator sends the invoice as the resource itself; Invoicing v2 deliveries wrap it in `invoice`.
@@ -63,7 +75,8 @@ export function parseWebhookEnvelope(body: string): WebhookEnvelope {
   return {
     eventId: requiredText(record, "id"),
     eventType,
-    captureId: isCapture ? optionalText(resource, "id") : null,
+    captureId: isCapture ? optionalText(resource, "id") : isRefund ? refundedCaptureId(resource) : null,
+    refundId: isRefund ? optionalText(resource, "id") : null,
     subscriptionId: subscriptionId !== null && isSubscriptionId(subscriptionId) ? subscriptionId : null,
     invoiceId: invoiceId !== null && isInvoiceId(invoiceId) ? invoiceId : null,
     reference: parseContributionReference(optionalText(resource, "custom_id")),

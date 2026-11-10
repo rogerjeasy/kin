@@ -1,5 +1,7 @@
 export { BASIS_POINTS } from "./agreement.ts";
 export { calendarDay } from "./calendar.ts";
+export { REFUND_HOLDS, refundContribution } from "./contribution-refund.ts";
+export type { ContributionRefund, RefundDecision, RefundHold } from "./contribution-refund.ts";
 export type {
   Agreement,
   ApprovalTerms,
@@ -107,6 +109,7 @@ export {
   debit,
   restoreEntry,
   reverseEntry,
+  signedCents,
 } from "./ledger-entry.ts";
 export type {
   Correction,

@@ -90,6 +90,8 @@ export type { AccountIds } from "./ledger-store.ts";
 export { CircleNotFoundError, readCircle } from "./read-circle.ts";
 export { ContributionMismatchError, contributionRecorded, recordContribution } from "./contributions.ts";
 export type { ConfirmedCapture, ContributionOutcome } from "./contributions.ts";
+export { recordContributionRefund } from "./contribution-refunds.ts";
+export type { ConfirmedRefund, ContributionRefundOutcome } from "./contribution-refunds.ts";
 export { MonthlyShareError, followPayPal, moveMonthlyShare, readShare, recordShareCharge, recordSimulatedMonth, startMonthlyShare } from "./monthly-shares.ts";
 export type { MonthlyShareReason, ShareKey, ShareRow } from "./monthly-shares.ts";
 export {

@@ -1,7 +1,8 @@
-import { CARE_RECEIVED, sumCents } from "@kin/domain";
+import { CARE_RECEIVED, appendEntry, entryHeadline, reverseEntry, sumCents } from "@kin/domain";
 import { DEMO_LEDGER_ENTRIES, snapshotFor, testDatabases, visitorWithCircle } from "@kin/db/testing";
 import { beforeAll, describe, expect, it } from "vitest";
 
+import { announcements } from "./announcements";
 import { memberFairness, periodSettlement } from "./fairness";
 import { openPeriod } from "./period";
 import { monthTotals, paidBills, recordEntries, spendingByCategory } from "./record";
@@ -57,6 +58,20 @@ describe("the month's figures", () => {
 
   it("count nothing for a month the ledger has no entries in, but keep the pool", () => {
     expect(monthTotals(circle, "2026-11")).toEqual({ poolCents: 36018, freeCents: 31018, purseCents: 5000, paidInCents: 0, paidOutCents: 0, feesCents: 0, entryCount: 0 });
+  });
+
+  it("take a refunded top-up back out of the month's money in and fees, and never announce or list it as one", () => {
+    const topUp = circle.ledger.entries.findLast((entry) => entry.kind === "contribution");
+    if (!topUp) throw new Error("The demo has a top-up");
+    const { cents, feeCents } = entryHeadline(topUp);
+    const reversal = reverseEntry(topUp, { id: "refund-entry", occurredOn: topUp.occurredOn, period: topUp.period, description: "Top-up refunded through PayPal", source: { type: "paypal_event", id: "REFUND1" } });
+    const refunded = { ...circle, ledger: appendEntry(circle.ledger, reversal).ledger };
+
+    const totals = monthTotals(refunded, "2026-10");
+    expect(totals).toMatchObject({ paidInCents: 92400 - cents, feesCents: 3382 - feeCents, poolCents: 36018 - (cents - feeCents) });
+    expect(totals.poolCents).toBe(totals.paidInCents - totals.paidOutCents - totals.feesCents);
+    expect(announcements(refunded, "week").map((view) => view.entry.id)).not.toContain(reversal.id);
+    expect(announcements(refunded, "now").map((view) => view.entry.id)).toEqual(announcements(circle, "now").map((view) => view.entry.id));
   });
 
   it("split spending by category, largest first, adding up to every approved cost", () => {

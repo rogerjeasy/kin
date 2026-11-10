@@ -85,7 +85,8 @@ export async function payoutStatus(world: AskKinWorld, payee: string | undefined
 
 export async function topUpStatus(world: AskKinWorld, member: string | undefined): Promise<ToolOutput> {
   const { format, names, copy } = world;
-  const topUps = entriesOf(world, ["contribution"], member);
+  // A refunded top-up's reversal is not a top-up, and its source is a refund, not a capture to read back.
+  const topUps = entriesOf(world, ["contribution"], member).filter((view) => view.entry.reverses === null);
   const statuses = await readEach(world, topUps, (view) =>
     view.entry.simulated || view.entry.source.type !== "paypal_event" ? "simulated" : async (paypal) => `PayPal capture: ${(await paypal.getCapture(view.entry.source.id)).status}`,
   );

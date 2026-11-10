@@ -1,4 +1,4 @@
-import { FEES, POOL_CASH, PURSE_CASH, accountBalance, accountBalances, describeAccount, entryHeadline, sumCents, type EntryHeadline, type EntryKind, type LedgerEntry } from "@kin/domain";
+import { FEES, POOL_CASH, PURSE_CASH, accountBalance, accountBalances, describeAccount, entryHeadline, signedCents, sumCents, type EntryHeadline, type EntryKind, type LedgerEntry } from "@kin/domain";
 import type { CircleSnapshot } from "@kin/db";
 
 export type EntryView = EntryHeadline & { readonly entry: LedgerEntry };
@@ -24,7 +24,7 @@ function periodEntries(circle: CircleSnapshot, period: string): LedgerEntry[] {
 }
 
 function totalOf(entries: readonly LedgerEntry[], kinds: readonly EntryKind[]): number {
-  return sumCents(entries.filter((entry) => kinds.includes(entry.kind)).map((entry) => entryHeadline(entry).cents));
+  return sumCents(entries.filter((entry) => kinds.includes(entry.kind)).map((entry) => signedCents(entry, entryHeadline(entry).cents)));
 }
 
 /**
@@ -42,7 +42,8 @@ export function monthTotals(circle: CircleSnapshot, period: string) {
     purseCents,
     paidInCents: totalOf(entries, ["contribution"]),
     paidOutCents: totalOf(entries, ["payout_confirmed", "purchase_captured", "purse_paid"]),
-    feesCents: sumCents(entries.flatMap((entry) => entry.lines.filter((line) => line.account === FEES).map((line) => line.cents))),
+    // A refunded top-up's reversal takes back its money in and the fee PayPal returned with it.
+    feesCents: sumCents(entries.flatMap((entry) => entry.lines.filter((line) => line.account === FEES).map((line) => signedCents(entry, line.cents)))),
     entryCount: entries.length,
   };
 }
