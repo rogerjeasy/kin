@@ -411,6 +411,8 @@ export {
   ATTESTATIONS_NEEDED,
   ATTESTATION_STANCES,
   FAMILY_ATTESTERS,
+  NO_CONFLICTS,
+  attestationConflicts,
   WISH_TRIGGER_STATES,
   WISH_TRIGGER_TRANSITIONS,
   attestationMet,
@@ -418,4 +420,4 @@ export {
   mayAttest,
   wishTriggerMoveAllowed,
 } from "./wish-trigger.ts";
-export type { Attestation, AttestationStance, WishTriggerState } from "./wish-trigger.ts";
+export type { Attestation, AttestationConflicts, AttestationStance, WishTriggerState } from "./wish-trigger.ts";
