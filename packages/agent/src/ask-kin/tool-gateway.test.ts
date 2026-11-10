@@ -24,9 +24,11 @@ function gateway(role: CircleRole, options: { implementations?: ToolImplementati
 const use = (name: string, input: unknown = {}) => ({ id: `toolu_${name}`, name, input });
 
 /** The tools each role is offered: the role table, as packages/auth decides it. */
+/** The parent's Purse is hers alone: nobody else is offered the tool that spends it. */
+const FAMILY_TOOLS = ASK_KIN_TOOL_NAMES.filter((name) => name !== "propose_gift");
 const OFFERED: Record<CircleRole, readonly AskKinToolName[]> = {
-  organizer: ASK_KIN_TOOL_NAMES,
-  contributor: ASK_KIN_TOOL_NAMES,
+  organizer: FAMILY_TOOLS,
+  contributor: FAMILY_TOOLS,
   parent: ASK_KIN_TOOL_NAMES,
   observer: ["get_pool", "list_bills", "get_fairness", "list_proposals", "get_record", "get_paypal_payout_status", "get_paypal_topup_status", "get_subscription_status"],
   caregiver: ["list_bills", "list_proposals", "get_paypal_payout_status"],
@@ -54,6 +56,8 @@ describe("the tool gateway", () => {
     expect(refusals).toContainEqual(["observer", "check_claim"]);
     expect(refusals).toContainEqual(["caregiver", "get_pool"]);
     expect(refusals).toContainEqual(["caregiver", "propose_refill"]);
+    for (const role of CIRCLE_ROLES.filter((each) => each !== "parent")) expect(refusals).toContainEqual([role, "propose_gift"]);
+    expect(refusals.filter(([role]) => role === "parent")).toEqual([]);
   });
 
   it.each(refusals)("refuses a %s calling %s, and runs nothing", async (role, name) => {

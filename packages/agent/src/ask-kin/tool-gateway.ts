@@ -24,9 +24,12 @@ export type ToolOutput = {
   readonly data: JsonValue;
   /** The same finding as one fixed sentence in the listener's language, for the template answer. */
   readonly fact: string;
-  /** A proposal the tool raised, which still waits for the family's yes. */
-  readonly proposal?: { readonly id: string };
+  /** A proposal the tool raised, which still waits for the family's yes, or, for a payment from her Purse, for the parent's own. */
+  readonly proposal?: RaisedProposal;
 };
+
+/** A proposal a tool raised. `purse_payment` is one from the parent's Purse, answered on her Purse screen, not on Approvals. */
+export type RaisedProposal = { readonly id: string; readonly kind?: "purse_payment" };
 
 export type ToolImplementation<N extends AskKinToolName> = (args: ArgsOf<(typeof ASK_KIN_TOOLS)[N]["inputSchema"]>, context: ToolContext) => Promise<ToolOutput>;
 

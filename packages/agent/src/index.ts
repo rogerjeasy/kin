@@ -22,7 +22,7 @@ export { ASK_KIN_TOOLS, ASK_KIN_TOOL_NAMES, isAskKinTool } from "./ask-kin/ask-k
 export type { AskKinToolName } from "./ask-kin/ask-kin-tools.ts";
 export { bedrockToolModel } from "./ask-kin/bedrock-tool-model.ts";
 export { DEFAULT_LIMITS, maskArgs, mayUseTool, toolGateway, toolsForRole } from "./ask-kin/tool-gateway.ts";
-export type { GatewayLimits, JsonValue, ToolCallRecord, ToolContext, ToolGateway, ToolImplementation, ToolImplementations, ToolOutcome, ToolOutput, ToolRecorder } from "./ask-kin/tool-gateway.ts";
+export type { GatewayLimits, JsonValue, RaisedProposal, ToolCallRecord, ToolContext, ToolGateway, ToolImplementation, ToolImplementations, ToolOutcome, ToolOutput, ToolRecorder } from "./ask-kin/tool-gateway.ts";
 export type { ToolModel, ToolRequest, ToolSpec, ToolTurn, ToolUse } from "./ask-kin/tool-model.ts";
 export { MAX_COVER_CANDIDATES, MAX_TITLE_CHARACTERS, SHIFT_WORDS_PROMPT_VERSION } from "./shift-words-prompt.ts";
 export { COVER_NOTE_TEMPLATES, DAY_PARTS, QUESTION_TEMPLATES, SHIFT_LANGUAGES } from "./shift-templates.ts";
@@ -35,3 +35,6 @@ export { bedrockAssistantModel, messagesAssistantModel } from "./shift-assistant
 export { ACCOUNT_PROMPT_VERSION } from "./account-prompt.ts";
 export { readAccount } from "./read-account.ts";
 export type { ReadAccountResult } from "./read-account.ts";
+export { GIFT_PROMPT_VERSION } from "./gift-prompt.ts";
+export { readGift } from "./read-gift.ts";
+export type { GiftFields, ReadGiftResult } from "./read-gift.ts";

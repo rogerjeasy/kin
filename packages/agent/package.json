@@ -16,7 +16,8 @@
     "eval:documents": "node scripts/eval-documents.ts",
     "eval:agent": "node scripts/eval-agent.ts",
     "eval:shifts": "node scripts/eval-shifts.ts",
-    "eval:account": "node scripts/eval-account.ts"
+    "eval:account": "node scripts/eval-account.ts",
+    "eval:gift": "node scripts/eval-gift.ts"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "1.1.0",

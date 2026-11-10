@@ -6,9 +6,10 @@ import type { ObjectSchema } from "./tool-schema.ts";
  * Every tool Ask Kin may offer, and the role table: the circle action each one
  * needs, decided by `authorize` in packages/auth like every other access
  * check. Nine tools only read. One proposes a refill, which still waits for
- * the yeses the family agreement names. None approves, pays, moves money or
- * edits a record, and no PayPal write is reachable from here
- * (AGENTS.md section 7).
+ * the yeses the family agreement names, and one, for the parent alone,
+ * proposes a payment from her Purse, which waits for her own yes after Kin
+ * reads it back. None approves, pays, moves money or edits a record, and no
+ * PayPal write is reachable from here (AGENTS.md section 7).
  */
 
 const NAME = { type: "string", maxLength: 80, pattern: "^[^<>{}\\n\\r]+$" } as const;
@@ -111,6 +112,22 @@ export const ASK_KIN_TOOLS = {
       type: "object",
       properties: { item: { ...NAME, description: "The item to reorder, by name, if the person named one. Leave out to reorder the circle's only refill." } },
       required: [],
+      additionalProperties: false,
+    },
+  },
+  propose_gift: {
+    kind: "propose",
+    action: "purse.spend",
+    description:
+      "For the parent only: asks Kin to send a small payment from her own Purse, such as a gift, a tip or a donation, to someone she names. It pays nothing: Kin reads the payment back and it waits for her own yes, and Kin's rules hold it for a day, with the family told, when the person is not in her address book, the amount is above her limit or the request looks pressured. Use it only when she asks to send, give or pay someone money from her Purse.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        payee: { ...NAME, description: "Who is to be paid, exactly as she named them." },
+        amount: { type: "string", description: "The amount she named, as plain digits with an optional decimal point, such as 25 or 25.00.", maxLength: 12, pattern: "^\\d{1,9}(\\.\\d{1,2})?$" },
+        memo: { type: "string", description: "What it is for, in her words, such as for her birthday. Leave out when she did not say.", maxLength: 120, pattern: "^[^<>{}\\n\\r]+$" },
+      },
+      required: ["payee", "amount"],
       additionalProperties: false,
     },
   },
