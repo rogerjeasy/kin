@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { readCircle } from "../read-circle.ts";
 import { asPerson } from "../scope.ts";
 import { createDemoVisitor } from "../people.ts";
+import { DEMO_LEDGER_ENTRIES } from "../testing/circles.ts";
 import { testDatabases } from "../testing/databases.ts";
 import { provisionDemoCircle } from "./provision.ts";
 import { ROSES_CIRCLE } from "./roses-circle.ts";
@@ -20,8 +21,11 @@ describe("a provisioned demo circle", () => {
 
     expect(snapshot.viewer).toEqual({ memberId: circle.members.elena, role: "organizer" });
     expect(snapshot.circle).toMatchObject({ name: "Rose's circle", demo: true, now: new Date("2026-10-30T18:00:00Z") });
-    expect(snapshot.ledger.entries).toHaveLength(rosesMonth.ledger.entries.length);
-    expect(snapshot.ledger.entries.map(entryHeadline).map((each) => each.cents)).toEqual(rosesMonth.ledger.entries.map(entryHeadline).map((each) => each.cents));
+    expect(snapshot.ledger.entries).toHaveLength(DEMO_LEDGER_ENTRIES);
+    // Rose's month, then this week's float into her Purse: fifty dollars moved inside the pool's account, simulated.
+    const month = snapshot.ledger.entries.filter((entry) => entry.kind !== "purse_funded");
+    expect(month.map(entryHeadline).map((each) => each.cents)).toEqual(rosesMonth.ledger.entries.map(entryHeadline).map((each) => each.cents));
+    expect(snapshot.ledger.entries.filter((entry) => entry.kind === "purse_funded").map((entry) => [entryHeadline(entry).cents, entry.simulated, entry.period])).toEqual([[5_000, true, "2026-10"]]);
 
     const ours = settlePeriod({ ledger: snapshot.ledger, agreement: snapshot.agreement ?? rosesMonth.agreement, period: "2026-10", payoutFee: rosesMonth.payoutFee });
     const example = settlePeriod(rosesMonth);

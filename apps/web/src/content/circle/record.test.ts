@@ -1,5 +1,5 @@
-import { CARE_RECEIVED, rosesMonth, sumCents } from "@kin/domain";
-import { snapshotFor, testDatabases, visitorWithCircle } from "@kin/db/testing";
+import { CARE_RECEIVED, sumCents } from "@kin/domain";
+import { DEMO_LEDGER_ENTRIES, snapshotFor, testDatabases, visitorWithCircle } from "@kin/db/testing";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { memberFairness, periodSettlement } from "./fairness";
@@ -21,7 +21,7 @@ describe("the circle's record, as the organizer reads it", () => {
   it("holds every ledger entry once, newest day first", () => {
     const entries = recordEntries(circle);
     const days = entries.map((view) => view.entry.occurredOn);
-    expect(entries).toHaveLength(rosesMonth.ledger.entries.length);
+    expect(entries).toHaveLength(DEMO_LEDGER_ENTRIES);
     expect(new Set(entries.map((view) => view.entry.id)).size).toBe(entries.length);
     expect(days).toEqual(days.toSorted().toReversed());
   });
@@ -51,11 +51,12 @@ describe("the month's figures", () => {
   });
 
   it("are the figures Rose's story implies, read back from the database", () => {
-    expect(monthTotals(circle, "2026-10")).toEqual({ poolCents: 36018, paidInCents: 92400, paidOutCents: 53000, feesCents: 3382, entryCount: 19 });
+    // The pool's account holds 360.18: 50.00 of it is this week's float in Rose's Purse, the rest free for the family's bills.
+    expect(monthTotals(circle, "2026-10")).toEqual({ poolCents: 36018, freeCents: 31018, purseCents: 5000, paidInCents: 92400, paidOutCents: 53000, feesCents: 3382, entryCount: DEMO_LEDGER_ENTRIES });
   });
 
   it("count nothing for a month the ledger has no entries in, but keep the pool", () => {
-    expect(monthTotals(circle, "2026-11")).toEqual({ poolCents: 36018, paidInCents: 0, paidOutCents: 0, feesCents: 0, entryCount: 0 });
+    expect(monthTotals(circle, "2026-11")).toEqual({ poolCents: 36018, freeCents: 31018, purseCents: 5000, paidInCents: 0, paidOutCents: 0, feesCents: 0, entryCount: 0 });
   });
 
   it("split spending by category, largest first, adding up to every approved cost", () => {

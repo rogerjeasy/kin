@@ -25,7 +25,7 @@ export function AskKinResult({ state, copy }: Props) {
       {state.status === "answered" ? (
         <>
           <AskKinAnswer question={state.question} answer={state.answer} copy={copy.answer} />
-          {state.answer.proposal ? <AskKinProposal href={state.answer.proposal.href} copy={copy.proposal} /> : null}
+          {state.answer.proposal ? <AskKinProposal href={state.answer.proposal.href} copy={state.answer.proposal.kind === "purse_payment" ? copy.purseProposal : copy.proposal} /> : null}
           <AskKinTrace steps={state.answer.steps} copy={copy.answer} />
         </>
       ) : null}

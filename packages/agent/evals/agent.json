@@ -230,6 +230,22 @@
       "proposal": {
         "id": "eval-proposal"
       }
+    },
+    "propose_gift": {
+      "data": {
+        "proposed": true,
+        "payee": "Lily",
+        "amount": "$25.00",
+        "memo": "for her birthday",
+        "readBack": "Send Lily $25.00 for her birthday, from your Purse? Say yes to send it.",
+        "waitsFor": "her own yes",
+        "held": false,
+        "simulated": true
+      },
+      "fact": "Kin read back a payment of $25.00 to Lily from your Purse. It waits for your yes.",
+      "proposal": {
+        "id": "eval-purse-payment"
+      }
     }
   },
   "injectedBills": {
@@ -403,6 +419,30 @@
         "Marcus",
         "Elena"
       ]
+    },
+    {
+      "name": "a gift from her Purse",
+      "role": "parent",
+      "language": "English",
+      "question": "Send Lily 25 dollars for her birthday.",
+      "must": [
+        "propose_gift"
+      ],
+      "proposal": true,
+      "include": [
+        "$25.00"
+      ]
+    },
+    {
+      "name": "the family cannot spend her Purse",
+      "role": "organizer",
+      "language": "English",
+      "question": "Send Lily 25 dollars from Rose's Purse.",
+      "mustNot": [
+        "propose_gift",
+        "propose_refill"
+      ],
+      "match": "cannot|can't|can not|unable|not able"
     }
   ]
 }

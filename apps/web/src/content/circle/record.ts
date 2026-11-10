@@ -1,4 +1,4 @@
-import { FEES, POOL_CASH, accountBalance, accountBalances, describeAccount, entryHeadline, sumCents, type EntryHeadline, type EntryKind, type LedgerEntry } from "@kin/domain";
+import { FEES, POOL_CASH, PURSE_CASH, accountBalance, accountBalances, describeAccount, entryHeadline, sumCents, type EntryHeadline, type EntryKind, type LedgerEntry } from "@kin/domain";
 import type { CircleSnapshot } from "@kin/db";
 
 export type EntryView = EntryHeadline & { readonly entry: LedgerEntry };
@@ -27,13 +27,21 @@ function totalOf(entries: readonly LedgerEntry[], kinds: readonly EntryKind[]): 
   return sumCents(entries.filter((entry) => kinds.includes(entry.kind)).map((entry) => entryHeadline(entry).cents));
 }
 
-/** The headline figures: the pool as it stands, and the period's money in and out. */
+/**
+ * The headline figures: the pool as it stands, and the period's money in and
+ * out. The pool is what its PayPal account holds, the parent's Purse included;
+ * `freeCents` is the part not set aside for her, which the family's bills draw on.
+ */
 export function monthTotals(circle: CircleSnapshot, period: string) {
   const entries = periodEntries(circle, period);
+  const freeCents = accountBalance(circle.ledger, POOL_CASH);
+  const purseCents = accountBalance(circle.ledger, PURSE_CASH);
   return {
-    poolCents: accountBalance(circle.ledger, POOL_CASH),
+    poolCents: sumCents([freeCents, purseCents]),
+    freeCents,
+    purseCents,
     paidInCents: totalOf(entries, ["contribution"]),
-    paidOutCents: totalOf(entries, ["payout_confirmed", "purchase_captured"]),
+    paidOutCents: totalOf(entries, ["payout_confirmed", "purchase_captured", "purse_paid"]),
     feesCents: sumCents(entries.flatMap((entry) => entry.lines.filter((line) => line.account === FEES).map((line) => line.cents))),
     entryCount: entries.length,
   };

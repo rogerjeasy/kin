@@ -1,6 +1,6 @@
 import { passesNumberGuard } from "../narrate.ts";
 import { askKinQuestion, askKinSystem } from "./ask-kin-prompt.ts";
-import type { JsonValue, ToolGateway, ToolOutcome } from "./tool-gateway.ts";
+import type { JsonValue, RaisedProposal, ToolGateway, ToolOutcome } from "./tool-gateway.ts";
 import type { ToolMessage, ToolModel, ToolResultBlock } from "./tool-model.ts";
 
 /**
@@ -47,7 +47,7 @@ export type AskKinResult =
       readonly templateReason: TemplateReason | null;
       readonly calls: readonly AskKinCall[];
       /** A proposal raised while answering. It waits for the family's yes. */
-      readonly proposal: { readonly id: string } | null;
+      readonly proposal: RaisedProposal | null;
     }
   /** The model could not be reached before any tool ran. A retry may help. */
   | { readonly kind: "unavailable" };
@@ -86,7 +86,7 @@ export async function askKin(model: ToolModel, request: AskKinRequest): Promise<
   const calls: AskKinCall[] = [];
   const facts: string[] = [];
   const figures: string[] = [];
-  let proposal: { readonly id: string } | null = null;
+  let proposal: RaisedProposal | null = null;
 
   const fallback = (templateReason: TemplateReason): AskKinResult => ({ kind: "answered", text: request.template(facts), source: "template", templateReason, calls, proposal });
 

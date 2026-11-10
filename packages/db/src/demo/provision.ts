@@ -69,6 +69,7 @@ import {
   type PayeeKey,
   type PersonaKey,
 } from "./roses-circle.ts";
+import { demoPurseEntries, demoPurseId, writePurse } from "./write-purse.ts";
 
 export type ProvisionedCircle = {
   readonly circleId: string;
@@ -114,7 +115,9 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     await writePayees(tx, ids);
     await writeCareAgreement(tx, ids);
     const ledger = rekeyLedger(ids);
-    await writeEntries(tx, ledger, new Map());
+    // Rose's Purse holds this week's float: one more entry beside her month, which the money core's example leaves untouched.
+    const purseId = demoPurseId();
+    await writeEntries(tx, [...ledger, ...demoPurseEntries(ids, purseId)], new Map());
     await writeBills(tx, ids, ledger);
     await writeQuietShare(tx, ids);
     await writeProposals(tx, ids, agreement, ledger);
@@ -125,6 +128,7 @@ export function provisionDemoCircle(db: Database, userId: string | null, now: Da
     await writeTrustedVoices(tx, ids);
     await writeOpenKin(tx, ids);
     await writeWishes(tx, ids);
+    await writePurse(tx, ids, purseId);
     await tx.insert(auditLog).values({
       id: randomUUID(),
       circleId: ids.circleId,

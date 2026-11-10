@@ -18,7 +18,8 @@
     "eval:shifts": "node scripts/eval-shifts.ts",
     "eval:account": "node scripts/eval-account.ts",
     "eval:offer": "node scripts/eval-offer.ts",
-    "eval:wishes": "node scripts/eval-wishes.ts"
+    "eval:wishes": "node scripts/eval-wishes.ts",
+    "eval:gift": "node scripts/eval-gift.ts"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "1.1.0",

@@ -180,6 +180,7 @@ This is the part of Kin that belongs to the parent.
 - **Scam check.** When someone demands money by phone, letter or message, the parent asks Kin. Kin checks the demand against what has actually been billed and paid, tells the parent plainly whether it matches anything real, and alerts the family.
 - **A trusted routine.** Kin always introduces itself the same way and never asks the parent for a password, a card number or a code. The family teaches the parent one rule: Kin tells, Kin never asks for secrets.
 - **A monthly spoken statement.** Two minutes covering what came in, what went out and what is coming.
+- **The parent's Purse.** A small allowance that is the parent's own: the family sets a weekly amount, a ceiling and the most one payment may be. The parent says "Send Lily 25 dollars for her birthday"; Kin reads it back, and her yes alone sends it. A payment to someone not in the address book the family checked, in gift cards or crypto, above her limit, or that sounds pressured waits a day, Kin gently asks whether someone is telling her what to do, and the family is told and can stop it. The family sees the Purse's ceiling, balance and monthly total, never who she pays or why unless she shares it, and she can always see exactly what they see. The worst any coerced instruction can cost is what is in the Purse.
 
 ### 6.7 The caregiver's side
 

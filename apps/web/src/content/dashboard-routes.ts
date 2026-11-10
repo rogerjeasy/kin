@@ -47,6 +47,9 @@ export const quietSharesRoute = "/dashboard/fairness/quiet-shares";
 /** The demo's family layout of quiet shares: each sharer's own screen side by side. Demo circles only. */
 export const quietSharesFamilyRoute = "/dashboard/fairness/quiet-shares/family";
 
+/** The parent's Purse: her own allowance, spent by her word. A screen of the overview, not a section of its own. */
+export const purseRoute = "/dashboard/purse";
+
 /** The family office line, where a demanding caller is handed to Kin: a screen of the bills, not a section of its own. */
 export const officeLineRoute = "/dashboard/office-line";
 /** Where the circle's record is checked again; its `/export` is the file anyone can check offline with `kin-verify`. */

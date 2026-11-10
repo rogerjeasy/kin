@@ -14,4 +14,7 @@ export const FILTER_OF: Record<EntryKind, RecordFilter> = {
   purchase_captured: "purchases",
   out_of_pocket: "ownPocket",
   care_credit: "care",
+  // The Purse's float stays in the pool's account; what she spends from it is spending for her, like a purchase.
+  purse_funded: "all",
+  purse_paid: "purchases",
 };

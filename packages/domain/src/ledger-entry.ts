@@ -16,6 +16,8 @@ export const ENTRY_KINDS = [
   "settlement_collection",
   "settlement_payout",
   "care_credit",
+  "purse_funded",
+  "purse_paid",
 ] as const;
 
 export type EntryKind = (typeof ENTRY_KINDS)[number];

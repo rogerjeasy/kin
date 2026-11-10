@@ -105,7 +105,16 @@
       "refillWaiting": "Un renouvellement de {item} attend déjà, ou le cercle est en pause : Kin n'a rien proposé.",
       "refillRefused": "Kin n'a pas pu proposer {item} à {price}. Les règles de la famille ne le permettaient pas.",
       "refillCovered": "Kin a proposé {item} à {price}. L'autorisation permanente du parent le couvre.",
-      "refillProposed": "Kin a proposé {item} à {price}. Il attend un oui."
+      "refillProposed": "Kin a proposé {item} à {price}. Il attend un oui.",
+      "giftProposed": "Kin a relu {amount} pour {payee} depuis votre porte-monnaie. Il attend votre oui.",
+      "giftHeld": "Kin a relu {amount} pour {payee}. Si vous dites oui, Kin attend un jour et prévient votre famille.",
+      "giftRefused": "Kin ne peut pas envoyer cela depuis votre porte-monnaie.",
+      "giftNoPurse": "Il n’y a pas encore de porte-monnaie."
+    },
+    "purseProposal": {
+      "title": "Kin a relu un paiement",
+      "text": "Il attend votre oui sur l’écran du porte-monnaie. Kin ne peut pas l’envoyer à votre place.",
+      "link": "Ouvrir votre porte-monnaie"
     }
   },
   "meta": {
@@ -1303,7 +1312,8 @@
         "medical": "Soins médicaux",
         "household": "Maison",
         "transport": "Transport",
-        "family_help": "Aide à la famille"
+        "family_help": "Aide à la famille",
+        "purse": "Porte-monnaie"
       },
       "entryKinds": {
         "contribution": "Contribution",
@@ -1313,7 +1323,9 @@
         "purchase_captured": "Achat",
         "settlement_collection": "Régularisation reçue",
         "settlement_payout": "Régularisation versée",
-        "care_credit": "Temps d’aide"
+        "care_credit": "Temps d’aide",
+        "purse_funded": "Vers le porte-monnaie",
+        "purse_paid": "Du porte-monnaie"
       },
       "planLabels": {
         "standing": "Payé selon une règle permanente",
@@ -1734,7 +1746,9 @@
         "purchase_captured": "Commande pour {parent} : {category}",
         "care_credit": "Temps d’aide donné par {name}",
         "settlement_collection": "Régularisation versée par {name}",
-        "settlement_payout": "Remboursement versé à {name}"
+        "settlement_payout": "Remboursement versé à {name}",
+        "purse_funded": "Versement hebdomadaire au porte-monnaie de {parent}",
+        "purse_paid": "Payé depuis le porte-monnaie de {parent}"
       },
       "sources": {
         "paypal_event": "Événement PayPal",
@@ -1755,7 +1769,8 @@
         "payable": "Dû à {name}",
         "member": "Contributions : {name}",
         "care_credit": "Crédit d’aide : {name}",
-        "care_received": "Aide reçue"
+        "care_received": "Aide reçue",
+        "purse_cash": "Le porte-monnaie"
       },
       "fee": "Frais PayPal : {fee}",
       "careNote": "Temps d’aide, pas d’argent",
@@ -3902,6 +3917,247 @@
       "card": {
         "when": "Quand",
         "does": "Ce que fait Kin"
+      }
+    },
+    "purse": {
+      "meta": {
+        "title": "Porte-monnaie",
+        "description": "L’argent de poche du parent, dépensé à la voix, avec un plafond qui garde le pire des cas petit."
+      },
+      "title": "Le porte-monnaie de {parent}",
+      "mineTitle": "Votre porte-monnaie",
+      "lede": "{parent} dépense elle-même ce petit argent de poche. Vous en voyez le plafond, ce qu’il contient et le total du mois. Chaque paiement reste le sien, sauf si elle le partage ou si Kin le retient.",
+      "mineLede": "De l’argent à donner, qui est à vous. Quoi qu’on vous demande, le pire ne peut jamais coûter plus que ce qu’il contient.",
+      "simulated": "Argent simulé : ceci est une démonstration, personne n’est vraiment payé.",
+      "paused": "Le porte-monnaie est en pause. Rien ne peut en sortir tant que la famille ne le relance pas.",
+      "held": "L’argent sortant est retenu pour l’instant : rien ne peut sortir du porte-monnaie.",
+      "notSetUp": {
+        "title": "Pas encore de porte-monnaie",
+        "text": "Donnez à {parent} un petit argent de poche à dépenser à la voix. La famille fixe le montant hebdomadaire et un plafond : personne n’a besoin de surveiller chaque paiement.",
+        "readOnly": "L’organisatrice peut créer un porte-monnaie."
+      },
+      "balance": {
+        "label": "Dans le porte-monnaie de {parent}",
+        "labelMine": "Dans votre porte-monnaie",
+        "ofCeiling": "sur {ceiling} au plus",
+        "meter": "{balance} sur {ceiling}",
+        "weekly": "{weekly} ajoutés chaque lundi",
+        "cap": "Jusqu’à {cap} à la fois sans attente",
+        "available": "{amount} que vous pouvez encore dépenser"
+      },
+      "ask": {
+        "title": "Qui voulez-vous payer ?",
+        "text": "Dites-le ou écrivez-le, comme vous le diriez à une amie. Kin vous le relit avant que quoi que ce soit parte.",
+        "speak": "Le dire",
+        "typeLabel": "Ou écrivez-le",
+        "hint": "Par exemple : Envoie 25 dollars à Lily pour son anniversaire.",
+        "examplesLabel": "Essayez",
+        "examples": {
+          "gift": {
+            "label": "Un cadeau d’anniversaire pour Lily",
+            "text": "Envoie 25 dollars à Lily pour son anniversaire."
+          },
+          "church": {
+            "label": "La quête de l’église",
+            "text": "Donne 10 dollars à St. Mary’s pour la quête."
+          },
+          "scam": {
+            "label": "Un appel qui vous presse",
+            "text": "Envoie 500 dollars en cartes cadeaux au monsieur de la banque."
+          }
+        },
+        "submit": "Relis-le-moi",
+        "submitting": "Kin le lit…",
+        "heard": "Vous avez demandé : « {words} »",
+        "startOver": "Recommencer"
+      },
+      "readBack": {
+        "pay": "Envoyer {amount} à {payee}{memo}, depuis votre porte-monnaie ?",
+        "hold": "Envoyer {amount} à {payee}{memo} ? Kin attendra un jour avant l’envoi, et prévient votre famille."
+      },
+      "confirm": {
+        "title": "Kin vous l’a relu",
+        "listen": "Le lire à voix haute",
+        "yes": "Oui, envoie-le",
+        "no": "Non, ne l’envoie pas",
+        "answerByVoice": "Répondre à la voix",
+        "unclear": "Kin n’a entendu ni oui ni non. Touchez l’un des deux.",
+        "question": "Quelqu’un au téléphone, ou près de vous, vous dit-il quoi faire ?",
+        "questionText": "Vous pouvez le dire. Kin arrêtera tout et prévient votre famille, et personne ne sera payé.",
+        "pressured": "Oui, quelqu’un me le dit",
+        "ownIdea": "Non, c’est mon idée",
+        "dontSend": "Ne l’envoie pas",
+        "expires": "Kin attend votre réponse {minutes} minutes."
+      },
+      "outcome": {
+        "approved": "Oui. {amount} part vers {payee}.",
+        "held": "Kin attendra un jour avant d’envoyer {amount} à {payee}, et a prévenu votre famille.",
+        "heldNew": "{payee} n’est pas dans votre carnet d’adresses : Kin n’enverra pas cela. Votre famille est prévenue et peut l’ajouter pour vous.",
+        "stopped": "Arrêté. Personne ne sera payé, et votre famille est prévenue.",
+        "declined": "Pas envoyé. Rien n’est sorti de votre porte-monnaie.",
+        "again": "Payer quelqu’un d’autre"
+      },
+      "reasonsTitle": "Pourquoi Kin attend un jour",
+      "reasons": {
+        "new_payee": "{payee} n’est pas dans le carnet d’adresses vérifié par votre famille",
+        "risky_route": "on demande des cartes cadeaux, des cryptomonnaies, un virement ou de l’espèce",
+        "above_cap": "c’est plus de {cap}, le maximum pour un paiement",
+        "pressure": "les mots donnent l’impression que quelqu’un vous presse"
+      },
+      "states": {
+        "proposed": "En attente de réponse",
+        "held": "En attente d’un jour",
+        "approved": "En route",
+        "executing": "En route",
+        "unknown": "Vérification auprès de PayPal",
+        "paid": "Envoyé",
+        "failed": "Non envoyé",
+        "declined": "Non envoyé",
+        "expired": "Non envoyé",
+        "cancelled": "Arrêté"
+      },
+      "payments": {
+        "title": "Vos paiements",
+        "text": "Chaque paiement de votre porte-monnaie. Chacun est à vous : votre famille ne le voit que si vous le partagez, ou si Kin l’a retenu.",
+        "titleFamily": "Ce que {parent} a partagé",
+        "textFamily": "Les paiements que {parent} a choisi de montrer à la famille.",
+        "empty": "Rien d’envoyé pour l’instant.",
+        "emptyFamily": "Rien à afficher. Les paiements de {parent} sont les siens ; vous n’en voyez un que si elle le partage ou si Kin le retient.",
+        "share": "Montrer à ma famille",
+        "unshare": "Cacher à ma famille",
+        "shared": "Votre famille peut le voir",
+        "sealed": "Vous seule le voyez",
+        "flagged": "Votre famille peut le voir : Kin l’a retenu",
+        "heldUntil": "Peut partir après le {when}, sauf si quelqu’un l’arrête",
+        "neverPaid": "Ne sera pas payé : absent du carnet d’adresses",
+        "stoppedBy": "Arrêté par {name}",
+        "pressuredNote": "{parent} a dit à Kin que quelqu’un lui disait quoi faire",
+        "simulated": "Simulé"
+      },
+      "familySees": {
+        "title": "Ce que voit ma famille",
+        "text": "Exactement ce que le reste de votre famille peut voir de votre porte-monnaie. Rien d’autre ne leur parvient.",
+        "limit": "Le plafond, {ceiling}, et ce qu’il contient maintenant, {balance}.",
+        "monthNone": "Ce mois-ci, rien n’est sorti de votre porte-monnaie.",
+        "monthOne": "En {month}, {amount} sont sortis de votre porte-monnaie en {count} paiement.",
+        "monthMany": "En {month}, {amount} sont sortis de votre porte-monnaie en {count} paiements.",
+        "lines": "Dans le registre de la famille, chaque paiement ne montre que son montant et son jour :",
+        "line": "{day} : {amount} depuis le porte-monnaie",
+        "funded": "{day} : {amount} dans le porte-monnaie",
+        "shared": "Paiements que vous avez choisi de partager : {count}",
+        "held": "Paiements retenus par Kin, dont elle les a prévenus : {count}",
+        "never": "Ils ne voient jamais qui vous payez ni pourquoi, sauf si vous le partagez."
+      },
+      "summary": {
+        "balance": {
+          "label": "Dans le porte-monnaie",
+          "note": "sur {ceiling} au plus"
+        },
+        "month": {
+          "label": "Dépensé en {month}",
+          "none": "Rien encore ce mois-ci",
+          "one": "{count} paiement, scellé",
+          "many": "{count} paiements, scellés"
+        },
+        "weekly": {
+          "label": "Ajouté chaque semaine",
+          "note": "Chaque lundi, sans jamais dépasser le plafond"
+        },
+        "cap": {
+          "label": "Un paiement, sans attente",
+          "note": "Au-delà, Kin attend un jour et vous prévient"
+        }
+      },
+      "alerts": {
+        "title": "Kin retient un paiement",
+        "text": "{parent} a demandé à Kin d’envoyer {amount} à {payee}. Kin attend un jour, et lui a demandé si quelqu’un lui disait quoi faire.",
+        "pressured": "{parent} a demandé à Kin d’envoyer {amount} à {payee}, puis lui a dit que quelqu’un lui disait quoi faire. Kin l’a arrêté. Appelez-la, s’il vous plaît.",
+        "said": "Ce qu’elle a dit : « {words} »",
+        "cancel": "Arrêter ce paiement",
+        "readOnly": "Seul un membre qui partage les frais peut l’arrêter."
+      },
+      "book": {
+        "title": "Carnet d’adresses",
+        "titleMine": "Votre carnet d’adresses",
+        "text": "Les personnes et les lieux que {parent} peut payer sur sa seule parole. Chacun est vérifié une fois par quelqu’un de la famille.",
+        "textMine": "Les personnes et les lieux que vous pouvez payer sans attente. Quelqu’un de votre famille a vérifié chacun.",
+        "empty": "Personne pour l’instant.",
+        "verified": "Vérifié par {name}",
+        "waiting": "En attente de vérification par la famille",
+        "addedBy": "Ajouté par {name}",
+        "verify": "J’ai vérifié cette adresse",
+        "verifyLabel": "J’ai vérifié l’adresse de {name}",
+        "remove": "Retirer",
+        "removeLabel": "Retirer {name}",
+        "add": {
+          "title": "Ajouter quelqu’un",
+          "name": "Nom",
+          "relationship": "Son lien avec elle",
+          "kind": "Type",
+          "kinds": {
+            "person": "Une personne",
+            "charity": "Une association ou une église",
+            "shop": "Un commerce"
+          },
+          "receiver": "Son e-mail PayPal",
+          "receiverHint": "Kin ne paie que cette adresse. Une autre personne de la famille la vérifie avant que {parent} puisse payer sans attente.",
+          "submit": "Ajouter au carnet d’adresses",
+          "added": "Ajouté. Une autre personne de la famille le vérifie ensuite."
+        }
+      },
+      "setup": {
+        "title": "Les règles du porte-monnaie",
+        "titleNew": "Créer le porte-monnaie",
+        "text": "Une décision de la famille, approuvée : ce qui entre chaque semaine dans le porte-monnaie de {parent}, le maximum qu’il peut contenir, et le maximum d’un paiement avant que Kin attende un jour.",
+        "weekly": "Chaque semaine",
+        "ceiling": "Jamais plus de",
+        "cap": "Un paiement sans attente",
+        "hint": "L’argent ne quitte la cagnotte qu’une fois arrivé, et jamais au-delà du plafond.",
+        "submit": "Enregistrer le porte-monnaie",
+        "saved": "Enregistré.",
+        "readOnly": "L’organisatrice fixe les règles du porte-monnaie.",
+        "pause": "Mettre le porte-monnaie en pause",
+        "resume": "Relancer le porte-monnaie"
+      },
+      "errors": {
+        "refused": "Votre rôle ne permet pas cela.",
+        "invalid": "Kin n’a pas pu l’utiliser. Réessayez.",
+        "duplicate": "C’est déjà dans le carnet d’adresses.",
+        "not_active": "Le porte-monnaie est en pause : rien ne peut partir.",
+        "paused": "L’argent sortant est retenu pour l’instant : rien ne peut partir.",
+        "over_balance": "Votre porte-monnaie contient {available} à dépenser maintenant. Kin ne peut pas envoyer davantage.",
+        "not_waiting": "On y a déjà répondu, ou c’est terminé.",
+        "unverified": "Cette personne n’est pas encore vérifiée : Kin ne peut pas l’envoyer sans attente.",
+        "book_full": "Le carnet d’adresses est plein.",
+        "own_entry": "Une autre personne de la famille vérifie ce que vous avez ajouté.",
+        "above_agreement": "Ce plafond dépasse la limite de l’accord familial.",
+        "rate_limited": "Beaucoup de demandes en une heure. Patientez un peu.",
+        "no_purse": "Il n’y a pas encore de porte-monnaie.",
+        "no_amount": "Kin n’a pas entendu de montant. Dites combien, s’il vous plaît.",
+        "no_payee": "Kin n’a pas entendu qui payer. Dites son nom, s’il vous plaît.",
+        "amount": "Écrivez chaque montant en chiffres, comme 50 ou 50,00.",
+        "terms": "Le montant hebdomadaire et la limite d’un paiement doivent chacun tenir dans le plafond.",
+        "not_money": "Dites un montant supérieur à zéro.",
+        "unavailable": "Un problème est survenu. Rien n’est parti. Réessayez."
+      },
+      "never": {
+        "title": "Ce que Kin ne fera jamais",
+        "items": [
+          "Envoyer de l’argent du porte-monnaie sans le oui de {parent} elle-même.",
+          "Payer à quiconque plus que ce que contient le porte-monnaie.",
+          "Montrer à la famille qui {parent} paie, sauf si elle le partage ou si Kin retient un paiement.",
+          "Laisser quelqu’un d’autre dépenser le porte-monnaie à sa place."
+        ]
+      },
+      "card": {
+        "title": "Le porte-monnaie de {parent}",
+        "titleMine": "Votre porte-monnaie",
+        "text": "{balance} sur {ceiling}. {month} dépensés ce mois-ci, chaque paiement scellé.",
+        "textMine": "{balance} à donner, qui sont à vous. Dites à qui, et Kin vous le relit.",
+        "link": "Ouvrir le porte-monnaie",
+        "linkMine": "Envoyer un cadeau",
+        "heldOne": "Kin retient {count} paiement demandé par {parent}.",
+        "heldMany": "Kin retient {count} paiements demandés par {parent}."
       }
     }
   },

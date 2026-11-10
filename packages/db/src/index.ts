@@ -218,3 +218,37 @@ export {
 } from "./wishes.ts";
 export type { ParentSubscriptionRecord, SubscriptionJob, SubscriptionOutcome, WishReason, WishRecord, WishTriggerRecord, WishesSnapshot } from "./wishes.ts";
 export { MAX_RECORDING_STORED_BYTES, PARENT_SUBSCRIPTION_TRANSITIONS } from "./schema/wishes.ts";
+export {
+  PurseError,
+  addPursePayee,
+  answerPursePayment,
+  beginPursePayment,
+  cancelPursePayment,
+  confirmPursePayment,
+  expireUnanswered,
+  failPursePayment,
+  fundPurse,
+  lockPurseJob,
+  proposePursePayment,
+  purseCircles,
+  readPurse,
+  readPurseContext,
+  readPurseJobs,
+  readPursePayees,
+  readPursePayment,
+  readPursePayments,
+  readPurseSpendingAllowed,
+  readUnreconciledPurse,
+  recordPurseMismatch,
+  recordPurseReconciled,
+  recordPurseSubmitted,
+  recordPurseUnknown,
+  releaseHolds,
+  removePursePayee,
+  setPurse,
+  setPurseStatus,
+  sharePursePayment,
+  verifyPursePayee,
+} from "./purse.ts";
+export type { AddPursePayeeInput, ProposePursePaymentInput, PurseAnswer, PurseBegin, PurseContext, PurseJob, PursePayeeKind, PursePayeeRecord, PursePaymentRecord, PurseReason, PurseRecord } from "./purse.ts";
+export { PURSE_PAYEE_KINDS } from "./schema/purse.ts";

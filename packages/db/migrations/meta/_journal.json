@@ -421,6 +421,20 @@
       "when": 1794270812456,
       "tag": "0059_wishes-access",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1794290008291,
+      "tag": "0060_purse-tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1794290016403,
+      "tag": "0061_purse-access",
+      "breakpoints": true
     }
   ]
 }

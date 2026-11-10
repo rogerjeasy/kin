@@ -8,7 +8,7 @@ const active = (role: CircleRole) => ({ role, status: "active" as const });
 describe("what a member may do in a circle", () => {
   // Least-privileged roles first (AGENTS.md section 6).
   it("lets an observer see everything and change nothing", () => {
-    expect(allowedActions(active("observer"))).toEqual(["circle.view", "money.view", "own_payments.view", "safety.view", "shift.view", "care_agreement.view", "wish.view", "wish_trigger.view", "quiet_share.view"]);
+    expect(allowedActions(active("observer"))).toEqual(["circle.view", "money.view", "own_payments.view", "safety.view", "shift.view", "care_agreement.view", "wish.view", "wish_trigger.view", "quiet_share.view", "purse.view"]);
   });
 
   it("lets a caregiver see only their own payments, and pull the pause switch", () => {
@@ -59,8 +59,8 @@ describe("what a member may do in a circle", () => {
     }
   });
 
-  it("lets an organizer run the circle but not submit a caregiver's own bill, nor say the parent's wishes for her", () => {
-    expect(allowedActions(active("organizer"))).toEqual(Object.keys(CIRCLE_ACTIONS).filter((action) => action !== "caregiver_bill.submit" && action !== "caregiver_receiver.set" && action !== "payout_target.set" && action !== "wish.record"));
+  it("lets an organizer run the circle but not submit a caregiver's own bill, nor say the parent's wishes or spend her Purse for her", () => {
+    expect(allowedActions(active("organizer"))).toEqual(Object.keys(CIRCLE_ACTIONS).filter((action) => action !== "caregiver_bill.submit" && action !== "caregiver_receiver.set" && action !== "payout_target.set" && action !== "wish.record" && action !== "purse.spend"));
   });
 
   it("lets only the family confirm a visit, only the parent or organizer grant its standing permission, and only the caregiver choose their wallet", () => {
@@ -105,6 +105,18 @@ describe("what a member may do in a circle", () => {
       expect(authorize(active(role), "wish_trigger.attest").allowed).toBe(role === "organizer" || role === "contributor" || role === "caregiver");
       expect(authorize(active(role), "wish_trigger.view").allowed).toBe(true);
       expect(authorize(active(role), "parent_subscription.manage").allowed).toBe(role === "organizer");
+    }
+  });
+
+  it("lets only the parent spend her Purse, the organizer set it up, and the family see its summary and cancel a held payment", () => {
+    for (const role of CIRCLE_ROLES) {
+      expect(authorize(active(role), "purse.spend").allowed).toBe(role === "parent");
+      expect(authorize(active(role), "purse.setup").allowed).toBe(role === "organizer");
+      expect(authorize(active(role), "purse.view").allowed).toBe(role !== "caregiver");
+      expect(authorize(active(role), "purse.cancel").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
+      expect(authorize(active(role), "purse.stop").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
+      expect(authorize(active(role), "purse_payee.add").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");
+      expect(authorize(active(role), "purse_payee.verify").allowed).toBe(role === "organizer" || role === "contributor");
     }
   });
 

@@ -8,6 +8,7 @@ import { runInboxBatch, type InboxLog } from "./paypal-inbox/run-inbox.ts";
 import { runPresenceCalls } from "./presence/place-presence-call.ts";
 import { runPresenceBatch, runPresenceSweep } from "./presence/run-presence.ts";
 import { runPayoutBatch } from "./payouts/run-payouts.ts";
+import { reconcilePurse, runPurseBatch } from "./purse/run-purse.ts";
 import { dailyBudget } from "./payouts/sandbox-route.ts";
 import { httpMerchant, simulatedMerchant } from "./purchases/merchant.ts";
 import { runDeliveryBatch, runPurchaseBatch } from "./purchases/run-purchases.ts";
@@ -40,6 +41,10 @@ const CALL_POLL_MS = 5_000;
 const PRESENCE_POLL_MS = 2_000;
 /** The same, for the subscriptions the parent's wishes suspend and resume through PayPal. */
 const WISH_SUBSCRIPTION_POLL_MS = 15_000;
+/** The parent's Purse: she is waiting to hear that her gift went, so it is looked at often. */
+const PURSE_POLL_MS = 2_000;
+/** The Purse's reconciliation against PayPal's Transaction Search: once a night. */
+const PURSE_RECONCILE_MS = 24 * 60 * 60 * 1000;
 
 const log: InboxLog = (line) => console.log(JSON.stringify({ at: new Date().toISOString(), ...line }));
 
@@ -192,6 +197,33 @@ async function presenceSweepLoop(): Promise<void> {
   }
 }
 
+// The parent's Purse: the week's float, the holds whose cooling-off ended, and her approved payments, paid through PayPal Payouts.
+async function purseLoop(): Promise<void> {
+  const purse = { ...deps, now: () => new Date(), feeReserve: (currency: string) => payoutFeeReserve(currency)() };
+  while (running) {
+    try {
+      await runPurseBatch(purse, log);
+    } catch (error) {
+      log({ level: "error", message: "purse.loop_failed", error: error instanceof Error ? error.name : "unknown" });
+    }
+    await pause(PURSE_POLL_MS);
+  }
+}
+
+// Each night, the Purse's real payouts are looked up in PayPal's own record of the pool's transactions.
+async function purseReconcileLoop(): Promise<void> {
+  const purse = { ...deps, now: () => new Date(), feeReserve: (currency: string) => payoutFeeReserve(currency)() };
+  while (running) {
+    try {
+      const result = await reconcilePurse(purse, log);
+      log({ level: "info", message: "purse.reconciled", ...result });
+    } catch (error) {
+      log({ level: "error", message: "purse.reconcile_failed", error: error instanceof Error ? error.name : "unknown" });
+    }
+    await pause(PURSE_RECONCILE_MS);
+  }
+}
+
 // Kin's call to the real person when their text went unanswered for thirty seconds. It needs the shift call's Twilio settings.
 async function presenceCallLoop(config: Extract<typeof shiftCalls, { enabled: true }>): Promise<void> {
   const caller = createTwilioOutboundCaller({ accountSid: config.accountSid, authToken: config.authToken, from: config.callerNumber });
@@ -231,6 +263,8 @@ await Promise.all([
   settleLoop(),
   presenceSweepLoop(),
   wishSubscriptionLoop(),
+  purseLoop(),
+  purseReconcileLoop(),
   ...(shiftCalls.enabled ? [callLoop(shiftCalls), presenceCallLoop(shiftCalls)] : []),
   ...(presenceTexts.enabled ? [presenceTextLoop(presenceTexts)] : []),
 ]);

@@ -8,7 +8,7 @@ import type { TestDatabases } from "./databases.ts";
 
 export { testDatabases } from "./databases.ts";
 export type { TestDatabases } from "./databases.ts";
-export { addMember, seatPerson, signedIn, visitorWithCircle } from "./circles.ts";
+export { DEMO_LEDGER_ENTRIES, addMember, seatPerson, signedIn, visitorWithCircle } from "./circles.ts";
 export type { VisitorCircle } from "./circles.ts";
 export { agreeWithoutCare, confirmedVisit } from "./visits.ts";
 export type { ConfirmedVisit } from "./visits.ts";
@@ -104,3 +104,4 @@ export async function makeSubscriptionReal(db: TestDatabases, subscriptionId: st
     await tx.execute(sql`update parent_subscriptions set simulated = false, paypal_subscription_id = ${paypalSubscriptionId} where id = ${subscriptionId}`);
   });
 }
+export { payPurseAsWorker } from "./purse.ts";

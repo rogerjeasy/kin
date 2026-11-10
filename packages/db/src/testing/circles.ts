@@ -1,14 +1,18 @@
-import type { CircleRole } from "@kin/domain";
+import { rosesMonth, type CircleRole } from "@kin/domain";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
 import type { Database } from "../connection.ts";
 import { provisionDemoCircle, type ProvisionedCircle } from "../demo/provision.ts";
 import { ROSES_CIRCLE } from "../demo/roses-circle.ts";
+import { PURSE_SEED_ENTRIES } from "../demo/roses-purse.ts";
 import { createDemoVisitor, recordSignIn } from "../people.ts";
 import { members } from "../schema/index.ts";
 import { asPerson, asService } from "../scope.ts";
 import type { TestDatabases } from "./databases.ts";
+
+/** The entries a fresh demo circle's ledger holds: Rose's month, and the week's float into her Purse. */
+export const DEMO_LEDGER_ENTRIES = rosesMonth.ledger.entries.length + PURSE_SEED_ENTRIES;
 
 /** A person who has signed in once, so their user row exists. */
 export async function signedIn(app: Database, name = "Visitor", email?: string): Promise<string> {

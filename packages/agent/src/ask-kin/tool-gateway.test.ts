@@ -24,9 +24,11 @@ function gateway(role: CircleRole, options: { implementations?: ToolImplementati
 const use = (name: string, input: unknown = {}) => ({ id: `toolu_${name}`, name, input });
 
 /** The tools each role is offered: the role table, as packages/auth decides it. */
+/** The parent's Purse is hers alone: nobody else is offered the tool that spends it. */
+const FAMILY_TOOLS = ASK_KIN_TOOL_NAMES.filter((name) => name !== "propose_gift");
 const OFFERED: Record<CircleRole, readonly AskKinToolName[]> = {
-  organizer: ASK_KIN_TOOL_NAMES,
-  contributor: ASK_KIN_TOOL_NAMES,
+  organizer: FAMILY_TOOLS,
+  contributor: FAMILY_TOOLS,
   parent: ASK_KIN_TOOL_NAMES,
   observer: ["get_pool", "list_bills", "get_fairness", "list_proposals", "get_record", "get_paypal_payout_status", "get_paypal_topup_status", "get_subscription_status"],
   caregiver: ["list_bills", "list_proposals", "get_paypal_payout_status"],
@@ -54,6 +56,8 @@ describe("the tool gateway", () => {
     expect(refusals).toContainEqual(["observer", "check_claim"]);
     expect(refusals).toContainEqual(["caregiver", "get_pool"]);
     expect(refusals).toContainEqual(["caregiver", "propose_refill"]);
+    for (const role of CIRCLE_ROLES.filter((each) => each !== "parent")) expect(refusals).toContainEqual([role, "propose_gift"]);
+    expect(refusals.filter(([role]) => role === "parent")).toEqual([]);
   });
 
   it.each(refusals)("refuses a %s calling %s, and runs nothing", async (role, name) => {
@@ -152,8 +156,19 @@ describe("the tool gateway under a member's delegation", () => {
     toolGateway({ context: { circleId: "circle-1", memberId: "member-1", role, delegation: { id: "delegation-1", scope } }, implementations: implementations({ propose_refill: run }), recorder: () => undefined, clock: () => 1_000 });
 
   it("offers a read scope every reading tool of the role and no proposing one", () => {
-    expect(delegated("contributor", "read").tools.map((tool) => tool.name)).toEqual(ASK_KIN_TOOL_NAMES.filter((name) => name !== "propose_refill"));
-    expect(toolsForRole("contributor", "propose").map((tool) => tool.name)).toEqual(ASK_KIN_TOOL_NAMES);
+    // propose_gift is the parent's alone, so a contributor is never offered it, under any scope.
+    expect(delegated("contributor", "read").tools.map((tool) => tool.name)).toEqual(ASK_KIN_TOOL_NAMES.filter((name) => name !== "propose_refill" && name !== "propose_gift"));
+    expect(toolsForRole("contributor", "propose").map((tool) => tool.name)).toEqual(ASK_KIN_TOOL_NAMES.filter((name) => name !== "propose_gift"));
+  });
+
+  it("never lets an outside assistant spend the parent's Purse, even her own under a propose scope", async () => {
+    const run = vi.fn(async () => ok());
+    const gateway = toolGateway({ context: { circleId: "circle-1", memberId: "member-1", role: "parent", delegation: { id: "delegation-1", scope: "propose" } }, implementations: implementations({ propose_gift: run }), recorder: () => undefined, clock: () => 1_000 });
+    expect(gateway.tools.map((tool) => tool.name)).not.toContain("propose_gift");
+    expect((await gateway.call(use("propose_gift"))).record.outcome).toBe("refused");
+    expect(run).not.toHaveBeenCalled();
+    // In Kin itself, with no delegation, the tool is hers.
+    expect(toolsForRole("parent").map((tool) => tool.name)).toContain("propose_gift");
   });
 
   it("refuses what the scope does not allow, and runs nothing", async () => {

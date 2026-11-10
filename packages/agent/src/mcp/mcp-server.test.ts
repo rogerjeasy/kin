@@ -63,7 +63,8 @@ describe("Kin's MCP server over Streamable HTTP", () => {
     expect(resultOf(discovered.json)).toMatchObject({ resultType: "complete", supportedVersions: SUPPORTED_VERSIONS, capabilities: { tools: { listChanged: false } } });
     expect(resultOf(discovered.json)?.["_meta"]).toEqual({ "io.modelcontextprotocol/serverInfo": { name: "kin", title: "Kin", version: "1.0.0" } });
     const listed = await mcp.send(...modern(2, "tools/list"));
-    expect(toolNames(listed.json)).toEqual(ASK_KIN_TOOL_NAMES);
+    // Everything the role may use under its scope; the parent's Purse is never offered to an outside assistant.
+    expect(toolNames(listed.json)).toEqual(ASK_KIN_TOOL_NAMES.filter((name) => name !== "propose_gift"));
     const called = await mcp.send(...modern(3, "tools/call", { name: "get_fairness", arguments: {} }));
     expect(called.status).toBe(200);
     expect(resultOf(called.json)).toMatchObject({ resultType: "complete", isError: false });

@@ -3,6 +3,7 @@ import {
   CARE_RECEIVED,
   FEES,
   POOL_CASH,
+  PURSE_CASH,
   careCreditAccount,
   expenseAccount,
   memberAccount,
@@ -164,6 +165,36 @@ export function careCreditLogged(
       debit(CARE_RECEIVED, cents),
       credit(careCreditAccount(care.memberId), cents),
     ],
+  });
+}
+
+/** The category every payment from the parent's Purse is spent under. Who and why stay sealed with her. */
+export const PURSE_CATEGORY = "purse";
+
+/**
+ * The week's float moves from the pool into the parent's Purse. Both stay in
+ * the pool's PayPal account; the money is now hers to spend and no longer free
+ * for the family's bills.
+ */
+export function purseFunded(header: EntryHeader, funding: { readonly cents: number }): LedgerEntry {
+  return createEntry({
+    ...header,
+    kind: "purse_funded",
+    lines: [debit(PURSE_CASH, funding.cents), credit(POOL_CASH, funding.cents)],
+  });
+}
+
+/**
+ * PayPal confirms a payment she made from her Purse. The Purse pays the amount
+ * and the pool pays PayPal's fee, a shared cost as for every payout. The entry
+ * names no payee: who it went to, and why, are hers.
+ */
+export function pursePaid(header: EntryHeader, payment: MoneyOut): LedgerEntry {
+  const lines = [debit(expenseAccount(PURSE_CATEGORY), payment.cents), credit(PURSE_CASH, payment.cents)];
+  return createEntry({
+    ...header,
+    kind: "purse_paid",
+    lines: payment.feeCents === 0 ? lines : [...lines, debit(FEES, payment.feeCents), credit(POOL_CASH, payment.feeCents)],
   });
 }
 

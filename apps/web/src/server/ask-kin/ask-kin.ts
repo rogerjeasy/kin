@@ -3,7 +3,7 @@ import { authorize, type BillingAccount } from "@kin/auth";
 import { asPerson, readExecutions, type CircleSnapshot, type Database } from "@kin/db";
 
 import { LANGUAGE_NAMES } from "@/components/dashboard/words/letter-words";
-import { dashboardRoutes } from "@/content/dashboard-routes";
+import { dashboardRoutes, purseRoute } from "@/content/dashboard-routes";
 import { getDictionary, type Dictionary } from "@/i18n/dictionary";
 import { isLocale, type Locale } from "@/i18n/locales";
 import { localizedPath } from "@/i18n/routing";
@@ -37,7 +37,7 @@ export type AskKinResponse =
       /** The model that chose the tools, even when its wording was replaced. */
       readonly model: string;
       readonly steps: readonly AskKinStep[];
-      readonly proposal: { readonly id: string; readonly href: string } | null;
+      readonly proposal: { readonly id: string; readonly href: string; readonly kind: "proposal" | "purse_payment" } | null;
     }
   | { readonly ok: false; readonly reason: "refused" | "invalid" | "busy" | "unavailable" };
 
@@ -117,6 +117,12 @@ export async function runAskKin(context: AskKinContext, input: unknown): Promise
     source: result.source,
     model: context.model.label,
     steps: steps(copy, result.calls),
-    proposal: result.proposal === null ? null : { id: result.proposal.id, href: localizedPath(parsed.locale, dashboardRoutes.approvals) },
+    // A payment from her Purse waits for her own yes on her Purse screen; anything else for the family's on Approvals.
+    proposal:
+      result.proposal === null
+        ? null
+        : result.proposal.kind === "purse_payment"
+          ? { id: result.proposal.id, href: localizedPath(parsed.locale, purseRoute), kind: "purse_payment" }
+          : { id: result.proposal.id, href: localizedPath(parsed.locale, dashboardRoutes.approvals), kind: "proposal" },
   };
 }

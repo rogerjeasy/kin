@@ -105,7 +105,16 @@
       "refillWaiting": "Un rinnovo di {item} è già in attesa, o il cerchio è in pausa, quindi Kin non ha proposto nulla.",
       "refillRefused": "Kin non ha potuto proporre {item} a {price}. Le regole della famiglia non lo consentivano.",
       "refillCovered": "Kin ha proposto {item} a {price}. Il permesso permanente del genitore lo copre.",
-      "refillProposed": "Kin ha proposto {item} a {price}. Attende un sì."
+      "refillProposed": "Kin ha proposto {item} a {price}. Attende un sì.",
+      "giftProposed": "Kin ti ha riletto {amount} per {payee} dal tuo borsellino. Aspetta il tuo sì.",
+      "giftHeld": "Kin ti ha riletto {amount} per {payee}. Se dici sì, Kin aspetta un giorno e avvisa la tua famiglia.",
+      "giftRefused": "Kin non può mandarlo dal tuo borsellino.",
+      "giftNoPurse": "Non c’è ancora un borsellino."
+    },
+    "purseProposal": {
+      "title": "Kin ti ha riletto un pagamento",
+      "text": "Aspetta il tuo sì nella schermata del borsellino. Kin non può mandarlo al posto tuo.",
+      "link": "Apri il tuo borsellino"
     }
   },
   "meta": {
@@ -1303,7 +1312,8 @@
         "medical": "Cure mediche",
         "household": "Casa",
         "transport": "Trasporti",
-        "family_help": "Aiuto alla famiglia"
+        "family_help": "Aiuto alla famiglia",
+        "purse": "Borsellino"
       },
       "entryKinds": {
         "contribution": "Versamento",
@@ -1313,7 +1323,9 @@
         "purchase_captured": "Acquisto",
         "settlement_collection": "Conguaglio in entrata",
         "settlement_payout": "Conguaglio in uscita",
-        "care_credit": "Ore di assistenza"
+        "care_credit": "Ore di assistenza",
+        "purse_funded": "Al borsellino",
+        "purse_paid": "Dal borsellino"
       },
       "planLabels": {
         "standing": "Pagamento automatico con regola fissa",
@@ -1734,7 +1746,9 @@
         "purchase_captured": "Ordine per {parent}: {category}",
         "care_credit": "Ore di assistenza di {name}",
         "settlement_collection": "Conguaglio versato da {name}",
-        "settlement_payout": "Rimborso a {name}"
+        "settlement_payout": "Rimborso a {name}",
+        "purse_funded": "Paghetta settimanale nel borsellino di {parent}",
+        "purse_paid": "Pagato dal borsellino di {parent}"
       },
       "sources": {
         "paypal_event": "Evento PayPal",
@@ -1755,7 +1769,8 @@
         "payable": "Dovuto a {name}",
         "member": "Versamenti di {name}",
         "care_credit": "Credito di assistenza di {name}",
-        "care_received": "Assistenza ricevuta"
+        "care_received": "Assistenza ricevuta",
+        "purse_cash": "Il borsellino"
       },
       "fee": "Commissione PayPal {fee}",
       "careNote": "Ore di assistenza, non denaro",
@@ -3902,6 +3917,247 @@
       "card": {
         "when": "Quando",
         "does": "Cosa fa Kin"
+      }
+    },
+    "purse": {
+      "meta": {
+        "title": "Borsellino",
+        "description": "La paghetta personale del genitore, spesa a voce, con un tetto che tiene piccolo il caso peggiore."
+      },
+      "title": "Il borsellino di {parent}",
+      "mineTitle": "Il tuo borsellino",
+      "lede": "{parent} spende da sola questa piccola paghetta. Tu ne vedi il tetto, quanto contiene e il totale del mese. Ogni pagamento resta suo, a meno che non lo condivida o Kin lo trattenga.",
+      "mineLede": "Soldi tuoi da regalare. Qualunque cosa ti chiedano, il massimo che può costare è quello che c’è qui dentro.",
+      "simulated": "Denaro simulato: questa è una demo e nessuno viene pagato davvero.",
+      "paused": "Il borsellino è in pausa. Non si può spendere nulla finché la famiglia non lo riattiva.",
+      "held": "Il denaro in uscita è trattenuto per ora, quindi dal borsellino non si può spendere nulla.",
+      "notSetUp": {
+        "title": "Ancora nessun borsellino",
+        "text": "Dai a {parent} una piccola paghetta tutta sua da spendere a voce. La famiglia fissa l’importo settimanale e un tetto, così nessuno deve controllare ogni pagamento.",
+        "readOnly": "L’organizzatrice può creare un borsellino."
+      },
+      "balance": {
+        "label": "Nel borsellino di {parent}",
+        "labelMine": "Nel tuo borsellino",
+        "ofCeiling": "su {ceiling} al massimo",
+        "meter": "{balance} su {ceiling}",
+        "weekly": "{weekly} in più ogni lunedì",
+        "cap": "Fino a {cap} alla volta senza attesa",
+        "available": "{amount} che puoi ancora spendere"
+      },
+      "ask": {
+        "title": "Chi vuoi pagare?",
+        "text": "Dillo o scrivilo, come lo diresti a un’amica. Kin te lo rilegge prima di inviare qualsiasi cosa.",
+        "speak": "Dillo",
+        "typeLabel": "Oppure scrivilo",
+        "hint": "Per esempio: Manda 25 dollari a Lily per il suo compleanno.",
+        "examplesLabel": "Provane uno",
+        "examples": {
+          "gift": {
+            "label": "Un regalo di compleanno per Lily",
+            "text": "Manda 25 dollari a Lily per il suo compleanno."
+          },
+          "church": {
+            "label": "La colletta della chiesa",
+            "text": "Dai 10 dollari a St. Mary’s per la colletta."
+          },
+          "scam": {
+            "label": "Una telefonata che ti mette fretta",
+            "text": "Manda 500 dollari in carte regalo al signore della banca."
+          }
+        },
+        "submit": "Rileggimelo",
+        "submitting": "Kin lo sta leggendo…",
+        "heard": "Hai chiesto: «{words}»",
+        "startOver": "Ricomincia"
+      },
+      "readBack": {
+        "pay": "Mandare {amount} a {payee}{memo}, dal tuo borsellino?",
+        "hold": "Mandare {amount} a {payee}{memo}? Kin aspetterà un giorno prima dell’invio e avviserà la tua famiglia."
+      },
+      "confirm": {
+        "title": "Kin te l’ha riletto",
+        "listen": "Leggilo ad alta voce",
+        "yes": "Sì, mandalo",
+        "no": "No, non mandarlo",
+        "answerByVoice": "Rispondi a voce",
+        "unclear": "Kin non ha sentito né un sì né un no. Toccane uno, per favore.",
+        "question": "Qualcuno al telefono, o lì con te, ti sta dicendo cosa fare?",
+        "questionText": "Puoi dirlo. Kin lo fermerà e avviserà la tua famiglia, e nessuno verrà pagato.",
+        "pressured": "Sì, qualcuno me lo dice",
+        "ownIdea": "No, è un’idea mia",
+        "dontSend": "Non mandarlo",
+        "expires": "Kin aspetta la tua risposta per {minutes} minuti."
+      },
+      "outcome": {
+        "approved": "Sì. {amount} sono in viaggio verso {payee}.",
+        "held": "Kin aspetterà un giorno prima di mandare {amount} a {payee}, e ha avvisato la tua famiglia.",
+        "heldNew": "{payee} non è nella tua rubrica, quindi Kin non lo manderà. La tua famiglia lo sa e può aggiungerlo per te.",
+        "stopped": "Fermato. Nessuno verrà pagato, e la tua famiglia lo sa.",
+        "declined": "Non inviato. Dal tuo borsellino non è uscito nulla.",
+        "again": "Paga qualcun altro"
+      },
+      "reasonsTitle": "Perché Kin aspetta un giorno",
+      "reasons": {
+        "new_payee": "{payee} non è nella rubrica controllata dalla tua famiglia",
+        "risky_route": "chiede carte regalo, criptovalute, un bonifico o contanti",
+        "above_cap": "è più di {cap}, il massimo per un pagamento",
+        "pressure": "le parole fanno pensare che qualcuno ti metta fretta o pressione"
+      },
+      "states": {
+        "proposed": "In attesa di risposta",
+        "held": "Attende un giorno",
+        "approved": "In viaggio",
+        "executing": "In viaggio",
+        "unknown": "Verifica con PayPal",
+        "paid": "Inviato",
+        "failed": "Non inviato",
+        "declined": "Non inviato",
+        "expired": "Non inviato",
+        "cancelled": "Fermato"
+      },
+      "payments": {
+        "title": "I tuoi pagamenti",
+        "text": "Ogni pagamento dal tuo borsellino. Ognuno è tuo: la tua famiglia lo vede solo se lo condividi o se Kin l’ha trattenuto.",
+        "titleFamily": "Ciò che {parent} ha condiviso",
+        "textFamily": "Pagamenti che {parent} ha scelto di mostrare alla famiglia.",
+        "empty": "Ancora nulla di inviato.",
+        "emptyFamily": "Nulla da mostrare. I pagamenti di {parent} sono suoi; ne vedi uno solo se lo condivide o se Kin lo trattiene.",
+        "share": "Mostralo alla mia famiglia",
+        "unshare": "Nascondilo alla mia famiglia",
+        "shared": "La tua famiglia può vederlo",
+        "sealed": "Solo tu puoi vederlo",
+        "flagged": "La tua famiglia può vederlo: Kin l’ha trattenuto",
+        "heldUntil": "Può partire dopo il {when}, a meno che qualcuno non lo fermi",
+        "neverPaid": "Non verrà pagato: non è nella rubrica",
+        "stoppedBy": "Fermato da {name}",
+        "pressuredNote": "{parent} ha detto a Kin che qualcuno le diceva cosa fare",
+        "simulated": "Simulato"
+      },
+      "familySees": {
+        "title": "Cosa vede la mia famiglia",
+        "text": "Esattamente ciò che il resto della tua famiglia può vedere del tuo borsellino. Nient’altro arriva a loro.",
+        "limit": "Il tetto, {ceiling}, e quanto contiene adesso, {balance}.",
+        "monthNone": "Questo mese dal tuo borsellino non è uscito nulla.",
+        "monthOne": "A {month} sono usciti {amount} dal tuo borsellino in {count} pagamento.",
+        "monthMany": "A {month} sono usciti {amount} dal tuo borsellino in {count} pagamenti.",
+        "lines": "Nel registro della famiglia ogni pagamento mostra solo l’importo e il giorno:",
+        "line": "{day}: {amount} dal borsellino",
+        "funded": "{day}: {amount} nel borsellino",
+        "shared": "Pagamenti che hai scelto di condividere: {count}",
+        "held": "Pagamenti trattenuti da Kin, di cui li ha avvisati: {count}",
+        "never": "Non vedono mai chi paghi né perché, a meno che tu non lo condivida."
+      },
+      "summary": {
+        "balance": {
+          "label": "Nel borsellino",
+          "note": "su {ceiling} al massimo"
+        },
+        "month": {
+          "label": "Speso a {month}",
+          "none": "Ancora nulla questo mese",
+          "one": "{count} pagamento, sigillato",
+          "many": "{count} pagamenti, sigillati"
+        },
+        "weekly": {
+          "label": "Aggiunto ogni settimana",
+          "note": "Ogni lunedì, mai oltre il tetto"
+        },
+        "cap": {
+          "label": "Un pagamento senza attesa",
+          "note": "Oltre questo, Kin aspetta un giorno e vi avvisa"
+        }
+      },
+      "alerts": {
+        "title": "Kin sta trattenendo un pagamento",
+        "text": "{parent} ha chiesto a Kin di mandare {amount} a {payee}. Kin aspetta un giorno e le ha chiesto se qualcuno le stesse dicendo cosa fare.",
+        "pressured": "{parent} ha chiesto a Kin di mandare {amount} a {payee}, poi ha detto che qualcuno le stava dicendo cosa fare. Kin l’ha fermato. Chiamala, per favore.",
+        "said": "Cosa ha detto: «{words}»",
+        "cancel": "Ferma questo pagamento",
+        "readOnly": "Solo un membro che condivide le spese può fermarlo."
+      },
+      "book": {
+        "title": "Rubrica",
+        "titleMine": "La tua rubrica",
+        "text": "Le persone e i luoghi che {parent} può pagare sulla sua sola parola. Ognuno viene controllato una volta da qualcuno della famiglia.",
+        "textMine": "Le persone e i luoghi che puoi pagare senza attesa. Qualcuno della tua famiglia li ha controllati uno per uno.",
+        "empty": "Ancora nessuno.",
+        "verified": "Controllato da {name}",
+        "waiting": "In attesa del controllo della famiglia",
+        "addedBy": "Aggiunto da {name}",
+        "verify": "Ho controllato questo indirizzo",
+        "verifyLabel": "Ho controllato l’indirizzo di {name}",
+        "remove": "Rimuovi",
+        "removeLabel": "Rimuovi {name}",
+        "add": {
+          "title": "Aggiungi qualcuno",
+          "name": "Nome",
+          "relationship": "Chi è per lei",
+          "kind": "Tipo",
+          "kinds": {
+            "person": "Una persona",
+            "charity": "Un’associazione o una chiesa",
+            "shop": "Un negozio"
+          },
+          "receiver": "La sua e-mail PayPal",
+          "receiverHint": "Kin paga solo questo indirizzo. Un’altra persona della famiglia lo controlla prima che {parent} possa pagare senza attesa.",
+          "submit": "Aggiungi alla rubrica",
+          "added": "Aggiunto. Ora lo controlla un’altra persona della famiglia."
+        }
+      },
+      "setup": {
+        "title": "Le regole del borsellino",
+        "titleNew": "Crea il borsellino",
+        "text": "Una decisione approvata dalla famiglia: quanto entra ogni settimana nel borsellino di {parent}, il massimo che può contenere, e il massimo di un pagamento prima che Kin aspetti un giorno.",
+        "weekly": "Ogni settimana",
+        "ceiling": "Mai più di",
+        "cap": "Un pagamento senza attesa",
+        "hint": "Il denaro esce dal fondo solo quando è arrivato, e mai oltre il tetto.",
+        "submit": "Salva il borsellino",
+        "saved": "Salvato.",
+        "readOnly": "L’organizzatrice fissa le regole del borsellino.",
+        "pause": "Metti in pausa il borsellino",
+        "resume": "Riattiva il borsellino"
+      },
+      "errors": {
+        "refused": "Il tuo ruolo non può farlo.",
+        "invalid": "Kin non ha potuto usarlo. Riprova.",
+        "duplicate": "È già nella rubrica.",
+        "not_active": "Il borsellino è in pausa, quindi non si può inviare nulla.",
+        "paused": "Il denaro in uscita è trattenuto per ora, quindi non si può inviare nulla.",
+        "over_balance": "Nel tuo borsellino ci sono {available} da spendere adesso. Kin non può mandare di più.",
+        "not_waiting": "Ha già una risposta, oppure è finito.",
+        "unverified": "Questa persona non è ancora controllata, quindi Kin non può mandarlo senza attesa.",
+        "book_full": "La rubrica è piena.",
+        "own_entry": "Un’altra persona della famiglia controlla ciò che hai aggiunto.",
+        "above_agreement": "Questo tetto supera il limite dell’accordo di famiglia.",
+        "rate_limited": "Sono molte richieste in un’ora. Aspetta un po’.",
+        "no_purse": "Non c’è ancora un borsellino.",
+        "no_amount": "Kin non ha sentito un importo. Di’ quanto, per favore.",
+        "no_payee": "Kin non ha sentito chi pagare. Di’ il nome, per favore.",
+        "amount": "Scrivi ogni importo come numero, per esempio 50 o 50,00.",
+        "terms": "L’importo settimanale e il limite di un pagamento devono stare entrambi dentro il tetto.",
+        "not_money": "Di’ un importo maggiore di zero.",
+        "unavailable": "Qualcosa è andato storto. Non è stato inviato nulla. Riprova."
+      },
+      "never": {
+        "title": "Cosa Kin non farà mai",
+        "items": [
+          "Mandare denaro dal borsellino senza il sì di {parent} in persona.",
+          "Pagare a chiunque più di quanto c’è nel borsellino.",
+          "Mostrare alla famiglia chi paga {parent}, a meno che lei non lo condivida o Kin trattenga un pagamento.",
+          "Lasciare che qualcun altro spenda il borsellino al suo posto."
+        ]
+      },
+      "card": {
+        "title": "Il borsellino di {parent}",
+        "titleMine": "Il tuo borsellino",
+        "text": "{balance} su {ceiling}. {month} spesi questo mese, ogni pagamento sigillato.",
+        "textMine": "{balance} tuoi da regalare. Di’ a chi, e Kin te lo rilegge.",
+        "link": "Apri il borsellino",
+        "linkMine": "Manda un regalo",
+        "heldOne": "Kin sta trattenendo {count} pagamento chiesto da {parent}.",
+        "heldMany": "Kin sta trattenendo {count} pagamenti chiesti da {parent}."
       }
     }
   },
