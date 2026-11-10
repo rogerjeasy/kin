@@ -1,3 +1,5 @@
+import { wrapData } from "./wrap-data.ts";
+
 /**
  * The prompt that reads a caregiver's description of their visits. A change
  * to it runs the fixed evaluation set (`pnpm --filter @kin/agent run eval`)
@@ -19,10 +21,9 @@ export function visitSystemPrompt(today: { readonly date: string; readonly weekd
   ].join("\n\n");
 }
 
-/** The caregiver's words, wrapped as data. Tags inside them are removed, so they cannot close the wrapper. */
+/** The caregiver's words, wrapped as data. Every angle bracket in them is escaped, so they cannot close the wrapper. */
 export function visitUserMessage(description: string): string {
-  const inert = description.replaceAll(new RegExp(`</?${TAG}\\s*>`, "gi"), "");
-  return `<${TAG}>\n${inert}\n</${TAG}>`;
+  return wrapData(TAG, description);
 }
 
 /** The answer's shape, enforced by the API's structured output. */

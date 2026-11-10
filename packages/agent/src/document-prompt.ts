@@ -1,3 +1,5 @@
+import { wrapData } from "./wrap-data.ts";
+
 /**
  * The prompt that reads a letter, bill or receipt the parent holds up. A
  * change to it runs the fixed evaluation set and gets a new version
@@ -21,11 +23,10 @@ export function documentSystemPrompt(today: { readonly date: string; readonly cu
   ].join("\n\n");
 }
 
-/** The document's words, wrapped as data. Tags inside them are removed, so they cannot close the wrapper. */
+/** The document's words, wrapped as data. Every angle bracket in them is escaped, so they cannot close the wrapper. */
 export function documentUserMessage(text: string | null): string {
   if (text === null) return "Read the attached photograph.";
-  const inert = text.replaceAll(new RegExp(`</?${TAG}\\s*>`, "gi"), "");
-  return `<${TAG}>\n${inert}\n</${TAG}>`;
+  return wrapData(TAG, text);
 }
 
 /** The answer's shape, enforced by the API's structured output. */

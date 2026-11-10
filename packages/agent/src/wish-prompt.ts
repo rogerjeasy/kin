@@ -1,3 +1,5 @@
+import { inertText, wrapData } from "./wrap-data.ts";
+
 /**
  * The prompt that helps a parent put her wishes into rules. A change to it runs
  * the fixed evaluation set (`pnpm --filter @kin/agent run eval:wishes`,
@@ -6,7 +8,7 @@
  * each one's words, and names which of a short list of rule kinds each could be,
  * with slots for the people and subscriptions it names. A wish that is none of
  * them is flagged, never guessed. Plain code (`@kin/domain`) checks every draft
- * against the record, reads any amount from her own words, and she confirms
+ * against the record, reads any amount from that wish's own quote, and she confirms
  * what Kin reads back before two family members witness it.
  */
 export const WISH_PROMPT_VERSION = "wishes-2026-11-10";
@@ -26,7 +28,7 @@ export function wishSystemPrompt(): string {
       "keep_paying: a caregiver she names must always be paid. Give the caregiver's slot in `payee`.",
       "pause_discretionary: spending on things that are not her care should wait (shopping, refills, extras).",
       "suspend_subscriptions: subscriptions she names should be stopped while she is away. Give their slots in `subscriptions`.",
-      "new_payee_approvals: money to anyone new, over an amount, needs named family members to agree. Copy the amount exactly as she says it into `amount`, and give the members' slots in `approvers` (at least two).",
+      "new_payee_approvals: money to anyone new, over an amount, needs named family members to agree. Keep the amount inside the quote, as she said it (Kin reads it from there), and give the members' slots in `approvers` (at least two).",
       "successor: someone she names should run things for the family while she cannot. Give their slot in `successor`.",
       "not_a_rule: anything else, anything unclear, anything about her health, her body or her property, or a wish that would need a judgement at the moment it applies. Give a short reason in `why`. Never force a wish into a kind it does not fit.",
     ].join("\n"),
@@ -42,9 +44,8 @@ export type WishNames = {
   readonly subscriptions: readonly { readonly slot: string; readonly name: string }[];
 };
 
-/** The family's names with their slots, then her words, wrapped as data. Tags inside her words are removed, so they cannot close the wrapper. */
+/** The family's names with their slots, then her words, wrapped as data. Every angle bracket in her words is escaped, so they cannot close the wrapper. */
 export function wishUserMessage(said: string, names: WishNames): string {
-  const inert = said.replaceAll(new RegExp(`</?${TAG}\\s*>`, "gi"), "");
   const lines = [
     "Caregivers:",
     ...names.caregivers.map((each) => `${each.slot}: ${each.name}`),
@@ -53,7 +54,8 @@ export function wishUserMessage(said: string, names: WishNames): string {
     "Subscriptions she pays:",
     ...names.subscriptions.map((each) => `${each.slot}: ${each.name}`),
   ];
-  return `${lines.join("\n")}\n\n<${TAG}>\n${inert}\n</${TAG}>`;
+  // The names are the family's own text too: one line each, and no bracket can open a tag of its own.
+  return `${lines.map((line) => inertText(line.replace(/\s+/gu, " "))).join("\n")}\n\n${wrapData(TAG, said)}`;
 }
 
 const SLOT = { type: ["string", "null"] } as const;
@@ -70,14 +72,13 @@ export const WISH_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["quote", "kind", "trigger", "payee", "subscriptions", "amount", "approvers", "successor", "why"],
+        required: ["quote", "kind", "trigger", "payee", "subscriptions", "approvers", "successor", "why"],
         properties: {
           quote: { type: "string", description: "The wish, copied exactly from her words." },
           kind: { type: "string", enum: WISH_DRAFT_KINDS },
           trigger: { type: "string", enum: ["hospital", "care_home", "either"] },
           payee: { ...SLOT, description: "The caregiver's slot, for keep_paying." },
           subscriptions: { type: "array", items: { type: "string" }, description: "Subscription slots, for suspend_subscriptions." },
-          amount: { type: ["string", "null"], description: "The amount, copied exactly from her words, for new_payee_approvals." },
           approvers: { type: "array", items: { type: "string" }, description: "Member slots, for new_payee_approvals." },
           successor: { ...SLOT, description: "The member's slot, for successor." },
           why: { type: ["string", "null"], description: "For not_a_rule: why it is not one of the kinds." },

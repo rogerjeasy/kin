@@ -1,3 +1,5 @@
+import { wrapData } from "./wrap-data.ts";
+
 /**
  * The prompt that reads what a frightened parent says a caller asked for. A
  * change to it runs the fixed evaluation set (`pnpm --filter @kin/agent run
@@ -21,10 +23,9 @@ export function accountSystemPrompt(): string {
   ].join("\n\n");
 }
 
-/** The parent's words, wrapped as data. Tags inside them are removed, so they cannot close the wrapper. */
+/** The parent's words, wrapped as data. Every angle bracket in them is escaped, so they cannot close the wrapper. */
 export function accountUserMessage(account: string): string {
-  const inert = account.replaceAll(new RegExp(`</?${TAG}\\s*>`, "gi"), "");
-  return `<${TAG}>\n${inert}\n</${TAG}>`;
+  return wrapData(TAG, account);
 }
 
 /** The answer's shape, enforced by the API's structured output. */

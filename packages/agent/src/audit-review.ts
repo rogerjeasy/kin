@@ -1,6 +1,7 @@
 import { passesNumberGuard } from "./narrate.ts";
 import { byClaude, reasonForFailure, type FallbackReason, type Provenance } from "./provenance.ts";
 import type { StructuredModel } from "./structured-model.ts";
+import { inertText } from "./wrap-data.ts";
 
 export const AUDITOR_PROMPT_VERSION = "auditor-2026-11-08";
 
@@ -61,7 +62,7 @@ export async function reviewFindings(model: StructuredModel | null, items: reado
         `For each finding, write one calm, factual sentence in ${language} that a lawyer could read. Say only what the finding says. Use only the figures it lists, and write each as digits, never in words ("64", not "sixty-four"). Add no other number, not even an ordinal such as "2nd". Do not accuse anyone, speculate, advise on money or add facts.`,
         `Answer with every finding's id exactly as given.`,
       ].join("\n\n"),
-      user: items.map((item) => `<finding id="${item.id}" severity="${item.severity}">\n${item.template.replaceAll(/<\/?finding[^>]*>/giu, "")}\n</finding>`).join("\n"),
+      user: items.map((item) => `<finding id="${item.id}" severity="${item.severity}">\n${inertText(item.template)}\n</finding>`).join("\n"),
       schema: REVIEW_SCHEMA,
     });
     if (reply.kind === "refused") return fallback("model_refused");
