@@ -96,6 +96,12 @@ export type InfraConfig = {
    * Needs `kin:voice`.
    */
   readonly presenceLineNumbers: string | null;
+  /**
+   * Whether the demo pharmacy (apps/demo-merchant) runs on App Runner as KinDemoMerchant, and the worker buys a demo
+   * circle's approved refills from it. Off unless `kin:demoMerchant` is `true`. Needs `kin:paypal`, since only the worker
+   * buys. Its secrets are stored with `merchant:store`; until then it charges nothing and the refill waits.
+   */
+  readonly demoMerchant: boolean;
 };
 
 /**
@@ -159,7 +165,14 @@ export function readConfig({ context, env }: Source): InfraConfig {
     claude: flag(context("kin:claude"), "kin:claude"),
     demoSandboxPayeeEmail: demoSandboxPayee(context("kin:demoSandboxPayeeEmail"), context("kin:paypal")),
     ...twilio({ context, env }),
+    demoMerchant: demoMerchant(context("kin:demoMerchant"), context("kin:paypal")),
   };
+}
+
+function demoMerchant(value: unknown, paypal: unknown): boolean {
+  const on = flag(value, "kin:demoMerchant");
+  if (on && (paypal === undefined || paypal === null)) throw new InfraConfigError("kin:demoMerchant needs kin:paypal: only the worker buys from the demo pharmacy");
+  return on;
 }
 
 function twilio({ context, env }: Source): Pick<InfraConfig, "voice" | "voicePublicUrl" | "twilioCallerNumber" | "twilioSmsFrom" | "presenceLineNumbers"> {

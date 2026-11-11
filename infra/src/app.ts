@@ -4,6 +4,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import { CiStack } from "./ci-stack.ts";
 import { presenceTextSettings, shiftCallSettings, type InfraConfig } from "./config.ts";
 import { DataStack } from "./data-stack.ts";
+import { DemoMerchantStack } from "./demo-merchant-stack.ts";
 import { DEPLOY_BOUNDARY_POLICY, GuardrailsStack } from "./guardrails-stack.ts";
 import { NetworkStack } from "./network-stack.ts";
 import { OpsStack } from "./ops-stack.ts";
@@ -23,6 +24,8 @@ export type KinStacks = {
   readonly worker: WorkerStack | null;
   /** Deployed when `kin:voice` in cdk.json is true: Kin's phone service on App Runner. */
   readonly voice: VoiceStack | null;
+  /** Deployed when `kin:demoMerchant` in cdk.json is true: the demo pharmacy on App Runner, which the worker buys from. */
+  readonly demoMerchant: DemoMerchantStack | null;
 };
 
 /**
@@ -50,6 +53,10 @@ export function buildKin(app: App, config: InfraConfig): KinStacks {
   const web = new WebStack(app, "KinWeb", config, { env });
   // The web app reads the sign-in settings KinData publishes.
   web.addDependency(data);
+  // The demo pharmacy exists only beside the worker that buys from it (config.ts refuses it without kin:paypal).
+  const demoMerchant = config.demoMerchant && config.paypal !== null ? new DemoMerchantStack(app, "KinDemoMerchant", { env }) : null;
+  // It reads its secrets' ARNs and the key KinData publishes.
+  demoMerchant?.addDependency(data);
   const worker =
     config.paypal === null
       ? null
@@ -63,9 +70,12 @@ export function buildKin(app: App, config: InfraConfig): KinStacks {
           shiftCall: shiftCallSettings(config),
           // Only with a sender and the web app's https address, so no family member is sent a link that leads nowhere.
           presenceTexts: presenceTextSettings(config),
+          // A cross-stack reference, so one deployment makes the pharmacy and tells the worker where it is.
+          demoMerchantUrl: demoMerchant?.url ?? null,
         });
   // It reads the database, queue and secret settings KinData publishes.
   worker?.addDependency(data);
+  if (demoMerchant !== null) worker?.addDependency(demoMerchant);
   const voice = config.voice ? new VoiceStack(app, "KinVoice", config, { env }) : null;
   // It reads the database and Twilio settings KinData publishes.
   voice?.addDependency(data);
@@ -74,10 +84,10 @@ export function buildKin(app: App, config: InfraConfig): KinStacks {
 
   // Every role these stacks create carries the boundary, so no role made
   // during a deployment can do more than the deployment itself.
-  for (const stack of [ops, network, data, ci, web, ...(worker === null ? [] : [worker]), ...(voice === null ? [] : [voice])]) {
+  for (const stack of [ops, network, data, ci, web, ...(worker === null ? [] : [worker]), ...(voice === null ? [] : [voice]), ...(demoMerchant === null ? [] : [demoMerchant])]) {
     iam.PermissionsBoundary.of(stack).apply(
       iam.ManagedPolicy.fromManagedPolicyName(stack, "DeployBoundary", DEPLOY_BOUNDARY_POLICY),
     );
   }
-  return { guardrails, ops, network, data, ci, web, worker, voice };
+  return { guardrails, ops, network, data, ci, web, worker, voice, demoMerchant };
 }

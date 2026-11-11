@@ -9,7 +9,7 @@ import * as ssm from "aws-cdk-lib/aws-ssm";
 import type { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
-import { DATABASE_SETTINGS, MIGRATION_TASK, PAYPAL_SETTINGS, TWILIO_SETTINGS } from "./database-settings.ts";
+import { DATABASE_SETTINGS, DEMO_MERCHANT_SETTINGS, MIGRATION_TASK, PAYPAL_SETTINGS, TWILIO_SETTINGS } from "./database-settings.ts";
 import { SUBNETS } from "./network-stack.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -31,6 +31,8 @@ type WorkerStackProps = StackProps & {
    * them queued. Given only when the PayPal app, a sender and the web app's https address all exist (`presenceTextSettings`).
    */
   readonly presenceTexts: { readonly from: string; readonly webUrl: string } | null;
+  /** The demo pharmacy's https address (KinDemoMerchant's, by cross-stack reference); `null` keeps the seller simulated in process. */
+  readonly demoMerchantUrl: string | null;
 };
 
 /**
@@ -103,6 +105,7 @@ export class WorkerStack extends Stack {
         ...(props.demoSandboxPayeeEmail === null ? {} : { KIN_DEMO_SANDBOX_PAYEE_EMAIL: props.demoSandboxPayeeEmail }),
         ...(props.shiftCall === null ? {} : { KIN_TWILIO_CALLER_NUMBER: props.shiftCall.callerNumber, KIN_VOICE_PUBLIC_URL: props.shiftCall.publicUrl }),
         ...(props.presenceTexts === null ? {} : { KIN_TWILIO_SMS_FROM: props.presenceTexts.from, KIN_WEB_PUBLIC_URL: props.presenceTexts.webUrl }),
+        ...(props.demoMerchantUrl === null ? {} : { KIN_DEMO_MERCHANT_URL: props.demoMerchantUrl }),
       },
       secrets: {
         KIN_DATABASE_SERVICE_PASSWORD: ecs.Secret.fromSecretsManager(secret("ServicePassword", DATABASE_SETTINGS.serviceSecretArn)),
@@ -116,6 +119,8 @@ export class WorkerStack extends Stack {
               KIN_TWILIO_AUTH_TOKEN: ecs.Secret.fromSecretsManager(secret("TwilioAuthToken", TWILIO_SETTINGS.authTokenSecretArn)),
             }),
         ...(props.shiftCall === null ? {} : { KIN_VOICE_STATE_KEY: ecs.Secret.fromSecretsManager(secret("VoiceStateKey", TWILIO_SETTINGS.stateKeySecretArn)) }),
+        // Every request to the demo pharmacy is signed with the secret it checks; nothing else of the pharmacy's.
+        ...(props.demoMerchantUrl === null ? {} : { KIN_DEMO_MERCHANT_SIGNING_SECRET: ecs.Secret.fromSecretsManager(secret("DemoMerchantSigningSecret", DEMO_MERCHANT_SETTINGS.signingSecretArn)) }),
       },
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: "worker",

@@ -286,6 +286,8 @@ describe("the saved payment method", () => {
     await expect(wallet([token(), vaulted("paypal"), new Response("{}", { status: 422 })]).charge(charge)).rejects.toMatchObject({ retryable: false });
     await expect(wallet([token(), vaulted("paypal"), new Response("{}", { status: 503 })]).charge(charge)).rejects.toMatchObject({ retryable: true });
     await expect(wallet([new Response("{}", { status: 500 })]).charge(charge)).rejects.toMatchObject({ retryable: true });
+    // Credentials PayPal refuses (the pharmacy is not set up yet) charged nothing, so asking again later may help.
+    await expect(wallet([new Response(JSON.stringify({ error: "invalid_client" }), { status: 401 })]).charge(charge)).rejects.toMatchObject({ retryable: true });
     // A payment token PayPal does not have, or one of another kind, is final.
     await expect(wallet([token(), new Response("{}", { status: 404 })]).charge(charge)).rejects.toMatchObject({ retryable: false });
     await expect(wallet([token(), new Response(JSON.stringify({ payment_source: { venmo: {} } }), { status: 200 })]).charge(charge)).rejects.toMatchObject({ retryable: false });

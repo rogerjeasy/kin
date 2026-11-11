@@ -86,13 +86,15 @@ export function paypalSavedWallet(wallet: PayPalWallet): WalletCharger {
     return body;
   };
   const bearer = async (): Promise<string> => {
-    const token = found(
-      await call("/v1/oauth2/token", {
-        method: "POST",
-        headers: { authorization: `Basic ${Buffer.from(`${wallet.clientId}:${wallet.clientSecret}`).toString("base64")}`, "content-type": "application/x-www-form-urlencoded" },
-        body: "grant_type=client_credentials",
-      }),
-    );
+    const token = await call("/v1/oauth2/token", {
+      method: "POST",
+      headers: { authorization: `Basic ${Buffer.from(`${wallet.clientId}:${wallet.clientSecret}`).toString("base64")}`, "content-type": "application/x-www-form-urlencoded" },
+      body: "grant_type=client_credentials",
+    }).catch(() => {
+      // Credentials PayPal refuses mean the pharmacy is not set up yet (merchant:store not run): nothing was charged, so the buyer may ask again.
+      throw new ChargeError(true, "PayPal did not sign the pharmacy in");
+    });
+    if (token === null) throw new ChargeError(true, "PayPal did not sign the pharmacy in");
     if (typeof token["access_token"] !== "string") throw new ChargeError(true, "PayPal sent no access token");
     return `Bearer ${token["access_token"]}`;
   };
