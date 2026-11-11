@@ -1291,7 +1291,28 @@
         "restartNote": "Vous recevez une nouvelle copie du cercle de Rose. L’actuelle est archivée, pas supprimée.",
         "viewAs": "Voir le cercle en tant que",
         "seat": "Vous êtes {name}, {role}",
-        "leave": "Quitter la démo"
+        "leave": "Quitter la démo",
+        "guide": {
+          "title": "Essayez en {count} étapes",
+          "show": "Voir les étapes",
+          "hide": "Masquer les étapes",
+          "dismiss": "Ranger le guide",
+          "reopen": "Afficher le guide",
+          "steps": {
+            "topUp": "Ajouter de l’argent à la cagnotte",
+            "ask": "Demandez à Kin : « {question} »",
+            "approve": "En tant que {parent}, approuvez la paie de {caregiver}",
+            "listen": "Écoutez en tant que {parent}",
+            "verify": "Vérifier le registre"
+          },
+          "badges": {
+            "sandbox": "Sandbox PayPal",
+            "claude": "Agent Claude",
+            "spoken": "Lu à voix haute",
+            "provable": "Vérifiable",
+            "simulated": "Simulé"
+          }
+        }
       },
       "visitor": "Visiteur de la démo",
       "presenceHold": {
@@ -1447,6 +1468,10 @@
       "comingUp": {
         "title": "À venir",
         "link": "Toutes les factures"
+      },
+      "protects": {
+        "title": "Comment Kin protège {parent}",
+        "text": "Vérifications, souhaits et aides autour de l’argent. Chacun ouvre son propre écran."
       }
     },
     "topUp": {

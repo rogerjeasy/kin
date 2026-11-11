@@ -1291,7 +1291,28 @@
         "restartNote": "תקבלו עותק חדש של המעגל של רוז. העותק הנוכחי נשמר בארכיון ולא נמחק.",
         "viewAs": "לראות את המעגל בתור",
         "seat": "אתם {name}, {role}",
-        "leave": "יציאה מההדגמה"
+        "leave": "יציאה מההדגמה",
+        "guide": {
+          "title": "נסו ב-{count} צעדים",
+          "show": "הצגת הצעדים",
+          "hide": "הסתרת הצעדים",
+          "dismiss": "הסתרת המדריך",
+          "reopen": "הצגת המדריך",
+          "steps": {
+            "topUp": "הוספת כסף לקופה",
+            "ask": "שאלו את Kin: „{question}”",
+            "approve": "בתור {parent}, אשרו את התשלום של {caregiver}",
+            "listen": "הקשיבו בתור {parent}",
+            "verify": "בדיקת הרישום"
+          },
+          "badges": {
+            "sandbox": "ארגז החול של PayPal",
+            "claude": "סוכן Claude",
+            "spoken": "מוקרא בקול",
+            "provable": "ניתן להוכחה",
+            "simulated": "מדומה"
+          }
+        }
       },
       "visitor": "מבקר בהדגמה",
       "presenceHold": {
@@ -1447,6 +1468,10 @@
       "comingUp": {
         "title": "בקרוב",
         "link": "כל החשבונות"
+      },
+      "protects": {
+        "title": "איך Kin מגן על {parent}",
+        "text": "בדיקות, משאלות ועוזרים סביב הכסף. כל אחד פותח מסך משלו."
       }
     },
     "topUp": {

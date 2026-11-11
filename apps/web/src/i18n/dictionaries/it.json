@@ -1291,7 +1291,28 @@
         "restartNote": "Ricevi una nuova copia della cerchia di Rose. Quella attuale viene archiviata, non cancellata.",
         "viewAs": "Vedi la cerchia come",
         "seat": "Sei {name}, {role}",
-        "leave": "Esci dalla demo"
+        "leave": "Esci dalla demo",
+        "guide": {
+          "title": "Provalo in {count} passaggi",
+          "show": "Mostra i passaggi",
+          "hide": "Nascondi i passaggi",
+          "dismiss": "Metti via la guida",
+          "reopen": "Mostra la guida",
+          "steps": {
+            "topUp": "Aggiungi denaro al fondo",
+            "ask": "Chiedi a Kin: «{question}»",
+            "approve": "Come {parent}, approva la paga di {caregiver}",
+            "listen": "Ascolta come {parent}",
+            "verify": "Verifica il registro"
+          },
+          "badges": {
+            "sandbox": "Sandbox PayPal",
+            "claude": "Agente Claude",
+            "spoken": "Letto ad alta voce",
+            "provable": "Verificabile",
+            "simulated": "Simulato"
+          }
+        }
       },
       "visitor": "Visitatore della demo",
       "presenceHold": {
@@ -1447,6 +1468,10 @@
       "comingUp": {
         "title": "In arrivo",
         "link": "Tutte le bollette"
+      },
+      "protects": {
+        "title": "Come Kin protegge {parent}",
+        "text": "Controlli, desideri e aiuti intorno ai soldi. Ognuno apre la propria schermata."
       }
     },
     "topUp": {

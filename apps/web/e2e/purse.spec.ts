@@ -143,7 +143,7 @@ test("Rose asks Ask Kin to send Lily a gift: it is read back and waits for her y
   await seatAs(page, "Rose");
   await page.goto("/dashboard/ask");
   await page.getByRole("textbox", { name: english.askKin.form.label }).fill("Send Lily 25 dollars for her birthday");
-  await page.getByRole("button", { name: english.askKin.form.ask }).click();
+  await page.getByRole("button", { name: english.askKin.form.ask, exact: true }).click();
   const proposal = page.getByRole("region", { name: english.askKin.purseProposal.title });
   await expect(proposal).toBeVisible();
   await expect(proposal.getByRole("link", { name: english.askKin.purseProposal.link })).toHaveAttribute("href", "/dashboard/purse");

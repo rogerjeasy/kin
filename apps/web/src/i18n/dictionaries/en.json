@@ -1291,7 +1291,28 @@
         "restartNote": "Gives you a fresh copy of Rose’s circle. The one you have now is archived, not deleted.",
         "viewAs": "See the circle as",
         "seat": "You are {name}, {role}",
-        "leave": "Leave the demo"
+        "leave": "Leave the demo",
+        "guide": {
+          "title": "Try it in {count} steps",
+          "show": "Show steps",
+          "hide": "Hide steps",
+          "dismiss": "Put the guide away",
+          "reopen": "Show the guide",
+          "steps": {
+            "topUp": "Add money to the pool",
+            "ask": "Ask Kin: “{question}”",
+            "approve": "As {parent}, approve {caregiver}’s pay",
+            "listen": "Listen as {parent}",
+            "verify": "Check the record"
+          },
+          "badges": {
+            "sandbox": "PayPal sandbox",
+            "claude": "Claude agent",
+            "spoken": "Spoken aloud",
+            "provable": "Provable",
+            "simulated": "Simulated"
+          }
+        }
       },
       "visitor": "Demo visitor",
       "presenceHold": {
@@ -1447,6 +1468,10 @@
       "comingUp": {
         "title": "Coming up",
         "link": "All bills"
+      },
+      "protects": {
+        "title": "How Kin protects {parent}",
+        "text": "Checks, wishes and helpers around the money. Each opens its own screen."
       }
     },
     "topUp": {

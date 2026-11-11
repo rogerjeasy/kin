@@ -1291,7 +1291,28 @@
         "restartNote": "Sie erhalten eine neue Kopie von Roses Kreis. Die jetzige wird archiviert, nicht gelöscht.",
         "viewAs": "Den Kreis sehen als",
         "seat": "Sie sind {name}, {role}",
-        "leave": "Demo verlassen"
+        "leave": "Demo verlassen",
+        "guide": {
+          "title": "In {count} Schritten ausprobieren",
+          "show": "Schritte zeigen",
+          "hide": "Schritte ausblenden",
+          "dismiss": "Anleitung ausblenden",
+          "reopen": "Anleitung zeigen",
+          "steps": {
+            "topUp": "Geld in den Topf einzahlen",
+            "ask": "Kin fragen: „{question}“",
+            "approve": "Als {parent} die Bezahlung von {caregiver} genehmigen",
+            "listen": "Als {parent} zuhören",
+            "verify": "Aufzeichnung prüfen"
+          },
+          "badges": {
+            "sandbox": "PayPal-Sandbox",
+            "claude": "Claude-Agent",
+            "spoken": "Laut vorgelesen",
+            "provable": "Nachprüfbar",
+            "simulated": "Simuliert"
+          }
+        }
       },
       "visitor": "Demo-Besuch",
       "presenceHold": {
@@ -1447,6 +1468,10 @@
       "comingUp": {
         "title": "Demnächst fällig",
         "link": "Alle Rechnungen"
+      },
+      "protects": {
+        "title": "Wie Kin {parent} schützt",
+        "text": "Prüfungen, Wünsche und Helfer rund ums Geld. Jedes öffnet seinen eigenen Bildschirm."
       }
     },
     "topUp": {

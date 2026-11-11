@@ -30,14 +30,16 @@ type TopUpSheetProps = {
   initialAmount?: string;
   /** The button's words, when the sheet is opened for something other than adding money. */
   triggerLabel?: string;
+  /** Opens the sheet as the screen loads, for a link that asks for it (the demo guide's first step). */
+  defaultOpen?: boolean;
 };
 
 /**
  * A member adds money to the pool through PayPal. The amount is checked here
  * for quick feedback and again on the server, which alone opens the order.
  */
-export function TopUpSheet({ locale, copy, circle, clientId, sdkUrl, currency, presets, limits, initialAmount, triggerLabel }: TopUpSheetProps) {
-  const [open, setOpen] = useState(false);
+export function TopUpSheet({ locale, copy, circle, clientId, sdkUrl, currency, presets, limits, initialAmount, triggerLabel, defaultOpen = false }: TopUpSheetProps) {
+  const [open, setOpen] = useState(defaultOpen);
   const [amount, setAmount] = useState(initialAmount ?? presets[1]?.value ?? "");
   const [invalid, setInvalid] = useState(false);
   const sdk = usePayPalSdk({ enabled: open, src: sdkUrl, clientId, currency });
