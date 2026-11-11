@@ -11,7 +11,7 @@
       "label": "Try asking",
       "paid": "Has {caregiver} been paid?",
       "owes": "Who owes whom this month?",
-      "demand": "Is a {amount} demand from Harbor Gas real?",
+      "demand": "Is a {amount} demand from {payee} real?",
       "refill": "Reorder {parent}'s refill"
     },
     "form": {
@@ -31,7 +31,8 @@
         "refused": "Claude declined to word this, so Kin used its fixed wording",
         "cut_off": "Claude's answer ran too long, so Kin used its fixed wording",
         "turns": "Claude needed more steps than Kin allows, so Kin used its fixed wording",
-        "unavailable": "Claude stopped answering partway, so Kin used its fixed wording"
+        "unavailable": "Claude stopped answering partway, so Kin used its fixed wording",
+        "no_claude": "Answered by Kin's fixed wording; Claude was unavailable"
       },
       "trace": "How Kin found this",
       "traceEmpty": "Kin answered without reading the record."

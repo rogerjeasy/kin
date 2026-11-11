@@ -26,6 +26,7 @@ const config: InfraConfig = {
   speech: false,
   claude: false,
   demoSandboxPayeeEmail: null,
+  demoInvoiceRecipientEmail: null,
   voice: false,
   voicePublicUrl: null,
   twilioCallerNumber: null,
@@ -812,6 +813,31 @@ describe("real sandbox payouts in demo circles", () => {
     if (withPayee.worker === null) throw new Error("KinWorker exists with a PayPal app");
     expect(workerVariables(Template.fromStack(withPayee.worker))).toContain(`{"Name":"KIN_DEMO_SANDBOX_PAYEE_EMAIL","Value":"${payee}"}`);
     expect(variablesOf(Template.fromStack(withPayee.web))).toContainEqual({ Name: "KIN_DEMO_SANDBOX_PAYEE_EMAIL", Value: payee });
+  });
+});
+
+describe("real sandbox invoices in demo circles", () => {
+  const recipient = "sb-kin-member@personal.example.com";
+  const withRecipient = buildKin(new App({ context: testContext }), { ...config, demoInvoiceRecipientEmail: recipient });
+  const variablesOf = (template: Template) => {
+    const [service] = Object.values(template.findResources("AWS::AppRunner::Service"));
+    return service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"]["RuntimeEnvironmentVariables"] as { Name: string; Value: unknown }[];
+  };
+  const workerVariables = (template: Template) => JSON.stringify(Object.values(template.findResources("AWS::ECS::TaskDefinition")).map((task) => task["Properties"]["ContainerDefinitions"]));
+
+  it("are off unless Kin's sandbox account is named: the web hears of none", () => {
+    expect(variablesOf(web).map((each) => each.Name)).not.toContain("KIN_DEMO_INVOICE_RECIPIENT_EMAIL");
+  });
+
+  it("named, reach the web that sends them as a plain setting, and not the worker, which only applies PayPal's events", () => {
+    expect(variablesOf(Template.fromStack(withRecipient.web))).toContainEqual({ Name: "KIN_DEMO_INVOICE_RECIPIENT_EMAIL", Value: recipient });
+    if (withRecipient.worker === null) throw new Error("KinWorker exists with a PayPal app");
+    expect(workerVariables(Template.fromStack(withRecipient.worker))).not.toContain("KIN_DEMO_INVOICE_RECIPIENT_EMAIL");
+  });
+
+  it("never reach the web without the pool's PayPal app", () => {
+    const off = buildKin(new App({ context: testContext }), { ...config, paypal: null, demoInvoiceRecipientEmail: recipient });
+    expect(JSON.stringify(Template.fromStack(off.web).toJSON())).not.toContain("KIN_DEMO_INVOICE_RECIPIENT_EMAIL");
   });
 });
 

@@ -11,7 +11,7 @@
       "label": "Fragen Sie zum Beispiel",
       "paid": "Wurde {caregiver} bezahlt?",
       "owes": "Wer schuldet wem diesen Monat etwas?",
-      "demand": "Ist eine Forderung über {amount} von Harbor Gas echt?",
+      "demand": "Ist eine Forderung über {amount} von {payee} echt?",
       "refill": "Das Rezept von {parent} nachbestellen"
     },
     "form": {
@@ -31,7 +31,8 @@
         "refused": "Claude hat die Formulierung abgelehnt, daher hat Kin seine feste Formulierung verwendet",
         "cut_off": "Claudes Antwort war zu lang, daher hat Kin seine feste Formulierung verwendet",
         "turns": "Claude brauchte mehr Schritte, als Kin erlaubt, daher hat Kin seine feste Formulierung verwendet",
-        "unavailable": "Claude hat mitten in der Antwort aufgehört, daher hat Kin seine feste Formulierung verwendet"
+        "unavailable": "Claude hat mitten in der Antwort aufgehört, daher hat Kin seine feste Formulierung verwendet",
+        "no_claude": "Beantwortet mit Kins fester Formulierung; Claude war nicht erreichbar"
       },
       "trace": "So hat Kin es gefunden",
       "traceEmpty": "Kin hat geantwortet, ohne das Kassenbuch zu lesen."

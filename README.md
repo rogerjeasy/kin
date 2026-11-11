@@ -43,7 +43,12 @@ Nothing here moves real money: every PayPal call goes to the PayPal sandbox. In 
 
 **PayPal sandbox buyer for the top-up.**
 
-<!-- owner: paste the judges' sandbox buyer email and password here -->
+| | |
+| --- | --- |
+| Email | `sb-myskz53353349@personal.example.com` |
+| Password | `G_8h$[X+` |
+
+This is a PayPal sandbox test account: it holds only test money and works only on PayPal's sandbox checkout.
 
 A judge can also use any PayPal sandbox personal account of their own, from https://developer.paypal.com/dashboard/accounts.
 

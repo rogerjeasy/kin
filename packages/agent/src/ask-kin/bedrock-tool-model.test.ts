@@ -8,17 +8,19 @@ type Params = { model: string; tools: { name: string; input_schema: unknown }[];
 
 function clientAnswering(answer: { stop_reason: string; content: unknown[] } | Error) {
   const calls: Params[] = [];
+  const options: unknown[] = [];
   const client = {
     messages: {
-      create: async (params: Params) => {
+      create: async (params: Params, requestOptions?: unknown) => {
         calls.push(params);
+        options.push(requestOptions);
         if (answer instanceof Error) throw answer;
         return answer;
       },
     },
   };
   // The fake carries only the part of the SDK client that Kin calls.
-  return { client: client as unknown as Parameters<typeof messagesToolModel>[0], calls };
+  return { client: client as unknown as Parameters<typeof messagesToolModel>[0], calls, options };
 }
 
 const tools = toolsForRole("observer");
@@ -61,5 +63,12 @@ describe("the Bedrock tool adapter", () => {
     await expect(messagesToolModel(clientAnswering({ stop_reason: "max_tokens", content: [] }).client, "m")(request)).resolves.toMatchObject({ stopReason: "max_tokens" });
     await expect(messagesToolModel(clientAnswering({ stop_reason: "model_context_window_exceeded", content: [] }).client, "m")(request)).resolves.toMatchObject({ stopReason: "other" });
     await expect(messagesToolModel(clientAnswering(new Error("403")).client, "m")(request)).rejects.toBeInstanceOf(ModelUnavailableError);
+  });
+
+  it("hands the question's deadline to the SDK, so the request and its retries stop when it passes", async () => {
+    const { client, options } = clientAnswering({ stop_reason: "end_turn", content: [{ type: "text", text: "No." }] });
+    const deadline = new AbortController();
+    await messagesToolModel(client, "m")({ system: "rules", messages: [{ role: "user", content: "Hi" }], tools, signal: deadline.signal });
+    expect(options[0]).toEqual({ signal: deadline.signal });
   });
 });

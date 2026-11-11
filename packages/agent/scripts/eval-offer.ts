@@ -13,6 +13,7 @@ import { addMonths, offerInMonth, type Month } from "@kin/domain";
 import { bedrockModel } from "../src/bedrock-model.ts";
 import { readOffer } from "../src/read-offer.ts";
 import { SEALED_OFFER_PROMPT_VERSION } from "../src/sealed-offer-prompt.ts";
+import { writeEvalResults } from "./eval-results.ts";
 
 type Case = {
   name: string;
@@ -30,17 +31,16 @@ const config = readModelConfig(process.env);
 if (!config.enabled) throw new Error("Set KIN_BEDROCK_REGION (and AWS credentials) to run the evaluation");
 const model = bedrockModel(config);
 
-let failed = 0;
+const results = [];
 for (const each of suite.cases) {
   const result = await readOffer(model, each.words, { startMonth: suite.startMonth, currency: suite.currency, language: each.language });
   const got = result.kind === "draft" ? result.draft : result.kind;
   const expected = { monthlyCents: each.monthlyCents, stepUp: each.stepUp, earliestMonth: each.earliestMonth, careTrips: each.careTrips, careMinutes: each.careMinutes };
   const passed = typeof got === "object" && givesTheSame(got, expected, suite.startMonth as Month);
-  if (!passed) failed += 1;
+  results.push({ name: each.name, language: each.language, words: each.words, passed, expected, got });
   console.log(`${passed ? "pass" : "FAIL"}  ${each.name}${passed ? "" : `: expected ${JSON.stringify(expected)}, got ${JSON.stringify(got)}`}`);
 }
-console.log(`${SEALED_OFFER_PROMPT_VERSION} on ${config.model}: ${suite.cases.length - failed}/${suite.cases.length} passed`);
-process.exitCode = failed === 0 ? 0 : 1;
+process.exitCode = writeEvalResults("offer", { prompt: SEALED_OFFER_PROMPT_VERSION, model: config.model, api: config.api, cases: results });
 
 type Draft = { monthlyCents: number | null; stepUp: { cents: number; fromMonth: string } | null; earliestMonth: string | null; careTrips: number; careMinutes: number };
 

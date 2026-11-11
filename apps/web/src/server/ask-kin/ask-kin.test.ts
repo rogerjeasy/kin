@@ -301,3 +301,48 @@ describe("a demo visitor's questions", () => {
     }
   });
 });
+
+describe("Ask Kin when Claude is unavailable", () => {
+  // A fake with no turns left fails on its first request, as Bedrock does when it throttles past the SDK's retries.
+  const down = () => turns();
+
+  it("answers each suggested question with Kin's own routing and fixed wording, and says Claude was unavailable", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    const asked = [
+      ["Has Amara been paid?", "get_paypal_payout_status", "Amara was paid"],
+      ["Who owes whom this month?", "get_fairness", "by the agreement's shares"],
+      ["Is a $300.00 demand from Harbor Gas real?", "check_claim", "Nobody the circle pays is called Harbor Gas"],
+    ] as const;
+    for (const [question, tool, words] of asked) {
+      const result = await runAskKin(context(seen, circle.userId, down()), ask(question));
+      expect(result).toMatchObject({ ok: true, source: "template", templateReason: "no_claude", steps: [{ tool, outcome: "ok" }] });
+      expect(result.ok && result.answer).toContain(words);
+    }
+  });
+
+  it("reorders the parent's refill without Claude, and the proposal still waits for a yes", async () => {
+    const circle = await visitorWithCircle(db);
+    const rose = await seatPerson(db, circle.circleId, circle.members.rose);
+    const result = await runAskKin(context(await snapshot(circle, rose), rose, down()), ask("Reorder Rose's refill"));
+    expect(result).toMatchObject({ ok: true, templateReason: "no_claude", steps: [{ tool: "propose_refill", outcome: "ok" }], proposal: { kind: "proposal" } });
+  });
+
+  it("routes a suggestion in the listener's own language", async () => {
+    const circle = await visitorWithCircle(db);
+    const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, down()), { question: "Qui doit quoi à qui ce mois-ci ?", locale: "fr" });
+    expect(result).toMatchObject({ ok: true, templateReason: "no_claude", steps: [{ tool: "get_fairness", outcome: "ok" }] });
+  });
+
+  it("still keeps a caregiver to their own seat", async () => {
+    const circle = await visitorWithCircle(db);
+    const amara = await seatPerson(db, circle.circleId, circle.members.amara);
+    const result = await runAskKin(context(await snapshot(circle, amara), amara, down()), ask("How much is in the pool?"));
+    expect(result).toMatchObject({ ok: true, templateReason: "no_claude", answer: "Kin could not answer that from the record. Try one of the suggestions.", steps: [{ tool: "get_pool", outcome: "refused" }] });
+  });
+
+  it("is unavailable for a question Kin's own routing does not recognise", async () => {
+    const circle = await visitorWithCircle(db);
+    expect(await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, down()), ask("Tell me a story"))).toEqual({ ok: false, reason: "unavailable" });
+  });
+});
