@@ -11,7 +11,7 @@
       "label": "Pruebe a preguntar",
       "paid": "¿Se le ha pagado a {caregiver}?",
       "owes": "¿Quién le debe a quién este mes?",
-      "demand": "¿Es real un cobro de {amount} de Harbor Gas?",
+      "demand": "¿Es real un cobro de {amount} de {payee}?",
       "refill": "Volver a pedir la receta de {parent}",
       "paypalRecord": "Muéstrame el registro de PayPal de la última aportación"
     },
@@ -32,7 +32,8 @@
         "refused": "Claude no quiso redactar esta respuesta, así que Kin usó su redacción fija",
         "cut_off": "La respuesta de Claude era demasiado larga, así que Kin usó su redacción fija",
         "turns": "Claude necesitaba más pasos de los que Kin permite, así que Kin usó su redacción fija",
-        "unavailable": "Claude dejó de responder a mitad, así que Kin usó su redacción fija"
+        "unavailable": "Claude dejó de responder a mitad, así que Kin usó su redacción fija",
+        "no_claude": "Respondido con la redacción fija de Kin; Claude no estaba disponible"
       },
       "trace": "Cómo lo encontró Kin",
       "traceEmpty": "Kin respondió sin leer el registro."

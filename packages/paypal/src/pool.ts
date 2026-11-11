@@ -4,17 +4,20 @@ import { parseCapture, type Capture } from "./capture.ts";
 import type { PayPalClient } from "./client.ts";
 import { contributionOrderBody, parseOrder, type NewContributionOrder, type Order } from "./order.ts";
 import { cancelBody, invoiceBody, isInvoiceId, numberSearchBody, parseInvoice, parseInvoiceCreated, parseNumberSearch, SEND_BODY, type Invoice, type NewInvoice } from "./invoice.ts";
-import { requiredText, asRecord } from "./json.ts";
+import { requiredText, asRecord, PayPalShapeError } from "./json.ts";
 import { PayPalError } from "./paypal-error.ts";
 import { parseRefund, type Refund } from "./refund.ts";
 import { parsePayoutBatch, parsePayoutCreated, payoutBody, type NewPayout, type PayoutBatch } from "./payout.ts";
 import {
   actionBody,
+  circleProductId,
   isSubscriptionId,
   parseCreatedId,
   parseSubscription,
   parseSubscriptionCreated,
+  parsePlan,
   parseSubscriptionPayments,
+  parseSubscriptionPlanId,
   parseSubscriptionRevised,
   planBody,
   productBody,
@@ -59,20 +62,33 @@ export type PayPalPool = {
   /**
    * Makes a monthly subscription for a member's share: the circle's product,
    * a plan for the amount, and the subscription the payer then approves on
-   * PayPal's page. `key` (the subscription's own row ID) is every request's
-   * idempotency key, so a repeat makes nothing new. The subscription charges
-   * nothing until the payer approves it.
+   * PayPal's page. The circle's product carries Kin's own ID, so it is made
+   * once; the plan's request ID is `key` (the subscription's own row ID), so a
+   * repeat makes no second plan. The subscription's request ID is `key` too,
+   * but PayPal's sandbox made a second subscription for a repeated one (11
+   * November 2026): a repeat can leave an unapproved subscription whose link
+   * nobody holds, which charges nothing. Nothing is charged until the payer
+   * approves.
    */
   readonly createSubscription: (subscription: NewSubscription, key: string) => Promise<{ readonly subscriptionId: string; readonly approvalUrl: string }>;
   readonly getSubscription: (subscriptionId: string) => Promise<Subscription>;
-  /** The charges PayPal completed for a subscription between two moments. */
+  /**
+   * The charges PayPal completed for a subscription between two moments.
+   * PayPal answers 404 for a subscription the payer has not approved yet.
+   */
   readonly listSubscriptionPayments: (subscriptionId: string, from: Date, until: Date) => Promise<readonly SubscriptionPayment[]>;
-  /** Pauses, resumes or ends a subscription, with the same request ID never twice. */
+  /**
+   * Pauses, resumes or ends a subscription. PayPal takes no request ID here:
+   * asked twice, it refuses the second (422 `SUBSCRIPTION_STATUS_INVALID`), so
+   * read the subscription back to learn where it stands. `requestId` names the
+   * ask for the fake pool's record and is not sent.
+   */
   readonly changeSubscription: (subscriptionId: string, action: SubscriptionAction, reason: string, requestId: string) => Promise<void>;
   /**
    * Revises a live subscription to a new monthly amount. PayPal asks the
    * payer to approve the new price on the page it returns; the old amount
-   * runs until they do. `requestId` makes a repeat harmless.
+   * runs until they do. PayPal takes no request ID here; `requestId` names
+   * the ask for the fake pool's record and is not sent.
    */
   readonly reviseSubscription: (subscriptionId: string, amount: Money, returnUrl: string, requestId: string) => Promise<{ readonly approvalUrl: string | null }>;
   /**
@@ -131,10 +147,7 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
       return transactionId === null ? null : searchTransaction(client, { transactionId, around });
     },
     async createSubscription(subscription, key) {
-      const productId = parseCreatedId(
-        await client.send({ method: "POST", path: "/v1/catalogs/products", body: productBody(subscription.description), requestId: `kin-product-${subscription.reference.circleId}`, operation: "products.create" }),
-        "product",
-      );
+      const productId = await circleProduct(client, subscription);
       const planId = parseCreatedId(
         await client.send({ method: "POST", path: "/v1/billing/plans", body: planBody(productId, subscription.description, subscription.amount), requestId: `kin-plan-${key}`, operation: "plans.create" }),
         "plan",
@@ -152,12 +165,25 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
         await client.send({ method: "GET", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}/transactions?${window}`, operation: "subscriptions.transactions" }),
       );
     },
-    async changeSubscription(subscriptionId, action, reason, requestId) {
-      await client.send({ method: "POST", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}/${action}`, body: actionBody(reason), requestId, operation: `subscriptions.${action}` });
+    // Subscriptions v1 lists `PayPal-Request-Id` on create only; suspend, activate, cancel and revise take
+    // none (PayPal's OpenAPI document, read 11 November 2026), so none is sent. A repeat is refused, not
+    // recognised (422 SUBSCRIPTION_STATUS_INVALID in the sandbox), and callers read the subscription back.
+    async changeSubscription(subscriptionId, action, reason) {
+      await client.send({ method: "POST", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}/${action}`, body: actionBody(reason), operation: `subscriptions.${action}` });
     },
-    async reviseSubscription(subscriptionId, amount, returnUrl, requestId) {
+    async reviseSubscription(subscriptionId, amount, returnUrl) {
+      // PayPal revises a subscription onto another plan, never a new price on its own: Kin makes a sibling plan
+      // for the amount, on the same product. Its request ID names the subscription and the amount, so a repeat
+      // makes no second plan.
+      const path = `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}`;
+      const currentPlanId = parseSubscriptionPlanId(await client.send({ method: "GET", path, operation: "subscriptions.get" }));
+      const current = parsePlan(await client.send({ method: "GET", path: `/v1/billing/plans/${currentPlanId}`, operation: "plans.get" }));
+      const planId = parseCreatedId(
+        await client.send({ method: "POST", path: "/v1/billing/plans", body: planBody(current.productId, current.name, amount), requestId: `kin-plan-${subscriptionId}-${amount.currency}-${amount.cents}`, operation: "plans.create" }),
+        "plan",
+      );
       const revised = parseSubscriptionRevised(
-        await client.send({ method: "POST", path: `/v1/billing/subscriptions/${subscriptionPathId(subscriptionId)}/revise`, body: reviseBody(amount, returnUrl), requestId, operation: "subscriptions.revise" }),
+        await client.send({ method: "POST", path: `${path}/revise`, body: reviseBody(planId, returnUrl), operation: "subscriptions.revise" }),
       );
       return { approvalUrl: revised.approvalUrl };
     },
@@ -195,7 +221,23 @@ export function paypalPool(client: PayPalClient, webhookId: string): PayPalPool 
   };
 }
 
-const EXISTING_BATCH = /\/v1\/payments\/payouts\/([A-Z0-9]{5,36})$/;
+/** The circle's one product: made the first time, and found by its own ID every time after. */
+async function circleProduct(client: PayPalClient, subscription: NewSubscription): Promise<string> {
+  const productId = circleProductId(subscription.reference.circleId);
+  try {
+    const made = parseCreatedId(
+      await client.send({ method: "POST", path: "/v1/catalogs/products", body: productBody(productId, subscription.description), requestId: `kin-product-${subscription.reference.circleId}`, operation: "products.create" }),
+      "product",
+    );
+    if (made !== productId) throw new PayPalShapeError("product id");
+    return made;
+  } catch (error) {
+    if (error instanceof PayPalError && error.outcome === "rejected" && error.issue === "DUPLICATE_RESOURCE_IDENTIFIER") return productId;
+    throw error;
+  }
+}
+
+const EXISTING_BATCH =/\/v1\/payments\/payouts\/([A-Z0-9]{5,36})$/;
 
 function existingBatch(error: PayPalError): string | null {
   if (error.outcome !== "rejected" || error.status !== 400 || error.resource === null) return null;

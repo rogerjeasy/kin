@@ -17,6 +17,11 @@ export type NarrationFacts = {
 
 const MAX_WORDS_LENGTH = 400;
 
+/** A link or an address: never part of wording Kin shows or speaks. */
+export function hasLinkOrAddress(words: string): boolean {
+  return /https?:|www\.|@/iu.test(words);
+}
+
 /**
  * The number guard (docs/architecture.md section 9.6): wording the model
  * wrote reaches a person only if every number in it is one the record
@@ -27,13 +32,22 @@ const MAX_WORDS_LENGTH = 400;
  * are valued the same way and held to the same rule, and words that cannot be
  * valued are refused.
  */
-export function passesNumberGuard(words: string, facts: Pick<NarrationFacts, "figures"> & { readonly language?: string; /** The longest wording allowed, in characters. A longer written note sets its own. */ readonly maxLength?: number }): boolean {
-  if (words.trim() === "" || words.length > (facts.maxLength ?? MAX_WORDS_LENGTH) || hasHiddenCharacters(words) || /https?:|www\.|@/iu.test(words)) return false;
+export function passesNumberGuard(
+  words: string,
+  facts: Pick<NarrationFacts, "figures"> & {
+    readonly language?: string;
+    /** The longest wording allowed, in characters. A longer written note sets its own. */
+    readonly maxLength?: number;
+    /** Words people typed or a letter said, such as names and purposes: a number word in them authorises that word again, and their digits authorise nothing. */
+    readonly texts?: readonly string[];
+  },
+): boolean {
+  if (words.trim() === "" || words.length > (facts.maxLength ?? MAX_WORDS_LENGTH) || hasHiddenCharacters(words) || hasLinkOrAddress(words)) return false;
   const figures = facts.figures.flatMap(numbersIn);
   // Two sets, so a number word inside a name never authorises a digit amount. A figure's digits authorise digits and
   // words alike; a number word inside a figure, such as a payee called "Seven Oaks", authorises only that word again.
   const digitValues = new Set(figures.flatMap((figure) => figure.values));
-  const wordValues = new Set(facts.figures.flatMap((figure) => spokenNumbers(figure, facts.language)).flatMap((number) => number.readings));
+  const wordValues = new Set([...facts.figures, ...(facts.texts ?? [])].flatMap((figure) => spokenNumbers(figure, facts.language)).flatMap((number) => number.readings));
   // A whole amount may be said without its zero cents: "1.000" for a record that holds "1.000,00".
   const written = new Set(figures.flatMap((figure) => [figure.written, figure.written.replace(/[.,]00$/u, "")]));
   // "64,000" is sixty-four thousand in English and sixty-four in French. A number with two readings passes only if

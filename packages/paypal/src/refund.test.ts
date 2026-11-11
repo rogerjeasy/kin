@@ -7,6 +7,7 @@ import { PayPalShapeError } from "./json.ts";
 import { paypalPool } from "./pool.ts";
 import { parseRefund, refundedCaptureId } from "./refund.ts";
 import { fakePool } from "./testing/fake-pool.ts";
+import { readFixture, replayPool, type RecordedExchange } from "./testing/replay.ts";
 import { REFUND_EVENTS, WEBHOOK_EVENT_TYPES, parseWebhookEnvelope } from "./webhook.ts";
 
 // Derived from PayPal's documentation, not recorded: see fixtures/README.md.
@@ -142,5 +143,32 @@ describe("the fake pool's refunds", () => {
     const { pool, capture } = await captured();
     pool.refundCapture(capture.id, { status: "PENDING" });
     expect((await pool.getCapture(capture.id)).status).toBe("COMPLETED");
+  });
+});
+
+describe("a refund as the sandbox answered (recorded 11 November 2026)", () => {
+  // A 1.00 card capture, 0.40 of it refunded with the REST API by scripts/billing-sandbox-record.ts, then read back through Kin's adapter.
+  const { exchanges } = readFixture<{ exchanges: RecordedExchange[] }>("refund-sandbox-2026-11-11.json");
+  const [, before, , refundRead, after] = exchanges;
+
+  it("reads the refund back: what went to the payer, the fee PayPal kept whole, and the capture its up link names", async () => {
+    const { pool } = replayPool([refundRead].filter((each) => each !== undefined));
+    expect(await pool.getRefund("35D16288H6053711V")).toEqual({
+      id: "35D16288H6053711V",
+      status: "COMPLETED",
+      captureId: "3JM65696HC918550R",
+      gross: usd(40),
+      feeReturned: usd(0),
+      net: usd(40),
+      totalRefunded: usd(40),
+      // PayPal wrote this time with a -08:00 offset, the capture's in UTC.
+      createdAt: new Date("2026-11-11T22:59:43Z"),
+    });
+  });
+
+  it("reads the capture partly refunded afterwards, its gross and fee unchanged", async () => {
+    const { pool } = replayPool([before, after].filter((each) => each !== undefined));
+    expect(await pool.getCapture("3JM65696HC918550R")).toMatchObject({ status: "COMPLETED", gross: usd(100), fee: usd(52) });
+    expect(await pool.getCapture("3JM65696HC918550R")).toMatchObject({ status: "PARTIALLY_REFUNDED", gross: usd(100), fee: usd(52) });
   });
 });

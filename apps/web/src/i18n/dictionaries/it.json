@@ -11,7 +11,7 @@
       "label": "Provi a chiedere",
       "paid": "{caregiver} è stata pagata?",
       "owes": "Chi deve cosa a chi questo mese?",
-      "demand": "Una richiesta di {amount} da Harbor Gas è vera?",
+      "demand": "Una richiesta di {amount} da {payee} è vera?",
       "refill": "Riordina la ricetta di {parent}",
       "paypalRecord": "Mostrami il registro di PayPal sull'ultimo versamento"
     },
@@ -32,7 +32,8 @@
         "refused": "Claude ha rifiutato di formulare la risposta, quindi Kin ha usato la sua formulazione fissa",
         "cut_off": "La risposta di Claude era troppo lunga, quindi Kin ha usato la sua formulazione fissa",
         "turns": "Claude aveva bisogno di più passaggi di quanti Kin ne consenta, quindi Kin ha usato la sua formulazione fissa",
-        "unavailable": "Claude si è fermato a metà risposta, quindi Kin ha usato la sua formulazione fissa"
+        "unavailable": "Claude si è fermato a metà risposta, quindi Kin ha usato la sua formulazione fissa",
+        "no_claude": "Risposta con la formulazione fissa di Kin; Claude non era disponibile"
       },
       "trace": "Come Kin l'ha trovato",
       "traceEmpty": "Kin ha risposto senza leggere il registro."

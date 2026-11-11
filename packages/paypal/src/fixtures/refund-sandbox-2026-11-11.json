@@ -1,0 +1,332 @@
+{
+  "recordedOn": "2026-11-11",
+  "environment": "PayPal sandbox, Orders v2 and Payments v2",
+  "exchanges": [
+    {
+      "method": "POST",
+      "path": "/v2/checkout/orders",
+      "requestId": "(direct)",
+      "request": {
+        "intent": "CAPTURE",
+        "purchase_units": [
+          {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.00"
+            },
+            "description": "Kin sandbox check: refund"
+          }
+        ],
+        "payment_source": {
+          "card": {
+            "number": "4111111111111111",
+            "expiry": "2030-12",
+            "name": "Kin Check",
+            "security_code": "123"
+          }
+        }
+      },
+      "httpStatus": 201,
+      "body": {
+        "id": "0C0050926W259873U",
+        "status": "COMPLETED",
+        "payment_source": {
+          "card": {
+            "name": "Kin Check",
+            "last_digits": "1111",
+            "expiry": "2030-12",
+            "brand": "VISA",
+            "type": "CREDIT",
+            "bin_details": {}
+          }
+        },
+        "purchase_units": [
+          {
+            "reference_id": "default",
+            "payments": {
+              "captures": [
+                {
+                  "id": "3JM65696HC918550R",
+                  "status": "COMPLETED",
+                  "amount": {
+                    "currency_code": "USD",
+                    "value": "1.00"
+                  },
+                  "final_capture": true,
+                  "seller_protection": {
+                    "status": "NOT_ELIGIBLE"
+                  },
+                  "seller_receivable_breakdown": {
+                    "gross_amount": {
+                      "currency_code": "USD",
+                      "value": "1.00"
+                    },
+                    "paypal_fee": {
+                      "currency_code": "USD",
+                      "value": "0.52"
+                    },
+                    "net_amount": {
+                      "currency_code": "USD",
+                      "value": "0.48"
+                    }
+                  },
+                  "links": [
+                    {
+                      "href": "https://api.sandbox.paypal.com/v2/payments/captures/3JM65696HC918550R",
+                      "rel": "self",
+                      "method": "GET"
+                    },
+                    {
+                      "href": "https://api.sandbox.paypal.com/v2/payments/captures/3JM65696HC918550R/refund",
+                      "rel": "refund",
+                      "method": "POST"
+                    },
+                    {
+                      "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0C0050926W259873U",
+                      "rel": "up",
+                      "method": "GET"
+                    }
+                  ],
+                  "create_time": "2026-11-11T22:59:40Z",
+                  "update_time": "2026-11-11T22:59:40Z",
+                  "network_transaction_reference": {
+                    "id": "616123414075302",
+                    "network": "VISA"
+                  },
+                  "processor_response": {
+                    "cvv_code": "M",
+                    "response_code": "0000"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0C0050926W259873U",
+            "rel": "self",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payments/captures/3JM65696HC918550R",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "id": "3JM65696HC918550R",
+        "amount": {
+          "currency_code": "USD",
+          "value": "1.00"
+        },
+        "final_capture": true,
+        "seller_protection": {
+          "status": "NOT_ELIGIBLE"
+        },
+        "seller_receivable_breakdown": {
+          "gross_amount": {
+            "currency_code": "USD",
+            "value": "1.00"
+          },
+          "paypal_fee": {
+            "currency_code": "USD",
+            "value": "0.52"
+          },
+          "net_amount": {
+            "currency_code": "USD",
+            "value": "0.48"
+          }
+        },
+        "status": "COMPLETED",
+        "processor_response": {
+          "avs_code": "",
+          "cvv_code": "M",
+          "response_code": "0000"
+        },
+        "supplementary_data": {
+          "related_ids": {
+            "order_id": "0C0050926W259873U"
+          }
+        },
+        "payee": {
+          "email_address": "someone@business.example.com",
+          "merchant_id": "PLACEHOLDER"
+        },
+        "create_time": "2026-11-11T22:59:39Z",
+        "update_time": "2026-11-11T22:59:39Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v2/payments/captures/3JM65696HC918550R",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v2/payments/captures/3JM65696HC918550R/refund",
+            "rel": "refund",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0C0050926W259873U",
+            "rel": "up",
+            "method": "GET"
+          }
+        ],
+        "network_transaction_reference": {
+          "id": "616123414075302",
+          "network": "VISA"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v2/payments/captures/3JM65696HC918550R/refund",
+      "requestId": "(direct)",
+      "request": {
+        "amount": {
+          "currency_code": "USD",
+          "value": "0.40"
+        },
+        "note_to_payer": "Kin sandbox check"
+      },
+      "httpStatus": 201,
+      "body": {
+        "id": "35D16288H6053711V",
+        "status": "COMPLETED",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v2/payments/refunds/35D16288H6053711V",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v2/payments/captures/3JM65696HC918550R",
+            "rel": "up",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payments/refunds/35D16288H6053711V",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "id": "35D16288H6053711V",
+        "amount": {
+          "currency_code": "USD",
+          "value": "0.40"
+        },
+        "note_to_payer": "Kin sandbox check",
+        "seller_payable_breakdown": {
+          "gross_amount": {
+            "currency_code": "USD",
+            "value": "0.40"
+          },
+          "paypal_fee": {
+            "currency_code": "USD",
+            "value": "0.00"
+          },
+          "net_amount": {
+            "currency_code": "USD",
+            "value": "0.40"
+          },
+          "total_refunded_amount": {
+            "currency_code": "USD",
+            "value": "0.40"
+          }
+        },
+        "status": "COMPLETED",
+        "create_time": "2026-11-11T14:59:43-08:00",
+        "update_time": "2026-11-11T14:59:43-08:00",
+        "payer": {
+          "email_address": "someone@business.example.com",
+          "merchant_id": "PLACEHOLDER"
+        },
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v2/payments/refunds/35D16288H6053711V",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v2/payments/captures/3JM65696HC918550R",
+            "rel": "up",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payments/captures/3JM65696HC918550R",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "id": "3JM65696HC918550R",
+        "amount": {
+          "currency_code": "USD",
+          "value": "1.00"
+        },
+        "final_capture": true,
+        "seller_protection": {
+          "status": "NOT_ELIGIBLE"
+        },
+        "seller_receivable_breakdown": {
+          "gross_amount": {
+            "currency_code": "USD",
+            "value": "1.00"
+          },
+          "paypal_fee": {
+            "currency_code": "USD",
+            "value": "0.52"
+          },
+          "net_amount": {
+            "currency_code": "USD",
+            "value": "0.48"
+          }
+        },
+        "status": "PARTIALLY_REFUNDED",
+        "processor_response": {
+          "avs_code": "",
+          "cvv_code": "M",
+          "response_code": "0000"
+        },
+        "supplementary_data": {
+          "related_ids": {
+            "order_id": "0C0050926W259873U"
+          }
+        },
+        "payee": {
+          "email_address": "someone@business.example.com",
+          "merchant_id": "PLACEHOLDER"
+        },
+        "create_time": "2026-11-11T22:59:39Z",
+        "update_time": "2026-11-11T22:59:43Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v2/payments/captures/3JM65696HC918550R",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v2/payments/captures/3JM65696HC918550R/refund",
+            "rel": "refund",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v2/checkout/orders/0C0050926W259873U",
+            "rel": "up",
+            "method": "GET"
+          }
+        ]
+      }
+    }
+  ]
+}

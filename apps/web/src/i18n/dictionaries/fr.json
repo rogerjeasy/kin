@@ -11,7 +11,7 @@
       "label": "Essayez de demander",
       "paid": "{caregiver} a-t-elle été payée ?",
       "owes": "Qui doit quoi à qui ce mois-ci ?",
-      "demand": "Une demande de {amount} de Harbor Gas est-elle réelle ?",
+      "demand": "Une demande de {amount} de {payee} est-elle réelle ?",
       "refill": "Renouveler l'ordonnance de {parent}",
       "paypalRecord": "Montre-moi le dossier de PayPal sur le dernier apport"
     },
@@ -32,7 +32,8 @@
         "refused": "Claude a refusé de formuler cette réponse, Kin a donc utilisé sa formulation fixe",
         "cut_off": "La réponse de Claude était trop longue, Kin a donc utilisé sa formulation fixe",
         "turns": "Claude avait besoin de plus d'étapes que Kin n'en permet, Kin a donc utilisé sa formulation fixe",
-        "unavailable": "Claude s'est arrêté en cours de réponse, Kin a donc utilisé sa formulation fixe"
+        "unavailable": "Claude s'est arrêté en cours de réponse, Kin a donc utilisé sa formulation fixe",
+        "no_claude": "Réponse dans la formulation fixe de Kin ; Claude n'était pas disponible"
       },
       "trace": "Comment Kin l'a trouvé",
       "traceEmpty": "Kin a répondu sans lire le registre."
