@@ -11,6 +11,7 @@ import { readModelConfig } from "@kin/config";
 import { bedrockModel } from "../src/bedrock-model.ts";
 import { draftWishes, type WishRecordNames } from "../src/draft-wishes.ts";
 import { WISH_PROMPT_VERSION } from "../src/wish-prompt.ts";
+import { writeEvalResults } from "./eval-results.ts";
 
 type Expected = { kind: string; trigger?: string; [field: string]: unknown };
 type Case = { name: string; said: string; locale?: string; expect: Expected[] };
@@ -35,14 +36,13 @@ const record = (locale: string): WishRecordNames => ({
 /** The same text for the same wishes, whatever order their fields came in. */
 const canonical = (wishes: readonly Record<string, unknown>[]): string => JSON.stringify(wishes.map((wish) => Object.fromEntries(Object.entries(wish).toSorted(([a], [b]) => a.localeCompare(b)))));
 
-let failed = 0;
+const results = [];
 for (const each of suite.cases) {
   const result = await draftWishes(model, each.said, record(each.locale ?? "en"));
   const got = result.kind === "drafts" ? result.wishes.map((wish) => (wish.kind === "flagged" ? { kind: "flagged" } : { ...wish.draft.rule, trigger: wish.draft.trigger })) : [{ kind: result.kind }];
   const expected = each.expect.map((wish) => (wish.kind === "flagged" ? { kind: "flagged" } : wish));
   const passed = canonical(got) === canonical(expected);
-  if (!passed) failed += 1;
+  results.push({ name: each.name, said: each.said, locale: each.locale ?? "en", passed, expected, got });
   console.log(`${passed ? "pass" : "FAIL"}  ${each.name}${passed ? "" : `: expected ${JSON.stringify(expected)}, got ${JSON.stringify(got)}`}`);
 }
-console.log(`${WISH_PROMPT_VERSION} on ${config.model}: ${suite.cases.length - failed}/${suite.cases.length} passed`);
-process.exitCode = failed === 0 ? 0 : 1;
+process.exitCode = writeEvalResults("wishes", { prompt: WISH_PROMPT_VERSION, model: config.model, api: config.api, cases: results });
