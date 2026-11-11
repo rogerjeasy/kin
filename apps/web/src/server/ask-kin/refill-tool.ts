@@ -6,16 +6,6 @@ import { fill } from "@/i18n/template";
 import { runRefill } from "../refills";
 import { named, type AskKinWorld } from "./world";
 
-/**
- * Ask Kin's one tool that does more than read: it raises a refill proposal
- * through the same path as the "Ask Kin to reorder" button. The model may name
- * an item; the rule, its price and the seller come from the record, and the
- * database refuses a plan the agreement does not allow. Nothing is bought:
- * the refill waits for the yeses the agreement names, unless the parent's
- * standing permission covers it. Raised by a member's own assistant under a
- * delegation, it never rides the standing permission: it always waits for a
- * person's yes in Kin.
- */
 /** Words of four letters or more, without accents or case: "Rose's refill" → ["rose", "refill"]. */
 function words(text: string): string[] {
   return text
@@ -26,24 +16,43 @@ function words(text: string): string[] {
     .filter((word) => word.length >= 4);
 }
 
+/** Words that ask for a refill without naming what to refill. */
+const GENERIC_WORDS: ReadonlySet<string> = new Set(["refill", "refills", "reorder", "order", "again", "usual", "please"]);
+
 /**
  * The refill rules the person's words point at. A name that is the rule's own
- * name matches exactly. Otherwise a rule matches when it shares a word with
- * what was asked ("Rose's refill" and "Monthly prescription refill"), but only
- * when that leaves exactly one rule: an unclear name is asked about, never guessed.
+ * name matches exactly. Words that name no item, a person's name or a word
+ * like "refill" ("Rose's refill", or just "Rose"), are no item at all, so they
+ * point at every rule, as if no item was named: the circle's only refill, or a
+ * question when there are several. Otherwise a rule matches when it shares a
+ * word with what was asked ("her prescription" and "Monthly prescription
+ * refill"), but only when that leaves exactly one rule: an unclear name is
+ * asked about, never guessed.
  */
-export function rulesNamed<T extends { readonly rule: { readonly item: string } }>(asked: string | undefined, rules: readonly T[]): T[] {
+export function rulesNamed<T extends { readonly rule: { readonly item: string } }>(asked: string | undefined, rules: readonly T[], peoplesNames: readonly string[] = []): T[] {
   const exact = rules.filter((view) => named(asked, view.rule.item));
   if (exact.length > 0 || asked === undefined) return exact;
-  const askedWords = new Set(words(asked));
+  const ignored = new Set([...GENERIC_WORDS, ...peoplesNames.flatMap(words)]);
+  if (words(asked).every((word) => ignored.has(word))) return [...rules];
+  const askedWords = new Set(words(asked).filter((word) => !ignored.has(word)));
   const sharing = rules.filter((view) => words(view.rule.item).some((word) => askedWords.has(word)));
   return sharing.length === 1 ? sharing : [];
 }
 
+/**
+ * Ask Kin's one tool that does more than read: it raises a refill proposal
+ * through the same path as the "Ask Kin to reorder" button. The model may name
+ * an item; the rule, its price and the seller come from the record, and the
+ * database refuses a plan the agreement does not allow. Nothing is bought:
+ * the refill waits for the yeses the agreement names, unless the parent's
+ * standing permission covers it. Raised by a member's own assistant under a
+ * delegation, it never rides the standing permission: it always waits for a
+ * person's yes in Kin.
+ */
 export async function proposeRefill(world: AskKinWorld, item: string | undefined, delegationId?: string): Promise<ToolOutput> {
-  const { format, copy } = world;
+  const { format, copy, names } = world;
   const rules = refillViews(world.circle).rules;
-  const matching = rulesNamed(item, rules);
+  const matching = rulesNamed(item, rules, world.circle.members.map((member) => names.member(member.id)));
   const choices = rules.map((view) => ({ item: view.rule.item, price: format.money(view.rule.priceCents) }));
   const [only] = matching;
   if (only === undefined || matching.length > 1) {

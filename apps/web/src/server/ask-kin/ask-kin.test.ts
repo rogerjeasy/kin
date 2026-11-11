@@ -106,6 +106,15 @@ describe("Ask Kin in a demo circle", () => {
     expect(await serviceRows(db, circle.circleId, "select cents::int as cents from purchases where circle_id = $1", [circle.circleId])).toEqual([{ cents: 6400 }]);
   });
 
+  it("reorders the circle's only refill when the model passes the parent's name as the item, as Opus 4.6 did live", async () => {
+    const circle = await visitorWithCircle(db);
+    const rose = await seatPerson(db, circle.circleId, circle.members.rose);
+    const model = turns(toolCalls({ name: "propose_refill", input: { item: "Rose" } }), finalTurn("Kin proposed the refill."));
+    const result = await runAskKin(context(await snapshot(circle, rose), rose, model), ask("Reorder Rose's refill"));
+    expect(result).toMatchObject({ ok: true, steps: [{ tool: "propose_refill", outcome: "ok", label: "Proposed a refill" }] });
+    expect(toolResult(model, 1)).toMatchObject({ proposed: true, item: "Monthly prescription refill (30 days)" });
+  });
+
   it("reorders the circle's only refill when the parent names it in her own words", async () => {
     const circle = await visitorWithCircle(db);
     const rose = await seatPerson(db, circle.circleId, circle.members.rose);

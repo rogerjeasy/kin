@@ -112,7 +112,7 @@ export const ASK_KIN_TOOLS = {
       "Asks Kin to propose a refill the family's rules already allow, at the rule's own price. It buys nothing: the refill then waits for the yeses the family agreement names, unless the parent's standing permission covers it. Use it only when the person asks for a reorder or refill.",
     inputSchema: {
       type: "object",
-      properties: { item: { ...NAME, description: "The item to reorder, by name, if the person named one. Leave out to reorder the circle's only refill." } },
+      properties: { item: { ...NAME, description: "The item to reorder, by its name, only if the person named an item (such as eye drops). A person's name is not an item: for \"Reorder Rose's refill\", leave it out, which reorders the circle's only refill." } },
       required: [],
       additionalProperties: false,
     },
