@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { InfraConfigError, presenceTextSettings, readConfig, shiftCallSettings } from "./config.ts";
@@ -74,6 +76,24 @@ describe("readConfig", () => {
     expect(() => read({ "kin:paypal": paypal, "kin:demoSandboxPayeeEmail": "kin" })).toThrow(InfraConfigError);
     // Nobody would pay them: the worker runs only with the PayPal app.
     expect(() => read({ "kin:demoSandboxPayeeEmail": "sb-kin@personal.example.com" })).toThrow(InfraConfigError);
+  });
+
+  it("keeps demo invoices simulated unless Kin's sandbox personal account is named, and only with the pool's PayPal app", () => {
+    const paypal = { clientId: "client", webhookId: "WH-1" };
+    expect(read({ "kin:paypal": paypal }).demoInvoiceRecipientEmail).toBeNull();
+    expect(read({ "kin:paypal": paypal, "kin:demoInvoiceRecipientEmail": "sb-member@personal.example.com" }).demoInvoiceRecipientEmail).toBe("sb-member@personal.example.com");
+    // The web app accepts only PayPal's sandbox personal domain, so the deploy refuses anything else before it starts.
+    for (const bad of ["kin", "member@example.com", "member@personal.example.com.evil.test", 42]) {
+      expect(() => read({ "kin:paypal": paypal, "kin:demoInvoiceRecipientEmail": bad }), String(bad)).toThrow(InfraConfigError);
+    }
+    expect(() => read({ "kin:demoInvoiceRecipientEmail": "sb-member@personal.example.com" })).toThrow(InfraConfigError);
+  });
+
+  it("reads the checked-in cdk.json, which pays demo payouts and sends demo invoices to Kin's own sandbox personal accounts", () => {
+    const checkedIn = JSON.parse(readFileSync(new URL("../cdk.json", import.meta.url), "utf8")) as { context: Record<string, unknown> };
+    const deployed = readConfig({ context: (key) => checkedIn.context[key], env });
+    expect(deployed.demoSandboxPayeeEmail).toMatch(/@personal\.example\.com$/);
+    expect(deployed.demoInvoiceRecipientEmail).toMatch(/@personal\.example\.com$/);
   });
 
   it("leaves the phone service off, with no address and no numbers, unless switched on", () => {

@@ -63,6 +63,14 @@ export type InfraConfig = {
    */
   readonly demoSandboxPayeeEmail: string | null;
   /**
+   * Kin's own PayPal sandbox personal account that stands in for a demo
+   * circle's member when the demo asks for money by PayPal invoice, or `null`
+   * to keep demo invoices simulated. Only a `…@personal.example.com` address
+   * is accepted, as the web app requires, so a demo never emails a real
+   * person. Needs `kin:paypal`, since the invoice is sent with the pool's app.
+   */
+  readonly demoInvoiceRecipientEmail: string | null;
+  /**
    * Whether the phone service (apps/voice) runs on App Runner as KinVoice.
    * Off unless `kin:voice` is `true`. Switching it on creates the service
    * and nothing else: Kin places no call until the Twilio credentials are
@@ -158,6 +166,7 @@ export function readConfig({ context, env }: Source): InfraConfig {
     speech: flag(context("kin:speech"), "kin:speech"),
     claude: flag(context("kin:claude"), "kin:claude"),
     demoSandboxPayeeEmail: demoSandboxPayee(context("kin:demoSandboxPayeeEmail"), context("kin:paypal")),
+    demoInvoiceRecipientEmail: demoInvoiceRecipient(context("kin:demoInvoiceRecipientEmail"), context("kin:paypal")),
     ...twilio({ context, env }),
   };
 }
@@ -232,6 +241,20 @@ function demoSandboxPayee(value: unknown, paypal: unknown): string | null {
     throw new InfraConfigError("kin:demoSandboxPayeeEmail needs kin:paypal: only the worker pays demo payouts through PayPal's sandbox");
   }
   return payee;
+}
+
+// The domain PayPal's sandbox gives its personal test accounts: the check @kin/config makes when the web app starts.
+const SANDBOX_PERSONAL = /^[^@\s]+@personal\.example\.com$/i;
+
+function demoInvoiceRecipient(value: unknown, paypal: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string" || !SANDBOX_PERSONAL.test(value)) {
+    throw new InfraConfigError("kin:demoInvoiceRecipientEmail must be a PayPal sandbox personal account (…@personal.example.com), or unset.");
+  }
+  if (paypal === undefined || paypal === null) {
+    throw new InfraConfigError("kin:demoInvoiceRecipientEmail needs kin:paypal: the web app sends invoices with the pool's PayPal app");
+  }
+  return value;
 }
 
 function flag(value: unknown, key: string): boolean {
