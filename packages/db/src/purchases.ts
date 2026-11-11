@@ -332,7 +332,7 @@ export async function recordOrderPlaced(tx: Transaction, job: PurchaseJob, order
  * as bought. The capture goes to the ledger once, by its own ID, and the
  * proposal settles.
  */
-export async function confirmPurchase(tx: Transaction, job: PurchaseJob, paid: { readonly itemId: string; readonly at: Date }): Promise<void> {
+export async function confirmPurchase(tx: Transaction, job: PurchaseJob, paid: { readonly itemId: string; readonly at: Date; readonly paypalOrderId?: string | null }): Promise<void> {
   if (!(await entryExists(tx, job.circleId, "paypal_event", paid.itemId))) {
     const entry = purchaseCaptured(
       { ...header(job, "paypal_event", paid.itemId, paid.at), description: job.simulated ? `${job.item} bought (simulated)` : `${job.item} bought through PayPal` },
@@ -342,7 +342,8 @@ export async function confirmPurchase(tx: Transaction, job: PurchaseJob, paid: {
   }
   await moveExecution(tx, job, "submitted", "confirmed", { paypalItemId: paid.itemId, confirmedAt: paid.at });
   await tx.update(proposals).set({ state: "settled" }).where(and(eq(proposals.id, job.proposalId), eq(proposals.state, "executing")));
-  await audit(tx, job, "purchase.confirmed", { itemId: paid.itemId, simulated: job.simulated, mandateId: job.mandate?.id ?? null });
+  // PayPal's order, beside its capture, so the trail names both IDs PayPal gave the charge.
+  await audit(tx, job, "purchase.confirmed", { itemId: paid.itemId, paypalOrderId: paid.paypalOrderId ?? null, simulated: job.simulated, mandateId: job.mandate?.id ?? null });
 }
 
 /** The refill will not be bought. Nothing left the pool, so the ledger is untouched. */
