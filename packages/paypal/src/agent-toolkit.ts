@@ -41,8 +41,12 @@ export type AgentToolkit = {
   readonly handleToolCall: (call: { toolUseId: string; name: string; input: Record<string, string | number> }) => Promise<{ readonly content: readonly { readonly text: string }[] }>;
 };
 
+/** PayPal's order statuses (Orders v2). Anything else reads as `OTHER`, so no free text passes as a status. */
+export const ORDER_STATUSES = ["CREATED", "SAVED", "APPROVED", "VOIDED", "COMPLETED", "PAYER_ACTION_REQUIRED"] as const;
+export type OrderStatus = (typeof ORDER_STATUSES)[number] | "OTHER";
+
 /** An order as the toolkit's `get_order` returns it, with PayPal's own times. */
-export type ToolkitOrder = Order & { readonly createdAt: Date | null; readonly updatedAt: Date | null };
+export type ToolkitOrder = Omit<Order, "status"> & { readonly status: OrderStatus; readonly createdAt: Date | null; readonly updatedAt: Date | null };
 
 /** The reads Ask Kin's PayPal Agent Toolkit tools make. */
 export type AgentToolkitReads = {
@@ -118,14 +122,16 @@ export function agentToolkitReads(source: () => Promise<AgentToolkit>): AgentToo
     };
   }
 
-  const order = read("get_order", (value) => {
+  const order = read("get_order", (value): ToolkitOrder => {
     const record = asRecord(value, "order");
     const timeOf = (key: string) => {
       const text = optionalText(record, key);
       const time = text === null ? null : new Date(text);
       return time === null || Number.isNaN(time.getTime()) ? null : time;
     };
-    return { ...parseOrder(record), createdAt: timeOf("create_time"), updatedAt: timeOf("update_time") };
+    const parsed = parseOrder(record);
+    const status: OrderStatus = ORDER_STATUSES.find((each) => each === parsed.status) ?? "OTHER";
+    return { ...parsed, status, createdAt: timeOf("create_time"), updatedAt: timeOf("update_time") };
   });
   const invoice = read("get_invoice", parseInvoice);
   const disputes = read("list_disputes", parseDisputeList);
