@@ -226,24 +226,28 @@ This is the part of Kin that belongs to the parent.
 
 PayPal is not a payment button at the end of Kin. It is the system that moves every dollar and the record that Kin treats as the truth.
 
-| Family need | PayPal capability |
-|---|---|
-| Each sibling pays a monthly share | Subscriptions |
-| A sibling makes a one-off top-up | Checkout |
-| A big repair is spread over time | Pay Later |
-| A sibling is asked for a top-up or a settlement amount | Invoicing |
-| The agent buys what the parent needs, after a person confirms | Saved payment method at a linked merchant |
-| The caregiver is paid the same day | Payouts |
-| A sibling who overpaid is made whole | Payouts |
-| Kin knows what truly happened | Transaction records and live payment notifications |
-| A delivery is followed to the door | Shipment tracking |
-| A wrong or disputed charge is contested | Disputes |
-| Each member is who they say they are | Log in with PayPal |
-| The agent acts on the family's instructions | PayPal's agent toolkit and MCP server |
+Each row says how far it is built. **Ran in the sandbox** means Kin's own code has done it against the PayPal sandbox and the result is recorded (`packages/paypal/src/fixtures/README.md`, `architecture.md` section 23). **Built, not yet run in the sandbox** means the code and its tests exist, but no run against the sandbox is recorded. **Planned** means not built.
 
-Two things follow from this. First, the family does not need a new bank account or a new card. Second, the spoken sentences the parent hears are generated from confirmed PayPal events, which is why the parent can trust them and why the scam check works.
+| Family need | PayPal capability | In this build |
+|---|---|---|
+| Each sibling pays a monthly share | Subscriptions | Built, not yet run in the sandbox through Kin's own screens. Kin's sandbox check script had a subscription approved and billed on 14 October 2026. A demo circle's shares are simulated. |
+| A sibling makes a one-off top-up | Checkout (Orders v2 with the JavaScript SDK v6) | Ran in the sandbox: the first top-up on 16 October 2026 ($100.00, a $3.98 fee). A top-up made in the hosted demo is a real sandbox checkout. |
+| A big repair is spread over time | Pay Later | Built into the top-up sheet, shown where PayPal offers it. Not yet run: the sandbox did not offer Pay Later to Kin's test buyer. |
+| A sibling is asked for a top-up or a settlement amount | Invoicing | Ran in the sandbox: a $166.00 invoice made, sent, paid and read back on 8 November 2026. A demo circle's invoice requests are simulated unless Kin's own sandbox recipient is configured. |
+| The agent buys what the parent needs, after a person confirms | Saved payment method at a linked merchant | Built, not yet run in the sandbox through Kin. The demo's refills are bought from a stand-in pharmacy with simulated money, and a real circle cannot raise one yet (`architecture.md` decision 62). A saved-wallet charge with nobody signing in was proved in the sandbox by a check script on 14 October 2026. |
+| The caregiver is paid the same day | Payouts | Ran in the sandbox: a $1.00 payout read back `SUCCESS` with a $0.25 fee on 26 October 2026. In a demo circle the payout is simulated unless Kin's own sandbox payee is configured, in which case it is a real sandbox payout to Kin's own test account (decision 73). |
+| A sibling who overpaid is made whole | Payouts | Built, on the same Payouts call. In a demo circle a settlement payout is always simulated; a real circle's has not been run against the sandbox. |
+| Kin knows what truly happened | Webhooks, and orders, captures and payouts read back from PayPal | Ran in the sandbox: the first top-up was recorded from the order read back from PayPal, PayPal's verified webhook then found it already recorded, and a forged webhook was refused (16 October 2026). |
+| The Purse's payments are reconciled each night | Transaction Search | Built, not yet run in the sandbox: the sandbox app's reporting answered 403 when it was checked, and the adapter's test reply is shaped from PayPal's documentation. |
+| A refunded or reversed top-up is reflected | Refund and reversal notifications (Payments v2) | Built, not yet run in the sandbox: the test replies are shaped from PayPal's documentation (decision 97). |
+| A delivery is followed to the door | Shipment tracking | Planned. The demo follows the stand-in seller's own delivery reports. |
+| A wrong or disputed charge is contested | Disputes | Planned. |
+| Each member is who they say they are | Log in with PayPal | Planned. Sign-in today is Amazon Cognito. |
+| The agent reads PayPal's record for the family | PayPal's agent toolkit and MCP server | Planned. Ask Kin reads PayPal through Kin's own adapter. Kin's own MCP server (decision 93) serves members' own assistants and is not PayPal's. |
 
-For the hackathon, all of this runs in the PayPal sandbox with test money.
+Two things follow from this. First, the family does not need a new bank account or a new card. Second, the spoken sentences the parent hears are generated from confirmed PayPal events (in the demo, from its simulated entries, which are labelled so), which is why the parent can trust them and why the scam check works.
+
+Every PayPal call Kin makes goes to the PayPal sandbox, with test money; none reaches live PayPal. In the hosted demo, the family's history is simulated and labelled "Simulated", and a top-up a visitor makes goes through PayPal's real sandbox checkout and is labelled "PayPal sandbox".
 
 ---
 
@@ -356,16 +360,16 @@ Kin handles a vulnerable person's money. Trust is the product.
 
 ## 14. What the hackathon version shows
 
-The submission demonstrates one complete month for one family, end to end, in the PayPal sandbox:
+The submission demonstrates one month for one family. The hosted demo gives each visitor a copy of Rose's circle whose history is simulated and labelled so; a top-up the visitor makes is a real PayPal sandbox checkout. Section 7 says which PayPal parts have run in the sandbox.
 
-1. A circle is created, shares are agreed and monthly contributions begin.
-2. The parent hears a bill being paid.
-3. The caregiver bills by voice and is paid the same day.
-4. The parent approves a refill by voice, and it is bought from a simulated pharmacy.
+1. A circle with agreed shares and monthly contributions. The demo starts from Rose's circle already set up, and its monthly shares are simulated; a person who signs in can start a real circle.
+2. The parent hears a bill being paid, on her Listen screen.
+3. The caregiver says or types her visits, Claude reads them into days, the server values them, and once approved she is paid. In the demo that payout is simulated unless Kin's own sandbox payee is configured.
+4. The parent approves a refill by voice, and it is bought from a stand-in pharmacy with simulated money.
 5. The parent holds up a letter and hears it read.
-6. A false payment demand is checked and caught.
-7. A sibling's out-of-pocket receipts are credited and the month is settled with a real payout.
-8. The family statement and the audit export are produced.
+6. A false payment demand is checked against the record by plain code and caught.
+7. A sibling's out-of-pocket receipts (typed in; photographing a receipt is not built) are credited, and the money core proposes the month's settlement. In the demo its payouts are simulated and labelled so.
+8. The family statement and the audit export are produced, and the export can be checked offline with `kin-verify`.
 
 **The story in the video** follows Rose, Elena, Marcus, Ana and Amara through those eight moments in under three minutes. It opens on Rose's voice, not on a dashboard.
 
