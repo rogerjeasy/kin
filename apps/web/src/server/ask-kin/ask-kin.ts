@@ -1,8 +1,11 @@
-import { MAX_HISTORY_TURNS, MAX_QUESTION_LENGTH, askKin, toolGateway, type AskKinCall, type AskKinTurn, type TemplateReason, type ToolModel, type ToolOutcome, type ToolRecorder } from "@kin/agent";
+import { MAX_HISTORY_TURNS, MAX_QUESTION_LENGTH, askKin, routeQuestion, toolGateway, type AskKinCall, type AskKinTurn, type RoutedCall, type TemplateReason, type ToolModel, type ToolOutcome, type ToolRecorder } from "@kin/agent";
 import { authorize, type BillingAccount } from "@kin/auth";
 import { asPerson, readExecutions, type CircleSnapshot, type Database } from "@kin/db";
 
 import { LANGUAGE_NAMES } from "@/components/dashboard/words/letter-words";
+import { suggestedQuestions } from "@/content/circle/ask-kin-suggestions";
+import { circleFormatters } from "@/content/circle/format";
+import { circleNames } from "@/content/circle/names";
 import { dashboardRoutes, purseRoute } from "@/content/dashboard-routes";
 import { getDictionary, type Dictionary } from "@/i18n/dictionary";
 import { isLocale, type Locale } from "@/i18n/locales";
@@ -85,6 +88,26 @@ export function steps(copy: Dictionary["askKin"], calls: readonly AskKinCall[]):
   });
 }
 
+const sameWords = (a: string, b: string) => {
+  const plain = (text: string) => text.trim().replaceAll(/\s+/gu, " ").toLocaleLowerCase();
+  return plain(a) === plain(b);
+};
+
+/**
+ * How Kin routes a question to its tools when Claude cannot answer: one of the
+ * screen's own suggestions to the tool it was made for, in any of Kin's
+ * languages, and anything else through the keyword table, with the names the
+ * circle's record holds.
+ */
+export function routeWithoutClaude(circle: CircleSnapshot, dictionary: Dictionary, locale: Locale): (question: string) => readonly RoutedCall[] {
+  const suggestions = suggestedQuestions(circle, dictionary.askKin.suggestions, circleFormatters(locale, circle), circleNames(circle, dictionary));
+  const known = { members: circle.members.map((member) => member.displayName), payees: circle.payees.map((payee) => payee.name) };
+  return (question) => {
+    const suggested = suggestions.find((suggestion) => sameWords(suggestion.text, question));
+    return suggested === undefined ? routeQuestion(question, known) : [suggested.call];
+  };
+}
+
 /**
  * The one request boundary for Ask Kin. Anyone seated in the circle may ask;
  * the tools their role may use are the only ones the model is offered. The
@@ -128,6 +151,7 @@ export async function runAskKin(context: AskKinContext, input: unknown): Promise
     language: LANGUAGE_NAMES[parsed.locale],
     gateway,
     template: (facts) => (facts.length === 0 ? copy.fallback.none : fill(copy.fallback.lead, { facts: facts.join(" ") })),
+    route: routeWithoutClaude(circle, dictionary, parsed.locale),
   });
   if (result.kind === "unavailable") return { ok: false, reason: "unavailable" };
   return {

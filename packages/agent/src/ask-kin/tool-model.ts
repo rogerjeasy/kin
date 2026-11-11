@@ -39,6 +39,8 @@ export type ToolRequest = {
   readonly system: string;
   readonly messages: readonly ToolMessage[];
   readonly tools: readonly ToolSpec[];
+  /** Aborted when the question's deadline passes: the adapter stops waiting for the model, retries included. */
+  readonly signal?: AbortSignal;
 };
 
 export type ToolModel = ((request: ToolRequest) => Promise<ToolTurn>) & {
