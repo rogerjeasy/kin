@@ -35,6 +35,8 @@
       "clientId": "BAATjOObFGda34lAUzZzBd43bazhUHcRf9GbRKzF1ZiTJl5x0WSIz0Q3fGJ_1rtBYd_BmJZrTQ1-9VfGkA",
       "webhookId": "3PS4036436315174J"
     },
+    "kin:demoSandboxPayeeEmail": "amara-doe@personal.example.com",
+    "kin:demoInvoiceRecipientEmail": "sb-gjhqx53353312@personal.example.com",
     "kin:speech": true,
     "kin:claude": true,
     "kin:voice": true,
