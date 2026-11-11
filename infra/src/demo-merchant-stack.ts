@@ -15,7 +15,7 @@ export const DEMO_MERCHANT_PORT = 4100;
 
 /**
  * The demo pharmacy on App Runner (docs/architecture.md section 8.6 and
- * decision 104): a stand-in seller with its own PayPal sandbox app, which
+ * decision 105): a stand-in seller with its own PayPal sandbox app, which
  * charges Rose's saved payment method when Kin's worker sends it a signed
  * order and reads the payment back from PayPal when asked. It holds no
  * database password and no Kin PayPal secret: only its own app's

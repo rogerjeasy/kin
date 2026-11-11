@@ -12,7 +12,8 @@
       "paid": "{caregiver} a-t-elle été payée ?",
       "owes": "Qui doit quoi à qui ce mois-ci ?",
       "demand": "Une demande de {amount} de {payee} est-elle réelle ?",
-      "refill": "Renouveler l'ordonnance de {parent}"
+      "refill": "Renouveler l'ordonnance de {parent}",
+      "paypalRecord": "Montre-moi le dossier de PayPal sur le dernier apport"
     },
     "form": {
       "label": "Votre question",
@@ -59,6 +60,9 @@
       "get_paypal_payout_status": "A vérifié les versements auprès de PayPal",
       "get_paypal_topup_status": "A vérifié les apports auprès de PayPal",
       "get_subscription_status": "A vérifié les parts mensuelles auprès de PayPal",
+      "get_paypal_order": "A lu le dossier de PayPal sur l'apport (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "A lu le dossier de PayPal sur la facture (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "A cherché chez PayPal des litiges sur les apports (PayPal Agent Toolkit)",
       "propose_refill": "A proposé un renouvellement",
       "unknown": "A demandé un outil que Kin n'a pas"
     },
@@ -111,6 +115,15 @@
       "topUp": "{member} a versé {amount} le {day}.",
       "topUpSimulated": "{member} a versé {amount} le {day}. C'était simulé.",
       "topUpNone": "Le registre ne contient aucun apport.",
+      "paypalOrder": "Selon le dossier de PayPal, l'apport de {amount} de {member} le {day} : la commande est {status}.",
+      "paypalOrderSimulated": "L'apport de {amount} de {member} le {day} était simulé ; PayPal n'en a donc aucune trace.",
+      "paypalUnread": "PayPal n'a pas pu être lu pour l'instant ; Kin ne montre que son propre registre.",
+      "paypalInvoice": "La facture PayPal de {amount} envoyée à {member} est {status}.",
+      "paypalInvoiceSimulated": "La facture de {amount} envoyée à {member} était simulée ; PayPal n'en a donc aucune trace.",
+      "paypalInvoiceNone": "Kin n'a envoyé aucune facture.",
+      "paypalDispute": "PayPal signale un litige sur l'apport de {amount} de {member} : {status}.",
+      "paypalDisputesNone": "PayPal ne signale aucun litige sur les derniers apports réels du cercle.",
+      "paypalDisputesSimulated": "Les apports du cercle étaient simulés ; PayPal n'a donc aucun litige à leur sujet.",
       "share": "La part mensuelle de {member} est de {amount}.",
       "shareNone": "Aucune part mensuelle n'est en place.",
       "refillNone": "La famille n'a prévu aucun renouvellement.",

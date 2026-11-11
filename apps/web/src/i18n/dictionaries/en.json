@@ -12,7 +12,8 @@
       "paid": "Has {caregiver} been paid?",
       "owes": "Who owes whom this month?",
       "demand": "Is a {amount} demand from {payee} real?",
-      "refill": "Reorder {parent}'s refill"
+      "refill": "Reorder {parent}'s refill",
+      "paypalRecord": "Show me PayPal's own record of the last top-up"
     },
     "form": {
       "label": "Your question",
@@ -59,6 +60,9 @@
       "get_paypal_payout_status": "Checked the payouts with PayPal",
       "get_paypal_topup_status": "Checked the top-ups with PayPal",
       "get_subscription_status": "Checked the monthly shares with PayPal",
+      "get_paypal_order": "Read PayPal's own record of the top-up (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "Read PayPal's own record of the invoice (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "Checked PayPal for disputes on the top-ups (PayPal Agent Toolkit)",
       "propose_refill": "Proposed a refill",
       "unknown": "Asked for a tool Kin does not have"
     },
@@ -111,6 +115,15 @@
       "topUp": "{member} topped up {amount} on {day}.",
       "topUpSimulated": "{member} topped up {amount} on {day}. It was simulated.",
       "topUpNone": "The record holds no top-ups.",
+      "paypalOrder": "PayPal's own record of {member}'s top-up of {amount} on {day}: the order is {status}.",
+      "paypalOrderSimulated": "{member}'s top-up of {amount} on {day} was simulated, so PayPal holds no record of it.",
+      "paypalUnread": "PayPal could not be read just now, so Kin shows only its own record.",
+      "paypalInvoice": "PayPal's invoice to {member} for {amount} is {status}.",
+      "paypalInvoiceSimulated": "The invoice to {member} for {amount} was simulated, so PayPal holds no record of it.",
+      "paypalInvoiceNone": "Kin has sent no invoices.",
+      "paypalDispute": "PayPal shows a dispute on {member}'s top-up of {amount}: {status}.",
+      "paypalDisputesNone": "PayPal shows no dispute on the circle's newest real top-ups.",
+      "paypalDisputesSimulated": "The circle's top-ups were simulated, so PayPal holds no disputes for them.",
       "share": "{member}'s monthly share is {amount}.",
       "shareNone": "No monthly shares are set up.",
       "refillNone": "The family has set up no refills.",

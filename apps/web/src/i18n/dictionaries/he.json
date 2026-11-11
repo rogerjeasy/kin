@@ -12,7 +12,8 @@
       "paid": "האם {caregiver} קיבלה תשלום?",
       "owes": "מי חייב למי החודש?",
       "demand": "האם דרישה של {amount} מ־{payee} אמיתית?",
-      "refill": "להזמין שוב את המרשם של {parent}"
+      "refill": "להזמין שוב את המרשם של {parent}",
+      "paypalRecord": "הראה לי את הרישום של PayPal על ההפקדה האחרונה"
     },
     "form": {
       "label": "השאלה שלכם",
@@ -59,6 +60,9 @@
       "get_paypal_payout_status": "בדק את התשלומים מול PayPal",
       "get_paypal_topup_status": "בדק את ההפקדות מול PayPal",
       "get_subscription_status": "בדק את החלקים החודשיים מול PayPal",
+      "get_paypal_order": "קרא את הרישום של PayPal על ההפקדה (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "קרא את הרישום של PayPal על החשבונית (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "בדק ב־PayPal אם יש מחלוקות על ההפקדות (PayPal Agent Toolkit)",
       "propose_refill": "הציע הזמנה חוזרת",
       "unknown": "ביקש כלי ש־Kin אינו מחזיק"
     },
@@ -111,6 +115,15 @@
       "topUp": "{member} הפקיד {amount} ב־{day}.",
       "topUpSimulated": "{member} הפקיד {amount} ב־{day}. זה היה מדומה.",
       "topUpNone": "ברישום אין הפקדות.",
+      "paypalOrder": "לפי הרישום של PayPal, ההפקדה של {member} בסך {amount} ב־{day}: ההזמנה במצב {status}.",
+      "paypalOrderSimulated": "ההפקדה של {member} בסך {amount} ב־{day} הייתה מדומה, ולכן אין ל־PayPal רישום שלה.",
+      "paypalUnread": "לא ניתן היה לקרוא את PayPal כרגע, ולכן Kin מציג רק את הרישום שלו.",
+      "paypalInvoice": "החשבונית של PayPal ל{member} בסך {amount} במצב {status}.",
+      "paypalInvoiceSimulated": "החשבונית ל{member} בסך {amount} הייתה מדומה, ולכן אין ל־PayPal רישום שלה.",
+      "paypalInvoiceNone": "Kin לא שלח חשבוניות.",
+      "paypalDispute": "PayPal מציג מחלוקת על ההפקדה של {member} בסך {amount}: {status}.",
+      "paypalDisputesNone": "PayPal לא מציג מחלוקת על ההפקדות האמיתיות האחרונות של המעגל.",
+      "paypalDisputesSimulated": "ההפקדות של המעגל היו מדומות, ולכן אין ל־PayPal מחלוקות עליהן.",
       "share": "החלק החודשי של {member} הוא {amount}.",
       "shareNone": "לא הוגדרו חלקים חודשיים.",
       "refillNone": "המשפחה לא הגדירה הזמנות חוזרות.",

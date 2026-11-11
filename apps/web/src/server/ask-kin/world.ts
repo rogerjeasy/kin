@@ -1,6 +1,6 @@
 import type { ExecutionRecord, CircleSnapshot, Database } from "@kin/db";
 import { sameName } from "@kin/domain";
-import type { PayPalPool } from "@kin/paypal";
+import type { AgentToolkitReads, PayPalPool } from "@kin/paypal";
 
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames, type CircleNames } from "@/content/circle/names";
@@ -8,12 +8,15 @@ import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
 import type { Formatters } from "@/lib/format";
 
-/** The only PayPal calls a tool can reach: reads. No write of the pool's account is in this type. */
-export type PayPalReader = Pick<PayPalPool, "getPayoutBatch" | "getCapture" | "getSubscription">;
+/**
+ * The only PayPal calls a tool can reach: reads. No write of the pool's account is in this type, and the
+ * Agent Toolkit's reads are `null` where this deployment talks to a stand-in for PayPal.
+ */
+export type PayPalReader = Pick<PayPalPool, "getPayoutBatch" | "getCapture" | "getSubscription"> & { readonly toolkit: AgentToolkitReads | null };
 
 /** Copies only the read methods, so a write of the pool's account is not even reachable at run time. */
-export function paypalReader(pool: PayPalPool): PayPalReader {
-  return { getPayoutBatch: pool.getPayoutBatch, getCapture: pool.getCapture, getSubscription: pool.getSubscription };
+export function paypalReader(pool: PayPalPool, toolkit: AgentToolkitReads | null): PayPalReader {
+  return { getPayoutBatch: pool.getPayoutBatch, getCapture: pool.getCapture, getSubscription: pool.getSubscription, toolkit };
 }
 
 /**

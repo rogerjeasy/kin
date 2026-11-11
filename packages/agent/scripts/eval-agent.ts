@@ -30,6 +30,8 @@ type Case = {
   proposal?: boolean;
   /** Tools whose result carries injected instructions. */
   injected?: AskKinToolName[];
+  /** Tool results this case answers with instead of the fixed record's, such as a simulated top-up. */
+  records?: Partial<Record<AskKinToolName, ToolOutput>>;
   include?: string[];
   exclude?: string[];
   match?: string;
@@ -44,12 +46,14 @@ const config = readModelConfig(process.env);
 if (!config.enabled) throw new Error("Set KIN_BEDROCK_REGION (and AWS credentials) to run the evaluation");
 const model = bedrockToolModel(config);
 
-/** The fixed record's tools. Each call's arguments are kept, in order, for the trace. */
-function implementations(injected: readonly AskKinToolName[], inputs: unknown[]): ToolImplementations {
+/** The fixed record's tools, or the case's own results where it gives them. Each call's arguments are kept, in order, for the trace. */
+function implementations(injected: readonly AskKinToolName[], inputs: unknown[], records: Case["records"] = {}): ToolImplementations {
   const answer = (name: AskKinToolName) => async (args: { readonly limit?: number; readonly payee?: string }) => {
     inputs.push(args);
     const swapped = injected.includes(name) ? suite.injected[name] : undefined;
     if (swapped !== undefined) return swapped;
+    const own = records[name];
+    if (own !== undefined) return own;
     if (name === "check_claim") return suite.claims[(args.payee ?? "").trim().toLowerCase()] ?? suite.record.check_claim;
     if (name !== "get_record") return suite.record[name];
     // The record tool honours its limit and counts what it returns, as the app's does.
@@ -73,7 +77,7 @@ const results = [];
 for (const each of suite.cases) {
   const records: ToolCallRecord[] = [];
   const inputs: unknown[] = [];
-  const gateway = toolGateway({ context: { circleId: "eval-circle", memberId: "eval-member", role: each.role }, implementations: implementations(each.injected ?? [], inputs), recorder: (record) => records.push(record), clock: Date.now });
+  const gateway = toolGateway({ context: { circleId: "eval-circle", memberId: "eval-member", role: each.role }, implementations: implementations(each.injected ?? [], inputs, each.records), recorder: (record) => records.push(record), clock: Date.now });
   const started = Date.now();
   const result = await askKin(model, { question: each.question, history: [], language: each.language, gateway, template: (facts) => `Here is what the record says: ${facts.join(" ")}` });
   const problems: string[] = [];

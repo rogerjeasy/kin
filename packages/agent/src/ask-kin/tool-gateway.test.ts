@@ -30,7 +30,7 @@ const OFFERED: Record<CircleRole, readonly AskKinToolName[]> = {
   organizer: FAMILY_TOOLS,
   contributor: FAMILY_TOOLS,
   parent: ASK_KIN_TOOL_NAMES,
-  observer: ["get_pool", "list_bills", "get_fairness", "list_proposals", "get_record", "get_paypal_payout_status", "get_paypal_topup_status", "get_subscription_status"],
+  observer: ["get_pool", "list_bills", "get_fairness", "list_proposals", "get_record", "get_paypal_payout_status", "get_paypal_topup_status", "get_subscription_status", "get_paypal_order", "get_paypal_invoice", "list_paypal_disputes"],
   caregiver: ["list_bills", "list_proposals", "get_paypal_payout_status"],
 };
 

@@ -24,6 +24,8 @@ export type { KnownNames, RoutedCall } from "./ask-kin/route-question.ts";
 export type { AskKinCall, AskKinRequest, AskKinResult, AskKinTurn, TemplateReason } from "./ask-kin/ask-kin.ts";
 export { ASK_KIN_TOOLS, ASK_KIN_TOOL_NAMES, isAskKinTool } from "./ask-kin/ask-kin-tools.ts";
 export type { AskKinToolName } from "./ask-kin/ask-kin-tools.ts";
+export { PAYPAL_TOOLKIT_TOOLS, PAYPAL_TOOLKIT_TOOL_NAMES } from "./ask-kin/paypal-toolkit-tools.ts";
+export type { PayPalToolkitToolName } from "./ask-kin/paypal-toolkit-tools.ts";
 export { bedrockToolModel } from "./ask-kin/bedrock-tool-model.ts";
 export { DEFAULT_LIMITS, maskArgs, mayUseTool, toolGateway, toolsForRole } from "./ask-kin/tool-gateway.ts";
 export type { GatewayLimits, JsonValue, RaisedProposal, ToolCallRecord, ToolContext, ToolGateway, ToolImplementation, ToolImplementations, ToolOutcome, ToolOutput, ToolRecorder } from "./ask-kin/tool-gateway.ts";

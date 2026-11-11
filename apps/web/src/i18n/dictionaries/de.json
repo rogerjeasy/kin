@@ -12,7 +12,8 @@
       "paid": "Wurde {caregiver} bezahlt?",
       "owes": "Wer schuldet wem diesen Monat etwas?",
       "demand": "Ist eine Forderung über {amount} von {payee} echt?",
-      "refill": "Das Rezept von {parent} nachbestellen"
+      "refill": "Das Rezept von {parent} nachbestellen",
+      "paypalRecord": "Zeig mir PayPals eigenen Eintrag zur letzten Einzahlung"
     },
     "form": {
       "label": "Ihre Frage",
@@ -59,6 +60,9 @@
       "get_paypal_payout_status": "Die Auszahlungen bei PayPal geprüft",
       "get_paypal_topup_status": "Die Einzahlungen bei PayPal geprüft",
       "get_subscription_status": "Die Monatsanteile bei PayPal geprüft",
+      "get_paypal_order": "PayPals eigenen Eintrag zur Einzahlung gelesen (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "PayPals eigenen Eintrag zur Rechnung gelesen (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "Bei PayPal nach Konflikten zu den Einzahlungen gesucht (PayPal Agent Toolkit)",
       "propose_refill": "Eine Nachbestellung vorgeschlagen",
       "unknown": "Ein Werkzeug verlangt, das Kin nicht hat"
     },
@@ -111,6 +115,15 @@
       "topUp": "{member} hat am {day} {amount} eingezahlt.",
       "topUpSimulated": "{member} hat am {day} {amount} eingezahlt. Es war simuliert.",
       "topUpNone": "Das Kassenbuch enthält keine Einzahlungen.",
+      "paypalOrder": "Laut PayPals eigenem Eintrag zur Einzahlung von {member} über {amount} am {day} ist die Bestellung {status}.",
+      "paypalOrderSimulated": "Die Einzahlung von {member} über {amount} am {day} war simuliert, daher hat PayPal keinen Eintrag dazu.",
+      "paypalUnread": "PayPal konnte gerade nicht gelesen werden, daher zeigt Kin nur sein eigenes Kassenbuch.",
+      "paypalInvoice": "Die PayPal-Rechnung an {member} über {amount} ist {status}.",
+      "paypalInvoiceSimulated": "Die Rechnung an {member} über {amount} war simuliert, daher hat PayPal keinen Eintrag dazu.",
+      "paypalInvoiceNone": "Kin hat keine Rechnungen verschickt.",
+      "paypalDispute": "PayPal zeigt einen Konflikt zur Einzahlung von {member} über {amount}: {status}.",
+      "paypalDisputesNone": "PayPal zeigt keinen Konflikt zu den neuesten echten Einzahlungen des Kreises.",
+      "paypalDisputesSimulated": "Die Einzahlungen des Kreises waren simuliert, daher hat PayPal keine Konflikte dazu.",
       "share": "Der Monatsanteil von {member} beträgt {amount}.",
       "shareNone": "Es sind keine Monatsanteile eingerichtet.",
       "refillNone": "Die Familie hat keine Nachbestellungen eingerichtet.",

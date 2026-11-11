@@ -12,7 +12,8 @@
       "paid": "هل حصلت {caregiver} على أجرها؟",
       "owes": "من يدين لمن هذا الشهر؟",
       "demand": "هل مطالبة بمبلغ {amount} من {payee} حقيقية؟",
-      "refill": "أعد طلب وصفة {parent}"
+      "refill": "أعد طلب وصفة {parent}",
+      "paypalRecord": "اعرض لي سجل PayPal لآخر إيداع"
     },
     "form": {
       "label": "سؤالك",
@@ -59,6 +60,9 @@
       "get_paypal_payout_status": "تحقق من المدفوعات لدى PayPal",
       "get_paypal_topup_status": "تحقق من الإيداعات لدى PayPal",
       "get_subscription_status": "تحقق من الحصص الشهرية لدى PayPal",
+      "get_paypal_order": "قرأ سجل PayPal الخاص بالإيداع (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "قرأ سجل PayPal الخاص بالفاتورة (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "بحث لدى PayPal عن نزاعات على الإيداعات (PayPal Agent Toolkit)",
       "propose_refill": "اقترح إعادة طلب",
       "unknown": "طلب أداة لا يملكها Kin"
     },
@@ -111,6 +115,15 @@
       "topUp": "أودع {member} مبلغ {amount} في {day}.",
       "topUpSimulated": "أودع {member} مبلغ {amount} في {day}. كانت محاكاة.",
       "topUpNone": "لا يحوي السجل أي إيداعات.",
+      "paypalOrder": "بحسب سجل PayPal، إيداع {member} بمبلغ {amount} في {day}: حالة الطلب {status}.",
+      "paypalOrderSimulated": "كان إيداع {member} بمبلغ {amount} في {day} محاكاة، لذا لا يملك PayPal أي سجل له.",
+      "paypalUnread": "تعذرت قراءة PayPal الآن، لذا يعرض Kin سجله فقط.",
+      "paypalInvoice": "فاتورة PayPal إلى {member} بمبلغ {amount} حالتها {status}.",
+      "paypalInvoiceSimulated": "كانت الفاتورة إلى {member} بمبلغ {amount} محاكاة، لذا لا يملك PayPal أي سجل لها.",
+      "paypalInvoiceNone": "لم يرسل Kin أي فواتير.",
+      "paypalDispute": "يُظهر PayPal نزاعًا على إيداع {member} بمبلغ {amount}: {status}.",
+      "paypalDisputesNone": "لا يُظهر PayPal أي نزاع على أحدث الإيداعات الحقيقية للدائرة.",
+      "paypalDisputesSimulated": "كانت إيداعات الدائرة محاكاة، لذا لا يملك PayPal أي نزاعات عليها.",
       "share": "الحصة الشهرية لـ {member} هي {amount}.",
       "shareNone": "لا توجد حصص شهرية معدّة.",
       "refillNone": "لم تُعدّ العائلة أي إعادة طلب.",

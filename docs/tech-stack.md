@@ -17,7 +17,7 @@ This document says what to build with and why. It is not a design or an implemen
 | Data grid | AG Grid Community for the family ledger and audit screens |
 | Care calendar | Bryntum Scheduler, the trial build, read-only, for the family's week of care shifts |
 | Checkout | PayPal JavaScript SDK v6 |
-| PayPal server side | Direct REST calls from `packages/paypal` (built). The PayPal Agent Toolkit and sandbox MCP server are **Planned, not built** |
+| PayPal server side | Direct REST calls from `packages/paypal` (built). The PayPal Agent Toolkit `@paypal/agent-toolkit` 1.11.0 for Ask Kin's reads of PayPal's own record, read actions only (built, architecture decision 106). The sandbox MCP server is **Planned, not built** |
 | AI model | Claude through the Anthropic TypeScript SDK on Amazon Bedrock: Opus 4.6 by InvokeModel today, Opus 5.5 when the account is granted it |
 | Speech | Amazon Transcribe and Amazon Polly (built, switched on; architecture decision 59) |
 | Phone calls | Twilio voice, as a webhook service (`apps/voice`) hosted on App Runner by the `KinVoice` stack, with `kin:voice` on (architecture decision 85); a call through a real Twilio number is not yet verified |
@@ -116,7 +116,7 @@ Three small services share one codebase:
 
 **Status in this build.** Called by the code today, all by direct REST calls from `packages/paypal`: Orders v2 with the JavaScript SDK v6 (and Pay Later when PayPal offers it), Payments v2 (reading a capture or a refund back), Subscriptions with Catalog products and plans (create, read, transactions, suspend, activate, cancel, revise), Payouts (batch and item), Invoicing v2, Transaction Search (the nightly reconciliation of real Purse payments, architecture section 8.6a), webhooks with signature verification (including refunds, decision 97), and the vault-backed Orders request in the demo pharmacy. Shipment tracking, Disputes, creating a refund and Log in with PayPal are **Planned, not built**. Invoicing is covered in `architecture.md` section 8.2.
 
-**Packages and endpoints (the toolkit and MCP lines are Planned, not built; neither has a Payouts tool, and the model never holds a PayPal write, so Kin exposes its own MCP server instead, architecture decision 93):**
+**Packages and endpoints (the toolkit is built for four read actions, architecture decision 106; the MCP line is Planned, not built; neither has a Payouts tool, and the model never holds a PayPal write, so Kin exposes its own MCP server instead, architecture decision 93):**
 
 - `@paypal/agent-toolkit` for the agent's PayPal tools.
 - The hosted sandbox MCP server at `https://mcp.sandbox.paypal.com`, with `/sse` and `/http` transports. It can also run locally with `npx @paypal/mcp --tools=all`.
