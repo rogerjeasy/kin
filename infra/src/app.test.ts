@@ -31,6 +31,7 @@ const config: InfraConfig = {
   twilioCallerNumber: null,
   twilioSmsFrom: null,
   presenceLineNumbers: null,
+  agStudioLicense: null,
 };
 
 // The same feature flags as a real synth, so the tests see what is deployed.

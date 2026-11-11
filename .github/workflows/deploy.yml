@@ -75,6 +75,8 @@ jobs:
           KIN_TWILIO_SMS_FROM: ${{ secrets.KIN_TWILIO_SMS_FROM }}
           # The number(s) a parent rings to ask "is it really you?", as JSON. Unset (an empty secret), the line is off.
           KIN_PRESENCE_LINE_NUMBERS: ${{ secrets.KIN_PRESENCE_LINE_NUMBERS }}
+          # AG Studio's licence key, built into the web image. Unset, the studio runs unlicensed.
+          KIN_AG_STUDIO_LICENSE: ${{ secrets.AG_STUDIO_LICENSE }}
       # The web app, and the phone service when this deployment made one.
       - name: Check the live app
         working-directory: infra

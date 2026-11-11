@@ -12,7 +12,10 @@ WORKDIR /repo
 COPY . .
 # Only the web app and the workspace packages it depends on.
 RUN pnpm install --frozen-lockfile --filter "@kin/web..."
-RUN pnpm --filter @kin/web run build
+# AG Studio's licence key, built into the page as a browser licence is. It is
+# passed in at build time (never committed); empty, the studio runs unlicensed.
+ARG NEXT_PUBLIC_AG_STUDIO_LICENSE=""
+RUN NEXT_PUBLIC_AG_STUDIO_LICENSE="$NEXT_PUBLIC_AG_STUDIO_LICENSE" pnpm --filter @kin/web run build
 
 FROM node:24.19.0-slim AS run
 ARG TARGETARCH

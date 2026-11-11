@@ -96,6 +96,13 @@ export type InfraConfig = {
    * Needs `kin:voice`.
    */
   readonly presenceLineNumbers: string | null;
+  /**
+   * AG Studio's licence key, built into the web image for the family money
+   * studio. A browser licence is public once deployed, but it is never
+   * committed, so it is read only from KIN_AG_STUDIO_LICENSE (in the pipeline,
+   * the AG_STUDIO_LICENSE secret). Unset, the studio runs unlicensed.
+   */
+  readonly agStudioLicense: string | null;
 };
 
 /**
@@ -159,7 +166,16 @@ export function readConfig({ context, env }: Source): InfraConfig {
     claude: flag(context("kin:claude"), "kin:claude"),
     demoSandboxPayeeEmail: demoSandboxPayee(context("kin:demoSandboxPayeeEmail"), context("kin:paypal")),
     ...twilio({ context, env }),
+    agStudioLicense: optionalLicence(env["KIN_AG_STUDIO_LICENSE"]),
   };
+}
+
+/** A licence key is one line of printable text; an empty secret reads as unset. */
+function optionalLicence(value: string | undefined): string | null {
+  const key = value?.trim() ?? "";
+  if (key === "") return null;
+  if (!/^[\x21-\x7e]+$/u.test(key)) throw new InfraConfigError("KIN_AG_STUDIO_LICENSE must be one line of printable text, or unset.");
+  return key;
 }
 
 function twilio({ context, env }: Source): Pick<InfraConfig, "voice" | "voicePublicUrl" | "twilioCallerNumber" | "twilioSmsFrom" | "presenceLineNumbers"> {

@@ -36,6 +36,8 @@ export class WebStack extends Stack {
       file: "apps/web/Dockerfile",
       platform: ecrAssets.Platform.LINUX_AMD64,
       ignoreMode: IgnoreMode.DOCKER,
+      // Left out when unset, so the image (and its hash) is the same as before the studio had a key.
+      ...(config.agStudioLicense === null ? {} : { buildArgs: { NEXT_PUBLIC_AG_STUDIO_LICENSE: config.agStudioLicense } }),
     });
 
     const imageAccess = new iam.Role(this, "ImageAccess", {

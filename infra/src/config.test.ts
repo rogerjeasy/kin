@@ -34,6 +34,14 @@ describe("readConfig", () => {
     });
   });
 
+  it("reads AG Studio's licence key from the environment only, and an empty secret as unset", () => {
+    expect(read().agStudioLicense).toBeNull();
+    expect(read({}, { ...env, KIN_AG_STUDIO_LICENSE: "" }).agStudioLicense).toBeNull();
+    expect(read({ "kin:agStudioLicense": "from-cdk-json" }).agStudioLicense).toBeNull();
+    expect(read({}, { ...env, KIN_AG_STUDIO_LICENSE: " [v3]_[0102]_key \n" }).agStudioLicense).toBe("[v3]_[0102]_key");
+    expect(() => read({}, { ...env, KIN_AG_STUDIO_LICENSE: "two words" })).toThrow(InfraConfigError);
+  });
+
   it("prefers an alert email passed as context", () => {
     expect(read({ "kin:alertEmail": "b@example.com" }).alertEmail).toBe("b@example.com");
   });
