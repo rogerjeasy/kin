@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 
 import { readMerchantServiceConfig } from "@kin/config";
 
-import { MERCHANT_SIGNATURE_HEADER, createGate, fixedWindowLimiter } from "./gate.ts";
+import { MERCHANT_SIGNATURE_HEADER, clientAddress, createGate, fixedWindowLimiter } from "./gate.ts";
 import { BODY_LIMIT } from "./handler.ts";
 import { createOrderBook } from "./orders.ts";
 import { paypalSavedWallet, simulatedWallet } from "./wallet.ts";
@@ -18,11 +18,15 @@ const config = readMerchantServiceConfig(process.env);
 const now = () => new Date();
 const wallet = config.wallet.kind === "paypal_sandbox" ? paypalSavedWallet(config.wallet) : simulatedWallet;
 const book = createOrderBook({ wallet, now, chargesPerDay: config.chargesPerDay });
-// The worker sends a handful of requests a minute; a client far beyond that is not the worker. A forwarded
-// address can be made up, so all clients together are held to a ceiling as well.
-const perClient = fixedWindowLimiter({ limit: 120, windowMs: 60_000, now });
-const overall = fixedWindowLimiter({ limit: 600, windowMs: 60_000, now });
-const gate = createGate({ book, signingSecret: config.signingSecret, limiter: { take: (client) => perClient.take(client) && overall.take("all") }, now });
+// The worker sends a handful of requests a minute; a client far beyond that is not the worker. Signed
+// requests together are held to a ceiling too, counted only once their signature holds.
+const gate = createGate({
+  book,
+  signingSecret: config.signingSecret,
+  perClient: fixedWindowLimiter({ limit: 120, windowMs: 60_000, now }),
+  signed: fixedWindowLimiter({ limit: 300, windowMs: 60_000, now }),
+  now,
+});
 const port = Number(process.env["PORT"] ?? 4100);
 
 const single = (value: string | string[] | undefined): string | null => (typeof value === "string" ? value : null);
@@ -36,14 +40,12 @@ createServer(async (request, response) => {
       if (size > BODY_LIMIT) return { status: 413, body: { error: "too_large" } };
       chunks.push(chunk as Buffer);
     }
-    // App Runner's proxy puts the caller's address first.
-    const forwarded = single(request.headers["x-forwarded-for"])?.split(",")[0]?.trim();
     return gate({
       method: request.method ?? "GET",
       target: request.url ?? "/",
       signature: single(request.headers[MERCHANT_SIGNATURE_HEADER]),
       rawBody: Buffer.concat(chunks).toString("utf8"),
-      client: forwarded || request.socket.remoteAddress || "unknown",
+      client: clientAddress(single(request.headers["x-forwarded-for"]), request.socket.remoteAddress),
     });
   };
   try {

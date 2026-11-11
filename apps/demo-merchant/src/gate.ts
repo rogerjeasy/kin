@@ -10,7 +10,7 @@ export type RawRequest = {
   readonly target: string;
   readonly signature: string | null;
   readonly rawBody: string;
-  /** Who is asking, for the rate limit: the first address App Runner's proxy names, or the socket's. */
+  /** Who is asking, for the rate limit: see `clientAddress`. */
   readonly client: string;
 };
 
@@ -33,22 +33,43 @@ export function fixedWindowLimiter(options: { readonly limit: number; readonly w
   };
 }
 
-type GateDeps = { readonly book: OrderBook; readonly signingSecret: string; readonly limiter: RateLimiter; readonly now: () => Date };
+/**
+ * The address a request came from, for counting it. A caller may write any
+ * X-Forwarded-For it likes; App Runner's proxy appends the address it really
+ * saw, so the last entry is the one a caller cannot choose. Without the header,
+ * the socket's own address.
+ */
+export function clientAddress(forwardedFor: string | null, socketAddress: string | undefined): string {
+  const last = forwardedFor?.split(",").at(-1)?.trim() ?? "";
+  return last !== "" ? last : (socketAddress ?? "unknown");
+}
+
+type GateDeps = {
+  readonly book: OrderBook;
+  readonly signingSecret: string;
+  /** Every request but the health check, by client, before its signature is checked. */
+  readonly perClient: RateLimiter;
+  /** Only requests the worker signed, all together: unsigned traffic can never use up what the worker needs. */
+  readonly signed: RateLimiter;
+  readonly now: () => Date;
+};
 
 /**
  * What stands in front of the pharmacy's routes. Only its health check is
  * open. Every other request is counted against its client's rate, then must
  * carry Kin's worker's signature over exactly this method, target and body,
- * made within the window, before its body is even parsed. A refusal says no
- * more than that it was refused.
+ * made within the window, before its body is even parsed; only then is it
+ * counted against the ceiling for all signed requests. A refusal says no more
+ * than that it was refused.
  */
 export function createGate(deps: GateDeps): (request: RawRequest) => Promise<MerchantReply> {
   return async (request) => {
     const path = new URL(request.target, "http://pharmacy.local").pathname;
     if (request.method === "GET" && path === "/health") return { status: 200, body: { ok: true } };
-    if (!deps.limiter.take(request.client)) return { status: 429, body: { error: "too_many_requests" } };
+    if (!deps.perClient.take(request.client)) return { status: 429, body: { error: "too_many_requests" } };
     const verdict = verifyMerchantSignature({ secret: deps.signingSecret, header: request.signature, method: request.method, path: request.target, rawBody: request.rawBody, now: deps.now() });
     if (!verdict.ok) return { status: 401, body: { error: "unauthorized" } };
+    if (!deps.signed.take("signed")) return { status: 429, body: { error: "too_many_requests" } };
     let body: unknown = null;
     if (request.rawBody !== "") {
       try {

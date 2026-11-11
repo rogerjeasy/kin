@@ -3,7 +3,7 @@ import { DELIVERY_SCHEDULE_SECONDS } from "@kin/domain";
 import { describe, expect, it } from "vitest";
 
 import { CATALOG } from "./catalog.ts";
-import { createGate, fixedWindowLimiter } from "./gate.ts";
+import { clientAddress, createGate, fixedWindowLimiter } from "./gate.ts";
 import { handle } from "./handler.ts";
 import { createOrderBook } from "./orders.ts";
 import { ChargeError, paypalSavedWallet, simulatedWallet, type WalletCharger } from "./wallet.ts";
@@ -163,7 +163,8 @@ describe("the gate in front of the pharmacy", () => {
   const SECRET = "the worker and the pharmacy share this secret";
   const body = JSON.stringify(REFILL);
   const seconds = START.getTime() / 1000;
-  const open = (limit = 100) => createGate({ book: bookAt().book, signingSecret: SECRET, limiter: fixedWindowLimiter({ limit, windowMs: 60_000, now: () => START }), now: () => START });
+  const limiter = (limit: number) => fixedWindowLimiter({ limit, windowMs: 60_000, now: () => START });
+  const open = (limit = 100, signedLimit = 100) => createGate({ book: bookAt().book, signingSecret: SECRET, perClient: limiter(limit), signed: limiter(signedLimit), now: () => START });
   const signed = (method: string, target: string, rawBody: string, at = seconds) => ({ method, target, rawBody, client: "10.0.0.1", signature: signMerchantRequest(SECRET, at, { method, path: target, rawBody }) });
 
   it("answers the health check to anyone, saying nothing else", async () => {
@@ -201,6 +202,24 @@ describe("the gate in front of the pharmacy", () => {
     expect((await gate(signed("GET", "/catalog", ""))).status).toBe(200);
     expect(await gate(signed("GET", "/catalog", ""))).toEqual({ status: 429, body: { error: "too_many_requests" } });
     expect((await gate({ ...signed("GET", "/catalog", ""), client: "10.0.0.2" })).status).toBe(200);
+  });
+
+  it("counts only signed requests against the shared ceiling, so unsigned traffic from any address cannot starve the worker", async () => {
+    const gate = open(100, 2);
+    for (let i = 0; i < 50; i += 1) {
+      expect((await gate({ ...signed("GET", "/catalog", ""), signature: null, client: `203.0.113.${i}` })).status).toBe(401);
+    }
+    expect((await gate(signed("GET", "/catalog", ""))).status).toBe(200);
+    expect((await gate(signed("GET", "/catalog", ""))).status).toBe(200);
+    expect(await gate(signed("GET", "/catalog", ""))).toEqual({ status: 429, body: { error: "too_many_requests" } });
+  });
+
+  it("counts a client by the address App Runner's proxy appended, never one the caller wrote first", () => {
+    expect(clientAddress("1.2.3.4, 198.51.100.7", "10.0.0.9")).toBe("198.51.100.7");
+    expect(clientAddress("198.51.100.7", "10.0.0.9")).toBe("198.51.100.7");
+    expect(clientAddress(null, "10.0.0.9")).toBe("10.0.0.9");
+    expect(clientAddress(" , ", "10.0.0.9")).toBe("10.0.0.9");
+    expect(clientAddress(null, undefined)).toBe("unknown");
   });
 
   it("forgets a client's count when the window turns", () => {
