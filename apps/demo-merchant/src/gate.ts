@@ -47,29 +47,31 @@ export function clientAddress(forwardedFor: string | null, socketAddress: string
 type GateDeps = {
   readonly book: OrderBook;
   readonly signingSecret: string;
-  /** Every request but the health check, by client, before its signature is checked. */
-  readonly perClient: RateLimiter;
-  /** Only requests the worker signed, all together: unsigned traffic can never use up what the worker needs. */
+  /** Requests whose signature does not hold, by address: they are refused either way, and a flood of them is cut off sooner. */
+  readonly unsigned: RateLimiter;
+  /** Requests the worker signed, in one bucket of their own keyed by the signing key, never shared with unsigned traffic. */
   readonly signed: RateLimiter;
   readonly now: () => Date;
 };
 
 /**
  * What stands in front of the pharmacy's routes. Only its health check is
- * open. Every other request is counted against its client's rate, then must
- * carry Kin's worker's signature over exactly this method, target and body,
- * made within the window, before its body is even parsed; only then is it
- * counted against the ceiling for all signed requests. A refusal says no more
- * than that it was refused.
+ * open. Every other request must first carry Kin's worker's signature over
+ * exactly this method, target and body, made within the window: one HMAC,
+ * checked before the body is parsed or anything else is done. A request
+ * without one is refused and counted by its address; one with it is counted
+ * in the signed requests' own bucket, so no amount of unsigned traffic, from
+ * any address including the worker's own egress, can use up what the worker
+ * needs. A refusal says no more than that it was refused.
  */
 export function createGate(deps: GateDeps): (request: RawRequest) => Promise<MerchantReply> {
   return async (request) => {
     const path = new URL(request.target, "http://pharmacy.local").pathname;
     if (request.method === "GET" && path === "/health") return { status: 200, body: { ok: true } };
-    if (!deps.perClient.take(request.client)) return { status: 429, body: { error: "too_many_requests" } };
     const verdict = verifyMerchantSignature({ secret: deps.signingSecret, header: request.signature, method: request.method, path: request.target, rawBody: request.rawBody, now: deps.now() });
-    if (!verdict.ok) return { status: 401, body: { error: "unauthorized" } };
-    if (!deps.signed.take("signed")) return { status: 429, body: { error: "too_many_requests" } };
+    if (!verdict.ok) return deps.unsigned.take(request.client) ? { status: 401, body: { error: "unauthorized" } } : { status: 429, body: { error: "too_many_requests" } };
+    // One signing key, so one bucket: a bound on what a leaked secret could ask for, and nothing else shares it.
+    if (!deps.signed.take("worker")) return { status: 429, body: { error: "too_many_requests" } };
     let body: unknown = null;
     if (request.rawBody !== "") {
       try {

@@ -18,12 +18,12 @@ const config = readMerchantServiceConfig(process.env);
 const now = () => new Date();
 const wallet = config.wallet.kind === "paypal_sandbox" ? paypalSavedWallet(config.wallet) : simulatedWallet;
 const book = createOrderBook({ wallet, now, chargesPerDay: config.chargesPerDay });
-// The worker sends a handful of requests a minute; a client far beyond that is not the worker. Signed
-// requests together are held to a ceiling too, counted only once their signature holds.
+// The worker sends a handful of signed requests a minute, in a bucket of their own. Unsigned ones are
+// refused whatever happens; the small per-address limit only stops a flood of them sooner.
 const gate = createGate({
   book,
   signingSecret: config.signingSecret,
-  perClient: fixedWindowLimiter({ limit: 120, windowMs: 60_000, now }),
+  unsigned: fixedWindowLimiter({ limit: 30, windowMs: 60_000, now }),
   signed: fixedWindowLimiter({ limit: 300, windowMs: 60_000, now }),
   now,
 });
