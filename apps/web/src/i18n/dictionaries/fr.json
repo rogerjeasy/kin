@@ -1276,7 +1276,8 @@
         "signedInAs": "Connexion en tant que",
         "settings": "Cercle et accord",
         "website": "Site de Kin",
-        "signOut": "Se déconnecter"
+        "signOut": "Se déconnecter",
+        "security": "Sécurité de connexion"
       },
       "demo": {
         "label": "Cercle de démonstration",
@@ -1603,7 +1604,8 @@
         "heardApprove": "Kin a entendu oui. Écoutez, puis confirmez à voix haute.",
         "heardReject": "Kin a entendu non. Écoutez, puis confirmez à voix haute.",
         "confirm": "Confirmer à voix haute"
-      }
+      },
+      "setUpAuthenticator": "Configurer votre application d’authentification"
     },
     "bills": {
       "title": "Factures",
@@ -4251,6 +4253,44 @@
       },
       "alerted": "Kin a prévenu {alerted}.",
       "said": "Ce qui a été dit : « {claim} »"
+    },
+    "security": {
+      "meta": {
+        "title": "Sécurité de connexion",
+        "description": "Configurez l’application d’authentification que Kin demande avant que vous approuviez de l’argent réel."
+      },
+      "title": "Sécurité de connexion",
+      "lede": "Avant que vous disiez oui à de l’argent réel, Kin vous demande de vous reconnecter avec un code d’une application d’authentification sur votre téléphone. Personne ne peut approuver un paiement avec votre seul mot de passe.",
+      "panel": "Application d’authentification",
+      "status": {
+        "enabled": "Votre application d’authentification est configurée. Kin demande son code chaque fois que vous approuvez un paiement réel.",
+        "not_set": "Vous n’avez pas encore d’application d’authentification. Tant qu’elle n’est pas configurée, vous ne pouvez pas approuver de paiements réels.",
+        "demo": "Dans la démo, les approbations déplacent de l’argent simulé et ne demandent pas de second facteur. Dans un vrai cercle, chacun configure ici une application d’authentification.",
+        "sign_in_again": "Pour configurer votre application, Kin a d’abord besoin que vous vous reconnectiez.",
+        "unavailable": "Kin ne peut pas joindre le service de connexion pour le moment. Veuillez réessayer dans un instant."
+      },
+      "signInAgain": "Se reconnecter",
+      "begin": "Configurer une application d’authentification",
+      "beginning": "Démarrage…",
+      "scan": "Scannez ce code avec une application d’authentification, comme Google Authenticator, Microsoft Authenticator ou 1Password.",
+      "qrLabel": "Code QR pour votre application d’authentification",
+      "manual": "Ou saisissez cette clé dans l’application",
+      "code": "Le code à six chiffres affiché par votre application",
+      "codeHint": "Le code change toutes les 30 secondes. Saisissez celui que vous voyez maintenant.",
+      "confirm": "Confirmer",
+      "confirming": "Vérification…",
+      "done": "C’est fait. Votre application d’authentification est configurée. La prochaine fois que vous approuverez un paiement réel, Kin demandera son code.",
+      "copy": "Copier",
+      "copied": "Copié",
+      "copyFailed": "Sélectionnez la clé et copiez-la vous-même",
+      "errors": {
+        "wrong_code": "Ce code ne correspond pas. Vérifiez l’heure de votre téléphone et saisissez le code le plus récent.",
+        "too_many_tries": "Trop d’essais. Attendez quelques minutes, puis réessayez.",
+        "sign_in_again": "Votre connexion est trop ancienne pour modifier votre compte. Reconnectez-vous, puis configurez votre application.",
+        "unavailable": "Kin ne peut pas joindre le service de connexion pour le moment. Veuillez réessayer dans un instant.",
+        "refused": "Ce n’est pas possible ici. Si votre application est déjà configurée, rien ne doit changer.",
+        "invalid": "Quelque chose n’a pas été envoyé comme prévu. Veuillez réessayer."
+      }
     }
   },
   "aiProvenance": {

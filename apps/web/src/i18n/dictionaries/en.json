@@ -1276,7 +1276,8 @@
         "signedInAs": "Signed in as",
         "settings": "Circle and agreement",
         "website": "Kin website",
-        "signOut": "Sign out"
+        "signOut": "Sign out",
+        "security": "Sign-in security"
       },
       "demo": {
         "label": "Demo circle",
@@ -1603,7 +1604,8 @@
         "heardApprove": "Kin heard yes. Listen, then confirm by voice.",
         "heardReject": "Kin heard no. Listen, then confirm by voice.",
         "confirm": "Confirm by voice"
-      }
+      },
+      "setUpAuthenticator": "Set up your authenticator app"
     },
     "bills": {
       "title": "Bills",
@@ -4251,6 +4253,44 @@
       },
       "alerted": "Kin alerted {alerted}.",
       "said": "What was said: “{claim}”"
+    },
+    "security": {
+      "meta": {
+        "title": "Sign-in security",
+        "description": "Set up the authenticator app Kin asks for before you approve real money."
+      },
+      "title": "Sign-in security",
+      "lede": "Before you say yes to real money, Kin asks you to sign in again with a code from an authenticator app on your phone. Nobody can approve a payment with your password alone.",
+      "panel": "Authenticator app",
+      "status": {
+        "enabled": "Your authenticator app is set up. Kin asks for its code each time you approve a real payment.",
+        "not_set": "You have no authenticator app yet. Until you set one up, you cannot approve real payments.",
+        "demo": "In the demo, approvals move simulated money and need no second factor. In a real circle, each person sets up an authenticator app here.",
+        "sign_in_again": "To set up your app, Kin needs you to sign in again first.",
+        "unavailable": "Kin cannot reach the sign-in service just now. Please try again in a moment."
+      },
+      "signInAgain": "Sign in again",
+      "begin": "Set up an authenticator app",
+      "beginning": "Starting…",
+      "scan": "Scan this code with an authenticator app, such as Google Authenticator, Microsoft Authenticator or 1Password.",
+      "qrLabel": "QR code for your authenticator app",
+      "manual": "Or type this key into the app",
+      "code": "The six-digit code your app shows",
+      "codeHint": "The code changes every 30 seconds. Type the one you see now.",
+      "confirm": "Confirm",
+      "confirming": "Checking…",
+      "done": "Done. Your authenticator app is set up. Next time you approve a real payment, Kin will ask for its code.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Select the key and copy it yourself",
+      "errors": {
+        "wrong_code": "That code did not match. Check the time on your phone and type the newest code.",
+        "too_many_tries": "Too many tries. Wait a few minutes, then try again.",
+        "sign_in_again": "Your sign-in is too old to change your account. Sign in again, then set up your app.",
+        "unavailable": "Kin cannot reach the sign-in service just now. Please try again in a moment.",
+        "refused": "This cannot be done from here. If your app is already set up, nothing needs to change.",
+        "invalid": "Something was not sent as expected. Please try again."
+      }
     }
   },
   "aiProvenance": {

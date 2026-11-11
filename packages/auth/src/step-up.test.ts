@@ -12,7 +12,13 @@ describe("the fresh check before approving real money", () => {
   });
 
   it("refuses a sign-in with one factor, however recent", () => {
-    for (const methods of [[], ["pwd"], ["email_otp"], ["pwd", "otp"], ["swk"]]) {
+    for (const methods of [[], ["pwd"], ["email_otp"], ["pwd", "otp"], ["swk"], ["mfa"]]) {
+      expect(assessStepUp(signIn(methods, now), now)).toEqual({ fresh: false, reason: "no_second_factor" });
+    }
+  });
+
+  it("refuses two factors when neither is an authenticator app, as Cognito's level 3", () => {
+    for (const methods of [["pwd", "email_otp", "mfa"], ["pwd", "sms", "mfa"], ["swk", "email_otp", "mfa"]]) {
       expect(assessStepUp(signIn(methods, now), now)).toEqual({ fresh: false, reason: "no_second_factor" });
     }
   });

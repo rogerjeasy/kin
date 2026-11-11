@@ -1,4 +1,5 @@
 import { CheckIcon, ShieldCheckIcon, XIcon } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ type AnswerButtonsProps = {
   approve: string;
   decline: string;
   /** Real money: a yes goes through a fresh sign-in with a second factor first. */
-  freshCheck?: { note: string } | null;
+  freshCheck?: { note: string; setUp: { href: string; label: string } } | null;
   /** The demo's spoken answer, when this deployment has speech. */
   voice?: ReactNode;
 };
@@ -57,9 +58,12 @@ export function AnswerButtons({ locale, proposalId, approve, decline, freshCheck
         </Button>
       </form>
       {freshCheck ? (
-        <p className="flex min-w-0 basis-full items-center gap-1.5 text-sm text-muted-foreground">
+        <p className="flex min-w-0 basis-full flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
           <ShieldCheckIcon aria-hidden="true" className="size-4 shrink-0" />
           <span className="min-w-0">{freshCheck.note}</span>
+          <Link href={freshCheck.setUp.href} className="inline-flex min-h-11 items-center font-medium text-primary underline underline-offset-4">
+            {freshCheck.setUp.label}
+          </Link>
         </p>
       ) : null}
       {voice}

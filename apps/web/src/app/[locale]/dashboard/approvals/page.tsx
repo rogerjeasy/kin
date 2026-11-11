@@ -30,7 +30,7 @@ import { circleSlots } from "@/content/circle/words";
 import { wishesAsking, wishNameBook } from "@/content/circle/wishes";
 import { wishCitation } from "@/components/dashboard/words/wish-words";
 import { circleNotices } from "@/content/dashboard-notices";
-import { dashboardRoutes, mandatesRoute, shiftPermissionsRoute } from "@/content/dashboard-routes";
+import { dashboardRoutes, mandatesRoute, securityRoute, shiftPermissionsRoute } from "@/content/dashboard-routes";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
@@ -119,7 +119,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
                     proposalId={view.proposal.id}
                     approve={common.approve}
                     decline={common.decline}
-                    freshCheck={circle.circle.demo ? null : { note: approvals.freshCheckNote }}
+                    freshCheck={circle.circle.demo ? null : { note: approvals.freshCheckNote, setUp: { href: localizedPath(locale, securityRoute), label: approvals.setUpAuthenticator } }}
                     voice={
                       circle.circle.demo && speechOn ? (
                         <VoiceAnswer locale={locale} proposalId={view.proposal.id} copy={approvals.voice} speech={dictionary.dashboard.speech} outcomes={circleNotices(notices, context.demoPayee ?? null)} />

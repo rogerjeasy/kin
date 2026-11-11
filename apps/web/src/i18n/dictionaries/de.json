@@ -1276,7 +1276,8 @@
         "signedInAs": "Angemeldet als",
         "settings": "Kreis und Vereinbarung",
         "website": "Kin-Website",
-        "signOut": "Abmelden"
+        "signOut": "Abmelden",
+        "security": "Anmeldesicherheit"
       },
       "demo": {
         "label": "Demo-Kreis",
@@ -1603,7 +1604,8 @@
         "heardApprove": "Kin hat Ja gehört. Hören Sie zu und bestätigen Sie per Stimme.",
         "heardReject": "Kin hat Nein gehört. Hören Sie zu und bestätigen Sie per Stimme.",
         "confirm": "Per Stimme bestätigen"
-      }
+      },
+      "setUpAuthenticator": "Authentifizierungs-App einrichten"
     },
     "bills": {
       "title": "Rechnungen",
@@ -4251,6 +4253,44 @@
       },
       "alerted": "Kin hat {alerted} gewarnt.",
       "said": "Was gesagt wurde: „{claim}“"
+    },
+    "security": {
+      "meta": {
+        "title": "Anmeldesicherheit",
+        "description": "Richten Sie die Authentifizierungs-App ein, nach der Kin fragt, bevor Sie echtes Geld freigeben."
+      },
+      "title": "Anmeldesicherheit",
+      "lede": "Bevor Sie echtem Geld zustimmen, bittet Kin Sie, sich erneut mit einem Code aus einer Authentifizierungs-App auf Ihrem Telefon anzumelden. Niemand kann eine Zahlung allein mit Ihrem Passwort freigeben.",
+      "panel": "Authentifizierungs-App",
+      "status": {
+        "enabled": "Ihre Authentifizierungs-App ist eingerichtet. Kin fragt bei jeder Freigabe einer echten Zahlung nach ihrem Code.",
+        "not_set": "Sie haben noch keine Authentifizierungs-App. Solange keine eingerichtet ist, können Sie keine echten Zahlungen freigeben.",
+        "demo": "In der Demo bewegen Freigaben simuliertes Geld und brauchen keinen zweiten Faktor. In einem echten Kreis richtet jede Person hier eine Authentifizierungs-App ein.",
+        "sign_in_again": "Um Ihre App einzurichten, müssen Sie sich zuerst erneut anmelden.",
+        "unavailable": "Kin erreicht den Anmeldedienst gerade nicht. Bitte versuchen Sie es gleich noch einmal."
+      },
+      "signInAgain": "Erneut anmelden",
+      "begin": "Authentifizierungs-App einrichten",
+      "beginning": "Wird gestartet…",
+      "scan": "Scannen Sie diesen Code mit einer Authentifizierungs-App, etwa Google Authenticator, Microsoft Authenticator oder 1Password.",
+      "qrLabel": "QR-Code für Ihre Authentifizierungs-App",
+      "manual": "Oder geben Sie diesen Schlüssel in die App ein",
+      "code": "Der sechsstellige Code aus Ihrer App",
+      "codeHint": "Der Code ändert sich alle 30 Sekunden. Geben Sie den aktuellen ein.",
+      "confirm": "Bestätigen",
+      "confirming": "Wird geprüft…",
+      "done": "Fertig. Ihre Authentifizierungs-App ist eingerichtet. Wenn Sie das nächste Mal eine echte Zahlung freigeben, fragt Kin nach ihrem Code.",
+      "copy": "Kopieren",
+      "copied": "Kopiert",
+      "copyFailed": "Markieren Sie den Schlüssel und kopieren Sie ihn selbst",
+      "errors": {
+        "wrong_code": "Dieser Code passt nicht. Prüfen Sie die Uhrzeit Ihres Telefons und geben Sie den neuesten Code ein.",
+        "too_many_tries": "Zu viele Versuche. Warten Sie einige Minuten und versuchen Sie es dann erneut.",
+        "sign_in_again": "Ihre Anmeldung ist zu alt, um Ihr Konto zu ändern. Melden Sie sich erneut an und richten Sie dann Ihre App ein.",
+        "unavailable": "Kin erreicht den Anmeldedienst gerade nicht. Bitte versuchen Sie es gleich noch einmal.",
+        "refused": "Das ist hier nicht möglich. Wenn Ihre App schon eingerichtet ist, muss sich nichts ändern.",
+        "invalid": "Etwas wurde nicht wie erwartet gesendet. Bitte versuchen Sie es erneut."
+      }
     }
   },
   "aiProvenance": {

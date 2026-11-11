@@ -338,6 +338,40 @@ describe("sign-in", () => {
   });
 });
 
+describe("account types and the authenticator app", () => {
+  const webStatements = () =>
+    Object.values(web.findResources("AWS::IAM::Policy")).flatMap(
+      (policy) => policy["Properties"]["PolicyDocument"]["Statement"] as { Action: string | string[]; Resource: unknown }[],
+    );
+
+  it("let a person's own token change their own account, for setting up an authenticator app", () => {
+    data.hasResourceProperties("AWS::Cognito::UserPoolClient", {
+      AllowedOAuthScopes: Match.arrayWith(["openid", "email", "profile", "aws.cognito.signin.user.admin"]),
+    });
+  });
+
+  it("keep the verified address until a new one is verified too", () => {
+    data.hasResourceProperties("AWS::Cognito::UserPool", {
+      UserAttributeUpdateSettings: { AttributesRequireVerificationBeforeUpdate: ["email"] },
+    });
+  });
+
+  it("let the web app add people to groups in Kin's pool only, named by KinData's parameter", () => {
+    data.hasResourceProperties("AWS::SSM::Parameter", { Name: "kin-web-auth-user-pool-arn", Value: { "Fn::GetAtt": [Match.anyValue(), "Arn"] } });
+    const grants = webStatements().filter((statement) => [statement.Action].flat().some((action) => action.startsWith("cognito-idp:")));
+    expect(grants).toHaveLength(1);
+    expect(grants[0]?.Action).toBe("cognito-idp:AdminAddUserToGroup");
+    expect(JSON.stringify(grants[0]?.Resource)).toContain("SsmParameterValuekinwebauthuserpoolarn");
+    const [service] = Object.values(web.findResources("AWS::AppRunner::Service"));
+    const variables = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"]["RuntimeEnvironmentVariables"];
+    expect(variables).toContainEqual({ Name: "KIN_AUTH_ASSIGN_GROUPS", Value: "on" });
+  });
+
+  it("add no Lambda trigger to the pool: the web app grants the default type at the first sign-in", () => {
+    data.hasResourceProperties("AWS::Cognito::UserPool", { LambdaConfig: Match.absent() });
+  });
+});
+
 describe("sign-in with a code by email", () => {
   it("stays off, with Cognito's own sender and passwords only, until a Gmail sender is set", () => {
     data.hasResourceProperties("AWS::Cognito::UserPool", {
@@ -427,6 +461,7 @@ describe("the web app", () => {
     const variables = image["RuntimeEnvironmentVariables"] as { Name: string; Value: unknown }[];
 
     expect(variables.map((variable) => variable.Name).toSorted()).toEqual([
+      "KIN_AUTH_ASSIGN_GROUPS",
       "KIN_AUTH_CLIENT_ID",
       "KIN_AUTH_ISSUER",
       "KIN_AUTH_LOGIN_URL",
@@ -490,7 +525,8 @@ describe("the web app", () => {
     );
     const actions = statements.flatMap((statement) => [statement.Action].flat());
 
-    expect(actions.filter((action) => !action.startsWith("ecr:")).toSorted()).toEqual(["kms:Decrypt", "secretsmanager:GetSecretValue"]);
+    // Beside the secrets, the one change it may make to the user pool (pinned under "account types").
+    expect(actions.filter((action) => !action.startsWith("ecr:")).toSorted()).toEqual(["cognito-idp:AdminAddUserToGroup", "kms:Decrypt", "secretsmanager:GetSecretValue"]);
     expect(actions).not.toContain("ecr:PutImage");
     const read = statements.find((statement) => statement.Action === "secretsmanager:GetSecretValue");
     expect(read?.Resource).toHaveLength(3);
@@ -716,6 +752,7 @@ describe("top-ups", () => {
 
   it("let the web app send to the PayPal inbox and nothing more, with the client ID beside the client secret", () => {
     expect(actionsOf(web).filter((action) => !action.startsWith("ecr:")).toSorted()).toEqual([
+      "cognito-idp:AdminAddUserToGroup",
       "kms:Decrypt",
       "kms:Decrypt",
       "kms:GenerateDataKey",

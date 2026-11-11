@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { AuthError, exchangeCode } from "@kin/auth";
 import type { NextRequest } from "next/server";
 
+import { withOwedAccountTypes } from "@/server/auth/account-groups";
 import { authConfig, sessionVerifier } from "@/server/auth/config";
 import { COOKIES, clearedSignInCookie, sessionCookies } from "@/server/auth/cookies";
 import { signInPath } from "@/server/auth/next-path";
@@ -32,9 +33,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const tokens = await exchangeCode(config, code, flow.verifier);
-    const session = await sessionVerifier().verify(tokens, { nonce: flow.nonce });
+    const exchanged = await exchangeCode(config, code, flow.verifier);
+    const session = await sessionVerifier().verify(exchanged, { nonce: flow.nonce });
     if (!session) return back("failed");
+    // The nonce is checked on the tokens of this sign-in; renewed tokens carry the same person and sign-in.
+    const { tokens } = await withOwedAccountTypes({ session, tokens: exchanged }, exchanged.refreshToken);
     const cookies = [clearedSignInCookie(), ...sessionCookies(tokens)];
     if (!flow.stepUp) return redirectWithCookies(flow.next, config.webOrigin, cookies);
     // A step-up counts only for the person who asked for it. Someone else

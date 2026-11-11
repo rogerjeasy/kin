@@ -60,6 +60,9 @@ export const verifyRoute = "/dashboard/record/verify";
 /** Connected assistants: a member's own AI assistant and an agency's software, which read and propose and never approve. A screen within the circle's section. */
 export const connectionsRoute = "/dashboard/circle/connections";
 
+/** Sign-in security: the person's own authenticator app, which a yes to real money asks for. A screen within the circle's section, open to every role. */
+export const securityRoute = "/dashboard/circle/security";
+
 /** The sidebar, in order. The parent's seat moves Listen to the front (`sectionsForRole`). */
 export const dashboardNav = ["overview", "shifts", "approvals", "bills", "fairness", "record", "listen", "circle"] as const satisfies readonly DashboardSection[];
 

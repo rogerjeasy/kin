@@ -1,6 +1,8 @@
 import { Suspense, type ReactNode } from "react";
 
 import { CONTENT_ID } from "@/components/layout/skip-link";
+import { securityRoute } from "@/content/dashboard-routes";
+import { localizedPath } from "@/i18n/routing";
 
 import { BottomNav } from "./bottom-nav";
 import { DemoBanner } from "./demo-banner";
@@ -34,7 +36,12 @@ export function AppShell({ children, ...context }: AppShellProps) {
             {context.presenceHold ? <PresenceHoldBanner hold={context.presenceHold} /> : null}
             {context.wishesNotice ? <WishesBanner notice={context.wishesNotice} /> : null}
             <Suspense fallback={null}>
-              <NoticeBanner notices={context.notices} dismiss={context.dictionary.dashboard.notices.dismiss} />
+              <NoticeBanner
+                notices={context.notices}
+                dismiss={context.dictionary.dashboard.notices.dismiss}
+                // A yes refused for lack of a second factor leads to setting one up, not to a dead end.
+                links={{ stepUpMissing: { href: localizedPath(context.locale, securityRoute), label: context.dictionary.dashboard.approvals.setUpAuthenticator } }}
+              />
             </Suspense>
             {children}
           </div>

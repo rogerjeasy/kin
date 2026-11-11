@@ -7,6 +7,7 @@ import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overf
 import { greetingFor } from "./support/greeting";
 import { IDENTITY_PROVIDER } from "./support/identity-provider";
 import { seedRealProposal } from "./support/real-proposal";
+import { totpCode } from "./support/totp";
 import { laptop, viewports } from "./support/viewports";
 
 const { dashboard } = english;
@@ -110,8 +111,59 @@ test.describe("a person's first agreement", () => {
 // payments into it.
 test.describe("a yes to real money", () => {
   test.use({ viewport: { width: laptop.width, height: laptop.height } });
-  const { approvals, notices, common } = dashboard;
+  const { approvals, notices, common, security } = dashboard;
   const card = (page: import("@playwright/test").Page, name: string) => page.getByRole("article", { name });
+
+  test("is refused, with the way to set up an authenticator app, while the person has none", async ({ page }) => {
+    await seedRealProposal("Electric Co", 3_100);
+    await page.goto("/dashboard/approvals");
+    await card(page, "Electric Co").getByRole("button", { name: common.approve }).click();
+
+    await expect(page).toHaveURL("/dashboard/approvals?notice=stepUpMissing");
+    const notice = page.getByRole("status").filter({ hasText: notices.stepUpMissing });
+    await notice.getByRole("link", { name: approvals.setUpAuthenticator }).click();
+    await expect(page).toHaveURL("/dashboard/circle/security");
+    await expect(page.getByRole("main")).toContainText(security.status.not_set);
+  });
+
+  test("asks first for an authenticator app, set up with the person's own code", async ({ page, request }) => {
+    await page.goto("/dashboard/circle/security");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(security.title);
+    await page.getByRole("button", { name: security.begin }).click();
+    await expect(page.getByRole("img", { name: security.qrLabel })).toBeVisible();
+    const secret = (await page.getByLabel(security.manual).inputValue()).replace(/\s/g, "");
+    expect(secret).toMatch(/^[A-Z2-7]{16,}$/);
+
+    await page.getByLabel(security.code).fill("000000" === totpCode(secret) ? "111111" : "000000");
+    await page.getByRole("button", { name: security.confirm }).click();
+    await expect(page.getByRole("alert")).toContainText(security.errors.wrong_code);
+
+    await page.getByLabel(security.code).fill(totpCode(secret));
+    await page.getByRole("button", { name: security.confirm }).click();
+    await expect(page.getByRole("status").filter({ hasText: security.done })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("main")).toContainText(security.status.enabled);
+    await expect(page.getByRole("button", { name: security.begin })).toHaveCount(0);
+    const account = (await (await request.get(`http://localhost:${IDENTITY_PROVIDER.port}/test/account`)).json()) as { authenticator: boolean };
+    expect(account.authenticator).toBe(true);
+  });
+
+  test("refuses to replace an authenticator app that is set up, and to start from another site", async ({ page, request }) => {
+    await page.goto("/dashboard/circle/security");
+    const begin = await page.evaluate(async () => (await fetch("/api/account/authenticator", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ operation: "begin" }) })).status);
+    expect(begin).toBe(403);
+    const foreign = await request.post("/api/account/authenticator", { data: { operation: "begin" }, headers: { origin: "https://evil.example" } });
+    expect(foreign.status()).toBe(403);
+  });
+
+  for (const viewport of viewports) {
+    test(`shows sign-in security without overflow on a ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto("/dashboard/circle/security");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(security.title);
+      await expectNoHorizontalOverflow(page);
+    });
+  }
 
   test("is recorded only after a fresh sign-in with a second factor", async ({ page }) => {
     await seedRealProposal("City Water", 4_000);

@@ -1276,7 +1276,8 @@
         "signedInAs": "Accesso effettuato come",
         "settings": "Cerchia e accordo",
         "website": "Sito di Kin",
-        "signOut": "Esci"
+        "signOut": "Esci",
+        "security": "Sicurezza dell’accesso"
       },
       "demo": {
         "label": "Cerchia dimostrativa",
@@ -1603,7 +1604,8 @@
         "heardApprove": "Kin ha sentito sì. Ascolta, poi conferma a voce.",
         "heardReject": "Kin ha sentito no. Ascolta, poi conferma a voce.",
         "confirm": "Conferma a voce"
-      }
+      },
+      "setUpAuthenticator": "Configura la tua app di autenticazione"
     },
     "bills": {
       "title": "Bollette",
@@ -4251,6 +4253,44 @@
       },
       "alerted": "Kin ha avvisato {alerted}.",
       "said": "Cosa è stato detto: «{claim}»"
+    },
+    "security": {
+      "meta": {
+        "title": "Sicurezza dell’accesso",
+        "description": "Configura l’app di autenticazione che Kin chiede prima che tu approvi denaro reale."
+      },
+      "title": "Sicurezza dell’accesso",
+      "lede": "Prima che tu dica sì a denaro reale, Kin ti chiede di accedere di nuovo con un codice di un’app di autenticazione sul tuo telefono. Nessuno può approvare un pagamento con la sola tua password.",
+      "panel": "App di autenticazione",
+      "status": {
+        "enabled": "La tua app di autenticazione è configurata. Kin chiede il suo codice ogni volta che approvi un pagamento reale.",
+        "not_set": "Non hai ancora un’app di autenticazione. Finché non ne configuri una, non puoi approvare pagamenti reali.",
+        "demo": "Nella demo le approvazioni muovono denaro simulato e non richiedono un secondo fattore. In un cerchio reale, ogni persona configura qui un’app di autenticazione.",
+        "sign_in_again": "Per configurare la tua app, Kin ha bisogno che tu acceda di nuovo.",
+        "unavailable": "Kin non riesce a raggiungere il servizio di accesso in questo momento. Riprova tra poco."
+      },
+      "signInAgain": "Accedi di nuovo",
+      "begin": "Configura un’app di autenticazione",
+      "beginning": "Avvio…",
+      "scan": "Scansiona questo codice con un’app di autenticazione, come Google Authenticator, Microsoft Authenticator o 1Password.",
+      "qrLabel": "Codice QR per la tua app di autenticazione",
+      "manual": "Oppure inserisci questa chiave nell’app",
+      "code": "Il codice di sei cifre mostrato dalla tua app",
+      "codeHint": "Il codice cambia ogni 30 secondi. Inserisci quello che vedi adesso.",
+      "confirm": "Conferma",
+      "confirming": "Verifica…",
+      "done": "Fatto. La tua app di autenticazione è configurata. La prossima volta che approvi un pagamento reale, Kin chiederà il suo codice.",
+      "copy": "Copia",
+      "copied": "Copiato",
+      "copyFailed": "Seleziona la chiave e copiala tu",
+      "errors": {
+        "wrong_code": "Il codice non corrisponde. Controlla l’ora del telefono e inserisci il codice più recente.",
+        "too_many_tries": "Troppi tentativi. Attendi qualche minuto, poi riprova.",
+        "sign_in_again": "Il tuo accesso è troppo vecchio per modificare l’account. Accedi di nuovo, poi configura l’app.",
+        "unavailable": "Kin non riesce a raggiungere il servizio di accesso in questo momento. Riprova tra poco.",
+        "refused": "Non è possibile da qui. Se la tua app è già configurata, non serve cambiare nulla.",
+        "invalid": "Qualcosa non è stato inviato come previsto. Riprova."
+      }
     }
   },
   "aiProvenance": {

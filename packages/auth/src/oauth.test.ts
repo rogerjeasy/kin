@@ -38,7 +38,7 @@ describe("the sign-in address", () => {
       response_type: "code",
       client_id: "client-1",
       redirect_uri: "https://kin.example/auth/callback",
-      scope: "openid email profile",
+      scope: "openid email profile aws.cognito.signin.user.admin",
       state: "state-1",
       nonce: "nonce-1",
       code_challenge: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",

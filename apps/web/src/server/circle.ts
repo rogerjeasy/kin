@@ -1,3 +1,4 @@
+import type { Session } from "@kin/auth";
 import {
   CircleNotFoundError,
   acceptMyInvitations,
@@ -43,12 +44,16 @@ function memberships(userId: string): Promise<Membership[]> {
 
 /** Records the person's visit, joins the circles that invited them, and returns their first. */
 async function arrive(viewer: Extract<Viewer, { kind: "person" }>): Promise<Membership | null> {
-  const { session } = viewer;
-  return asPerson(databases().app, viewer.userId, async (tx) => {
+  const [first] = await joinInvitedCircles(viewer.session);
+  return first ?? null;
+}
+
+/** Records the person's visit, joins the circles that invited their verified address, and returns every seat they hold. */
+export function joinInvitedCircles(session: Session): Promise<Membership[]> {
+  return asPerson(databases().app, session.userId, async (tx) => {
     await recordSignIn(tx, { id: session.userId, email: session.email, emailVerified: session.emailVerified, name: session.name });
     await acceptMyInvitations(tx);
-    const [first] = await membershipsOf(tx, viewer.userId);
-    return first ?? null;
+    return membershipsOf(tx, session.userId);
   });
 }
 

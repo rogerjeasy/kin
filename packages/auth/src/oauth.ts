@@ -7,7 +7,12 @@ import { STEP_UP_LEVEL } from "./step-up.ts";
 /** The path the identity provider sends a person back to after signing in. */
 export const CALLBACK_PATH = "/auth/callback";
 
-const SCOPES = "openid email profile";
+/**
+ * `aws.cognito.signin.user.admin` lets the access token change its own person
+ * and nobody else: Kin needs it to set up an authenticator app.
+ */
+export const USER_SELF_SERVICE_SCOPE = "aws.cognito.signin.user.admin";
+const SCOPES = `openid email profile ${USER_SELF_SERVICE_SCOPE}`;
 
 /** The languages Cognito's managed login pages are shown in, among Kin's own. */
 const LOGIN_LANGUAGES = new Set(["en", "fr", "de", "it", "es"]);

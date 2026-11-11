@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, GlobeIcon, LogOutIcon, ScrollTextIcon, UsersIcon } from "lucide-react";
+import { ChevronDownIcon, GlobeIcon, LogOutIcon, ScrollTextIcon, ShieldCheckIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
@@ -26,7 +26,7 @@ type AccountMenuProps = {
   viewer: ShellContext["viewer"];
   /** The record is on a phone's menu rather than its bottom bar; `null` when the viewer may not open it. */
   record: { href: string; label: string } | null;
-  links: { circle: string; website: string };
+  links: { circle: string; security: string; website: string };
 };
 
 const itemClass = "min-h-11 gap-3 px-3 text-base";
@@ -59,6 +59,14 @@ export function AccountMenu({ locale, copy, leaveLabel, viewer, record, links }:
             {copy.settings}
           </Link>
         </DropdownMenuItem>
+        {viewer.kind === "person" ? (
+          <DropdownMenuItem asChild className={itemClass}>
+            <Link href={links.security}>
+              <ShieldCheckIcon aria-hidden="true" />
+              {copy.security}
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
         {record ? (
           <DropdownMenuItem asChild className={`${itemClass} lg:hidden`}>
             <Link href={record.href}>

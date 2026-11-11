@@ -1276,7 +1276,8 @@
         "signedInAs": "Sesión iniciada como",
         "settings": "Círculo y acuerdo",
         "website": "Sitio web de Kin",
-        "signOut": "Cerrar sesión"
+        "signOut": "Cerrar sesión",
+        "security": "Seguridad del acceso"
       },
       "demo": {
         "label": "Círculo de demostración",
@@ -1603,7 +1604,8 @@
         "heardApprove": "Kin oyó sí. Escucha y confirma con la voz.",
         "heardReject": "Kin oyó no. Escucha y confirma con la voz.",
         "confirm": "Confirmar con la voz"
-      }
+      },
+      "setUpAuthenticator": "Configura tu aplicación de autenticación"
     },
     "bills": {
       "title": "Facturas",
@@ -4251,6 +4253,44 @@
       },
       "alerted": "Kin avisó a {alerted}.",
       "said": "Lo que se dijo: «{claim}»"
+    },
+    "security": {
+      "meta": {
+        "title": "Seguridad del acceso",
+        "description": "Configura la aplicación de autenticación que Kin pide antes de que apruebes dinero real."
+      },
+      "title": "Seguridad del acceso",
+      "lede": "Antes de que digas que sí a dinero real, Kin te pide que vuelvas a iniciar sesión con un código de una aplicación de autenticación en tu teléfono. Nadie puede aprobar un pago solo con tu contraseña.",
+      "panel": "Aplicación de autenticación",
+      "status": {
+        "enabled": "Tu aplicación de autenticación está configurada. Kin pide su código cada vez que apruebas un pago real.",
+        "not_set": "Todavía no tienes una aplicación de autenticación. Hasta que configures una, no puedes aprobar pagos reales.",
+        "demo": "En la demo, las aprobaciones mueven dinero simulado y no necesitan un segundo factor. En un círculo real, cada persona configura aquí una aplicación de autenticación.",
+        "sign_in_again": "Para configurar tu aplicación, Kin necesita que vuelvas a iniciar sesión primero.",
+        "unavailable": "Kin no puede contactar con el servicio de acceso ahora mismo. Inténtalo de nuevo en un momento."
+      },
+      "signInAgain": "Volver a iniciar sesión",
+      "begin": "Configurar una aplicación de autenticación",
+      "beginning": "Iniciando…",
+      "scan": "Escanea este código con una aplicación de autenticación, como Google Authenticator, Microsoft Authenticator o 1Password.",
+      "qrLabel": "Código QR para tu aplicación de autenticación",
+      "manual": "O escribe esta clave en la aplicación",
+      "code": "El código de seis cifras que muestra tu aplicación",
+      "codeHint": "El código cambia cada 30 segundos. Escribe el que ves ahora.",
+      "confirm": "Confirmar",
+      "confirming": "Comprobando…",
+      "done": "Listo. Tu aplicación de autenticación está configurada. La próxima vez que apruebes un pago real, Kin pedirá su código.",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "copyFailed": "Selecciona la clave y cópiala tú",
+      "errors": {
+        "wrong_code": "Ese código no coincide. Comprueba la hora de tu teléfono y escribe el código más reciente.",
+        "too_many_tries": "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
+        "sign_in_again": "Tu inicio de sesión es demasiado antiguo para cambiar tu cuenta. Vuelve a iniciar sesión y luego configura tu aplicación.",
+        "unavailable": "Kin no puede contactar con el servicio de acceso ahora mismo. Inténtalo de nuevo en un momento.",
+        "refused": "No se puede hacer desde aquí. Si tu aplicación ya está configurada, no hay que cambiar nada.",
+        "invalid": "Algo no se envió como se esperaba. Inténtalo de nuevo."
+      }
     }
   },
   "aiProvenance": {

@@ -1,10 +1,16 @@
 export { ACCOUNT_TYPES } from "./account-types.ts";
+export { DEFAULT_ACCOUNT_TYPE, GRANTABLE_ACCOUNT_TYPES, accountTypesOwed } from "./account-groups.ts";
+export type { GrantableAccountType, HeldSeat } from "./account-groups.ts";
+export { AUTHENTICATOR_CODE, AuthenticatorError, authenticatorUri, cognitoAuthenticator } from "./authenticator.ts";
+export type { Authenticator, AuthenticatorErrorReason } from "./authenticator.ts";
+export { UserPoolError, userPoolOf } from "./user-pool.ts";
+export type { UserPool } from "./user-pool.ts";
 export { caregiverAccess } from "./caregiver-access.ts";
 export type { BillingAccount, CaregiverAction } from "./caregiver-access.ts";
 export type { AccountType } from "./account-types.ts";
 export { AuthError } from "./auth-error.ts";
 export type { AuthErrorReason } from "./auth-error.ts";
-export { CALLBACK_PATH, authorizeUrl, callbackUrl, exchangeCode, logoutUrl, parseAuthScreen, parseTokenSet, refreshTokens } from "./oauth.ts";
+export { CALLBACK_PATH, USER_SELF_SERVICE_SCOPE, authorizeUrl, callbackUrl, exchangeCode, logoutUrl, parseAuthScreen, parseTokenSet, refreshTokens } from "./oauth.ts";
 export type { AuthScreen, Fetch, TokenSet } from "./oauth.ts";
 export { createSignInSecrets, pkceChallenge } from "./pkce.ts";
 export type { RandomBytes, SignInSecrets } from "./pkce.ts";

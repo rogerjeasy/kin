@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { KnotMark } from "@/components/brand/knot-mark";
 import { LanguageMenu } from "@/components/layout/language-menu";
-import { dashboardRoutes } from "@/content/dashboard-routes";
+import { dashboardRoutes, securityRoute } from "@/content/dashboard-routes";
 import { routes } from "@/content/site-routes";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
@@ -51,7 +51,7 @@ export function TopBar({ locale, dictionary, clock, pause, pauseState, viewer, c
             leaveLabel={shell.demo.leave}
             viewer={viewer}
             record={sections.includes("record") ? { href: path(dashboardRoutes.record), label: shell.nav.record } : null}
-            links={{ circle: path(dashboardRoutes.circle), website: path(routes.home) }}
+            links={{ circle: path(dashboardRoutes.circle), security: path(securityRoute), website: path(routes.home) }}
           />
         </div>
       </div>

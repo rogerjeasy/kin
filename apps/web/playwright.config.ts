@@ -90,6 +90,8 @@ export default defineConfig({
         KIN_AUTH_ISSUER: identityProvider,
         KIN_AUTH_LOGIN_URL: identityProvider,
         KIN_AUTH_CLIENT_ID: IDENTITY_PROVIDER.clientId,
+        // People are put in their account groups through the stand-in's API, as in AWS.
+        KIN_AUTH_ASSIGN_GROUPS: "on",
         KIN_WEB_ORIGIN: baseURL,
         // The app holds only the person's role and the demo provisioner, as in AWS.
         ...appDatabase,

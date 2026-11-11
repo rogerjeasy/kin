@@ -1,6 +1,7 @@
 import { AuthError, refreshTokens } from "@kin/auth";
 import type { NextRequest } from "next/server";
 
+import { withOwedAccountTypes } from "@/server/auth/account-groups";
 import { authConfig, sessionVerifier } from "@/server/auth/config";
 import { COOKIES, clearedSessionCookies, sessionCookies } from "@/server/auth/cookies";
 import { safeNextPath, signInPath } from "@/server/auth/next-path";
@@ -20,11 +21,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const tokens = await refreshTokens(config, refreshToken);
-    const session = await sessionVerifier().verify(tokens);
+    const renewed = await refreshTokens(config, refreshToken);
+    const session = await sessionVerifier().verify(renewed);
     if (!session) {
       return redirectWithCookies(signInPath(next, "failed"), config.webOrigin, clearedSessionCookies());
     }
+    const { tokens } = await withOwedAccountTypes({ session, tokens: renewed }, refreshToken);
     return redirectWithCookies(next, config.webOrigin, sessionCookies(tokens));
   } catch (error) {
     if (!(error instanceof AuthError)) throw error;

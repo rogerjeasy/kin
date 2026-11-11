@@ -64,6 +64,11 @@ export class Identity extends Construct {
             lambdaTriggers: { customEmailSender: sender.function },
             signInPolicy: { allowedFirstAuthFactors: { password: true, emailOtp: true } },
           }),
+      // A person's own token may change their own attributes (the self-service
+      // scope that setting up an authenticator needs). A new address takes the
+      // place of the verified one only once it is verified too, so an
+      // invitation is never matched to an address nobody proved.
+      keepOriginal: { email: true },
       userVerification: {
         emailSubject: "Your Kin code",
         emailBody: "Your Kin code is {####}. If you did not ask for it, you can ignore this email.",
@@ -99,6 +104,9 @@ export class Identity extends Construct {
           cognito.OAuthScope.OPENID,
           cognito.OAuthScope.EMAIL,
           cognito.OAuthScope.PROFILE,
+          // Lets a person's access token change their own account and nobody
+          // else's: setting up an authenticator app needs it.
+          cognito.OAuthScope.COGNITO_ADMIN,
         ],
         callbackUrls: config.webOrigins.map((origin) => `${origin}/auth/callback`),
         logoutUrls: config.webOrigins.map((origin) => `${origin}/`),
@@ -114,6 +122,7 @@ export class Identity extends Construct {
       authIssuer: `https://cognito-idp.${config.region}.amazonaws.com/${this.userPool.userPoolId}`,
       authLoginUrl: this.domain.baseUrl(),
       authClientId: this.webClient.userPoolClientId,
+      authUserPoolArn: this.userPool.userPoolArn,
     };
     for (const [key, parameterName] of Object.entries(WEB_SETTINGS) as [keyof typeof WEB_SETTINGS, string][]) {
       new ssm.StringParameter(this, `WebSetting-${key}`, { parameterName, stringValue: webSettings[key] });

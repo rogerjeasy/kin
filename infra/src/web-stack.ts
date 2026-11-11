@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import type { InfraConfig } from "./config.ts";
 import { DATABASE_SETTINGS, PAYPAL_SETTINGS, SHARED_CONNECTOR, TWILIO_SETTINGS } from "./database-settings.ts";
 import { WEB_SETTINGS } from "./web-settings.ts";
+import { ADD_TO_GROUP } from "./account-groups.ts";
 
 /** Claude Opus 4.6 as a US cross-region inference profile, and the foundation model it routes to. Matches `BEDROCK_INVOKE_DEFAULT_MODEL` in `@kin/config`. */
 const CLAUDE_INFERENCE_PROFILE = "us.anthropic.claude-opus-4-6-v1";
@@ -67,6 +68,8 @@ export class WebStack extends Stack {
       { name: "KIN_DATABASE_TLS", value: "require" },
       // The hosted app is the demo environment (docs/architecture.md section 20.3).
       { name: "KIN_DEMO_CIRCLES", value: "on" },
+      // The instance role below may add people to account type groups in Kin's pool.
+      { name: "KIN_AUTH_ASSIGN_GROUPS", value: "on" },
     ];
 
     // The web app is a person's agent: it holds the person's role and the
@@ -81,6 +84,11 @@ export class WebStack extends Stack {
       assumedBy: new iam.ServicePrincipal("tasks.apprunner.amazonaws.com"),
     });
     instance.addToPolicy(new iam.PolicyStatement({ actions: ["secretsmanager:GetSecretValue"], resources: [appSecret, provisionerSecret, demoSessionKey] }));
+    // The only change the web app makes to Kin's user pool: a person who holds
+    // a caregiver's seat, or an account made before every sign-up got the
+    // default type, is added to that group (packages/auth `accountTypesOwed`).
+    // IAM cannot limit the group, so the code names the only two it grants.
+    instance.addToPolicy(new iam.PolicyStatement({ actions: [ADD_TO_GROUP], resources: [setting(WEB_SETTINGS.authUserPoolArn)] }));
     instance.addToPolicy(
       new iam.PolicyStatement({
         actions: ["kms:Decrypt"],

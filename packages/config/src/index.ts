@@ -1,4 +1,5 @@
 export { AUTH_ENV, readAuthConfig } from "./auth-config.ts";
+export { ACCOUNT_GROUPS_ENV, readAccountGroupsEnabled } from "./account-groups-config.ts";
 export type { AuthConfig } from "./auth-config.ts";
 export { ConfigError } from "./config-error.ts";
 export { DATABASE_ENV, DATABASE_ROLES, hasDatabaseConfig, readDatabaseConfig } from "./database-config.ts";

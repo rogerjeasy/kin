@@ -64,6 +64,20 @@ test("signing in opens the person's own account, by the name and address it hold
   await expect(page.getByRole("main")).toContainText(IDENTITY_PROVIDER.person.email);
 });
 
+test("signing in puts the person in the default account group, and the session already carries it", async ({ page, request }) => {
+  await signIn(page);
+
+  // The stand-in, like Cognito, puts no one in a group: Kin added the person with the web app's own identity.
+  const account = (await (await request.get(`http://localhost:${IDENTITY_PROVIDER.port}/test/account`)).json()) as { groups: string[] };
+  expect(account.groups).toContain("family_member");
+  expect(account.groups).not.toContain("administrator");
+  expect(account.groups).not.toContain("professional");
+  // The tokens Kin keeps were renewed after the group was added, so they name it.
+  const access = (await page.context().cookies()).find((cookie) => cookie.name === "__Host-kin-access");
+  const claims = JSON.parse(Buffer.from(access?.value.split(".")[1] ?? "", "base64url").toString("utf8")) as Record<string, unknown>;
+  expect(claims["cognito:groups"]).toContain("family_member");
+});
+
 test("the session lives in cookies that page scripts cannot read", async ({ page }) => {
   await signIn(page);
 

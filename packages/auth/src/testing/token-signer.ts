@@ -40,6 +40,8 @@ export function cognitoClaims(options: {
   jti?: string;
   /** When the person last signed in, if not at `now`. */
   authTime?: Date;
+  /** The access token's scopes, as one space-separated string. */
+  scope?: string;
 }): { access: Record<string, unknown>; id: Record<string, unknown> } {
   const iat = Math.floor((options.now ?? new Date()).getTime() / 1000);
   const exp = iat + (options.lifetimeSeconds ?? 3600);
@@ -47,7 +49,7 @@ export function cognitoClaims(options: {
   const stepUp = { ...(options.amr ? { amr: options.amr } : {}), ...(options.acr ? { acr: options.acr } : {}) };
   const common = { iss: options.issuer, sub: options.sub, iat, exp, auth_time: authTime, ...stepUp };
   return {
-    access: { ...common, token_use: "access", client_id: options.clientId, scope: "openid email profile", "cognito:groups": options.groups ?? [] },
+    access: { ...common, token_use: "access", client_id: options.clientId, scope: options.scope ?? "openid email profile aws.cognito.signin.user.admin", "cognito:groups": options.groups ?? [] },
     id: {
       ...common,
       token_use: "id",
