@@ -184,6 +184,12 @@ importers:
 
   apps/demo-merchant:
     dependencies:
+      '@kin/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@kin/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@kin/domain':
         specifier: workspace:*
         version: link:../../packages/domain
@@ -331,6 +337,9 @@ importers:
       '@aws-sdk/client-secrets-manager':
         specifier: 3.1143.0
         version: 3.1143.0
+      '@kin/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@kin/config':
         specifier: workspace:*
         version: link:../../packages/config

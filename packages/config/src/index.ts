@@ -6,6 +6,8 @@ export type { DatabaseConfig, DatabaseCredentials, DatabaseRole } from "./databa
 export { DEMO_ENV, readDemoConfig } from "./demo-config.ts";
 export type { DemoConfig } from "./demo-config.ts";
 export { DEMO_INVOICE_ENV, readDemoInvoiceRecipient } from "./demo-invoice-config.ts";
+export { DEMO_MERCHANT_ENV, MERCHANT_CHARGES_PER_DAY_DEFAULT, readDemoMerchantConfig, readMerchantServiceConfig } from "./demo-merchant-config.ts";
+export type { DemoMerchantConfig, MerchantServiceConfig, MerchantWalletConfig } from "./demo-merchant-config.ts";
 export { INBOX_ENV, readInboxConfig } from "./inbox-config.ts";
 export type { InboxConfig } from "./inbox-config.ts";
 export { PAYPAL_ENV, PAYPAL_SANDBOX_API, readPayPalConfig } from "./paypal-config.ts";

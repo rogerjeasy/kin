@@ -46,3 +46,5 @@ export {
   verifyAgencySignature,
 } from "./agency-signature.ts";
 export type { AgencySignatureVerdict } from "./agency-signature.ts";
+export { MERCHANT_SIGNATURE_HEADER, MERCHANT_SIGNATURE_WINDOW_SECONDS, signMerchantRequest, verifyMerchantSignature } from "./merchant-signature.ts";
+export type { MerchantSignatureVerdict } from "./merchant-signature.ts";
