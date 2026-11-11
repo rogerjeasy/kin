@@ -32,14 +32,51 @@ for (const viewport of viewports) {
   });
 }
 
-test("a suggestion asks at once, and a reorder shows the proposal waiting for a yes", async ({ page }) => {
+const ordered = {
+  title: "Approved under Rose’s standing permission",
+  text: "$64.00 at Elm Street Pharmacy, and the order is being placed. Kin did not approve it: Rose’s own standing permission did.",
+};
+
+for (const viewport of viewports) {
+  test(`a reorder Rose's standing permission covers says it was approved and ordered, never that it waits, at ${viewport.width}×${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await startDemo(page);
+    await seatAs(page, "Rose");
+    await page.goto("/dashboard/ask");
+    await page.getByRole("button", { name: "Reorder Rose's refill" }).click();
+
+    const card = page.getByRole("region", { name: ordered.title });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText(ordered.text);
+    await expect(card).toContainText(english.dashboard.common.simulated);
+    await expect(page.getByText(copy.proposal.text)).toHaveCount(0);
+    await expect(page.getByRole("listitem").filter({ hasText: copy.tools.propose_refill })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await maybeScreenshot(page, `ask-kin-ordered-${viewport.width}`);
+
+    // The link leads to the order itself on Approvals, approved by the permission.
+    const link = card.getByRole("link", { name: copy.orderedProposal.link });
+    await expect(link).toHaveAttribute("href", /^\/dashboard\/approvals#[0-9a-f-]{36}$/u);
+    const anchor = ((await link.getAttribute("href")) ?? "").split("#")[1] ?? "";
+    await link.click();
+    await expect(page).toHaveURL(/\/dashboard\/approvals#/u);
+    await expect(page.locator(`[id="${anchor}"]`)).toContainText("Rose’s standing permission");
+  });
+}
+
+test("with the standing permission paused, a reorder shows the proposal waiting for a yes", async ({ page }) => {
   await startDemo(page);
-  await seatAs(page, "Rose");
+  await page.goto("/dashboard/circle/mandates");
+  // The permission's own Pause, not the top bar's pause of every payment.
+  await page.getByRole("main").getByRole("button", { name: english.dashboard.mandates.actions.pause, exact: true }).first().click();
+  await expect(page.getByRole("status").filter({ hasText: english.dashboard.mandates.actions.paused })).toBeVisible();
+
   await page.goto("/dashboard/ask");
-  await page.getByRole("button", { name: "Reorder Rose's refill" }).click();
+  await page.getByLabel(copy.form.label).fill("Reorder Rose's refill");
+  await page.getByRole("button", { name: copy.form.ask }).click();
   await expect(page.getByText(copy.proposal.text)).toBeVisible();
   await expect(page.getByRole("link", { name: copy.proposal.link })).toHaveAttribute("href", "/dashboard/approvals");
-  await expect(page.getByRole("listitem").filter({ hasText: copy.tools.propose_refill })).toBeVisible();
+  await expect(page.getByRole("region", { name: ordered.title })).toHaveCount(0);
 });
 
 test("a caregiver can ask, and is offered only what concerns their own pay", async ({ page }) => {

@@ -116,7 +116,7 @@
       "refillChoose": "Welche Nachbestellung? Die Familie erlaubt: {items}.",
       "refillWaiting": "Eine Nachbestellung von {item} wartet schon, oder der Kreis ist pausiert, daher hat Kin nichts vorgeschlagen.",
       "refillRefused": "Kin konnte {item} für {price} nicht vorschlagen. Die Regeln der Familie erlaubten es nicht.",
-      "refillCovered": "Kin hat {item} für {price} vorgeschlagen. Die dauerhafte Erlaubnis des Elternteils deckt es.",
+      "refillCovered": "Die dauerhafte Erlaubnis von {parent} hat {item} für {price} bei {seller} genehmigt. Niemand muss zustimmen, und die Bestellung wird aufgegeben. Kin hat es nicht genehmigt.",
       "refillProposed": "Kin hat {item} für {price} vorgeschlagen. Es wartet auf ein Ja.",
       "giftProposed": "Kin hat {amount} an {payee} aus deiner Geldbörse vorgelesen. Es wartet auf dein Ja.",
       "giftHeld": "Kin hat {amount} an {payee} vorgelesen. Wenn du Ja sagst, wartet Kin einen Tag und sagt deiner Familie Bescheid.",
@@ -134,6 +134,12 @@
       "text": "Besucher der Demo können Kin einige Fragen stellen, damit alle es ausprobieren können. In Ihrem eigenen Kreis beantwortet Kin so viele Fragen, wie Ihre Familie braucht.",
       "signUp": "Registrieren",
       "stay": "Die Demo weiter erkunden"
+    },
+    "orderedProposal": {
+      "title": "Genehmigt durch die dauerhafte Erlaubnis von {parent}",
+      "text": "{amount} bei {seller}, und die Bestellung wird aufgegeben. Kin hat es nicht genehmigt: Das hat die dauerhafte Erlaubnis von {parent} selbst getan.",
+      "link": "Bestellung in den Freigaben ansehen",
+      "simulated": "Simuliert"
     }
   },
   "meta": {

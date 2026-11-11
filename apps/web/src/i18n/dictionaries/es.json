@@ -116,7 +116,7 @@
       "refillChoose": "¿Qué reposición? La familia permite: {items}.",
       "refillWaiting": "Ya espera una reposición de {item}, o el círculo está en pausa, así que Kin no propuso nada.",
       "refillRefused": "Kin no pudo proponer {item} por {price}. Las reglas de la familia no lo permitían.",
-      "refillCovered": "Kin propuso {item} por {price}. El permiso permanente del progenitor lo cubre.",
+      "refillCovered": "El permiso permanente de {parent} aprobó {item} por {price} en {seller}: nadie tiene que decir sí y el pedido se está realizando. Kin no lo aprobó.",
       "refillProposed": "Kin propuso {item} por {price}. Espera un sí.",
       "giftProposed": "Kin te leyó {amount} para {payee} desde tu monedero. Espera tu sí.",
       "giftHeld": "Kin te leyó {amount} para {payee}. Si dices que sí, Kin espera un día y avisa a tu familia.",
@@ -134,6 +134,12 @@
       "text": "Quien visita la demo puede hacerle a Kin algunas preguntas, para que todos puedan probarlo. En tu propio círculo, Kin responde todas las preguntas que tu familia necesite.",
       "signUp": "Regístrate",
       "stay": "Seguir explorando la demo"
+    },
+    "orderedProposal": {
+      "title": "Aprobado por el permiso permanente de {parent}",
+      "text": "{amount} en {seller}, y el pedido se está realizando. Kin no lo aprobó: lo aprobó el propio permiso permanente de {parent}.",
+      "link": "Ver el pedido en aprobaciones",
+      "simulated": "Simulado"
     }
   },
   "meta": {

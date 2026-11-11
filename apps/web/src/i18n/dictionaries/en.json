@@ -116,7 +116,7 @@
       "refillChoose": "Which refill? The family allows: {items}.",
       "refillWaiting": "A refill of {item} already waits, or the circle is paused, so Kin proposed nothing.",
       "refillRefused": "Kin could not propose {item} at {price}. The family's rules did not allow it.",
-      "refillCovered": "Kin proposed {item} at {price}. The parent's standing permission covers it.",
+      "refillCovered": "{parent}'s standing permission approved {item} at {price} from {seller}, so nobody needs to say yes, and the order is being placed. Kin did not approve it.",
       "refillProposed": "Kin proposed {item} at {price}. It waits for a yes.",
       "giftProposed": "Kin read back {amount} to {payee} from your Purse. It waits for your yes.",
       "giftHeld": "Kin read back {amount} to {payee}. If you say yes, Kin waits a day and tells your family.",
@@ -134,6 +134,12 @@
       "text": "Demo visitors may ask Kin a few questions, so everyone can try it. In a circle of your own, Ask Kin answers as many as your family needs.",
       "signUp": "Sign up",
       "stay": "Keep exploring the demo"
+    },
+    "orderedProposal": {
+      "title": "Approved under {parent}’s standing permission",
+      "text": "{amount} at {seller}, and the order is being placed. Kin did not approve it: {parent}’s own standing permission did.",
+      "link": "See the order on Approvals",
+      "simulated": "Simulated"
     }
   },
   "meta": {
