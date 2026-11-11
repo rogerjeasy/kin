@@ -5,7 +5,8 @@ import english from "../../src/i18n/dictionaries/en.json" with { type: "json" };
 /** Presses the Demo button on the home page, as a visitor with no account, and lands in the demo. */
 export async function startDemo(page: Page): Promise<void> {
   await page.goto("/");
-  await page.getByRole("main").getByRole("button", { name: english.common.nav.demo }).click();
+  // The hero's button: the closing band at the foot of the page has a second one.
+  await page.getByRole("main").getByRole("button", { name: english.common.nav.demo }).first().click();
   await expect(page).toHaveURL("/dashboard");
 }
 
