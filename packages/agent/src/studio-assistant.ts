@@ -67,6 +67,11 @@ export const KIN_RECORD_AGENT_INSTRUCTIONS = [
   "Say so plainly when the record does not hold the answer. You change nothing.",
 ].join("\n\n");
 
+/** What the lead and the model read about the Kin agent and its tool, to decide when to hand a question to it. */
+export const KIN_RECORD_AGENT_DESCRIPTION = "Kin's own analyst of this circle's record. Answers questions about the family's money in words: totals in and out, each member's share given against agreed, caregiver pay, PayPal's fees, and which entries PayPal confirmed. Reads only; changes nothing.";
+export const KIN_RECORD_TOOL_DESCRIPTION = "The record's figures, already written for people by Kin from the same ledger the dashboard reads: money in and out, PayPal's fees, caregiver pay, each member's share given against agreed this month, and the entries PayPal confirmed with their PayPal IDs. Takes no arguments.";
+export const KIN_LEAD_NOTE = `Kin's addition to the team: delegate to the agent "kin" any question the person asks about the family's money in words (who is behind on their share, how much caregivers were paid, what PayPal confirmed). Build and change widgets with the other agents as usual.`;
+
 /** One turn of a studio agent: the calendar assistant's checks, with the studio's limits. */
 export function studioAssistantTurn(model: AssistantModel, request: AssistantRequest, language: ShiftLanguage): Promise<AssistantReply> {
   return shiftAssistantTurn(model, request, language, STUDIO_LIMITS);

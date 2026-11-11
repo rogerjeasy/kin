@@ -6,6 +6,7 @@ import type { Dictionary } from "@/i18n/dictionary";
 
 import { memberFairness, periodSettlement } from "./fairness";
 import type { CircleNames } from "./names";
+import { openPeriod } from "./period";
 import { recordEntries } from "./record";
 
 /**
@@ -71,9 +72,6 @@ export type StudioData = {
   readonly fairness: readonly StudioFairnessRow[];
 };
 
-/** The most months of fairness the studio shows, newest first. */
-export const STUDIO_FAIRNESS_MONTHS = 12;
-
 function caregiverPayees(circle: CircleSnapshot): ReadonlySet<string> {
   return new Set(circle.payees.filter((payee) => payee.caregiverRateCentsPerHour !== null).map((payee) => payee.id));
 }
@@ -107,22 +105,24 @@ export function studioLedger(circle: CircleSnapshot, dictionary: Dictionary, nam
   });
 }
 
-/** Each month's settlement, for the months the ledger holds, newest first. Empty for a role that may not see the agreement. */
+/**
+ * The open month's settlement, member by member: the one the family is still
+ * settling, so each figure means what the Fairness screen says it does. Empty
+ * for a role that may not see the agreement.
+ */
 export function studioFairness(circle: CircleSnapshot, names: CircleNames): StudioFairnessRow[] {
-  const months = [...new Set(circle.ledger.entries.map((entry) => entry.period))].toSorted().toReversed().slice(0, STUDIO_FAIRNESS_MONTHS);
-  return months.flatMap((month) => {
-    const settlement = periodSettlement(circle, month);
-    if (settlement === null) return [];
-    return memberFairness(settlement, circle).map(({ memberId, shareBps, shareIndex, position }) => ({
-      month,
-      member: names.member(memberId),
-      shareBps,
-      shareIndex,
-      givenCents: position.contributedCents,
-      agreedCents: position.targetCents,
-      positionCents: position.positionCents,
-    }));
-  });
+  const month = openPeriod(circle);
+  const settlement = periodSettlement(circle, month);
+  if (settlement === null) return [];
+  return memberFairness(settlement, circle).map(({ memberId, shareBps, shareIndex, position }) => ({
+    month,
+    member: names.member(memberId),
+    shareBps,
+    shareIndex,
+    givenCents: position.contributedCents,
+    agreedCents: position.targetCents,
+    positionCents: position.positionCents,
+  }));
 }
 
 export function studioData(circle: CircleSnapshot, dictionary: Dictionary, names: CircleNames): StudioData {

@@ -67,11 +67,12 @@ describe("the family money studio's ledger", () => {
 });
 
 describe("the family money studio's fairness", () => {
-  it("is the money core's settlement of each month, member by member", () => {
+  it("is the money core's settlement of the open month, member by member", () => {
     const settlement = periodSettlement(circle, "2026-10");
     expect(settlement).not.toBeNull();
     if (settlement === null) return;
-    const october = data.fairness.filter((row) => row.month === "2026-10");
+    expect(data.fairness.every((row) => row.month === "2026-10")).toBe(true);
+    const october = data.fairness;
     const members = memberFairness(settlement, circle);
     expect(october.map((row) => [row.shareBps, row.givenCents, row.agreedCents, row.positionCents])).toEqual(
       members.map((member) => [member.shareBps, member.position.contributedCents, member.position.targetCents, member.position.positionCents]),

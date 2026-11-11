@@ -4251,6 +4251,106 @@
       },
       "alerted": "Kin avisó a {alerted}.",
       "said": "Lo que se dijo: «{claim}»"
+    },
+    "studio": {
+      "title": "Estudio de dinero de la familia",
+      "lede": "El registro del círculo como un panel que usted puede ajustar: dinero que entra y que sale, lo que aportó cada uno frente a la parte acordada, el pago de cuidados, las comisiones de PayPal y lo que PayPal confirmó. Lee las mismas entradas que el Registro y no cambia ninguna.",
+      "link": "Estudio de dinero",
+      "eyebrow": "Hecho con AG Studio",
+      "readOnly": "Puede mirar, filtrar y preguntar. Con acceso de solo lectura, el estudio no permite añadir ni mover bloques.",
+      "tables": {
+        "ledger": "Libro contable",
+        "fairness": "Equidad"
+      },
+      "fields": {
+        "id": "ID de la entrada",
+        "day": "Día",
+        "month": "Mes",
+        "kind": "Tipo",
+        "person": "Quién o qué",
+        "category": "Categoría",
+        "amount": "Importe",
+        "moneyIn": "Dinero que entra",
+        "moneyOut": "Dinero que sale",
+        "fee": "Comisión de PayPal",
+        "caregiverPay": "Pago de cuidados",
+        "caregiver": "Persona cuidadora",
+        "proof": "Sandbox o simulado",
+        "simulated": "Simulado",
+        "paypalVerified": "Confirmado por PayPal",
+        "paypalId": "ID de PayPal",
+        "member": "Miembro",
+        "share": "Parte acordada",
+        "shareIndex": "Color de la parte",
+        "given": "Aportado",
+        "agreed": "Acordado",
+        "position": "Importe a liquidar"
+      },
+      "widgets": {
+        "inOut": "Dinero que entra y que sale, por mes",
+        "caregiverPay": "Pago de cuidados, por mes",
+        "proof": "Sandbox de PayPal frente a simulado",
+        "fees": "Comisiones de PayPal, por mes",
+        "ledger": "Todas las entradas",
+        "group": "Kin",
+        "fairnessGap": {
+          "label": "Diferencia de equidad",
+          "title": "Lo aportado por cada uno frente a lo acordado",
+          "description": "Muestra lo que aportó cada miembro junto a su parte acordada, y lo que movería la liquidación.",
+          "given": "Aportó {amount}",
+          "agreed": "acordado {amount}",
+          "owed": "El fondo le debe {amount} a {name}",
+          "owes": "{name} debe {amount}",
+          "even": "{name} está al día"
+        },
+        "verified": {
+          "label": "Verificado por PayPal",
+          "title": "Confirmado por PayPal",
+          "description": "Cuenta las entradas que respalda un evento real del sandbox de PayPal, con los propios ID de PayPal.",
+          "count": "Entradas que PayPal confirmó",
+          "none": "Ninguna todavía. Todas las entradas de este círculo son simuladas, y así lo indican.",
+          "more": "y {count} más"
+        }
+      },
+      "summary": {
+        "title": "El registro de un vistazo",
+        "moneyIn": "Dinero que entra",
+        "moneyOut": "Dinero que sale",
+        "fees": "Comisiones de PayPal",
+        "caregiverPay": "Pago de cuidados",
+        "sandbox": "Entradas del sandbox de PayPal",
+        "simulated": "Entradas simuladas",
+        "fairness": "Partes en {month}",
+        "noFairness": "No hay ningún acuerdo en vigor, así que no hay partes que comparar.",
+        "allTime": "Desde que empezó el círculo"
+      },
+      "notes": {
+        "lapsed": "La licencia del estudio ha terminado, así que Kin muestra su propio resumen del mismo registro.",
+        "narrow": "En una pantalla pequeña, Kin muestra su resumen. Abra el estudio en una pantalla más ancha para crear sus propias vistas.",
+        "failed": "No se pudo abrir el estudio, así que Kin muestra su propio resumen del mismo registro.",
+        "loading": "Abriendo el estudio…"
+      },
+      "assistant": {
+        "unavailable": "El asistente del estudio no está disponible ahora. El panel sigue funcionando.",
+        "cannot": "Aquí no puedo hacer eso. Solo puedo leer el registro y cambiar lo que muestra este panel.",
+        "limit": "Ha hecho muchas preguntas al asistente del estudio en esta hora. Inténtelo de nuevo más tarde.",
+        "unchecked": "Hice los cambios en el panel, pero no pude comprobar un resumen con el registro, así que no lo pondré en palabras.",
+        "failed": "El asistente no pudo responder. Inténtelo de nuevo.",
+        "starters": {
+          "caregiverPay": {
+            "label": "Pago de cuidados por mes",
+            "prompt": "Muestra el pago de cuidados por mes en un gráfico de líneas."
+          },
+          "fairness": {
+            "label": "¿Quién va atrasado con su parte?",
+            "prompt": "¿Quién ha aportado menos que su parte acordada, y cuánto menos?"
+          },
+          "fees": {
+            "label": "Comisiones de PayPal",
+            "prompt": "Añade un gráfico de las comisiones de PayPal por tipo de entrada."
+          }
+        }
+      }
     }
   },
   "aiProvenance": {
