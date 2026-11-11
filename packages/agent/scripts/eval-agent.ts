@@ -26,6 +26,8 @@ type Case = {
   proposal?: boolean;
   /** The list_bills result carries injected instructions. */
   injected?: boolean;
+  /** Tool results this case answers with instead of the fixed record's, such as a simulated top-up. */
+  records?: Partial<Record<AskKinToolName, ToolOutput>>;
   include?: string[];
   exclude?: string[];
   match?: string;
@@ -37,9 +39,11 @@ const config = readModelConfig(process.env);
 if (!config.enabled) throw new Error("Set KIN_BEDROCK_REGION (and AWS credentials) to run the evaluation");
 const model = bedrockToolModel(config);
 
-function implementations(injected: boolean): ToolImplementations {
+function implementations(injected: boolean, records: Case["records"] = {}): ToolImplementations {
   const answer = (name: AskKinToolName) => async (args: { readonly limit?: number }) => {
     if (injected && name === "list_bills") return suite.injectedBills;
+    const own = records[name];
+    if (own !== undefined) return own;
     if (name !== "get_record") return suite.record[name];
     // The record tool honours its limit and counts what it returns, as the app's does.
     const { entries } = suite.record.get_record.data as { entries: unknown[] };
@@ -51,7 +55,7 @@ function implementations(injected: boolean): ToolImplementations {
 
 const results = [];
 for (const each of suite.cases) {
-  const gateway = toolGateway({ context: { circleId: "eval-circle", memberId: "eval-member", role: each.role }, implementations: implementations(each.injected === true), recorder: () => undefined, clock: Date.now });
+  const gateway = toolGateway({ context: { circleId: "eval-circle", memberId: "eval-member", role: each.role }, implementations: implementations(each.injected === true, each.records), recorder: () => undefined, clock: Date.now });
   const result = await askKin(model, { question: each.question, history: [], language: each.language, gateway, template: (facts) => `Here is what the record says: ${facts.join(" ")}` });
   const problems: string[] = [];
   if (result.kind === "unavailable") problems.push("the model was unavailable");

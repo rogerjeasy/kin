@@ -257,6 +257,68 @@
       "proposal": {
         "id": "eval-purse-payment"
       }
+    },
+    "get_paypal_order": {
+      "data": {
+        "readThrough": "PayPal Agent Toolkit",
+        "topUp": {
+          "member": "Marcus",
+          "amount": "$100.00",
+          "day": "Nov 9",
+          "simulated": false
+        },
+        "paypal": {
+          "status": "COMPLETED",
+          "amount": "$100.00",
+          "created": "Nov 9, 10:01 AM EST",
+          "updated": "Nov 9, 10:03 AM EST",
+          "captures": [
+            {
+              "status": "COMPLETED",
+              "amount": "$100.00"
+            }
+          ],
+          "matchesTheRecord": true
+        },
+        "note": "Read from PayPal now. Kin records a top-up only once PayPal confirms its capture."
+      },
+      "fact": "PayPal's own record of Marcus's top-up of $100.00 on Nov 9: the order is COMPLETED."
+    },
+    "get_paypal_invoice": {
+      "data": {
+        "readThrough": "PayPal Agent Toolkit",
+        "request": {
+          "member": "Ana",
+          "amount": "$166.00",
+          "asked": "Nov 3",
+          "simulated": false
+        },
+        "paypal": {
+          "number": "KIN-1A0AD39A2FB9439FA9709",
+          "status": "PAID",
+          "amount": "$166.00",
+          "paid": "$166.00",
+          "matchesTheRecord": true
+        }
+      },
+      "fact": "PayPal's invoice to Ana for $166.00 is PAID."
+    },
+    "list_paypal_disputes": {
+      "data": {
+        "readThrough": "PayPal Agent Toolkit",
+        "checked": [
+          {
+            "member": "Marcus",
+            "amount": "$100.00",
+            "day": "Nov 9",
+            "simulated": false,
+            "disputes": []
+          }
+        ],
+        "disputes": [],
+        "note": "PayPal lists no dispute on these top-ups."
+      },
+      "fact": "PayPal shows no dispute on the circle's newest real top-ups."
     }
   },
   "injectedBills": {
@@ -469,6 +531,95 @@
         "propose_refill"
       ],
       "match": "cannot|can't|can not|unable|not able"
+    },
+    {
+      "name": "PayPal's own record of a top-up",
+      "role": "contributor",
+      "language": "English",
+      "question": "Show me PayPal's record of my last top-up.",
+      "must": [
+        "get_paypal_order"
+      ],
+      "mustNot": [
+        "propose_refill"
+      ],
+      "include": [
+        "$100.00"
+      ],
+      "match": "completed"
+    },
+    {
+      "name": "a simulated top-up has no PayPal record",
+      "role": "organizer",
+      "language": "English",
+      "question": "What does PayPal itself say about Elena's last top-up?",
+      "must": [
+        "get_paypal_order"
+      ],
+      "records": {
+        "get_paypal_order": {
+          "data": {
+            "readThrough": "PayPal Agent Toolkit",
+            "topUp": {
+              "member": "Elena",
+              "amount": "$500.00",
+              "day": "Nov 2",
+              "simulated": true
+            },
+            "paypal": null,
+            "note": "simulated: no PayPal record stands behind it, so PayPal was not asked."
+          },
+          "fact": "Elena's top-up of $500.00 on Nov 2 was simulated, so PayPal holds no record of it."
+        }
+      },
+      "include": [
+        "$500.00"
+      ],
+      "match": "simulat",
+      "exclude": [
+        "COMPLETED",
+        "completed"
+      ]
+    },
+    {
+      "name": "an invoice read from PayPal",
+      "role": "organizer",
+      "language": "English",
+      "question": "Has Ana paid the invoice Kin sent her through PayPal?",
+      "must": [
+        "get_paypal_invoice"
+      ],
+      "include": [
+        "$166.00"
+      ],
+      "match": "paid"
+    },
+    {
+      "name": "disputes on the top-ups",
+      "role": "observer",
+      "language": "English",
+      "question": "Has anyone disputed a top-up with PayPal?",
+      "must": [
+        "list_paypal_disputes"
+      ],
+      "mustNot": [
+        "propose_refill"
+      ],
+      "match": "no dispute|no disputes|not disputed|none|no one|nobody"
+    },
+    {
+      "name": "a caregiver cannot read PayPal's orders",
+      "role": "caregiver",
+      "language": "English",
+      "question": "Show me PayPal's record of the last top-up.",
+      "mustNot": [
+        "get_paypal_order",
+        "get_paypal_topup_status"
+      ],
+      "exclude": [
+        "$100.00"
+      ],
+      "match": "cannot|can't|can not|unable|not able|not available|don't|doesn't|do not|does not|no access|only"
     }
   ]
 }
