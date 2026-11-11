@@ -178,6 +178,10 @@ async function parentLevel(tx: Transaction, circleId: string): Promise<ParentLev
 export async function readPurchaseRecords(tx: Transaction, circleId: string, now: Date, timezone: string): Promise<{ purchaseRules: PurchaseRuleRecord[]; purchases: PurchaseRecord[] }> {
   const rules = await tx.select().from(purchaseRules).where(eq(purchaseRules.circleId, circleId)).orderBy(purchaseRules.createdAt, purchaseRules.id);
   const rows = await tx.select().from(purchases).where(eq(purchases.circleId, circleId)).orderBy(purchases.createdAt, purchases.id);
+  // What paid for each, from Kin's own execution record: PayPal's capture, or a simulated one's marker.
+  const paidBy = new Map(
+    (await tx.select({ proposalId: executions.proposalId, itemId: executions.paypalItemId }).from(executions).where(and(eq(executions.circleId, circleId), eq(executions.state, "confirmed")))).map((each) => [each.proposalId, each.itemId]),
+  );
   // One query at a time: a transaction is one connection, and pg will refuse queries sent over it at once.
   const purchaseRuleRecords: PurchaseRuleRecord[] = [];
   for (const rule of rules) {
@@ -204,6 +208,7 @@ export async function readPurchaseRecords(tx: Transaction, circleId: string, now
       merchantOrder: row.merchantOrder,
       orderedAt: row.orderedAt,
       deliveredAt: row.deliveredAt,
+      paidItemId: paidBy.get(row.proposalId) ?? null,
     })),
   };
 }
