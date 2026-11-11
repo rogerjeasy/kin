@@ -3,13 +3,14 @@ import Link from "next/link";
 
 import { Panel } from "@/components/dashboard/ui/panel";
 import { StatusPill } from "@/components/dashboard/ui/status-pill";
-import { DELIVERY_STEPS, anyOnTheWay, type OrderView, type RuleView } from "@/content/circle/refills";
+import { DELIVERY_STEPS, anyOnTheWay, anyPaidInSandbox, type OrderView, type RuleView } from "@/content/circle/refills";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
 import type { Formatters } from "@/lib/format";
 
 import { DeliveryTrack } from "./delivery-track";
 import { KeepLooking } from "./keep-looking";
+import { OrderPaymentLine } from "./order-payment";
 import { RefillButton } from "./refill-button";
 
 type Props = {
@@ -18,7 +19,7 @@ type Props = {
   rules: readonly RuleView[];
   orders: readonly OrderView[];
   sellerName: (payeeId: string) => string;
-  /** A demo circle's purchases are simulated, and the screen says so. */
+  /** A demo circle: its delivery is simulated and the screen says so, and so are its charges unless PayPal's sandbox made them. */
   simulated: boolean;
   /** Whether the viewer may ask Kin to reorder at all, for the note when they may not. */
   mayAsk: boolean;
@@ -67,9 +68,9 @@ export function RefillsPanel({ copy, format, rules, orders, sellerName, simulate
         </Panel>
       ))}
       {orders.length > 0 ? (
-        <Panel title={copy.ordersTitle} description={simulated ? copy.simulated : undefined}>
+        <Panel title={copy.ordersTitle} description={simulated ? (anyPaidInSandbox(orders) ? copy.sandbox : copy.simulated) : undefined}>
           <ul className="space-y-5">
-            {orders.map(({ purchase, proposalState, viaMandate, aboveUsualLimit }) => (
+            {orders.map(({ purchase, proposalState, viaMandate, aboveUsualLimit, payment }) => (
               <li key={purchase.id} className="min-w-0 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="min-w-0 font-medium text-balance">
@@ -83,6 +84,7 @@ export function RefillsPanel({ copy, format, rules, orders, sellerName, simulate
                     <StatusPill tone="waiting" icon={ClockIcon}>{proposalStatusWords(copy, proposalState)}</StatusPill>
                   )}
                 </div>
+                {payment === null ? null : <OrderPaymentLine payment={payment} copy={copy} />}
                 {proposalState === "settled" ? <DeliveryTrack steps={steps} current={purchase.state} label={copy.trackLabel} /> : null}
               </li>
             ))}

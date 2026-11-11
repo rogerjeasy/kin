@@ -11,6 +11,8 @@
     "start": "node src/main.ts"
   },
   "dependencies": {
+    "@kin/auth": "workspace:*",
+    "@kin/config": "workspace:*",
     "@kin/domain": "workspace:*"
   },
   "devDependencies": {

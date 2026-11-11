@@ -96,6 +96,14 @@ describe("readConfig", () => {
     expect(deployed.demoInvoiceRecipientEmail).toMatch(/@personal\.example\.com$/);
   });
 
+  it("leaves the demo pharmacy off unless switched on, and only beside the worker that buys from it", () => {
+    const paypal = { clientId: "client", webhookId: "WH-1" };
+    expect(read({ "kin:paypal": paypal }).demoMerchant).toBe(false);
+    expect(read({ "kin:paypal": paypal, "kin:demoMerchant": true }).demoMerchant).toBe(true);
+    expect(() => read({ "kin:paypal": paypal, "kin:demoMerchant": "yes" })).toThrow(InfraConfigError);
+    expect(() => read({ "kin:demoMerchant": true })).toThrow(/needs kin:paypal/);
+  });
+
   it("leaves the phone service off, with no address and no numbers, unless switched on", () => {
     expect(read()).toMatchObject({ voice: false, voicePublicUrl: null, twilioCallerNumber: null, twilioSmsFrom: null });
     expect(read({ "kin:voice": true }).voice).toBe(true);

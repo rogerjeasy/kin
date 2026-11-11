@@ -2396,6 +2396,10 @@
       "ordersTitle": "Orders",
       "ordersEmpty": "No refill has been proposed yet.",
       "simulated": "Simulated: the pharmacy is a stand-in and no real money moves.",
+      "sandbox": "The pharmacy is a stand-in. Its charges go through PayPal’s sandbox, with test money and no real money; delivery is simulated.",
+      "paidSandbox": "PayPal sandbox",
+      "paidSimulated": "Simulated",
+      "capture": "PayPal capture {id}",
       "trackLabel": "Where the order is",
       "states": {
         "awaiting": "Waiting for a yes",

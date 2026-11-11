@@ -2396,6 +2396,10 @@
       "ordersTitle": "Ordini",
       "ordersEmpty": "Nessun rinnovo è stato ancora proposto.",
       "simulated": "Simulato: la farmacia è una controfigura e non si muove denaro reale.",
+      "sandbox": "La farmacia è una controfigura. I suoi addebiti passano dalla sandbox di PayPal, con denaro di prova e nessun denaro reale; la consegna è simulata.",
+      "paidSandbox": "Sandbox PayPal",
+      "paidSimulated": "Simulato",
+      "capture": "Acquisizione PayPal {id}",
       "trackLabel": "Dov’è l’ordine",
       "states": {
         "awaiting": "In attesa di un sì",

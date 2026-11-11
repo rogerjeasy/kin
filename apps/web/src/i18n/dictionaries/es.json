@@ -2396,6 +2396,10 @@
       "ordersTitle": "Pedidos",
       "ordersEmpty": "Todavía no se ha propuesto ninguna reposición.",
       "simulated": "Simulado: la farmacia es un sustituto y no se mueve dinero real.",
+      "sandbox": "La farmacia es un sustituto. Sus cobros pasan por la sandbox de PayPal, con dinero de prueba y sin dinero real; la entrega es simulada.",
+      "paidSandbox": "Sandbox de PayPal",
+      "paidSimulated": "Simulado",
+      "capture": "Captura de PayPal {id}",
       "trackLabel": "Dónde está el pedido",
       "states": {
         "awaiting": "Esperando un sí",

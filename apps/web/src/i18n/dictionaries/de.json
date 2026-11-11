@@ -2396,6 +2396,10 @@
       "ordersTitle": "Bestellungen",
       "ordersEmpty": "Noch keine Nachbestellung vorgeschlagen.",
       "simulated": "Simuliert: Die Apotheke ist ein Platzhalter, und es fließt kein echtes Geld.",
+      "sandbox": "Die Apotheke ist ein Platzhalter. Ihre Abbuchungen laufen über die Sandbox von PayPal, mit Testgeld und ohne echtes Geld; die Lieferung ist simuliert.",
+      "paidSandbox": "PayPal-Sandbox",
+      "paidSimulated": "Simuliert",
+      "capture": "PayPal-Erfassung {id}",
       "trackLabel": "Wo die Bestellung ist",
       "states": {
         "awaiting": "Wartet auf ein Ja",

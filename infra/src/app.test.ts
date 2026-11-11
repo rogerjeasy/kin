@@ -32,6 +32,7 @@ const config: InfraConfig = {
   twilioCallerNumber: null,
   twilioSmsFrom: null,
   presenceLineNumbers: null,
+  demoMerchant: false,
 };
 
 // The same feature flags as a real synth, so the tests see what is deployed.
@@ -1061,5 +1062,70 @@ describe("Kin's phone service", () => {
     const on = imageOf(voiceOf(build({ voice: true, presenceLineNumbers: numbers })), "AWS::AppRunner::Service");
     expect(on.RuntimeEnvironmentVariables).toContainEqual({ Name: "KIN_PRESENCE_LINE_NUMBERS", Value: numbers });
     expect(imageOf(voice, "AWS::AppRunner::Service").RuntimeEnvironmentVariables.map((variable) => variable.Name)).not.toContain("KIN_PRESENCE_LINE_NUMBERS");
+  });
+});
+
+describe("the demo pharmacy", () => {
+  const build = (overrides: Partial<InfraConfig>) => buildKin(new App({ context: testContext }), { ...config, ...overrides });
+  const on = build({ demoMerchant: true });
+  if (on.demoMerchant === null || on.worker === null) throw new Error("kin:demoMerchant is on with a PayPal app, so KinDemoMerchant and KinWorker exist");
+  const merchant = Template.fromStack(on.demoMerchant);
+  const workerOn = Template.fromStack(on.worker);
+  const dataOn = Template.fromStack(on.data);
+  const container = (template: Template) => {
+    const [task] = Object.values(template.findResources("AWS::ECS::TaskDefinition"));
+    return task?.["Properties"]["ContainerDefinitions"][0] as { Environment: { Name: string; Value: unknown }[]; Secrets: { Name: string; ValueFrom: unknown }[] };
+  };
+  const statements = (template: Template) =>
+    Object.values(template.findResources("AWS::IAM::Policy")).flatMap((policy) => policy["Properties"]["PolicyDocument"]["Statement"] as { Action: string | string[]; Resource: unknown }[]);
+
+  it("is not deployed unless kin:demoMerchant is on, and then nothing else holds a pharmacy setting", () => {
+    expect(stacks.demoMerchant).toBeNull();
+    for (const template of [data, worker, web]) expect(JSON.stringify(template.toJSON())).not.toMatch(/DEMO_MERCHANT|demo-merchant|DemoMerchant/);
+    // Without the worker there is nobody to buy from it.
+    expect(build({ demoMerchant: true, paypal: null }).demoMerchant).toBeNull();
+  });
+
+  it("runs one App Runner instance of the pharmacy's image, publicly reachable, with no network of Kin's", () => {
+    merchant.hasResourceProperties("AWS::AppRunner::Service", {
+      ServiceName: "kin-demo-merchant",
+      NetworkConfiguration: { EgressConfiguration: { EgressType: "DEFAULT" }, IngressConfiguration: { IsPubliclyAccessible: true } },
+      HealthCheckConfiguration: Match.objectLike({ Path: "/health" }),
+    });
+    // One instance: the order book is held in memory.
+    merchant.hasResourceProperties("AWS::AppRunner::AutoScalingConfiguration", { MinSize: 1, MaxSize: 1 });
+    merchant.resourceCountIs("AWS::AppRunner::VpcConnector", 0);
+    merchant.hasOutput("Url", { Value: Match.anyValue() });
+    expect(on.demoMerchant?.dependencies).toContain(on.data);
+  });
+
+  it("gives the pharmacy its four secrets and nothing else: no database password, no Kin PayPal secret", () => {
+    const [service] = Object.values(merchant.findResources("AWS::AppRunner::Service"));
+    const image = service?.["Properties"]["SourceConfiguration"]["ImageRepository"]["ImageConfiguration"] as { RuntimeEnvironmentSecrets: { Name: string }[]; RuntimeEnvironmentVariables: { Name: string }[] };
+    expect(image.RuntimeEnvironmentSecrets.map((secret) => secret.Name).toSorted()).toEqual(["KIN_DEMO_MERCHANT_SIGNING_SECRET", "KIN_MERCHANT_PAYPAL_CLIENT_ID", "KIN_MERCHANT_PAYPAL_CLIENT_SECRET", "KIN_MERCHANT_PAYPAL_VAULT_ID"]);
+    expect(image.RuntimeEnvironmentVariables.map((variable) => variable.Name)).toEqual(["PORT"]);
+    const read = statements(merchant).filter((statement) => statement.Action === "secretsmanager:GetSecretValue");
+    expect(read).toHaveLength(1);
+    expect(JSON.stringify(read)).toMatch(/kindemomerchant/i);
+    expect(JSON.stringify(merchant.toJSON())).not.toMatch(/kin-?database-?(app|service|provisioner)-?secret|kin-?paypal-?client-?secret|kin-?twilio/i);
+  });
+
+  it("keeps its secrets in KinData, retained and closed to the neighbours, the signing secret generated", () => {
+    for (const name of ["kin/demo-merchant/paypal-client-id", "kin/demo-merchant/paypal-client-secret", "kin/demo-merchant/vault-id", "kin/demo-merchant/signing-secret"]) {
+      dataOn.hasResource("AWS::SecretsManager::Secret", { Properties: Match.objectLike({ Name: name, GenerateSecretString: { PasswordLength: 64, ExcludePunctuation: true } }), DeletionPolicy: "Retain" });
+    }
+    dataOn.hasResourceProperties("AWS::SSM::Parameter", { Name: "kin-demo-merchant-signing-secret-arn" });
+  });
+
+  it("tells the worker where the pharmacy is by cross-stack reference, with the signing secret and no other pharmacy secret", () => {
+    const { Environment, Secrets } = container(workerOn);
+    const url = Environment.find((variable) => variable.Name === "KIN_DEMO_MERCHANT_URL");
+    expect(JSON.stringify(url?.Value)).toMatch(/Fn::ImportValue|KinDemoMerchant/);
+    expect(Secrets.map((secret) => secret.Name)).toContain("KIN_DEMO_MERCHANT_SIGNING_SECRET");
+    expect(Secrets.map((secret) => secret.Name)).not.toEqual(expect.arrayContaining(["KIN_MERCHANT_PAYPAL_CLIENT_SECRET"]));
+    expect(JSON.stringify(Secrets)).not.toMatch(/kindemomerchantpaypal|kindemomerchantvault/i);
+    expect(on.worker?.dependencies).toContain(on.demoMerchant);
+    // With the flag off the worker keeps its seller in process.
+    expect(container(worker).Environment.map((variable) => variable.Name)).not.toContain("KIN_DEMO_MERCHANT_URL");
   });
 });
