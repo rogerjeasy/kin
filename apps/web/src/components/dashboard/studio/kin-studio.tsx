@@ -38,13 +38,15 @@ export type KinStudioProps = {
   readonly licenseKey: string | undefined;
   /** Kin's agents, or `null` when this deployment has no model or the licence does not cover AI. */
   readonly agents: StudioAgentProps | null;
+  /** Whether the frame has room for the assistant's panel beside the canvas when the studio opens. */
+  readonly roomy: boolean;
 };
 
 /** AG Studio, holding the circle's record, in Kin's theme, with Kin's widgets and Kin's agent beside AG Studio's own. */
-export default function KinStudio({ data, copy, locale, timeZone, rtl, readOnly, licenseKey, agents }: KinStudioProps) {
+export default function KinStudio({ data, copy, locale, timeZone, rtl, readOnly, licenseKey, agents, roomy }: KinStudioProps) {
   const format = useMemo(() => formatters(locale, data.currency, timeZone), [locale, data.currency, timeZone]);
   const sources = useMemo(() => studioSources(data, copy, format), [data, copy, format]);
-  const report = useMemo(() => studioReport(copy), [copy]);
+  const report = useMemo(() => studioReport(copy, roomy), [copy, roomy]);
   const widgets = useMemo(() => kinWidgets(copy), [copy]);
   const context = useMemo<StudioContext>(() => ({ copy, format }), [copy, format]);
   const ai = useMemo(() => {

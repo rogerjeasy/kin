@@ -57,7 +57,8 @@ describe("the studio's opening page", () => {
         expect(apart, `${a.id} and ${b.id} overlap`).toBe(true);
       }
     }
-    expect(studioReport(copy).pages[0]?.widgets).toHaveProperty("fairness");
+    expect(studioReport(copy, true).pages[0]?.widgets).toHaveProperty("fairness");
+    expect(studioReport(copy, false).panels?.["ai"]).toEqual({ collapsed: true });
   });
 });
 

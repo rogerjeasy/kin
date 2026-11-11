@@ -36,7 +36,7 @@ export function StudioSummary({ copy, totals, fairness, format }: StudioSummaryP
           <StatTile label={summary.fees} value={format.money(totals.feeCents)} note={summary.allTime} icon={ReceiptIcon} />
           <StatTile label={summary.caregiverPay} value={format.money(totals.caregiverPayCents)} note={summary.allTime} icon={HandHeartIcon} />
           <StatTile label={summary.sandbox} value={format.count(totals.sandboxEntries)} note={widgets.verified.count} icon={ShieldCheckIcon} />
-          <StatTile label={summary.simulated} value={format.count(totals.simulatedEntries)} note={widgets.proof} icon={FlaskConicalIcon} />
+          <StatTile label={summary.simulated} value={format.count(totals.simulatedEntries)} note={summary.allTime} icon={FlaskConicalIcon} />
         </dl>
       </Panel>
       <Panel title={month === undefined ? words.title : fill(summary.fairness, { month: format.month(month) })}>

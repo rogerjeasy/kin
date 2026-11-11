@@ -26,7 +26,7 @@ export function studioWidgets(copy: StudioCopy): StudioWidget[] {
     {
       id: "verified",
       state: { type: PAYPAL_VERIFIED_WIDGET, dataMapping: { paypalId: [ledger("paypalId")], amount: [ledger("amountCents", "sum")] }, format: titled(widgets.verified.title) },
-      layout: { xTrack: 0, yTrack: 0, xSpan: 8, ySpan: 12 },
+      layout: { xTrack: 0, yTrack: 0, xSpan: 8, ySpan: 16 },
     },
     {
       id: "fairness",
@@ -35,44 +35,51 @@ export function studioWidgets(copy: StudioCopy): StudioWidget[] {
         dataMapping: { member: [fairness("member")], given: [fairness("givenCents", "sum")], agreed: [fairness("agreedCents", "sum")], gap: [fairness("positionCents", "sum")] },
         format: titled(widgets.fairnessGap.title),
       },
-      layout: { xTrack: 8, yTrack: 0, xSpan: 16, ySpan: 12 },
+      layout: { xTrack: 8, yTrack: 0, xSpan: 16, ySpan: 16 },
     },
     {
       id: "in-out",
       state: { type: "column-chart-grouped", dataMapping: { categoryKey: [ledger("month")], valueKey: [ledger("inCents", "sum"), ledger("outCents", "sum")] }, format: titled(widgets.inOut) },
-      layout: { xTrack: 0, yTrack: 12, xSpan: 12, ySpan: 14 },
+      layout: { xTrack: 0, yTrack: 16, xSpan: 12, ySpan: 14 },
     },
     {
       id: "caregiver-pay",
       state: { type: "line-chart", dataMapping: { categoryKey: [ledger("month")], valueKey: [ledger("caregiverPayCents", "sum")] }, format: titled(widgets.caregiverPay) },
-      layout: { xTrack: 12, yTrack: 12, xSpan: 12, ySpan: 14 },
+      layout: { xTrack: 12, yTrack: 16, xSpan: 12, ySpan: 14 },
     },
     {
       id: "proof",
       state: { type: "donut-chart", dataMapping: { categoryKey: [ledger("proof")], valueKey: [ledger("amountCents", "sum")] }, format: titled(widgets.proof) },
-      layout: { xTrack: 0, yTrack: 26, xSpan: 10, ySpan: 14 },
+      layout: { xTrack: 0, yTrack: 30, xSpan: 10, ySpan: 14 },
     },
     {
       id: "fees",
       state: { type: "column-chart-grouped", dataMapping: { categoryKey: [ledger("month")], valueKey: [ledger("feeCents", "sum")] }, format: titled(widgets.fees) },
-      layout: { xTrack: 10, yTrack: 26, xSpan: 14, ySpan: 14 },
+      layout: { xTrack: 10, yTrack: 30, xSpan: 14, ySpan: 14 },
     },
     {
       id: "ledger",
       state: { type: "grid", dataMapping: { cols: [ledger("day"), ledger("kind"), ledger("person"), ledger("amountCents"), ledger("feeCents"), ledger("proof"), ledger("paypalId")] }, format: titled(widgets.ledger) },
-      layout: { xTrack: 0, yTrack: 40, xSpan: 24, ySpan: 18 },
+      layout: { xTrack: 0, yTrack: 44, xSpan: 24, ySpan: 18 },
     },
   ];
 }
 
 export const STUDIO_PAGE = "money";
 
-/** The opening report: one page, its filters panel folded away so the canvas has the room. */
-export function studioReport(copy: StudioCopy): AgReportState<KinRegistry> {
+/**
+ * The opening report: one page, with AG Studio's side panels folded away so
+ * the canvas has the room. The assistant's panel opens only where there is
+ * room for it beside the canvas.
+ */
+export function studioReport(copy: StudioCopy, roomy: boolean): AgReportState<KinRegistry> {
   const widgets = studioWidgets(copy);
   return {
     pages: [{ id: STUDIO_PAGE, widgets: Object.fromEntries(widgets.map(({ id, state }) => [id, state])), widgetLayout: Object.fromEntries(widgets.map(({ id, layout }) => [id, layout])) }],
     selectedPageId: STUDIO_PAGE,
-    panels: { filters: { collapsed: true } },
+    panels: { filters: { collapsed: true }, data: { collapsed: true }, edit: { collapsed: true }, ai: { collapsed: !roomy } },
   };
 }
+
+/** The frame width from which the assistant's panel opens beside the canvas. */
+export const ROOMY_WIDTH = 1040;

@@ -53,6 +53,10 @@ export const kinStudioTheme = studioTheme.withParams({
   studioWidgetShadow: "var(--shadow-sm)",
   studioWidgetSelectedBorderColor: "var(--ring)",
   studioWidgetTitleFontFamily: "var(--font-serif)",
+  studioWidgetTitleFontSize: 18,
+  studioAiPanelWidth: 320,
+  // The canvas fits the frame Kin gives it, so no widget is cut off at its edge.
+  studioCanvasMinWidth: 480,
   studioWidgetTitleTextColor: "var(--foreground)",
   studioWidgetSubtitleTextColor: "var(--muted-foreground)",
   // Kin's own minimum: below it the page shows Kin's summary instead (studio-surface.tsx).

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { KinStudioProps } from "./kin-studio";
 import { StudioBoundary } from "./studio-boundary";
 import { studioLicence, type StudioLicence } from "./studio-licence";
+import { ROOMY_WIDTH } from "./studio-report";
 import { STUDIO_MIN_WIDTH } from "./studio-theme";
 
 /** AG Studio is large and runs only in the browser: it loads when the page decides to show it, never on a phone. */
@@ -33,7 +34,7 @@ function Note({ children }: { readonly children: string }) {
   );
 }
 
-type SurfaceProps = Omit<KinStudioProps, "licenseKey"> & {
+type SurfaceProps = Omit<KinStudioProps, "licenseKey" | "roomy"> & {
   /** Kin's own read-only summary of the same record: what a phone, a lapsed licence or a failure shows. */
   readonly children: ReactNode;
 };
@@ -45,13 +46,14 @@ type SurfaceProps = Omit<KinStudioProps, "licenseKey"> & {
  */
 export function StudioSurface({ children, agents, ...props }: SurfaceProps) {
   const frame = useRef<HTMLDivElement>(null);
-  const [wide, setWide] = useState<boolean | null>(null);
+  const [width, setWidth] = useState<number | null>(null);
   const [licence, setLicence] = useState<StudioLicence | "failed" | null>(null);
+  const wide = width === null ? null : width >= STUDIO_MIN_WIDTH;
 
   useEffect(() => {
     const element = frame.current;
     if (element === null) return;
-    const observer = new ResizeObserver(([entry]) => setWide((entry?.contentRect.width ?? 0) >= STUDIO_MIN_WIDTH));
+    const observer = new ResizeObserver(([entry]) => setWidth(entry?.contentRect.width ?? 0));
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
@@ -76,7 +78,7 @@ export function StudioSurface({ children, agents, ...props }: SurfaceProps) {
       {phase.kind === "studio" ? (
         <StudioBoundary fallback={summary(notes.failed)}>
           <div className="h-[calc(100dvh-10rem)] min-h-[36rem] w-full min-w-0 overflow-hidden rounded-3xl">
-            <KinStudio {...props} licenseKey={LICENSE_KEY} agents={phase.ai ? agents : null} />
+            <KinStudio {...props} licenseKey={LICENSE_KEY} agents={phase.ai ? agents : null} roomy={(width ?? 0) >= ROOMY_WIDTH} />
           </div>
         </StudioBoundary>
       ) : (
