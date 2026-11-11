@@ -1,6 +1,6 @@
 import { HandHeartIcon } from "lucide-react";
 
-import { Panel } from "@/components/dashboard/ui/panel";
+import { FeatureTile } from "@/components/dashboard/ui/feature-tile";
 import { fill } from "@/i18n/template";
 import type { Formatters } from "@/lib/format";
 import type { AskView } from "@/server/quiet-shares";
@@ -23,8 +23,8 @@ export function QuietShareCard({ copy, ask, href, format }: Props) {
             ? fill(copy.planned, { ...slots, accepted: format.count(ask.acceptedCount), parts: format.count(ask.partCount) })
             : fill(copy.agreed, slots);
   return (
-    <Panel title={copy.title} description={copy.text} link={{ href, label: copy.open }} aside={<HandHeartIcon aria-hidden="true" className="size-6 shrink-0 text-highlight" />}>
-      {line === null ? <p className="sr-only">{copy.title}</p> : <p dir="auto" className="text-base font-medium text-pretty">{line}</p>}
-    </Panel>
+    <FeatureTile title={copy.title} text={copy.text} link={{ href, label: copy.open }} icon={HandHeartIcon}>
+      {line === null ? null : <p dir="auto" className="font-medium">{line}</p>}
+    </FeatureTile>
   );
 }
