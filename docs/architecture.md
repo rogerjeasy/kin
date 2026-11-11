@@ -461,6 +461,7 @@ stateDiagram-v2
     needs_review --> rejected
     extracted --> duplicate
     ready --> proposed
+    ready --> paid
     proposed --> paid
     proposed --> ready
     paid --> [*]

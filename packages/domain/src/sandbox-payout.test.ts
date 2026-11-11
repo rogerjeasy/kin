@@ -14,6 +14,8 @@ describe("routing an approved demo payout", () => {
   it.each([
     [{ configured: false }, "not_configured"],
     [{ kind: "member_payout" as const }, "not_caregiver"],
+    // Decision 73 sends only a caregiver's pay to the sandbox: a demo's bill payment stays simulated, labelled so.
+    [{ kind: "bill_payment" as const }, "not_caregiver"],
     [{ approved: false }, "not_approved"],
     [{ currency: "EUR" }, "currency"],
     [{ cents: SANDBOX_PAYOUT_MAX_CENTS + 1 }, "over_cap"],

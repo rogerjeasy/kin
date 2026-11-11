@@ -250,7 +250,7 @@ export function wishEffects(wishes: readonly InForceWish[], trigger: ActiveTrigg
 const bySaid = (a: InForceWish, b: InForceWish): number => a.saidOn.localeCompare(b.saidOn) || a.version - b.version || a.id.localeCompare(b.id);
 
 /** Kinds of outgoing money, as her wishes sort them. */
-export const SPEND_KINDS = ["caregiver_payout", "purchase", "member_payout", "help_payout", "allowance"] as const;
+export const SPEND_KINDS = ["caregiver_payout", "purchase", "member_payout", "help_payout", "allowance", "bill_payment"] as const;
 export type SpendKind = (typeof SPEND_KINDS)[number];
 
 export type WishHold =

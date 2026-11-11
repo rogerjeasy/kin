@@ -70,6 +70,8 @@ export type { Answers, CallVerdict, IntakeQuestion, IntakeState, PressureSignal,
 export { spokenAnswer } from "./spoken-answer.ts";
 export type { SpokenAnswer } from "./spoken-answer.ts";
 export { CAREGIVER_BILL_PURPOSE, CaregiverPayoutError, planCaregiverPayout } from "./caregiver-payout.ts";
+export { BillReviewError, LETTER_BILL_PURPOSE, MAX_PAYEE_NAME, MAX_RECEIVER_EMAIL, billRoute, checkBillReview, outsideReceiptCategory, planBillPayment } from "./letter-bill.ts";
+export type { BillPaymentRequest, BillReview, BillRoute } from "./letter-bill.ts";
 export type { CaregiverPayoutPlan, CaregiverPayoutRequest } from "./caregiver-payout.ts";
 export { entryHeadline } from "./entry-headline.ts";
 export type { EntryHeadline } from "./entry-headline.ts";
