@@ -9,57 +9,11 @@ import {
   JsonRpcRequest,
   jsonRpcRequestSchema,
 } from '../models/jsonRpcRequest.js';
-import { VisitReceipt, visitReceiptSchema } from '../models/visitReceipt.js';
-import { VisitReport, visitReportSchema } from '../models/visitReport.js';
 import { optional, unknown } from '../schema.js';
 import { BaseController } from './baseController.js';
 import { ApiError } from '@apimatic/core';
-import { CustomError } from '../errors/customError.js';
 
-export class ApiController extends BaseController {
-  /**
-   * Kept as evidence beside the shift on Kin's calendar. The body is signed: Kin-Signature: t=<unix
-   * seconds>,v1=<hex HMAC-SHA256 of "<t>.<raw body>" with the key's secret>. A timestamp more than 300
-   * seconds from Kin's clock is refused. Sending the same externalId and body again is idempotent.
-   *
-   * @param body
-   * @return Response from the API call
-   */
-  async reportVisit(
-    body: VisitReport,
-    requestOptions?: RequestOptions
-  ): Promise<ApiResponse<VisitReceipt>> {
-    const req = this.createRequest('POST', '/api/v1/visits');
-    const mapped = req.prepareArgs({ body: [body, visitReportSchema] });
-    req.header('Content-Type', 'application/json');
-    req.json(mapped.body);
-    req.throwOn(
-      401,
-      CustomError,
-      'The key is unknown or revoked, or the signature does not match.'
-    );
-    req.throwOn(
-      409,
-      CustomError,
-      'This externalId was reported before with a different body.'
-    );
-    req.throwOn(413, CustomError, 'The body is larger than 16 KB.');
-    req.throwOn(415, CustomError, 'The body is not application/json.');
-    req.throwOn(
-      422,
-      CustomError,
-      'The body was kept as sent but is not a visit Kin can read.'
-    );
-    req.throwOn(429, CustomError, 'Too many visits from this key today.');
-    req.throwOn(
-      503,
-      CustomError,
-      'Agency reporting is not switched on in this deployment.'
-    );
-    req.authenticate([{ agencyKey: true, agencySignature: true }]);
-    return req.callAsJson(visitReceiptSchema, requestOptions);
-  }
-
+export class MCPController extends BaseController {
   /**
    * Kin is a family's shared money layer for the care of an aging parent. These tools read one circle's
    * verified record as the member who connected you, and one can propose a refill the family's rules

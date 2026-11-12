@@ -1,0 +1,7 @@
+apimatic-core>=0.2.24,~=0.2.0
+apimatic-core-interfaces>=0.1.8,~=0.1.0
+apimatic-requests-client-adapter>=0.1.10,~=0.1.0
+python-dotenv<2.0,>=0.21
+
+[testutils]
+pytest>=7.2.2

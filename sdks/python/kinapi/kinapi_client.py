@@ -15,11 +15,14 @@ from kinapi.configuration import (
     Configuration,
     Environment,
 )
-from kinapi.controllers.api_controller import (
-    APIController,
+from kinapi.controllers.agency_controller import (
+    AgencyController,
 )
 from kinapi.controllers.base_controller import (
     BaseController,
+)
+from kinapi.controllers.mcp_controller import (
+    MCPController,
 )
 from kinapi.http.auth.agency_key import AgencyKey
 from kinapi.http.auth.agency_signature import (
@@ -34,9 +37,14 @@ class KinapiClient(object):
     """Client that provide access to the KinapiClient APIs."""
 
     @LazyProperty
-    def client(self):
-        """Provide access to the APIController endpoints."""
-        return APIController(self.global_configuration)
+    def agency(self):
+        """Provide access to the AgencyController endpoints."""
+        return AgencyController(self.global_configuration)
+
+    @LazyProperty
+    def mcp(self):
+        """Provide access to the MCPController endpoints."""
+        return MCPController(self.global_configuration)
 
     def __init__(self, http_client_instance=None,
                  override_http_client_configuration=False, http_call_back=None,

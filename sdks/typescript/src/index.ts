@@ -17,12 +17,22 @@ export {
   ResponseValidationError,
 } from './core.js';
 export * from './defaultConfiguration.js';
-export * from './controllers/apiController.js';
+export * from './controllers/agencyController.js';
+export * from './controllers/mCPController.js';
 export { ApiError } from './core.js';
 export * from './errors/customError.js';
+export * from './errors/invoiceRefusalError.js';
+export type { AgencyInvoice } from './models/agencyInvoice.js';
+export type { AgencyInvoiceLine } from './models/agencyInvoiceLine.js';
+export type { InvoiceReceipt } from './models/invoiceReceipt.js';
+export type { InvoiceStatus } from './models/invoiceStatus.js';
 export type { JsonRpcRequest } from './models/jsonRpcRequest.js';
 export { KindEnum } from './models/kindEnum.js';
 export { MethodEnum } from './models/methodEnum.js';
+export type { Payout } from './models/payout.js';
+export { ReasonEnum } from './models/reasonEnum.js';
+export { StateEnum } from './models/stateEnum.js';
+export { StatusEnum } from './models/statusEnum.js';
 export type { VisitReceipt } from './models/visitReceipt.js';
 export type { VisitReport } from './models/visitReport.js';
 export * from './models/containers/jsonRpcRequestId.js';

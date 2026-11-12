@@ -3,7 +3,7 @@
 
 ## Introduction
 
-Two ways in. A member's assistant speaks the Model Context Protocol at /api/mcp with a delegation token the member granted in Kin; it reads the verified record and may propose, never approve. A home-care agency's software reports visits at /api/v1/visits, signed with its key; a report is evidence beside the family's calendar and pays nothing. Every payment waits for a person in Kin, with a fresh multi-factor check. PayPal's own tools stay behind Kin.
+Two ways in. A member's assistant speaks the Model Context Protocol at /api/mcp with a delegation token the member granted in Kin; it reads the verified record and may propose, never approve. A home-care agency's software reports visits at /api/v1/visits and sends invoices for them at /api/v1/invoices, signed with its key; a report is evidence beside the family's calendar, an invoice is a bill a person reviews, and neither pays anything by itself. Every payment waits for a person in Kin, with a fresh multi-factor check. PayPal's own tools stay behind Kin.
 
 How to connect: [https://mzdg4f3stk.us-east-1.awsapprunner.com/developers](https://mzdg4f3stk.us-east-1.awsapprunner.com/developers)
 
@@ -148,7 +148,8 @@ This API uses the following authentication schemes.
 
 ## List of APIs
 
-* [API](doc/controllers/api.md)
+* [Agency](doc/controllers/agency.md)
+* [MCP](doc/controllers/mcp.md)
 
 ## SDK Infrastructure
 

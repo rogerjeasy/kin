@@ -17,7 +17,7 @@ An agency's request is signed: `Kin-Signature: t=<unix seconds>,v1=<hex HMAC-SHA
 
 ```ts
 import { createHmac } from "node:crypto";
-import { ApiController, Client, Environment } from "kin-apilib";
+import { AgencyController, Client, Environment } from "kin-apilib";
 
 const body = { externalId: "visit-1042", caregiver: "Amara", kind: "aide", startsAt: "2026-11-11T09:00:00-05:00", endsAt: "2026-11-11T13:00:00-05:00" };
 const t = Math.floor(Date.now() / 1000);
@@ -27,7 +27,7 @@ const client = new Client({
   agencyKeyCredentials: { "Kin-Agency-Key": process.env.KIN_AGENCY_KEY_ID! },
   agencySignatureCredentials: { "Kin-Signature": `t=${t},v1=${v1}` },
 });
-const { result } = await new ApiController(client).reportVisit(body); // { status: "received", ... }
+const { result } = await new AgencyController(client).reportVisit(body); // { status: "received", ... }
 ```
 
 **Python** (`sdks/python`, `pip install ./sdks/python`):
@@ -46,10 +46,14 @@ t = int(time.time())
 v1 = hmac.new(os.environ["KIN_AGENCY_SECRET"].encode(), f"{t}.{APIHelper.json_serialize(report)}".encode(), hashlib.sha256).hexdigest()
 client = KinapiClient(agency_key_credentials=AgencyKeyCredentials(kin_agency_key=os.environ["KIN_AGENCY_KEY_ID"]),
                       agency_signature_credentials=AgencySignatureCredentials(kin_signature=f"t={t},v1={v1}"))
-receipt = client.client.report_visit(report)  # receipt.status == "received"
+receipt = client.agency.report_visit(report)  # receipt.status == "received"
 ```
 
 A report is evidence beside the family's calendar. It pays nothing: every payment waits for a person in Kin.
+
+## Agency invoices
+
+`submitInvoice` / `submit_invoice` and `getInvoiceStatus` / `get_invoice_status` are signed the same way (the status request signs its own path, not a body). An invoice becomes a bill the family reviews; it never pays by itself.
 
 ## The MCP server
 

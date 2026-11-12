@@ -3,4 +3,5 @@
 __all__ = [
     "api_exception",
     "error_exception",
+    "invoice_refusal_exception",
 ]

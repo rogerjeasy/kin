@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: kinapi
+Version: 1.0.0
+Summary: Two ways in. A member's assistant speaks the Model Context Protocol at /api/mcp with a delegation token the member granted in Kin; it reads the verified record and may propose, never approve. A home-care agency's software reports visits at /api/v1/visits and sends invoices for them at /api/v1/invoices, signed with its key; a report is evidence beside the family's calendar, an invoice is a bill a person reviews, and neither pays anything by itself. Every payment waits for a person in Kin, with a fresh multi-factor check. PayPal's own tools stay behind Kin.
+Author-email: APIMatic Code Generator <support@apimatic.io>
+Requires-Python: >=3.7
+License-File: LICENSE
+Requires-Dist: apimatic-core>=0.2.24,~=0.2.0
+Requires-Dist: apimatic-core-interfaces>=0.1.8,~=0.1.0
+Requires-Dist: apimatic-requests-client-adapter>=0.1.10,~=0.1.0
+Requires-Dist: python-dotenv<2.0,>=0.21
+Provides-Extra: testutils
+Requires-Dist: pytest>=7.2.2; extra == "testutils"
+Dynamic: license-file

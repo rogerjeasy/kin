@@ -1,97 +1,19 @@
-# API
+# MCP
+
+A family member's own AI assistant, under a delegation the member granted. It reads and proposes, never approves.
 
 ```ts
-const apiController = new ApiController(client);
+const mCPController = new MCPController(client);
 ```
 
 ## Class Name
 
-`ApiController`
+`MCPController`
 
 ## Methods
 
-* [Report Visit](../../doc/controllers/api.md#report-visit)
-* [Mcp](../../doc/controllers/api.md#mcp)
-* [Protected Resource Metadata](../../doc/controllers/api.md#protected-resource-metadata)
-
-
-# Report Visit
-
-Kept as evidence beside the shift on Kin's calendar. The body is signed: Kin-Signature: t=<unix seconds>,v1=<hex HMAC-SHA256 of "<t>.<raw body>" with the key's secret>. A timestamp more than 300 seconds from Kin's clock is refused. Sending the same externalId and body again is idempotent.
-
-```ts
-async reportVisit(
-  body: VisitReport,
-  requestOptions?: RequestOptions
-): Promise<ApiResponse<VisitReceipt>>
-```
-
-## Authentication
-
-This endpoint requires [agencyKey](../../doc/auth/custom-header-signature.md) **AND** [agencySignature](../../doc/auth/custom-header-signature-1.md)
-
-## Parameters
-
-| Parameter | Type | Tags | Description |
-|  --- | --- | --- | --- |
-| `body` | [`VisitReport`](../../doc/models/visit-report.md) | Body, Required | - |
-| `requestOptions` | `RequestOptions \| undefined` | Optional | Pass additional request options. |
-
-## Response Type
-
-**200**: The same visit was already kept; nothing changed.
-
-This method returns an [`ApiResponse`](../../doc/api-response.md) instance. The `result` property of this instance returns the response data which is of type [`VisitReceipt`](../../doc/models/visit-receipt.md).
-
-## Example Usage
-
-```ts
-const body: VisitReport = {
-  externalId: 'externalId8',
-  caregiver: 'caregiver2',
-  kind: KindEnum.Appointment,
-  startsAt: '2016-03-13T12:52:32.123Z',
-  endsAt: '2016-03-13T12:52:32.123Z',
-};
-
-try {
-  const response = await apiController.reportVisit(body);
-
-  // Extracting fully parsed response body.
-  console.log(response.result);
-
-  // Extracting response status code.
-  console.log(response.statusCode);
-  // Extracting response headers.
-  console.log(response.headers);
-  // Extracting response body of type `string | Stream`
-  console.log(response.body);
-} catch (error) {
-  if (error instanceof ApiError) {
-    // Extracting response error status code.
-    console.log(error.statusCode);
-    // Extracting response error headers.
-    console.log(error.headers);
-    // Extracting response error body of type `string | Stream`.
-    console.log(error.body);
-    if (error instanceof CustomError) {
-      console.log(error.result);
-    }
-  }
-}
-```
-
-## Errors
-
-| HTTP Status Code | Error Description | Exception Class |
-|  --- | --- | --- |
-| 401 | The key is unknown or revoked, or the signature does not match. | [`CustomError`](../../doc/models/custom-error.md) |
-| 409 | This externalId was reported before with a different body. | [`CustomError`](../../doc/models/custom-error.md) |
-| 413 | The body is larger than 16 KB. | [`CustomError`](../../doc/models/custom-error.md) |
-| 415 | The body is not application/json. | [`CustomError`](../../doc/models/custom-error.md) |
-| 422 | The body was kept as sent but is not a visit Kin can read. | [`CustomError`](../../doc/models/custom-error.md) |
-| 429 | Too many visits from this key today. | [`CustomError`](../../doc/models/custom-error.md) |
-| 503 | Agency reporting is not switched on in this deployment. | [`CustomError`](../../doc/models/custom-error.md) |
+* [Mcp](../../doc/controllers/mcp.md#mcp)
+* [Protected Resource Metadata](../../doc/controllers/mcp.md#protected-resource-metadata)
 
 
 # Mcp
@@ -131,7 +53,7 @@ const body: JsonRpcRequest = {
 };
 
 try {
-  const response = await apiController.mcp(body);
+  const response = await mCPController.mcp(body);
 
   // Extracting fully parsed response body.
   console.log(response.result);
@@ -191,7 +113,7 @@ This method returns an [`ApiResponse`](../../doc/api-response.md) instance. The 
 
 ```ts
 try {
-  const response = await apiController.protectedResourceMetadata();
+  const response = await mCPController.protectedResourceMetadata();
 
   // Extracting fully parsed response body.
   console.log(response.result);

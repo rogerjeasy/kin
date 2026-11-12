@@ -62,5 +62,6 @@ The gateway for the SDK. This class acts as a factory for the Controllers and al
 
 | Name | Description |
 |  --- | --- |
-| api | Gets APIController |
+| agency | Gets AgencyController |
+| mcp | Gets MCPController |
 

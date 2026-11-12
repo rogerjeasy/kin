@@ -16,7 +16,7 @@ from tests.controllers.controller_test_base import (
 )
 
 
-class APIControllerTests(ControllerTestBase):
+class MCPControllerTests(ControllerTestBase):
     """
     Endpoint tests for validating the API behavior.
 
@@ -32,7 +32,7 @@ class APIControllerTests(ControllerTestBase):
         Initialize the shared test client and controller for all test methods.
         """
         super().setUpClass()
-        cls.controller = cls.client.client
+        cls.controller = cls.client.mcp
         cls.response_catcher = cls.controller.http_call_back
 
     def test_protected_resource_metadata(self):
