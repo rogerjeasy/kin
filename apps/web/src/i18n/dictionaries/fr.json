@@ -4299,6 +4299,106 @@
       },
       "alerted": "Kin a prévenu {alerted}.",
       "said": "Ce qui a été dit : « {claim} »"
+    },
+    "studio": {
+      "title": "Studio financier de la famille",
+      "lede": "Le registre du cercle sous forme de tableau de bord à votre façon : l’argent entrant et sortant, ce que chacun a donné comparé à la part convenue, la paie de l’aide à domicile, les frais PayPal et ce que PayPal a confirmé. Il lit les mêmes écritures que le Registre et n’en modifie aucune.",
+      "link": "Studio financier",
+      "eyebrow": "Conçu avec AG Studio",
+      "readOnly": "Vous pouvez regarder, filtrer et poser des questions. En lecture seule, le studio ne permet pas d’ajouter ni de déplacer des blocs.",
+      "tables": {
+        "ledger": "Registre comptable",
+        "fairness": "Équité"
+      },
+      "fields": {
+        "id": "ID de l’écriture",
+        "day": "Jour",
+        "month": "Mois",
+        "kind": "Type",
+        "person": "Qui ou quoi",
+        "category": "Catégorie",
+        "amount": "Montant",
+        "moneyIn": "Argent entrant",
+        "moneyOut": "Argent sortant",
+        "fee": "Frais PayPal",
+        "caregiverPay": "Paie de l’aide à domicile",
+        "caregiver": "Aide à domicile",
+        "proof": "Sandbox ou simulé",
+        "simulated": "Simulé",
+        "paypalVerified": "Confirmé par PayPal",
+        "paypalId": "ID PayPal",
+        "member": "Membre",
+        "share": "Part convenue",
+        "shareIndex": "Couleur de la part",
+        "given": "Donné",
+        "agreed": "Convenu",
+        "position": "Montant à régulariser"
+      },
+      "widgets": {
+        "inOut": "Argent entrant et sortant, par mois",
+        "caregiverPay": "Paie de l’aide à domicile, par mois",
+        "proof": "Sandbox PayPal comparé au simulé",
+        "fees": "Frais PayPal, par mois",
+        "ledger": "Toutes les écritures",
+        "group": "Kin",
+        "fairnessGap": {
+          "label": "Écart d’équité",
+          "title": "Ce que chacun a donné, comparé à sa part",
+          "description": "Montre ce que chaque membre a donné à côté de sa part convenue, et ce que la régularisation déplacerait.",
+          "given": "Donné {amount}",
+          "agreed": "convenu {amount}",
+          "owed": "La cagnotte doit {amount} à {name}",
+          "owes": "{name} doit {amount}",
+          "even": "{name} est à jour"
+        },
+        "verified": {
+          "label": "Vérifié par PayPal",
+          "title": "Confirmé par PayPal",
+          "description": "Compte les écritures appuyées par un vrai événement de la sandbox PayPal, avec les identifiants de PayPal lui-même.",
+          "count": "Écritures confirmées par PayPal",
+          "none": "Aucune pour l’instant. Chaque écriture de ce cercle est simulée, et indiquée comme telle.",
+          "more": "et {count} de plus"
+        }
+      },
+      "summary": {
+        "title": "Le registre en un coup d’œil",
+        "moneyIn": "Argent entrant",
+        "moneyOut": "Argent sortant",
+        "fees": "Frais PayPal",
+        "caregiverPay": "Paie de l’aide à domicile",
+        "sandbox": "Écritures de la sandbox PayPal",
+        "simulated": "Écritures simulées",
+        "fairness": "Parts en {month}",
+        "noFairness": "Aucun accord n’est en vigueur, il n’y a donc pas de parts à comparer.",
+        "allTime": "Depuis le début du cercle"
+      },
+      "notes": {
+        "lapsed": "La licence du studio a pris fin, alors Kin affiche son propre résumé du même registre.",
+        "narrow": "Sur un petit écran, Kin affiche son résumé. Ouvrez le studio sur un écran plus large pour créer vos propres vues.",
+        "failed": "Le studio n’a pas pu s’ouvrir, alors Kin affiche son propre résumé du même registre.",
+        "loading": "Ouverture du studio…"
+      },
+      "assistant": {
+        "unavailable": "L’assistant du studio n’est pas disponible pour le moment. Le tableau de bord fonctionne toujours.",
+        "cannot": "Je ne peux pas faire cela ici. Je peux seulement lire le registre et changer ce que ce tableau de bord affiche.",
+        "limit": "Vous avez posé beaucoup de questions à l’assistant du studio cette heure-ci. Réessayez plus tard.",
+        "unchecked": "J’ai fait les changements sur le tableau de bord, mais je n’ai pas pu vérifier un résumé avec le registre, donc je ne le mettrai pas en mots.",
+        "failed": "L’assistant n’a pas pu répondre. Veuillez réessayer.",
+        "starters": {
+          "caregiverPay": {
+            "label": "Paie de l’aide à domicile par mois",
+            "prompt": "Montre la paie de l’aide à domicile par mois sous forme de courbe."
+          },
+          "fairness": {
+            "label": "Qui est en retard sur sa part ?",
+            "prompt": "Qui a donné moins que sa part convenue, et de combien ?"
+          },
+          "fees": {
+            "label": "Frais PayPal",
+            "prompt": "Ajoute un graphique des frais PayPal par type d’écriture."
+          }
+        }
+      }
     }
   },
   "aiProvenance": {

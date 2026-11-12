@@ -4299,6 +4299,106 @@
       },
       "alerted": "Kin ha avvisato {alerted}.",
       "said": "Cosa è stato detto: «{claim}»"
+    },
+    "studio": {
+      "title": "Studio dei conti di famiglia",
+      "lede": "Il registro della cerchia come un cruscotto da modellare a piacere: denaro in entrata e in uscita, ciò che ognuno ha dato rispetto alla quota concordata, il compenso dell’assistente, le commissioni PayPal e ciò che PayPal ha confermato. Legge le stesse voci del Registro e non ne modifica nessuna.",
+      "link": "Studio dei conti",
+      "eyebrow": "Realizzato con AG Studio",
+      "readOnly": "Puoi guardare, filtrare e chiedere. Con l’accesso in sola lettura, lo studio non permette di aggiungere o spostare riquadri.",
+      "tables": {
+        "ledger": "Registro contabile",
+        "fairness": "Equità"
+      },
+      "fields": {
+        "id": "ID della voce",
+        "day": "Giorno",
+        "month": "Mese",
+        "kind": "Tipo",
+        "person": "Chi o cosa",
+        "category": "Categoria",
+        "amount": "Importo",
+        "moneyIn": "Denaro in entrata",
+        "moneyOut": "Denaro in uscita",
+        "fee": "Commissione PayPal",
+        "caregiverPay": "Compenso assistente",
+        "caregiver": "Assistente familiare",
+        "proof": "Sandbox o simulato",
+        "simulated": "Simulato",
+        "paypalVerified": "Confermato da PayPal",
+        "paypalId": "ID PayPal",
+        "member": "Membro",
+        "share": "Quota concordata",
+        "shareIndex": "Colore della quota",
+        "given": "Dato",
+        "agreed": "Concordato",
+        "position": "Importo del conguaglio"
+      },
+      "widgets": {
+        "inOut": "Denaro in entrata e in uscita, per mese",
+        "caregiverPay": "Compenso assistente, per mese",
+        "proof": "Sandbox di PayPal rispetto al simulato",
+        "fees": "Commissioni PayPal, per mese",
+        "ledger": "Tutte le voci",
+        "group": "Kin",
+        "fairnessGap": {
+          "label": "Divario di equità",
+          "title": "Ciò che ognuno ha dato, rispetto alla quota",
+          "description": "Mostra ciò che ogni membro ha dato accanto alla sua quota concordata, e cosa sposterebbe il conguaglio.",
+          "given": "Dato {amount}",
+          "agreed": "concordato {amount}",
+          "owed": "La cassa comune deve {amount} a {name}",
+          "owes": "{name} deve {amount}",
+          "even": "{name} è in pari"
+        },
+        "verified": {
+          "label": "Verificato da PayPal",
+          "title": "Confermato da PayPal",
+          "description": "Conta le voci dietro cui c’è un vero evento nella sandbox di PayPal, con gli ID di PayPal stesso.",
+          "count": "Voci confermate da PayPal",
+          "none": "Ancora nessuna. Ogni voce di questa cerchia è simulata, e indicata come tale.",
+          "more": "e altre {count}"
+        }
+      },
+      "summary": {
+        "title": "Il registro in breve",
+        "moneyIn": "Denaro in entrata",
+        "moneyOut": "Denaro in uscita",
+        "fees": "Commissioni PayPal",
+        "caregiverPay": "Compenso assistente",
+        "sandbox": "Voci dalla sandbox di PayPal",
+        "simulated": "Voci simulate",
+        "fairness": "Quote di {month}",
+        "noFairness": "Non c’è un accordo in vigore, quindi non ci sono quote da confrontare.",
+        "allTime": "Dall’inizio della cerchia"
+      },
+      "notes": {
+        "lapsed": "La licenza dello studio è scaduta, quindi Kin mostra il proprio riepilogo dello stesso registro.",
+        "narrow": "Su uno schermo piccolo Kin mostra il suo riepilogo. Apri lo studio su uno schermo più largo per creare le tue viste.",
+        "failed": "Non è stato possibile aprire lo studio, quindi Kin mostra il proprio riepilogo dello stesso registro.",
+        "loading": "Apertura dello studio…"
+      },
+      "assistant": {
+        "unavailable": "L’assistente dello studio non è disponibile in questo momento. Il cruscotto funziona comunque.",
+        "cannot": "Qui non posso farlo. Posso solo leggere il registro e cambiare ciò che mostra questo cruscotto.",
+        "limit": "Hai fatto molte domande all’assistente dello studio in quest’ora. Riprova più tardi.",
+        "unchecked": "Ho fatto le modifiche sul cruscotto, ma non ho potuto verificare un riepilogo con il registro, quindi non lo metterò in parole.",
+        "failed": "L’assistente non è riuscito a rispondere. Riprova.",
+        "starters": {
+          "caregiverPay": {
+            "label": "Compenso assistente per mese",
+            "prompt": "Mostra il compenso dell’assistente per mese con un grafico a linee."
+          },
+          "fairness": {
+            "label": "Chi è indietro con la sua quota?",
+            "prompt": "Chi ha dato meno della sua quota concordata, e di quanto?"
+          },
+          "fees": {
+            "label": "Commissioni PayPal",
+            "prompt": "Aggiungi un grafico delle commissioni PayPal per tipo di voce."
+          }
+        }
+      }
     }
   },
   "aiProvenance": {

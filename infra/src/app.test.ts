@@ -33,6 +33,7 @@ const config: InfraConfig = {
   twilioSmsFrom: null,
   presenceLineNumbers: null,
   demoMerchant: false,
+  agStudioLicense: null,
 };
 
 // The same feature flags as a real synth, so the tests see what is deployed.
