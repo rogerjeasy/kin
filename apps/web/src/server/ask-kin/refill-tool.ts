@@ -4,7 +4,7 @@ import { refillViews } from "@/content/circle/refills";
 import { fill } from "@/i18n/template";
 
 import { runRefill } from "../refills";
-import { named, simulatedNote, type AskKinWorld } from "./world";
+import { named, type AskKinWorld } from "./world";
 
 /** Words of four letters or more, without accents or case: "Rose's refill" → ["rose", "refill"]. */
 function words(text: string): string[] {
@@ -15,6 +15,14 @@ function words(text: string): string[] {
     .split(/[^\p{L}\p{N}]+/u)
     .filter((word) => word.length >= 4);
 }
+
+/**
+ * What the model is told about the payment. Nothing is charged while it
+ * answers: the worker places the order afterwards, and the order on Approvals
+ * then says whether it was a PayPal sandbox charge or simulated. So the model
+ * never calls a payment simulated, or real, before it exists.
+ */
+const NOT_CHARGED_YET = "not charged yet: the order is paid when it is placed, and Approvals shows whether that payment was a PayPal sandbox charge or simulated";
 
 /** Words that ask for a refill without naming what to refill. */
 const GENERIC_WORDS: ReadonlySet<string> = new Set(["refill", "refills", "reorder", "order", "again", "usual", "please"]);
@@ -73,9 +81,9 @@ export async function proposeRefill(world: AskKinWorld, item: string | undefined
         ...covered,
         // Said plainly, so the model's words agree with the card: nobody is asked, and Kin did not approve it.
         approval: "approved at once by the parent's own standing permission, and the order is being placed: nobody needs to say yes. Kin did not approve it.",
-        simulated: world.circle.circle.demo,
+        charged: NOT_CHARGED_YET,
       },
-      fact: fill(copy.facts.refillCovered, covered) + simulatedNote(world),
+      fact: fill(copy.facts.refillCovered, covered),
       proposal: { id: result.id, standing: { amount: covered.price, seller: covered.seller } },
     };
   }
@@ -84,7 +92,7 @@ export async function proposeRefill(world: AskKinWorld, item: string | undefined
       proposed: true,
       ...values,
       approval: delegationId === undefined ? "waiting for the yeses the family agreement names: nothing is bought until then" : "waiting for a person's yes in Kin: a refill an outside assistant proposes never uses the standing permission",
-      simulated: world.circle.circle.demo,
+      charged: NOT_CHARGED_YET,
     },
     fact: fill(copy.facts.refillProposed, values),
     proposal: { id: result.id },

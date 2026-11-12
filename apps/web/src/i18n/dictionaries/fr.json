@@ -139,8 +139,7 @@
     "orderedProposal": {
       "title": "Approuvé par l’autorisation permanente de {parent}",
       "text": "{amount} chez {seller}, et la commande est en cours. Ce n’est pas Kin qui l’a approuvé : c’est l’autorisation permanente de {parent} elle-même.",
-      "link": "Voir la commande dans les approbations",
-      "simulated": "Simulé"
+      "link": "Voir la commande dans les approbations"
     }
   },
   "meta": {

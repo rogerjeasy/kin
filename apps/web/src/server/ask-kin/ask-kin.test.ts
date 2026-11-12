@@ -117,9 +117,11 @@ describe("Ask Kin in a demo circle", () => {
     expect(result).toMatchObject({
       ok: true,
       source: "claude",
-      proposal: { kind: "standing_permission", href: `/dashboard/approvals#${String(proposal?.id)}`, words: { parent: "Rose", amount: "$64.00", seller: "Elm Street Pharmacy" }, simulated: true },
+      proposal: { kind: "standing_permission", href: `/dashboard/approvals#${String(proposal?.id)}`, words: { parent: "Rose", amount: "$64.00", seller: "Elm Street Pharmacy" } },
     });
-    expect(toolResult(model, 1)).toMatchObject({ proposed: true, price: "$64.00", seller: "Elm Street Pharmacy", parent: "Rose", approval: expect.stringContaining("Kin did not approve it") });
+    // Nothing is charged while Kin answers, so the model is told neither "simulated" nor "sandbox" as a fact about this payment.
+    expect(toolResult(model, 1)).toMatchObject({ proposed: true, price: "$64.00", seller: "Elm Street Pharmacy", parent: "Rose", approval: expect.stringContaining("Kin did not approve it"), charged: expect.stringMatching(/^not charged yet/u) });
+    expect(toolResult(model, 1)).not.toHaveProperty("simulated");
     expect(JSON.stringify(toolResult(model, 1))).not.toMatch(/waits|waiting/u);
   });
 
@@ -141,7 +143,7 @@ describe("Ask Kin in a demo circle", () => {
       ok: true,
       source: "template",
       templateReason: "guard",
-      answer: "Here is what the record says: Rose's standing permission approved Monthly prescription refill (30 days) at $64.00 from Elm Street Pharmacy, so nobody needs to say yes, and the order is being placed. Kin did not approve it. This circle's money is simulated.",
+      answer: "Here is what the record says: Rose's standing permission approved Monthly prescription refill (30 days) at $64.00 from Elm Street Pharmacy, so nobody needs to say yes, and the order is being placed. Kin did not approve it.",
       proposal: { kind: "standing_permission" },
     });
   });
@@ -323,6 +325,8 @@ describe("Ask Kin when Claude is unavailable", () => {
 
   it("reorders the parent's refill without Claude, and the proposal still waits for a yes", async () => {
     const circle = await visitorWithCircle(db);
+    // The demo's standing permission would approve it at once; without it the refill truly waits.
+    await endMandates(db, circle.circleId);
     const rose = await seatPerson(db, circle.circleId, circle.members.rose);
     const result = await runAskKin(context(await snapshot(circle, rose), rose, down()), ask("Reorder Rose's refill"));
     expect(result).toMatchObject({ ok: true, templateReason: "no_claude", steps: [{ tool: "propose_refill", outcome: "ok" }], proposal: { kind: "proposal" } });

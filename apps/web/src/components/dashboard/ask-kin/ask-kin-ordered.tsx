@@ -1,7 +1,6 @@
 import { ArrowRightIcon, BadgeCheckIcon } from "lucide-react";
 import Link from "next/link";
 
-import { Tag } from "@/components/shared/tag";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
 import type { AskKinRaised } from "@/server/ask-kin/ask-kin";
@@ -24,7 +23,6 @@ export function AskKinOrdered({ raised, copy }: Props) {
           <BadgeCheckIcon className="size-4" />
         </span>
         <span className="min-w-0 text-pretty">{title}</span>
-        {raised.simulated ? <Tag>{copy.simulated}</Tag> : null}
       </h3>
       <p className="mt-2 text-sm text-pretty">{fill(copy.text, raised.words)}</p>
       <Link href={raised.href} className="group mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-highlight">

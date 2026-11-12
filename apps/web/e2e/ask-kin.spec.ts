@@ -48,7 +48,8 @@ for (const viewport of viewports) {
     const card = page.getByRole("region", { name: ordered.title });
     await expect(card).toBeVisible();
     await expect(card).toContainText(ordered.text);
-    await expect(card).toContainText(english.dashboard.common.simulated);
+    // Nothing is charged yet: the order on Approvals says later whether its payment was a sandbox charge or simulated.
+    await expect(card).not.toContainText(english.dashboard.common.simulated);
     await expect(page.getByText(copy.proposal.text)).toHaveCount(0);
     await expect(page.getByRole("listitem").filter({ hasText: copy.tools.propose_refill })).toBeVisible();
     await expectNoHorizontalOverflow(page);

@@ -139,8 +139,7 @@
     "orderedProposal": {
       "title": "Aprobado por el permiso permanente de {parent}",
       "text": "{amount} en {seller}, y el pedido se está realizando. Kin no lo aprobó: lo aprobó el propio permiso permanente de {parent}.",
-      "link": "Ver el pedido en aprobaciones",
-      "simulated": "Simulado"
+      "link": "Ver el pedido en aprobaciones"
     }
   },
   "meta": {

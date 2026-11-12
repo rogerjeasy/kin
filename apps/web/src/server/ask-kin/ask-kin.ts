@@ -39,7 +39,9 @@ export type AskKinStep = { readonly tool: string; readonly label: string; readon
  * What a question raised, as the card under the answer words it. A proposal
  * waits for the family on Approvals and a Purse payment for the parent on her
  * Purse. One her standing permission approved at once names what was ordered,
- * from the record, and links to it on Approvals.
+ * from the record, and links to it on Approvals, where the order says once it
+ * is paid whether that was a PayPal sandbox charge or simulated: nothing is
+ * charged yet when the card is shown, so the card does not say either.
  */
 export type AskKinRaised =
   | { readonly id: string; readonly href: string; readonly kind: "proposal" | "purse_payment" }
@@ -48,7 +50,6 @@ export type AskKinRaised =
       readonly href: string;
       readonly kind: "standing_permission";
       readonly words: { readonly parent: string; readonly amount: string; readonly seller: string };
-      readonly simulated: boolean;
     };
 
 export type AskKinResponse =
@@ -192,6 +193,5 @@ function raised(proposal: RaisedProposal, locale: Locale, world: AskKinWorld): A
     href: `${approvals}#${proposal.id}`,
     kind: "standing_permission",
     words: { parent: world.names.parent, amount: proposal.standing.amount, seller: proposal.standing.seller },
-    simulated: world.circle.circle.demo,
   };
 }

@@ -139,8 +139,7 @@
     "orderedProposal": {
       "title": "Genehmigt durch die dauerhafte Erlaubnis von {parent}",
       "text": "{amount} bei {seller}, und die Bestellung wird aufgegeben. Kin hat es nicht genehmigt: Das hat die dauerhafte Erlaubnis von {parent} selbst getan.",
-      "link": "Bestellung in den Freigaben ansehen",
-      "simulated": "Simuliert"
+      "link": "Bestellung in den Freigaben ansehen"
     }
   },
   "meta": {

@@ -139,8 +139,7 @@
     "orderedProposal": {
       "title": "Approvato dal permesso permanente di {parent}",
       "text": "{amount} da {seller}, e l’ordine è in corso. Non l’ha approvato Kin: l’ha approvato il permesso permanente di {parent}.",
-      "link": "Vedi l’ordine nelle approvazioni",
-      "simulated": "Simulato"
+      "link": "Vedi l’ordine nelle approvazioni"
     }
   },
   "meta": {

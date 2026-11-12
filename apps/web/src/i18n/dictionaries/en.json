@@ -139,8 +139,7 @@
     "orderedProposal": {
       "title": "Approved under {parent}’s standing permission",
       "text": "{amount} at {seller}, and the order is being placed. Kin did not approve it: {parent}’s own standing permission did.",
-      "link": "See the order on Approvals",
-      "simulated": "Simulated"
+      "link": "See the order on Approvals"
     }
   },
   "meta": {
