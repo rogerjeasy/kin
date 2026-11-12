@@ -223,6 +223,31 @@ describe("an agency's invoice", () => {
     expect(await errorCode(db.admin.execute(sql`update agency_invoiced_visits set released_at = null where id = ${claim?.id ?? ""}`))).toBe("23001");
   });
 
+  it("never reaches a payee the family approved by sharing its name, and keeps one payee for the agency's later invoices", async () => {
+    const circle = await visitorWithCircle(db);
+    // Lakeside Water is an approved payee of Rose's circle; a key with its name must not inherit it.
+    const key = await agency(circle, "Lakeside Water");
+    await reportVisit(key, "harbor-1");
+    await reportVisit(key, "harbor-2", "2026-10-29T14:00:00Z", "2026-10-29T17:00:00Z");
+    const first = await send(key, invoiceBody({ lines: [{ visitId: "harbor-1", minutes: 240, amountCents: 8_800, currency: "USD" }], totalCents: 8_800 }));
+    const second = await send(key, invoiceBody({ invoiceNumber: "INV-2002", lines: [{ visitId: "harbor-2", minutes: 180, amountCents: 6_600, currency: "USD" }], totalCents: 6_600 }));
+    if (first.state !== "accepted" || second.state !== "accepted") throw new Error("Refused");
+    const payeeOf = async (billId: string) => (await service(circle, (tx) => tx.select({ payeeId: bills.payeeId }).from(bills).where(eq(bills.id, billId))))[0]?.payeeId;
+    const payeeId = await payeeOf(first.billId);
+    expect(payeeId).not.toBe(circle.payees.water);
+    expect(await payeeOf(second.billId)).toBe(payeeId);
+    const [payee] = await service(circle, (tx) => tx.select().from(payees).where(eq(payees.id, payeeId ?? "")));
+    expect(payee).toMatchObject({ name: "Lakeside Water", status: "new", paypalReceiver: null, autoPayRuleId: null });
+  });
+
+  it("refuses, in the database too, lines that do not add up to the total", async () => {
+    const circle = await visitorWithCircle(db);
+    const key = await agency(circle);
+    await reportVisit(key, "harbor-1");
+    const forged = { invoiceNumber: "INV-F", periodStart: "2026-10-01", periodEnd: "2026-10-31", lines: [{ visitId: "harbor-1", minutes: 240, amountCents: 100 }], totalCents: 99_900, currency: "USD", dueOn: "2026-11-20", paypalEmail: null };
+    expect(await errorCode(db.app.execute(sql`select kin_private.receive_agency_invoice(${key.keyId}, ${sha(key.secret)}, ${JSON.stringify(forged)}, ${JSON.stringify(forged)}::jsonb, null)`))).toBe("23514");
+  });
+
   it("is never changed or deleted, nor its lines", async () => {
     const circle = await visitorWithCircle(db);
     const { invoiceId } = await invoiced(circle);

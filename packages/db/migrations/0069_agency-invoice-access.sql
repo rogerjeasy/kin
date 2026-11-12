@@ -205,10 +205,19 @@ CREATE FUNCTION kin_private.receive_agency_invoice(p_key_id text, p_secret_hash 
         'visits', to_jsonb(CASE WHEN v_refusal = 'unknown_visit' THEN v_unknown ELSE v_invoiced END));
     END IF;
 
-    -- The agency is paid as a company the family pays: found by the name the organizer gave its key, or new.
-    SELECT p.id INTO v_payee FROM public.payees p
-      WHERE p.circle_id = v_key.circle_id AND p.member_id IS NULL AND p.voice_id IS NULL AND lower(btrim(p.name)) = lower(btrim(v_key.label))
-      ORDER BY p.created_at, p.id LIMIT 1;
+    -- The money core's own check, a second time: the lines add up to the total in integer cents.
+    IF (SELECT sum((l ->> 'amountCents')::numeric) FROM jsonb_array_elements(p_invoice -> 'lines') l) IS DISTINCT FROM (p_invoice ->> 'totalCents')::numeric THEN
+      RAISE EXCEPTION 'kin: the invoice lines do not add up to its total' USING ERRCODE = 'check_violation';
+    END IF;
+
+    -- The agency is paid as a company the family pays: the payee an earlier invoice from this agency made, or a
+    -- new one. Never another payee that merely shares the key's name, so a key can never reach a payee the family
+    -- approved, its address or its standing rule.
+    SELECT b.payee_id INTO v_payee FROM public.agency_invoices i
+      JOIN public.agency_keys k ON k.circle_id = i.circle_id AND k.id = i.agency_key_id
+      JOIN public.bills b ON b.circle_id = i.circle_id AND b.id = i.bill_id
+      WHERE i.circle_id = v_key.circle_id AND i.state = 'accepted' AND (k.id = v_key.id OR lower(btrim(k.label)) = lower(btrim(v_key.label)))
+      ORDER BY i.received_at, i.id LIMIT 1;
     IF v_payee IS NULL THEN
       v_payee := gen_random_uuid();
       INSERT INTO public.payees (id, circle_id, name, category, status) VALUES (v_payee, v_key.circle_id, btrim(v_key.label), 'care', 'new');
