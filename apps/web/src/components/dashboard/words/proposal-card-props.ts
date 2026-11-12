@@ -1,4 +1,4 @@
-import { LETTER_BILL_PURPOSE, type ApprovalTerms } from "@kin/domain";
+import { AGENCY_INVOICE_PURPOSE, LETTER_BILL_PURPOSE, type ApprovalTerms } from "@kin/domain";
 import type { ProposalRecord } from "@kin/db";
 
 import type { SlotItem } from "@/components/dashboard/approvals/approval-slots";
@@ -101,8 +101,8 @@ function destination(dictionary: Dictionary, context: CardContext, view: Proposa
   const { proposal } = view;
   if (!("payeeId" in proposal.to)) return null;
   const name = context.names.payee(proposal.to.payeeId);
-  // A bill read from a letter goes to the address the family entered for the company when they reviewed it.
-  if (proposal.kind === "bill_payment" && proposal.purpose === LETTER_BILL_PURPOSE) {
+  // A bill read from a letter, or an agency's invoice, goes to the address the family confirmed when they reviewed it.
+  if (proposal.kind === "bill_payment" && (proposal.purpose === LETTER_BILL_PURPOSE || proposal.purpose === AGENCY_INVOICE_PURPOSE)) {
     const receiver = context.receiverOf(proposal.to.payeeId);
     return receiver === null ? null : fill(notes.billReceiver, { address: receiver, name });
   }

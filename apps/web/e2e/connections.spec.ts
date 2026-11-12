@@ -43,7 +43,8 @@ for (const viewport of viewports) {
     await expect(sample).toContainText(copy.list.sample);
     await expect(sample).toContainText(copy.list.outcomes.unknown_tool);
     await expect(sample).toContainText(english.askKin.tools.get_fairness);
-    await expect(page.getByText("Sunrise Home Care reports Amara")).toBeVisible();
+    // Today's visit and the two earlier ones Sunrise invoiced.
+    await expect(page.getByText("Sunrise Home Care reports Amara")).toHaveCount(3);
     await expect(page.getByText(copy.agency.evidence).first()).toBeVisible();
     await expectNoHorizontalOverflow(page);
 

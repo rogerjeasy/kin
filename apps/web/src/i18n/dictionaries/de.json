@@ -1589,6 +1589,10 @@
         "letter_bill": {
           "title": "Rechnung von {name}",
           "text": "Aus einem Brief gelesen und von der Familie geprüft. Sie wird erst nach jedem Ja, das die Vereinbarung verlangt, mit PayPal aus der Kasse bezahlt."
+        },
+        "agency_invoice": {
+          "title": "Rechnung von {name}",
+          "text": "Von der Agentur über Kins signierte API geschickt und an den Besuchen geprüft, die die Familie bestätigt hat. PayPal zahlt sie aus dem Topf erst nach jedem Ja, das die Vereinbarung verlangt."
         }
       },
       "raisedBy": "Eingereicht von {name}, {date}",
@@ -1693,6 +1697,32 @@
         },
         "noDuplicates": "Diesen Monat keine doppelten Rechnungen.",
         "noJumps": "Kein Betrag ist ohne Grund gestiegen."
+      },
+      "invoices": {
+        "title": "Rechnungen von Agenturen",
+        "lede": "Die Abrechnungssoftware eines Pflegedienstes schickt ihre Rechnungen mit ihrem signierten Schlüssel an Kin. Kin prüft jede Position an den Besuchen, die die Familie bestätigt hat. Bezahlt wird nichts, bevor ein Mensch die Rechnung prüft und die Familie zustimmt.",
+        "empty": "Noch keine Agentur hat eine Rechnung geschickt.",
+        "heading": "Von {agency}, Rechnung {number}",
+        "period": "{from} bis {to}",
+        "due": "Fällig am {day}",
+        "lines": "Was die Agentur berechnet",
+        "line": "{caregiver}, {when}",
+        "when": "{kind}, {from} bis {to}",
+        "minutes": "{count} Minuten",
+        "flags": {
+          "no_family_word": "Die Familie hat diesen Besuch nicht bestätigt",
+          "hours_differ": "Die Stunden weichen vom eigenen Ein- und Auschecken der Pflegekraft ab",
+          "paid_already": "Kin hat die Pflegekraft für diese Schicht schon bezahlt"
+        },
+        "matches": "Passt zu einer Schicht, die die Familie bestätigt hat",
+        "warning": "{count} von {total} Positionen sollten genauer angesehen werden, bevor jemand zustimmt.",
+        "allClear": "Jede Position passt zu einer Schicht, die die Familie bestätigt hat.",
+        "paypal": "Die Agentur nimmt PayPal unter {email}; die Familie bestätigt diese Adresse, wenn sie die Rechnung prüft.",
+        "noPaypal": "Die Agentur hat keine PayPal-Adresse angegeben, daher wird die Rechnung außerhalb von Kin bezahlt.",
+        "lessThanInvoiced": "Wer prüft, darf weniger als berechnet zahlen, für die Besuche, zu denen die Familie steht, nie mehr.",
+        "declined": "Abgelehnt",
+        "decline": "Diese Rechnung ablehnen",
+        "declining": "Wird abgelehnt…"
       }
     },
     "fairness": {
@@ -2655,7 +2685,8 @@
           "amount": "Geben Sie den Betrag wie im Brief an, etwa 61.00.",
           "due": "Wählen Sie ein gültiges Datum.",
           "receiver": "Geben Sie eine PayPal-E-Mail-Adresse an oder wählen Sie Außerhalb von Kin.",
-          "unavailable": "Kin ist nicht erreichbar. Versuchen Sie es erneut."
+          "unavailable": "Kin ist nicht erreichbar. Versuchen Sie es erneut.",
+          "above_invoice": "Die Agentur hat weniger berechnet. Zahlen Sie höchstens, was sie berechnet hat."
         }
       }
     },
@@ -4876,7 +4907,22 @@
       "evidence": "Nur ein Nachweis: Aus einer Meldung wird nichts bezahlt.",
       "note": "Die Agentur schrieb: „{note}“",
       "refused": "Ein Inhalt, den Kin nicht lesen konnte, aufbewahrt, wie er gesendet wurde.",
-      "shiftsLink": "Das Wort der Familie zum Einsatz geben"
+      "shiftsLink": "Das Wort der Familie zum Einsatz geben",
+      "invoices": "Erhaltene Rechnungen",
+      "noInvoices": "Noch keine Rechnungen erhalten.",
+      "invoice": "{agency}: Rechnung {number}, {amount}",
+      "invoiceLines": "{count} Positionen · erhalten {received}",
+      "billsLink": "Unter Rechnungen prüfen",
+      "invoiceRefusals": {
+        "shape": "Eine Rechnung, die Kin nicht lesen konnte, so aufbewahrt, wie sie kam.",
+        "total": "Eine Rechnung, deren Summe nicht die Summe ihrer Positionen war, abgelehnt.",
+        "currency": "Eine Rechnung mit einer Position in anderer Währung, abgelehnt.",
+        "duplicate_line": "Eine Rechnung, die einen Besuch zweimal berechnete, abgelehnt.",
+        "period": "Eine Rechnung mit Daten, die keinen echten Zeitraum bilden, abgelehnt.",
+        "unknown_visit": "Eine Rechnung für einen Besuch, den die Agentur nie gemeldet hat, abgelehnt.",
+        "visit_invoiced": "Eine Rechnung für einen Besuch, der schon auf einer anderen Rechnung steht, abgelehnt.",
+        "circle_currency": "Eine Rechnung nicht in der Währung des Kreises, abgelehnt."
+      }
     }
   },
   "developers": {
@@ -4916,7 +4962,12 @@
       "title": "Einen Besuch melden",
       "lede": "Senden Sie einen Besuch per POST an /api/v1/visits, signiert mit dem Schlüssel, den die Kreisleitung erstellt hat. Kin bewahrt ihn als Nachweis neben dem Einsatz auf. Er bezahlt nichts.",
       "sign": "Den rohen Body signieren",
-      "responses": "201 aufbewahrt · 200 schon aufbewahrt · 401 Schlüssel oder Signatur · 409 gleiche ID, anderer Inhalt · 422 aufbewahrt, aber unlesbar"
+      "responses": "201 aufbewahrt · 200 schon aufbewahrt · 401 Schlüssel oder Signatur · 409 gleiche ID, anderer Inhalt · 422 aufbewahrt, aber unlesbar",
+      "invoiceTitle": "Eine Rechnung schicken",
+      "invoiceLede": "Schicken Sie eine Rechnung per POST an /api/v1/invoices, genau wie einen Besuch signiert. Jede Position nennt einen Besuch, den die Agentur schon gemeldet hat, in ganzen Cent; Kin rechnet die Summe selbst nach. Die Rechnung wird zu einer Rechnung, die die Familie an den bestätigten Besuchen prüft. Sie bezahlt von sich aus nichts.",
+      "invoiceSign": "Eine Rechnung signieren und schicken",
+      "statusSign": "Nach dem Stand fragen (den Pfad signieren)",
+      "invoiceResponses": "201 zur Prüfung aufbewahrt · 200 schon aufbewahrt · 401 Schlüssel oder Signatur · 409 gleiche Nummer, anderer Inhalt · 422 aufbewahrt, aber abgelehnt, mit Grund · GET: received, under_review, approved, paid, declined"
     },
     "openapi": {
       "eyebrow": "OpenAPI",
@@ -4931,8 +4982,7 @@
       "eyebrow": "Als Nächstes",
       "title": "Noch nicht gebaut",
       "items": [
-        "Anmeldung über OAuth 2.1 mit PKCE, damit ein Client ohne Kopieren eines Tokens autorisiert wird.",
-        "Rechnungen von Agenturen über dieselbe signierte API."
+        "Anmeldung über OAuth 2.1 mit PKCE, damit ein Client ohne Kopieren eines Tokens autorisiert wird."
       ]
     }
   }

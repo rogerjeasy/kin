@@ -18,6 +18,7 @@ import {
   revokeDelegation,
   type GrantDelegation,
 } from "../open-kin.ts";
+import { readAgencyInvoices } from "../agency-invoices.ts";
 import { asDelegate, asPerson } from "../scope.ts";
 import { realCircle, seatPerson, visitorWithCircle, type VisitorCircle } from "../testing/index.ts";
 import { testDatabases } from "../testing/databases.ts";
@@ -197,6 +198,11 @@ describe("what the app's role may touch directly", () => {
     expect(await run(sql`select token_hash from delegations`)).toBe("42501");
     expect(await run(sql`select secret_hash from agency_keys`)).toBe("42501");
     expect(await run(sql`select raw_body from agency_visit_reports`)).toBe("42501");
+    expect(await run(sql`select raw_body from agency_invoices`)).toBe("42501");
+    expect(await run(sql`insert into agency_invoices (id, circle_id, agency_key_id, raw_body, body_sha256, state, refusal) select gen_random_uuid(), circle_id, id, 'x', ${sha("x")}, 'refused', 'shape' from agency_keys limit 1`)).toBe("42501");
+    expect(await run(sql`insert into agency_invoice_lines (id, circle_id, invoice_id, position, visit_report_id, minutes, amount_cents) select gen_random_uuid(), circle_id, id, 1, id, 60, 100 from agency_invoices limit 1`)).toBe("42501");
+    expect(await run(sql`insert into agency_invoiced_visits (id, circle_id, visit_report_id, invoice_id) select gen_random_uuid(), circle_id, visit_report_id, invoice_id from agency_invoice_lines limit 1`)).toBe("42501");
+    expect(await run(sql`update agency_invoiced_visits set released_at = now()`)).toBe("42501");
     expect(await run(sql`insert into delegations (id, circle_id, member_id, label, scope, token_hash, token_hint, expires_at) values (gen_random_uuid(), ${circle.circleId}, ${circle.members.elena}, 'x', 'read', ${sha("x")}, 'abcd', now() + interval '1 day')`)).toBe("42501");
     expect(await run(sql`update delegations set scope = 'propose'`)).toBe("42501");
     expect(await run(sql`insert into delegation_calls (id, circle_id, delegation_id, tool, outcome, duration_ms, at) select gen_random_uuid(), circle_id, id, 'approve', 'ok', 1, now() from delegations limit 1`)).toBe("42501");
@@ -223,7 +229,7 @@ describe("another circle", () => {
   it("can neither read nor write this circle's delegations, calls, agency keys or reports", async () => {
     const [mine, theirs] = await Promise.all([visitorWithCircle(db), visitorWithCircle(db)]);
     const count = async (table: string) => (await person(mine.userId, (tx) => tx.execute<{ n: string }>(sql`select count(*) as n from ${sql.identifier(table)} where circle_id = ${theirs.circleId}`))).rows[0]?.n;
-    for (const table of ["delegations", "delegation_calls", "agency_keys", "agency_visit_reports"]) expect({ table, rows: await count(table) }).toEqual({ table, rows: "0" });
+    for (const table of ["delegations", "delegation_calls", "agency_keys", "agency_visit_reports", "agency_invoices", "agency_invoice_lines", "agency_invoiced_visits"]) expect({ table, rows: await count(table) }).toEqual({ table, rows: "0" });
     expect(await reason(grant(mine.userId, theirs.circleId))).toBe("refused");
     const [their] = await person(theirs.userId, (tx) => readDelegations(tx, theirs.circleId));
     expect(await reason(person(mine.userId, (tx) => revokeDelegation(tx, { circleId: theirs.circleId, delegationId: their?.id ?? "" })))).toBe("refused");
@@ -261,7 +267,12 @@ describe("agency keys and the visits they report", () => {
     const { daniel, amara } = await seats(circle);
     expect(await person(daniel, (tx) => readAgencyKeys(tx, circle.circleId))).toHaveLength(1);
     expect(await person(amara, (tx) => readAgencyKeys(tx, circle.circleId))).toEqual([]);
-    expect(await person(amara, (tx) => readAgencyReports(tx, circle.circleId))).toHaveLength(1);
+    // Today's visit and the two earlier ones Sunrise invoiced: every report in the sample is about her.
+    expect((await person(amara, (tx) => readAgencyReports(tx, circle.circleId))).map((report) => report.caregiverMemberId)).toEqual([circle.members.amara, circle.members.amara, circle.members.amara]);
+    // An invoice is about the money, so a caregiver reads none of them, nor their lines; the observer reads the sample.
+    expect(await person(amara, (tx) => readAgencyInvoices(tx, circle.circleId))).toEqual([]);
+    expect(await person(amara, (tx) => tx.execute<{ n: string }>(sql`select count(*) as n from agency_invoice_lines`)).then((result) => result.rows[0]?.n)).toBe("0");
+    expect(await person(daniel, (tx) => readAgencyInvoices(tx, circle.circleId))).toHaveLength(1);
   });
 
   it("keeps a signed visit as evidence, matches the caregiver, and writes no shift, proposal or ledger line", async () => {

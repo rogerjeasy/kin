@@ -10,14 +10,14 @@ import { useBillRequest } from "./use-bill-request";
 
 type Copy = Dictionary["dashboard"]["letters"]["bills"];
 /** What Kin read, to start the form from. The amount is already written as a decimal for the circle's currency. */
-type Props = { billId: string; name: string; amount: string; dueOn: string | null; copy: Copy };
+type Props = { billId: string; name: string; amount: string; dueOn: string | null; copy: Copy; /** The PayPal address the bill came with, such as an agency invoice's, for the reviewer to confirm. */ receiver?: string | null };
 
 /**
  * A member who shares the cost checks what Kin read against the letter, and
  * says how the bill is paid: by PayPal to the company's address, which raises
  * a proposal the agreement's yeses decide, or outside Kin. Nothing here pays.
  */
-export function BillReviewForm({ billId, name, amount, dueOn, copy }: Props) {
+export function BillReviewForm({ billId, name, amount, dueOn, copy, receiver = null }: Props) {
   const { send, pending, error } = useBillRequest(copy.errors);
   const [open, setOpen] = useState(false);
   const [how, setHow] = useState<"paypal" | "outside">("paypal");
@@ -67,7 +67,7 @@ export function BillReviewForm({ billId, name, amount, dueOn, copy }: Props) {
         {how === "paypal" ? (
           <div className="sm:col-span-2">
             <Field id={`${id}-receiver`} label={review.email}>
-              <input id={`${id}-receiver`} name="receiver" type="email" required maxLength={127} autoComplete="off" className={inputClass} />
+              <input id={`${id}-receiver`} name="receiver" type="email" required maxLength={127} autoComplete="off" defaultValue={receiver ?? ""} className={inputClass} />
             </Field>
           </div>
         ) : null}

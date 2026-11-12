@@ -16,6 +16,7 @@ import { circleNames } from "@/content/circle/names";
 import { waitingProposals } from "@/content/circle/proposal-view";
 import { dashboardRoutes } from "@/content/dashboard-routes";
 import { delegationViews, reportViews } from "@/content/open-kin/connection-views";
+import { invoiceViews, refusedInvoiceViews } from "@/content/open-kin/invoice-views";
 import { routes } from "@/content/site-routes";
 import { pageContext } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
@@ -43,6 +44,9 @@ export default async function ConnectionsPage({ params }: PageProps<"/[locale]/d
   const delegations = delegationViews({ delegations: screen.delegations, circle, names, format, now });
   const reports = reportViews({ reports: screen.reports, keys: screen.agencyKeys, circle, copy: copy.agency, kinds: dictionary.dashboard.shifts.kinds, format });
   const keys = screen.agencyKeys.map((key) => ({ id: key.id, label: key.label, created: format.dateTime(key.createdAt), lastReport: key.lastUsedAt === null ? null : format.dateTime(key.lastUsedAt), revoked: key.revokedAt !== null, seeded: key.seeded }));
+  const agencyOf = (id: string) => screen.agencyKeys.find((key) => key.id === id)?.label ?? "";
+  const invoices = invoiceViews({ invoices: screen.invoices, agencyOf, circle, copy: dictionary.dashboard.bills.invoices, kinds: dictionary.dashboard.shifts.kinds, format });
+  const refusedInvoices = refusedInvoiceViews(screen.invoices, agencyOf, format);
   const caregiver = circle.members.find((member) => member.role === "caregiver")?.displayName ?? dictionary.dashboard.common.roles.caregiver;
   const [waiting] = waitingProposals(circle);
 
@@ -82,7 +86,7 @@ export default async function ConnectionsPage({ params }: PageProps<"/[locale]/d
         )}
       </Panel>
       {may(circle, "money.view") || reports.length > 0 ? (
-        <AgencyPanel copy={copy} keys={keys} reports={reports} canManage={may(circle, "agency_key.manage")} origin={origin} caregiver={caregiver} shiftsHref={localizedPath(locale, dashboardRoutes.shifts)} />
+        <AgencyPanel copy={copy} keys={keys} reports={reports} canManage={may(circle, "agency_key.manage")} origin={origin} caregiver={caregiver} shiftsHref={localizedPath(locale, dashboardRoutes.shifts)} invoices={invoices} refusedInvoices={refusedInvoices} billsHref={localizedPath(locale, dashboardRoutes.bills)} />
       ) : null}
     </>
   );

@@ -1,7 +1,8 @@
+import { calendarDay } from "@kin/domain";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import type { Transaction } from "../connection.ts";
-import { agencyKeys, agencyVisitReports, delegationCalls, delegations } from "../schema/index.ts";
+import { agencyInvoiceLines, agencyInvoicedVisits, agencyInvoices, agencyKeys, agencyVisitReports, bills, delegationCalls, delegations, payees } from "../schema/index.ts";
 import type { DemoTime } from "./demo-time.ts";
 import { ROSES_CIRCLE, type PersonaKey } from "./roses-circle.ts";
 import { SCHEDULED_SHIFTS } from "./roses-shifts.ts";
@@ -21,7 +22,8 @@ const unusable = () => sha256(randomBytes(32).toString("base64url"));
  * The demo's sample of Open Kin, so the screen tells its story the moment it
  * opens: Marcus connected his own assistant last week, it read what he owes
  * and then tried to approve, and was refused. And Amara's agency reports her
- * visits. Every row is marked seeded and says so on the screen; no token or
+ * visits, and has sent its invoice for two of her earlier ones, which waits
+ * on the Bills screen for a person's review. Every row is marked seeded and says so on the screen; no token or
  * secret behind them exists anywhere. The live console then makes real calls
  * with a delegation Kin issues for the visitor's own seat.
  */
@@ -101,4 +103,78 @@ export async function writeOpenKin(tx: Transaction, rows: Rows): Promise<void> {
     seeded: true,
     receivedAt: new Date(Math.min(checkedInAt.getTime() + MINUTE_MS, now)),
   });
+  await writeSampleInvoice(tx, { ...rows, keyId, todayStartsAt: window.startsAt });
+}
+
+/** What the sample agency charges an hour, in cents: what its invoice's lines are priced at. */
+const SUNRISE_CENTS_PER_HOUR = 2_800;
+const SUNRISE_PAYPAL = "billing@sunrise-homecare.example";
+
+/**
+ * Sunrise's invoice for Amara's visits three and two days ago, which it
+ * reported at the time. No shift on Kin's calendar has the family's word for
+ * them, so the Bills screen flags both lines: the point of the check. The
+ * invoice waits for review like any bill; nothing is paid from it.
+ */
+async function writeSampleInvoice(tx: Transaction, rows: Rows & { readonly keyId: string; readonly todayStartsAt: Date }): Promise<void> {
+  const { circleId, time, keyId } = rows;
+  const day = (instant: Date) => calendarDay(instant, ROSES_CIRCLE.timezone).occurredOn;
+  const visits = [3, 2].map((daysAgo) => {
+    const startsAt = new Date(rows.todayStartsAt.getTime() - daysAgo * DAY_MS);
+    const endsAt = new Date(startsAt.getTime() + 4 * HOUR_MS);
+    const body = { externalId: `sunrise-${day(startsAt)}-amara`, caregiver: "Amara", kind: "aide", startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString(), checkedInAt: startsAt.toISOString(), checkedOutAt: endsAt.toISOString() };
+    return { id: randomUUID(), body, rawBody: JSON.stringify(body), startsAt, endsAt };
+  });
+  await tx.insert(agencyVisitReports).values(
+    visits.map((visit) => ({
+      id: visit.id,
+      circleId,
+      agencyKeyId: keyId,
+      rawBody: visit.rawBody,
+      bodySha256: sha256(visit.rawBody),
+      state: "accepted" as const,
+      externalId: visit.body.externalId,
+      caregiverName: "Amara",
+      caregiverMemberId: rows.members.amara,
+      kind: "aide" as const,
+      startsAt: visit.startsAt,
+      endsAt: visit.endsAt,
+      checkedInAt: visit.startsAt,
+      checkedOutAt: visit.endsAt,
+      minutes: 240,
+      seeded: true,
+      receivedAt: new Date(visit.endsAt.getTime() + 5 * MINUTE_MS),
+    })),
+  );
+  const lines = visits.map((visit) => ({ visitId: visit.body.externalId, minutes: 240, amountCents: 4 * SUNRISE_CENTS_PER_HOUR, currency: ROSES_CIRCLE.currency }));
+  const totalCents = lines.reduce((total, line) => total + line.amountCents, 0);
+  const today = day(time.now);
+  const dueOn = day(new Date(time.now.getTime() + 14 * DAY_MS));
+  const body = { invoiceNumber: "INV-1042", periodStart: day(visits[0]?.startsAt ?? time.now), periodEnd: today, lines, totalCents, currency: ROSES_CIRCLE.currency, dueOn, paypalEmail: SUNRISE_PAYPAL };
+  const rawBody = JSON.stringify(body);
+  const payeeId = randomUUID();
+  const billId = randomUUID();
+  const invoiceId = randomUUID();
+  await tx.insert(payees).values({ id: payeeId, circleId, name: "Sunrise Home Care", category: "care", status: "new" });
+  await tx.insert(bills).values({ id: billId, circleId, payeeId, amountCents: totalCents, dueOn, receivedOn: today, state: "needs_review" });
+  await tx.insert(agencyInvoices).values({
+    id: invoiceId,
+    circleId,
+    agencyKeyId: keyId,
+    rawBody,
+    bodySha256: sha256(rawBody),
+    state: "accepted",
+    invoiceNumber: body.invoiceNumber,
+    periodStart: body.periodStart,
+    periodEnd: body.periodEnd,
+    totalCents,
+    currency: body.currency,
+    dueOn,
+    paypalEmail: SUNRISE_PAYPAL,
+    billId,
+    seeded: true,
+    receivedAt: new Date(time.now.getTime() - 30 * MINUTE_MS),
+  });
+  await tx.insert(agencyInvoiceLines).values(visits.map((visit, index) => ({ id: randomUUID(), circleId, invoiceId, position: index + 1, visitReportId: visit.id, minutes: 240, amountCents: 4 * SUNRISE_CENTS_PER_HOUR })));
+  await tx.insert(agencyInvoicedVisits).values(visits.map((visit) => ({ id: randomUUID(), circleId, visitReportId: visit.id, invoiceId })));
 }

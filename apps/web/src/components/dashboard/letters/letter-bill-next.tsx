@@ -18,15 +18,17 @@ type Props = {
   mayReview: boolean;
   approvalsHref: string;
   memberName: (memberId: string) => string;
+  /** The PayPal address the bill came with, offered to the reviewer to confirm. */
+  receiver?: string | null;
   copy: Dictionary["dashboard"]["letters"]["bills"];
 };
 
 /** What comes next for one bill read from a letter: its review, its wait for the family's yes, or its payment outside Kin. */
-export function LetterBillNext({ bill, circle, payeeName, format, mayReview, approvalsHref, memberName, copy }: Props) {
+export function LetterBillNext({ bill, circle, payeeName, format, mayReview, approvalsHref, memberName, copy, receiver = null }: Props) {
   if (bill.state === "needs_review") {
     if (!mayReview) return null;
     const amount = decimalAmount({ cents: bill.amountCents, currency: circle.circle.currency });
-    return <BillReviewForm billId={bill.id} name={payeeName} amount={amount} dueOn={bill.dueOn} copy={copy} />;
+    return <BillReviewForm billId={bill.id} name={payeeName} amount={amount} dueOn={bill.dueOn} copy={copy} receiver={receiver} />;
   }
   if (bill.state === "proposed") {
     return (

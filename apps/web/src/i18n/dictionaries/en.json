@@ -1589,6 +1589,10 @@
         "letter_bill": {
           "title": "{name} bill",
           "text": "Read from a letter and checked by the family. It is paid by PayPal from the pool only after every yes the agreement asks for."
+        },
+        "agency_invoice": {
+          "title": "{name} invoice",
+          "text": "Sent by the agency through Kin's signed API and checked against the visits the family confirmed. It is paid by PayPal from the pool only after every yes the agreement asks for."
         }
       },
       "raisedBy": "Raised by {name}, {date}",
@@ -1693,6 +1697,32 @@
         },
         "noDuplicates": "No duplicate bills this month.",
         "noJumps": "No amount rose without a reason."
+      },
+      "invoices": {
+        "title": "Invoices from agencies",
+        "lede": "A home-care agency's billing software sends its invoices to Kin with its signed key. Kin checks every line against the visits the family gave its word on. Nothing is paid until a person reviews it and the family says yes.",
+        "empty": "No agency has sent an invoice.",
+        "heading": "From {agency}, invoice {number}",
+        "period": "{from} to {to}",
+        "due": "Due {day}",
+        "lines": "What the agency charges for",
+        "line": "{caregiver}, {when}",
+        "when": "{kind}, {from} to {to}",
+        "minutes": "{count} minutes",
+        "flags": {
+          "no_family_word": "The family has not given its word on this visit",
+          "hours_differ": "The hours differ from the caregiver's own check-in and check-out",
+          "paid_already": "Kin already paid the caregiver for this shift"
+        },
+        "matches": "Matches a shift the family confirmed",
+        "warning": "{count} of {total} lines need a closer look before anyone says yes.",
+        "allClear": "Every line matches a shift the family confirmed.",
+        "paypal": "The agency takes PayPal at {email}; the family confirms that address when it reviews the invoice.",
+        "noPaypal": "The agency gave no PayPal address, so the invoice is paid outside Kin.",
+        "lessThanInvoiced": "A reviewer may pay less than invoiced, for the visits the family stands behind, never more.",
+        "declined": "Declined",
+        "decline": "Decline this invoice",
+        "declining": "Declining…"
       }
     },
     "fairness": {
@@ -2655,7 +2685,8 @@
           "amount": "Write the amount as on the letter, such as 61.00.",
           "due": "Choose a real date.",
           "receiver": "Write a PayPal email address, or choose Outside Kin.",
-          "unavailable": "Kin could not be reached. Try again."
+          "unavailable": "Kin could not be reached. Try again.",
+          "above_invoice": "The agency invoiced less than that. Pay at most what it invoiced."
         }
       }
     },
@@ -4876,7 +4907,22 @@
       "evidence": "Evidence only: nothing is paid from a report.",
       "note": "The agency wrote: “{note}”",
       "refused": "A body Kin could not read, kept as it was sent.",
-      "shiftsLink": "Give the family's word on the shift"
+      "shiftsLink": "Give the family's word on the shift",
+      "invoices": "Invoices received",
+      "noInvoices": "No invoices received yet.",
+      "invoice": "{agency}: invoice {number}, {amount}",
+      "invoiceLines": "{count} lines · received {received}",
+      "billsLink": "Review it on Bills",
+      "invoiceRefusals": {
+        "shape": "An invoice Kin could not read, kept as it was sent.",
+        "total": "An invoice whose total was not the sum of its lines, refused.",
+        "currency": "An invoice with a line in another currency, refused.",
+        "duplicate_line": "An invoice that charged one visit twice, refused.",
+        "period": "An invoice with dates that are not a real period, refused.",
+        "unknown_visit": "An invoice for a visit the agency never reported, refused.",
+        "visit_invoiced": "An invoice for a visit already on another invoice, refused.",
+        "circle_currency": "An invoice not in the circle's currency, refused."
+      }
     }
   },
   "developers": {
@@ -4916,7 +4962,12 @@
       "title": "Report a visit",
       "lede": "POST one visit to /api/v1/visits, signed with the key the circle's organizer created. Kin keeps it as evidence beside the shift. It pays nothing.",
       "sign": "Sign the raw body",
-      "responses": "201 kept · 200 already kept · 401 key or signature · 409 same ID, other body · 422 kept but unreadable"
+      "responses": "201 kept · 200 already kept · 401 key or signature · 409 same ID, other body · 422 kept but unreadable",
+      "invoiceTitle": "Send an invoice",
+      "invoiceLede": "POST an invoice to /api/v1/invoices, signed exactly like a visit. Each line names a visit the agency already reported, in integer cents; Kin adds the lines up itself. The invoice becomes a bill the family reviews against the visits it confirmed. It pays nothing by itself.",
+      "invoiceSign": "Sign and send an invoice",
+      "statusSign": "Ask where it stands (sign the path)",
+      "invoiceResponses": "201 kept for review · 200 already kept · 401 key or signature · 409 same number, other body · 422 kept but refused, with why · GET: received, under_review, approved, paid, declined"
     },
     "openapi": {
       "eyebrow": "OpenAPI",
@@ -4931,8 +4982,7 @@
       "eyebrow": "Next",
       "title": "Not built yet",
       "items": [
-        "Signing in through OAuth 2.1 with PKCE, so a client is authorized without copying a token.",
-        "Agency invoices through the same signed API."
+        "Signing in through OAuth 2.1 with PKCE, so a client is authorized without copying a token."
       ]
     }
   }
