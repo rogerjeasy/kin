@@ -218,7 +218,7 @@ test.describe("a yes to real money", () => {
 
     await page.getByLabel(security.code).fill("000000" === totpCode(secret) ? "111111" : "000000");
     await page.getByRole("button", { name: security.confirm }).click();
-    await expect(page.getByRole("alert")).toContainText(security.errors.wrong_code);
+    await expect(page.getByRole("region", { name: security.panel }).getByRole("alert")).toContainText(security.errors.wrong_code);
 
     await page.getByLabel(security.code).fill(totpCode(secret));
     await page.getByRole("button", { name: security.confirm }).click();

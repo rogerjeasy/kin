@@ -246,7 +246,7 @@ test.describe("the circle and its record in the demo", () => {
     await page.getByLabel(dashboard.circle.invite.role).selectOption("observer");
     await page.getByRole("button", { name: dashboard.circle.invite.submit }).click();
 
-    await expect(page.getByRole("status").filter({ hasText: dashboard.notices.invited })).toBeVisible();
+    await expect(page.getByRole("status").filter({ hasText: dashboard.notices.invitedDemo })).toBeVisible();
     const invitations = page.getByRole("region", { name: dashboard.circle.invitations.title });
     await expect(invitations).toContainText("grace@example.com");
     await expect(invitations).toContainText(dashboard.circle.invitations.status.pending);
