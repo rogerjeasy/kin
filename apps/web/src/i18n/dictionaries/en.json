@@ -1972,8 +1972,12 @@
       "freshCheck": "Approving a real payment needs a fresh sign-in with your authenticator app. Use the Approve button.",
       "paused": "Paused. No payment is approved for 24 hours, and everyone is told.",
       "resumed": "The pause is lifted.",
-      "invited": "Invitation recorded. They join when they sign in to Kin with that address.",
+      "invited": "Invitation sent. Kin is emailing them a link; they join when they sign in to Kin with that address.",
       "invalidInvite": "Enter a valid email address and choose a role.",
+      "invitedDemo": "Invitation recorded. This is the demo, so no email is sent.",
+      "inviteLimit": "This circle has sent twenty invitations today. Try again tomorrow.",
+      "alreadyInvited": "That address already has an invitation waiting.",
+      "alreadyMember": "That address already belongs to someone in this circle.",
       "roleChanged": "You now see the circle from a new seat.",
       "restarted": "You have a fresh copy of Rose’s circle.",
       "circleCreated": "Your circle is ready. Invite your family from the Circle screen.",
@@ -4451,6 +4455,33 @@
     "privacy": "This link is only for you. Please do not share it.",
     "accountLabel": "PayPal email (optional)",
     "accountHint": "If a real emergency ever needs help, it can go only to this account, and only after the family approves. Leave it empty to be asked but never sent money."
+  },
+  "joinLink": {
+    "meta": {
+      "title": "Your invitation · Kin"
+    },
+    "brand": "Kin, your family’s care app",
+    "title": "You are invited",
+    "lede": "{inviter} invited you to the circle that looks after {parent}, as {role}.",
+    "ledeNoParent": "{inviter} invited you to their family’s circle, as {role}.",
+    "how": "Create your Kin account, or sign in, with the email address this invitation was sent to. The circle opens as soon as that address is confirmed.",
+    "signUp": "Create my account",
+    "signIn": "I already have an account",
+    "accepted": "This invitation has been accepted. Sign in to open the circle.",
+    "closed": "This invitation has expired or was withdrawn. Ask the family to invite you again.",
+    "problems": {
+      "link": "This link is not valid. Ask the family to invite you again.",
+      "busy": "Too many tries. Wait a minute, then open the link again.",
+      "unavailable": "Kin could not open this invitation now. Try again in a moment."
+    },
+    "privacy": "Kin never asks for a password, a code or money by email. The link only shows the invitation.",
+    "roles": {
+      "organizer": "an organizer",
+      "contributor": "a contributor",
+      "parent": "the parent",
+      "caregiver": "a caregiver",
+      "observer": "an observer"
+    }
   },
   "openKin": {
     "meta": {

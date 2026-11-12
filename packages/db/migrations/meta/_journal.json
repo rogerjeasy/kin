@@ -442,6 +442,20 @@
       "when": 1794293674514,
       "tag": "0062_wishes-stake-cannot-report",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1794423704685,
+      "tag": "0063_invitation-link",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1794423710871,
+      "tag": "0064_invitation-email",
+      "breakpoints": true
     }
   ]
 }

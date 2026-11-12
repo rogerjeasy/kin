@@ -1,0 +1,3 @@
+ALTER TABLE "invitations" ADD COLUMN "link_token_hash" text;--> statement-breakpoint
+CREATE UNIQUE INDEX "invitations_link_token" ON "invitations" USING btree ("link_token_hash") WHERE "invitations"."link_token_hash" is not null;--> statement-breakpoint
+ALTER TABLE "invitations" ADD CONSTRAINT "invitations_link_hash" CHECK ("invitations"."link_token_hash" is null or "invitations"."link_token_hash" ~ '^[0-9a-f]{64}$');

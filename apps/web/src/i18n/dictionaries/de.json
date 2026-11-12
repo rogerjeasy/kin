@@ -1972,8 +1972,12 @@
       "freshCheck": "Eine echte Zahlung zu genehmigen erfordert eine neue Anmeldung mit Ihrer Authenticator-App. Nutzen Sie die Schaltfläche Zustimmen.",
       "paused": "Pausiert. 24 Stunden lang wird keine Zahlung genehmigt, und alle werden informiert.",
       "resumed": "Die Pause ist aufgehoben.",
-      "invited": "Einladung festgehalten. Die Person tritt bei, wenn sie sich mit dieser Adresse bei Kin anmeldet.",
+      "invited": "Einladung verschickt. Kin sendet der Person einen Link per E-Mail; sie tritt bei, wenn sie sich mit dieser Adresse bei Kin anmeldet.",
       "invalidInvite": "Geben Sie eine gültige E-Mail-Adresse ein und wählen Sie eine Rolle.",
+      "invitedDemo": "Einladung festgehalten. Dies ist die Demo, daher wird keine E-Mail verschickt.",
+      "inviteLimit": "Dieser Kreis hat heute zwanzig Einladungen verschickt. Versuchen Sie es morgen wieder.",
+      "alreadyInvited": "Für diese Adresse wartet bereits eine Einladung.",
+      "alreadyMember": "Diese Adresse gehört bereits zu jemandem in diesem Kreis.",
       "roleChanged": "Sie sehen den Kreis jetzt von einem anderen Platz aus.",
       "restarted": "Sie haben eine neue Kopie von Roses Kreis.",
       "circleCreated": "Ihr Kreis ist bereit. Laden Sie Ihre Familie über die Seite Kreis ein.",
@@ -4451,6 +4455,33 @@
     "privacy": "Dieser Link ist nur für Sie. Bitte geben Sie ihn nicht weiter.",
     "accountLabel": "PayPal-E-Mail (freiwillig)",
     "accountHint": "Wenn ein echter Notfall Hilfe brauchte, könnte sie nur auf dieses Konto gehen und erst, wenn die Familie zustimmt. Leer lassen, um gefragt zu werden, aber nie Geld zu bekommen."
+  },
+  "joinLink": {
+    "meta": {
+      "title": "Ihre Einladung · Kin"
+    },
+    "brand": "Kin, die Pflege-App Ihrer Familie",
+    "title": "Sie sind eingeladen",
+    "lede": "{inviter} lädt Sie in den Kreis ein, der sich um {parent} kümmert, als {role}.",
+    "ledeNoParent": "{inviter} lädt Sie in den Kreis der Familie ein, als {role}.",
+    "how": "Erstellen Sie Ihr Kin-Konto oder melden Sie sich an, mit der E-Mail-Adresse, an die diese Einladung ging. Der Kreis öffnet sich, sobald diese Adresse bestätigt ist.",
+    "signUp": "Konto erstellen",
+    "signIn": "Ich habe schon ein Konto",
+    "accepted": "Diese Einladung wurde angenommen. Melden Sie sich an, um den Kreis zu öffnen.",
+    "closed": "Diese Einladung ist abgelaufen oder wurde zurückgezogen. Bitten Sie die Familie um eine neue.",
+    "problems": {
+      "link": "Dieser Link ist ungültig. Bitten Sie die Familie um eine neue Einladung.",
+      "busy": "Zu viele Versuche. Warten Sie eine Minute und öffnen Sie den Link erneut.",
+      "unavailable": "Kin kann diese Einladung gerade nicht öffnen. Versuchen Sie es gleich noch einmal."
+    },
+    "privacy": "Kin fragt per E-Mail nie nach einem Passwort, einem Code oder Geld. Der Link zeigt nur die Einladung.",
+    "roles": {
+      "organizer": "Organisator",
+      "contributor": "beitragende Person",
+      "parent": "Elternteil",
+      "caregiver": "Pflegekraft",
+      "observer": "Beobachter"
+    }
   },
   "openKin": {
     "meta": {

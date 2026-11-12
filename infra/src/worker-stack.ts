@@ -10,6 +10,7 @@ import type { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
 import { DATABASE_SETTINGS, MIGRATION_TASK, PAYPAL_SETTINGS, TWILIO_SETTINGS } from "./database-settings.ts";
+import { GMAIL_SECRET_ARN_PARAMETER } from "./gmail-secret-name.ts";
 import { SUBNETS } from "./network-stack.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -31,6 +32,11 @@ type WorkerStackProps = StackProps & {
    * them queued. Given only when the PayPal app, a sender and the web app's https address all exist (`presenceTextSettings`).
    */
   readonly presenceTexts: { readonly from: string; readonly webUrl: string } | null;
+  /**
+   * The invitation email: Kin's Gmail sender and the web app's public address. `null` leaves invitations queued (they
+   * are still joined at sign-in). Given only when a sender and the web app's https address exist (`invitationEmailSettings`).
+   */
+  readonly invitationEmails: { readonly senderEmail: string; readonly webUrl: string } | null;
 };
 
 /**
@@ -103,6 +109,7 @@ export class WorkerStack extends Stack {
         ...(props.demoSandboxPayeeEmail === null ? {} : { KIN_DEMO_SANDBOX_PAYEE_EMAIL: props.demoSandboxPayeeEmail }),
         ...(props.shiftCall === null ? {} : { KIN_TWILIO_CALLER_NUMBER: props.shiftCall.callerNumber, KIN_VOICE_PUBLIC_URL: props.shiftCall.publicUrl }),
         ...(props.presenceTexts === null ? {} : { KIN_TWILIO_SMS_FROM: props.presenceTexts.from, KIN_WEB_PUBLIC_URL: props.presenceTexts.webUrl }),
+        ...(props.invitationEmails === null ? {} : { KIN_SENDER_EMAIL: props.invitationEmails.senderEmail, KIN_WEB_PUBLIC_URL: props.invitationEmails.webUrl }),
       },
       secrets: {
         KIN_DATABASE_SERVICE_PASSWORD: ecs.Secret.fromSecretsManager(secret("ServicePassword", DATABASE_SETTINGS.serviceSecretArn)),
@@ -116,6 +123,8 @@ export class WorkerStack extends Stack {
               KIN_TWILIO_AUTH_TOKEN: ecs.Secret.fromSecretsManager(secret("TwilioAuthToken", TWILIO_SETTINGS.authTokenSecretArn)),
             }),
         ...(props.shiftCall === null ? {} : { KIN_VOICE_STATE_KEY: ecs.Secret.fromSecretsManager(secret("VoiceStateKey", TWILIO_SETTINGS.stateKeySecretArn)) }),
+        // The app password of the account that sends sign-in codes; the worker sends invitations from it and reads nothing else of the sign-in.
+        ...(props.invitationEmails === null ? {} : { KIN_GMAIL_APP_PASSWORD: ecs.Secret.fromSecretsManager(secret("GmailAppPassword", GMAIL_SECRET_ARN_PARAMETER)) }),
       },
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: "worker",

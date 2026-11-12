@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 
 import type { Transaction } from "./connection.ts";
 import { parseApprovalPlan } from "./plan-json.ts";
-import { approvals, auditLog, circles, invitations, proposals } from "./schema/index.ts";
+import { approvals, auditLog, circles, proposals } from "./schema/index.ts";
 import type { ApprovalMethod } from "./values.ts";
 import { readWishEffects } from "./wishes.ts";
 
@@ -79,14 +79,6 @@ export async function pauseCircle(tx: Transaction, seat: Seat, until: Date): Pro
 export async function resumeCircle(tx: Transaction, seat: Seat): Promise<void> {
   await tx.update(circles).set({ pausedUntil: null, pausedBy: null }).where(eq(circles.id, seat.circleId));
   await record(tx, seat, "circle.resumed", "circle", seat.circleId, {});
-}
-
-/** Records an organizer's invitation of someone to a role. */
-export async function inviteMember(tx: Transaction, seat: Seat, invitation: { email: string; role: CircleRole; expiresAt: Date }): Promise<string> {
-  const id = randomUUID();
-  await tx.insert(invitations).values({ id, circleId: seat.circleId, email: invitation.email, role: invitation.role, invitedBy: seat.memberId, expiresAt: invitation.expiresAt });
-  await record(tx, seat, "member.invited", "invitation", id, { role: invitation.role });
-  return id;
 }
 
 async function record(tx: Transaction, seat: Seat, action: string, subjectType: string, subjectId: string, details: Record<string, unknown>): Promise<void> {

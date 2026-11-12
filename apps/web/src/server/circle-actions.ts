@@ -1,7 +1,20 @@
 "use server";
 
 import { CIRCLE_ROLES, PARENT_LEVELS, PAUSE_HOURS, type CircleRole, type ParentLevel } from "@kin/domain";
-import { ProposalClosedError, answerProposal, asPerson, createCircle, inviteMember, pauseCircle, resumeCircle, type CircleSnapshot, type Seat } from "@kin/db";
+import {
+  InvitationError,
+  ProposalClosedError,
+  answerProposal,
+  asPerson,
+  createCircle,
+  inviteMember,
+  newCheckToken,
+  pauseCircle,
+  resumeCircle,
+  type CircleSnapshot,
+  type InvitationReason,
+  type Seat,
+} from "@kin/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -20,6 +33,14 @@ const HOUR_MS = 60 * 60 * 1000;
 /** How long an invitation waits to be accepted. */
 const INVITATION_DAYS = 14;
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+/** What the screen says when the database refuses an invitation. */
+const INVITE_NOTICES: Readonly<Record<InvitationReason, Notice>> = {
+  refused: "refused",
+  invalid: "invalidInvite",
+  too_many: "inviteLimit",
+  already_invited: "alreadyInvited",
+  already_member: "alreadyMember",
+};
 /** The only currency whose PayPal payout fee Kin has checked (packages/paypal). */
 const CIRCLE_CURRENCY = "USD";
 
@@ -102,8 +123,15 @@ export async function inviteAction(form: FormData): Promise<void> {
   const role = CIRCLE_ROLES.find((each) => each === form.get("role")) ?? null;
   if (email === null || !EMAIL.test(email) || role === null) back(locale, "circle", "invalidInvite");
   const expiresAt = new Date(Date.now() + INVITATION_DAYS * 24 * HOUR_MS);
-  await asPerson(databases().app, viewer.userId, (tx) => inviteMember(tx, seat, { email, role: role satisfies CircleRole, expiresAt }));
-  back(locale, "circle", "invited");
+  // In a real circle the database queues the email with this token; the link it carries only shows the invitation.
+  const invitation = { email, role: role satisfies CircleRole, expiresAt, locale, token: newCheckToken() };
+  try {
+    await asPerson(databases().app, viewer.userId, (tx) => inviteMember(tx, seat, invitation));
+  } catch (error) {
+    if (error instanceof InvitationError) back(locale, "circle", INVITE_NOTICES[error.reason]);
+    throw error;
+  }
+  back(locale, "circle", circle.circle.demo ? "invitedDemo" : "invited");
 }
 
 /** A person who signed in starts their own circle and organizes it. */

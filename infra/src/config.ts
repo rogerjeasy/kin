@@ -123,6 +123,18 @@ export function presenceTextSettings(config: InfraConfig): { readonly from: stri
   return { from: config.twilioSmsFrom, webUrl };
 }
 
+/**
+ * The invitation email comes from the worker, through the Gmail account that sends sign-in codes, and links to the web
+ * app's public address. Given only when the worker, a sender and an https address all exist, so a half-set deployment
+ * queues the invitations rather than emailing a link that leads nowhere (`readInvitationEmailConfig` in `@kin/config`
+ * refuses the same). The person still joins at sign-in either way.
+ */
+export function invitationEmailSettings(config: InfraConfig): { readonly senderEmail: string; readonly webUrl: string } | null {
+  const webUrl = config.webOrigins.find((origin) => /^https:\/\/[^\s/?#@]+$/.test(origin));
+  if (config.paypal === null || config.senderEmail === null || webUrl === undefined) return null;
+  return { senderEmail: config.senderEmail, webUrl };
+}
+
 export class InfraConfigError extends Error {
   constructor(message: string) {
     super(message);

@@ -29,12 +29,14 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   return keepSecret(decision.kind === "rewrite" ? NextResponse.rewrite(url) : NextResponse.redirect(url, PERMANENT_REDIRECT), pathname);
 }
 
-// A check-in link's, and an "is this you?" link's, address holds a secret, and the page is public: the
-// caregiver taps it with nobody signed in. It is never stored by a cache or a
+// A check-in link's, an "is this you?" link's and an invitation's address holds a secret, and the page is
+// public: the person taps it with nobody signed in. It is never stored by a cache or a
 // browser history that shares, never sent on as a referrer, never indexed.
+const SECRET_PAGES = ["/c/", "/v/", "/t/", "/join/"] as const;
+
 function keepSecret(response: NextResponse, pathname: string): NextResponse {
   const page = pagePath(pathname);
-  if (!page.startsWith("/c/") && !page.startsWith("/v/") && !page.startsWith("/t/")) return response;
+  if (!SECRET_PAGES.some((prefix) => page.startsWith(prefix))) return response;
   response.headers.set("Cache-Control", "no-store");
   response.headers.set("Referrer-Policy", "no-referrer");
   response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");

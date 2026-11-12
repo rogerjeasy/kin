@@ -1972,8 +1972,12 @@
       "freshCheck": "Approvare un pagamento reale richiede un nuovo accesso con la tua app di autenticazione. Usa il pulsante Approva.",
       "paused": "In pausa. Per 24 ore nessun pagamento viene approvato, e tutti vengono avvisati.",
       "resumed": "La pausa è stata tolta.",
-      "invited": "Invito registrato. La persona entrerà accedendo a Kin con quell’indirizzo.",
+      "invited": "Invito inviato. Kin le manda un link per email; la persona entra accedendo a Kin con quell’indirizzo.",
       "invalidInvite": "Inserisci un indirizzo email valido e scegli un ruolo.",
+      "invitedDemo": "Invito registrato. Questa è la demo, quindi non parte nessuna email.",
+      "inviteLimit": "Questa cerchia ha inviato venti inviti oggi. Riprova domani.",
+      "alreadyInvited": "Per quell’indirizzo c’è già un invito in attesa.",
+      "alreadyMember": "Quell’indirizzo appartiene già a qualcuno della cerchia.",
       "roleChanged": "Ora vedi la cerchia da un altro posto.",
       "restarted": "Hai una nuova copia della cerchia di Rose.",
       "circleCreated": "La tua cerchia è pronta. Invita la famiglia dalla schermata Cerchia.",
@@ -4451,6 +4455,33 @@
     "privacy": "Questo link è solo per te. Non condividerlo, per favore.",
     "accountLabel": "Email PayPal (facoltativa)",
     "accountHint": "Se una vera emergenza richiedesse aiuto, andrebbe solo a questo conto, e solo dopo l’approvazione della famiglia. Lascia vuoto per essere interpellato ma non ricevere mai denaro."
+  },
+  "joinLink": {
+    "meta": {
+      "title": "Il tuo invito · Kin"
+    },
+    "brand": "Kin, l’app di assistenza della tua famiglia",
+    "title": "Sei invitato",
+    "lede": "{inviter} ti ha invitato nella cerchia che si prende cura di {parent}, come {role}.",
+    "ledeNoParent": "{inviter} ti ha invitato nella cerchia della sua famiglia, come {role}.",
+    "how": "Crea il tuo account Kin, o accedi, con l’indirizzo email a cui è arrivato questo invito. La cerchia si apre appena quell’indirizzo è confermato.",
+    "signUp": "Crea il mio account",
+    "signIn": "Ho già un account",
+    "accepted": "Questo invito è stato accettato. Accedi per aprire la cerchia.",
+    "closed": "Questo invito è scaduto o è stato ritirato. Chiedi alla famiglia di invitarti di nuovo.",
+    "problems": {
+      "link": "Questo link non è valido. Chiedi alla famiglia di invitarti di nuovo.",
+      "busy": "Troppi tentativi. Aspetta un minuto, poi riapri il link.",
+      "unavailable": "Kin non riesce ad aprire questo invito ora. Riprova tra poco."
+    },
+    "privacy": "Kin non chiede mai password, codici o denaro via email. Il link mostra solo l’invito.",
+    "roles": {
+      "organizer": "organizzatore",
+      "contributor": "contributore",
+      "parent": "genitore",
+      "caregiver": "assistente",
+      "observer": "osservatore"
+    }
   },
   "openKin": {
     "meta": {

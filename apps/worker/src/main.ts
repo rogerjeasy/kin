@@ -1,9 +1,10 @@
-import { readDatabaseConfig, readInboxConfig, readPayPalConfig, readPresenceTextConfig, readSandboxPayoutConfig, readShiftCallConfig } from "@kin/config";
+import { readDatabaseConfig, readInboxConfig, readInvitationEmailConfig, readPayPalConfig, readPresenceTextConfig, readSandboxPayoutConfig, readShiftCallConfig } from "@kin/config";
 import { connect } from "@kin/db";
 import { payoutFeeReserve, poolFor, sqsInbox } from "@kin/paypal";
-import { createTwilioTextSender } from "@kin/notify";
+import { createGmailSender, createTwilioTextSender } from "@kin/notify";
 import { createTwilioOutboundCaller } from "@kin/telephony";
 
+import { runInvitationBatch } from "./invitations/send-invitation-email.ts";
 import { runInboxBatch, type InboxLog } from "./paypal-inbox/run-inbox.ts";
 import { runPresenceCalls } from "./presence/place-presence-call.ts";
 import { runPresenceBatch, runPresenceSweep } from "./presence/run-presence.ts";
@@ -41,6 +42,8 @@ const CALL_POLL_MS = 5_000;
 const PRESENCE_POLL_MS = 2_000;
 /** The same, for the subscriptions the parent's wishes suspend and resume through PayPal. */
 const WISH_SUBSCRIPTION_POLL_MS = 15_000;
+/** The same, for invitations to be emailed: a person may be waiting for theirs, but not by the second. */
+const INVITATION_POLL_MS = 10_000;
 /** The parent's Purse: she is waiting to hear that her gift went, so it is looked at often. */
 const PURSE_POLL_MS = 2_000;
 /** The Purse's reconciliation against PayPal's Transaction Search: once a night. */
@@ -56,6 +59,8 @@ const sandboxPayouts = readSandboxPayoutConfig(process.env);
 const shiftCalls = readShiftCallConfig(process.env);
 // The "is it really you?" texts need a Twilio account, a sender and the web app's address; without them they stay queued.
 const presenceTexts = readPresenceTextConfig(process.env);
+// The invitation email needs Kin's Gmail sender and the web app's address; without them invitations stay queued, still joined at sign-in.
+const invitationEmails = readInvitationEmailConfig(process.env);
 if (!paypal.enabled || inboxConfig === null) throw new Error("The worker needs the PayPal settings and the inbox queue");
 
 const deps = {
@@ -185,6 +190,19 @@ async function presenceTextLoop(config: Extract<typeof presenceTexts, { enabled:
   }
 }
 
+// Invitations to a real circle, emailed from Kin's Gmail account with the link to the invitation's page.
+async function invitationLoop(config: Extract<typeof invitationEmails, { enabled: true }>): Promise<void> {
+  const invitations = { db: deps.db, email: createGmailSender({ address: config.sender, appPassword: config.appPassword }), webUrl: config.webUrl };
+  while (running) {
+    try {
+      if ((await runInvitationBatch(invitations, log)) === 0) await pause(INVITATION_POLL_MS);
+    } catch (error) {
+      log({ level: "error", message: "invitation.claim_failed", error: error instanceof Error ? error.name : "unknown" });
+      await pause(PAUSE_AFTER_ERROR_MS);
+    }
+  }
+}
+
 // Checks whose ninety seconds ran out, or whose link did: the family is told, and the hold on outgoing money ends.
 async function presenceSweepLoop(): Promise<void> {
   while (running) {
@@ -254,6 +272,7 @@ async function wishSubscriptionLoop(): Promise<void> {
 log({ level: "info", message: "worker.started" });
 if (!shiftCalls.enabled) log({ level: "info", message: "shift_call.disabled", missing: shiftCalls.missing.join(",") });
 if (!presenceTexts.enabled) log({ level: "info", message: "presence_text.disabled", missing: presenceTexts.missing.join(",") });
+if (!invitationEmails.enabled) log({ level: "info", message: "invitation_email.disabled", missing: invitationEmails.missing.join(",") });
 await Promise.all([
   inboxLoop(),
   payoutLoop(),
@@ -267,6 +286,7 @@ await Promise.all([
   purseReconcileLoop(),
   ...(shiftCalls.enabled ? [callLoop(shiftCalls), presenceCallLoop(shiftCalls)] : []),
   ...(presenceTexts.enabled ? [presenceTextLoop(presenceTexts)] : []),
+  ...(invitationEmails.enabled ? [invitationLoop(invitationEmails)] : []),
 ]);
 await deps.db.$client.end();
 log({ level: "info", message: "worker.stopped" });

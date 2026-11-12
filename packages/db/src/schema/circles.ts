@@ -107,10 +107,17 @@ export const invitations = pgTable(
     expiresAt: at("expires_at").notNull(),
     answeredAt: at("answered_at"),
     createdAt: createdAt(),
+    /**
+     * The SHA-256 of the token in the link the invitation email carries. The
+     * link only shows who invited whom; joining still needs the verified address.
+     */
+    linkTokenHash: text("link_token_hash"),
   },
   (t) => [
     foreignKey({ name: "invitations_circle_fk", columns: [t.circleId], foreignColumns: [circles.id] }),
     foreignKey({ name: "invitations_inviter_fk", columns: [t.circleId, t.invitedBy], foreignColumns: [members.circleId, members.id] }),
     check("invitations_email_shape", sql`${t.email} ~ '^[^@\\s]+@[^@\\s]+$'`),
+    check("invitations_link_hash", sql`${t.linkTokenHash} is null or ${t.linkTokenHash} ~ '^[0-9a-f]{64}$'`),
+    uniqueIndex("invitations_link_token").on(t.linkTokenHash).where(sql`${t.linkTokenHash} is not null`),
   ],
 );

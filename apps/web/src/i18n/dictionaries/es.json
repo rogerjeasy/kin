@@ -1972,8 +1972,12 @@
       "freshCheck": "Aprobar un pago real requiere un nuevo inicio de sesión con tu app de autenticación. Usa el botón Aprobar.",
       "paused": "En pausa. Durante 24 horas no se aprueba ningún pago, y se avisa a todos.",
       "resumed": "Se levantó la pausa.",
-      "invited": "Invitación registrada. Se unirá cuando entre en Kin con esa dirección.",
+      "invited": "Invitación enviada. Kin le manda un enlace por correo; se unirá cuando entre en Kin con esa dirección.",
       "invalidInvite": "Escribe un correo electrónico válido y elige un rol.",
+      "invitedDemo": "Invitación registrada. Esto es la demo, así que no se envía ningún correo.",
+      "inviteLimit": "Este círculo ya envió veinte invitaciones hoy. Inténtalo mañana.",
+      "alreadyInvited": "Esa dirección ya tiene una invitación pendiente.",
+      "alreadyMember": "Esa dirección ya pertenece a alguien del círculo.",
       "roleChanged": "Ahora ves el círculo desde otro lugar.",
       "restarted": "Tienes una copia nueva del círculo de Rose.",
       "circleCreated": "Tu círculo está listo. Invita a tu familia desde la pantalla Círculo.",
@@ -4451,6 +4455,33 @@
     "privacy": "Este enlace es solo para usted. Por favor, no lo comparta.",
     "accountLabel": "Correo de PayPal (opcional)",
     "accountHint": "Si una emergencia real necesitara ayuda, solo podría ir a esta cuenta y solo cuando la familia lo apruebe. Déjelo vacío para que le pregunten pero nunca le envíen dinero."
+  },
+  "joinLink": {
+    "meta": {
+      "title": "Su invitación · Kin"
+    },
+    "brand": "Kin, la app de cuidados de su familia",
+    "title": "Está invitado",
+    "lede": "{inviter} le invitó al círculo que cuida de {parent}, como {role}.",
+    "ledeNoParent": "{inviter} le invitó al círculo de su familia, como {role}.",
+    "how": "Cree su cuenta de Kin, o entre, con la dirección de correo a la que llegó esta invitación. El círculo se abre en cuanto esa dirección queda confirmada.",
+    "signUp": "Crear mi cuenta",
+    "signIn": "Ya tengo una cuenta",
+    "accepted": "Esta invitación ya fue aceptada. Entre para abrir el círculo.",
+    "closed": "Esta invitación caducó o fue retirada. Pida a la familia que le invite de nuevo.",
+    "problems": {
+      "link": "Este enlace no es válido. Pida a la familia que le invite de nuevo.",
+      "busy": "Demasiados intentos. Espere un minuto y vuelva a abrir el enlace.",
+      "unavailable": "Kin no puede abrir esta invitación ahora. Inténtelo de nuevo en un momento."
+    },
+    "privacy": "Kin nunca pide contraseñas, códigos ni dinero por correo. El enlace solo muestra la invitación.",
+    "roles": {
+      "organizer": "organizador",
+      "contributor": "colaborador",
+      "parent": "padre o madre",
+      "caregiver": "cuidador",
+      "observer": "observador"
+    }
   },
   "openKin": {
     "meta": {

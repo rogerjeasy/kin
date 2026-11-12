@@ -1972,8 +1972,12 @@
       "freshCheck": "Approuver un paiement réel exige une nouvelle connexion avec votre application d’authentification. Utilisez le bouton Approuver.",
       "paused": "En pause. Aucun paiement n’est approuvé pendant 24 heures, et tout le monde est prévenu.",
       "resumed": "La pause est levée.",
-      "invited": "Invitation enregistrée. La personne rejoindra le cercle en se connectant à Kin avec cette adresse.",
+      "invited": "Invitation envoyée. Kin lui envoie un lien par e-mail ; la personne rejoint le cercle en se connectant à Kin avec cette adresse.",
       "invalidInvite": "Saisissez une adresse e-mail valide et choisissez un rôle.",
+      "invitedDemo": "Invitation enregistrée. C’est la démo : aucun e-mail n’est envoyé.",
+      "inviteLimit": "Ce cercle a envoyé vingt invitations aujourd’hui. Réessayez demain.",
+      "alreadyInvited": "Une invitation attend déjà cette adresse.",
+      "alreadyMember": "Cette adresse appartient déjà à quelqu’un du cercle.",
       "roleChanged": "Vous voyez maintenant le cercle depuis une autre place.",
       "restarted": "Vous avez une nouvelle copie du cercle de Rose.",
       "circleCreated": "Votre cercle est prêt. Invitez votre famille depuis l’écran Cercle.",
@@ -4451,6 +4455,33 @@
     "privacy": "Ce lien est réservé à vous seul. Merci de ne pas le partager.",
     "accountLabel": "E-mail PayPal (facultatif)",
     "accountHint": "Si une vraie urgence demandait de l’aide, elle ne pourrait aller que sur ce compte, et seulement après l’accord de la famille. Laissez vide pour être interrogé sans jamais recevoir d’argent."
+  },
+  "joinLink": {
+    "meta": {
+      "title": "Votre invitation · Kin"
+    },
+    "brand": "Kin, l’application de soins de votre famille",
+    "title": "Vous êtes invité",
+    "lede": "{inviter} vous invite dans le cercle qui veille sur {parent}, en tant que {role}.",
+    "ledeNoParent": "{inviter} vous invite dans le cercle de sa famille, en tant que {role}.",
+    "how": "Créez votre compte Kin, ou connectez-vous, avec l’adresse e-mail à laquelle cette invitation a été envoyée. Le cercle s’ouvre dès que cette adresse est confirmée.",
+    "signUp": "Créer mon compte",
+    "signIn": "J’ai déjà un compte",
+    "accepted": "Cette invitation a été acceptée. Connectez-vous pour ouvrir le cercle.",
+    "closed": "Cette invitation a expiré ou a été retirée. Demandez à la famille de vous inviter à nouveau.",
+    "problems": {
+      "link": "Ce lien n’est pas valide. Demandez à la famille de vous inviter à nouveau.",
+      "busy": "Trop d’essais. Attendez une minute, puis rouvrez le lien.",
+      "unavailable": "Kin ne peut pas ouvrir cette invitation pour l’instant. Réessayez dans un moment."
+    },
+    "privacy": "Kin ne demande jamais de mot de passe, de code ni d’argent par e-mail. Le lien montre seulement l’invitation.",
+    "roles": {
+      "organizer": "organisateur",
+      "contributor": "contributeur",
+      "parent": "parent",
+      "caregiver": "aidant",
+      "observer": "observateur"
+    }
   },
   "openKin": {
     "meta": {

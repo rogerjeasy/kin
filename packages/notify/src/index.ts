@@ -12,3 +12,5 @@ export { fakeTextSender } from "./fake-text-sender.ts";
 export type { FakeTextSender } from "./fake-text-sender.ts";
 export { CHECK_IN_WORDS, CheckInTextError, TEXT_LOCALES, checkInText } from "./check-in-text.ts";
 export type { CheckInFacts, TextLocale } from "./check-in-text.ts";
+export { INVITATION_ROLES, INVITATION_WORDS, InvitationEmailError, invitationEmail, isInvitationRole, isTextLocale } from "./invitation-email.ts";
+export type { InvitationFacts, InvitationRole } from "./invitation-email.ts";

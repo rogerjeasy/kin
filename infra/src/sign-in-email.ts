@@ -5,11 +5,12 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
 import type { InfraConfig } from "./config.ts";
-import { GMAIL_SECRET_NAME } from "./gmail-secret-name.ts";
+import { GMAIL_SECRET_ARN_PARAMETER, GMAIL_SECRET_NAME } from "./gmail-secret-name.ts";
 import { denyNeighbours } from "./isolation.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -27,6 +28,8 @@ export function createGmailSecret(scope: Construct, config: InfraConfig, key: km
     removalPolicy: RemovalPolicy.RETAIN,
   });
   secret.addToResourcePolicy(denyNeighbours(scope, config, ["secretsmanager:*"], ["*"]));
+  // The worker emails invitations from the same account, so it finds the secret by this name.
+  new ssm.StringParameter(scope, "GmailAppPasswordArn", { parameterName: GMAIL_SECRET_ARN_PARAMETER, stringValue: secret.secretArn });
   return secret;
 }
 

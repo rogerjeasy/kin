@@ -6,6 +6,8 @@ import { fill } from "../src/i18n/template";
 import { expectNoHorizontalOverflow } from "./support/expect-no-horizontal-overflow";
 import { greetingFor } from "./support/greeting";
 import { IDENTITY_PROVIDER } from "./support/identity-provider";
+import { invitationLinkFor } from "./support/invitation-link";
+import { E2E_APP_ORIGIN } from "./support/ports";
 import { seedRealProposal } from "./support/real-proposal";
 import { totpCode } from "./support/totp";
 import { laptop, viewports } from "./support/viewports";
@@ -65,6 +67,41 @@ test.describe("a person's own circle", () => {
     await page.getByLabel(dashboard.circle.invite.email).fill("ravi@example.com");
     await page.getByRole("button", { name: dashboard.circle.invite.submit }).click();
     await expect(page.getByRole("region", { name: dashboard.circle.invitations.title })).toContainText("ravi@example.com");
+    await expect(page.getByRole("status").filter({ hasText: dashboard.notices.invited })).toBeVisible();
+  });
+
+  test("refuses a second invitation to an address that already has one waiting", async ({ page }) => {
+    await page.goto("/dashboard/circle");
+    await page.getByRole("main").getByRole("button", { name: dashboard.circle.members.invite }).click();
+    await page.getByLabel(dashboard.circle.invite.email).fill("Ravi@Example.com");
+    await page.getByRole("button", { name: dashboard.circle.invite.submit }).click();
+    await expect(page.getByRole("status").filter({ hasText: dashboard.notices.alreadyInvited })).toBeVisible();
+  });
+
+  test("emails a link that shows the invitation to someone not signed in, and grants nothing", async ({ browser }) => {
+    const join = english.joinLink;
+    const link = await invitationLinkFor("ravi@example.com");
+    const context = await browser.newContext({ baseURL: E2E_APP_ORIGIN, extraHTTPHeaders: { "x-forwarded-for": "198.51.100.77" } });
+    try {
+      const page = await context.newPage();
+      const response = await page.goto(link);
+      expect(response?.headers()["cache-control"]).toContain("no-store");
+      expect(response?.headers()["referrer-policy"]).toBe("no-referrer");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(join.title);
+      const firstName = IDENTITY_PROVIDER.person.name.split(" ")[0] ?? "";
+      await expect(page.getByRole("main")).toContainText(fill(join.lede, { inviter: firstName, parent: "Meera", role: join.roles.contributor }));
+      await expect(page.getByRole("main")).not.toContainText("ravi@example.com");
+      await expect(page.getByRole("link", { name: join.signUp })).toHaveAttribute("href", /^\/auth\/sign-in\?next=%2Fdashboard&screen=sign-up$/);
+      await expect(page.getByRole("link", { name: join.signIn })).toHaveAttribute("href", "/auth/sign-in?next=%2Fdashboard");
+      for (const viewport of viewports) {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await expectNoHorizontalOverflow(page);
+      }
+      await page.goto(`/en/join/${"A".repeat(43)}`);
+      await expect(page.getByRole("alert").filter({ hasText: join.problems.link })).toBeVisible();
+    } finally {
+      await context.close();
+    }
   });
 
   for (const viewport of viewports) {

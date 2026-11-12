@@ -2,7 +2,9 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { ProposalClosedError, answerProposal, inviteMember, pauseCircle, resumeCircle, type Seat } from "./operations.ts";
+import { newCheckToken } from "./check-links.ts";
+import { inviteMember } from "./invitations.ts";
+import { ProposalClosedError, answerProposal, pauseCircle, resumeCircle, type Seat } from "./operations.ts";
 import { acceptMyInvitations, createCircle, createDemoVisitor, membershipsOf, takeDemoSeat } from "./people.ts";
 import { readCircle } from "./read-circle.ts";
 import { approvals, auditLog, members, payees, proposals } from "./schema/index.ts";
@@ -174,7 +176,7 @@ describe("a real circle", () => {
     const [seat] = await asPerson(db.app, organizer, (tx) => membershipsOf(tx, organizer));
     if (!seat) throw new Error("The organizer has no seat");
     const email = `brother-${randomUUID()}@example.com`;
-    await asPerson(db.app, organizer, (tx) => inviteMember(tx, { circleId, memberId: seat.memberId, role: "organizer" }, { email, role: "contributor", expiresAt: new Date(Date.now() + 86_400_000) }));
+    await asPerson(db.app, organizer, (tx) => inviteMember(tx, { circleId, memberId: seat.memberId, role: "organizer" }, { email, role: "contributor", expiresAt: new Date(Date.now() + 86_400_000), locale: "en", token: newCheckToken() }));
 
     const brother = await signedIn(db.app, "Ravi Shah", email.toUpperCase());
     expect(await asPerson(db.app, brother, (tx) => acceptMyInvitations(tx))).toBe(1);
@@ -186,7 +188,7 @@ describe("a real circle", () => {
   it("lets only an organizer invite", async () => {
     const circle = await visitorWithCircle(db);
     await as(circle, "marcus");
-    const attempt = asPerson(db.app, circle.userId, async (tx) => inviteMember(tx, await seatOf(circle), { email: "x@example.com", role: "observer", expiresAt: new Date(Date.now() + 86_400_000) }));
+    const attempt = asPerson(db.app, circle.userId, async (tx) => inviteMember(tx, await seatOf(circle), { email: "x@example.com", role: "observer", expiresAt: new Date(Date.now() + 86_400_000), locale: "en", token: newCheckToken() }));
     expect(await errorCode(attempt)).toBe(REFUSED.permission);
   });
 });
