@@ -4971,13 +4971,15 @@
       "eyebrow": "OpenAPI",
       "title": "El documento publicado",
       "lede": "Se genera a partir de los esquemas con los que el servidor comprueba las peticiones, así que no puede desfasarse.",
-      "link": "Abrir el documento OpenAPI"
+      "link": "Abrir el documento OpenAPI",
+      "sdks": "SDK para TypeScript y Python, generados por APIMatic a partir de este mismo documento. Cada uno incluye un ejemplo firmado para la API de agencias.",
+      "typescript": "SDK de TypeScript",
+      "python": "SDK de Python"
     },
     "next": {
       "eyebrow": "Próximamente",
       "title": "Aún sin construir",
       "items": [
-        "SDK generados a partir del documento OpenAPI, por ejemplo con APIMatic.",
         "Facturas de agencias a través de la misma API firmada."
       ]
     }
