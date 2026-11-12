@@ -41,7 +41,10 @@ describe("readConfig", () => {
     expect(read({}, { ...env, KIN_AG_STUDIO_LICENSE: "" }).agStudioLicense).toBeNull();
     expect(read({ "kin:agStudioLicense": "from-cdk-json" }).agStudioLicense).toBeNull();
     expect(read({}, { ...env, KIN_AG_STUDIO_LICENSE: " [v3]_[0102]_key \n" }).agStudioLicense).toBe("[v3]_[0102]_key");
-    expect(() => read({}, { ...env, KIN_AG_STUDIO_LICENSE: "two words" })).toThrow(InfraConfigError);
+    // A real AG Studio key has spaces inside its expiry date; it must be accepted whole.
+    const shaped = "[TRIAL]_this_{AG_Studio_Pro}_key_will_deactivate_on_{13 December 2026}____[v3]_[03C]_abc==123";
+    expect(read({}, { ...env, KIN_AG_STUDIO_LICENSE: shaped }).agStudioLicense).toBe(shaped);
+    expect(() => read({}, { ...env, KIN_AG_STUDIO_LICENSE: "two\nlines" })).toThrow(InfraConfigError);
   });
 
   it("prefers an alert email passed as context", () => {
