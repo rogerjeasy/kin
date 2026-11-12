@@ -168,7 +168,7 @@ describe("a token request", () => {
   it("reads the authorization code grant of a public client", () => {
     expect(parseTokenRequest(params(form), null)).toEqual({ ok: true, request: { code, redirectUri: trusted.redirectUri, clientId: trusted.clientId, codeVerifier: verifier, resource: null } });
     const basic = `Basic ${Buffer.from(`${encodeURIComponent(trusted.clientId)}:`).toString("base64")}`;
-    const { client_id: _omitted, ...withoutId } = form;
+    const withoutId = Object.fromEntries(Object.entries(form).filter(([name]) => name !== "client_id"));
     expect(parseTokenRequest(params(withoutId), basic)).toMatchObject({ ok: true, request: { clientId: trusted.clientId } });
   });
 
