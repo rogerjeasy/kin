@@ -178,6 +178,51 @@ describe("an agency's invoice", () => {
     expect(await send(key, invoiceBody({ invoiceNumber: "INV-2001-B" }))).toMatchObject({ state: "accepted", duplicate: false });
   });
 
+  it("bills a visit once when two keys of the same agency send invoices for it at the same moment", async () => {
+    const circle = await visitorWithCircle(db);
+    const first = await agency(circle);
+    const second = await agency(circle);
+    await reportVisit(first, "harbor-1");
+    await reportVisit(first, "harbor-2", "2026-10-29T14:00:00Z", "2026-10-29T17:00:00Z");
+    // The first invoice is received and its transaction held open; the second, under the other key, starts meanwhile.
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    let firstReceived = false;
+    const firstBody = invoiceBody({ invoiceNumber: "INV-RACE-A" });
+    const firstDone = db.app.transaction(async (tx) => {
+      const parsed = parseAgencyInvoice(JSON.parse(firstBody) as unknown);
+      if (!parsed.ok) throw new Error("The test invoice does not parse");
+      await tx.execute(sql`select kin_private.receive_agency_invoice(${first.keyId}, ${sha(first.secret)}, ${firstBody}, ${JSON.stringify(parsed.invoice)}::jsonb, null)`);
+      firstReceived = true;
+      await gate;
+    });
+    while (!firstReceived) await new Promise((resolve) => setTimeout(resolve, 10));
+    let secondSettled = false;
+    const secondDone = send(second, invoiceBody({ invoiceNumber: "INV-RACE-B" })).finally(() => (secondSettled = true));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    // It waits on the visit's lock rather than reading a snapshot that cannot see the first invoice.
+    expect(secondSettled).toBe(false);
+    release();
+    await firstDone;
+    expect(await secondDone).toMatchObject({ state: "refused", refusal: "visit_invoiced", visits: ["harbor-1", "harbor-2"] });
+    // And a plain race from both keys at once never bills it twice either.
+    const results = await Promise.all([send(first, invoiceBody({ invoiceNumber: "INV-RACE-C" })), send(second, invoiceBody({ invoiceNumber: "INV-RACE-D" }))]);
+    expect(results.map((result) => result.state)).toEqual(["refused", "refused"]);
+    const live = await db.admin.execute<{ n: string }>(sql`select count(*) as n from agency_invoiced_visits where circle_id = ${circle.circleId} and released_at is null and visit_report_id in (select id from agency_visit_reports where external_id like 'harbor-%')`);
+    expect(live.rows[0]?.n).toBe("2");
+  });
+
+  it("holds a visit on one live invoice in the database itself, whatever writes the claim, and releases it only once", async () => {
+    const circle = await visitorWithCircle(db);
+    const { invoiceId, billId } = await invoiced(circle);
+    const [claim] = (await db.admin.execute<{ id: string; visit_report_id: string }>(sql`select id, visit_report_id from agency_invoiced_visits where invoice_id = ${invoiceId} limit 1`)).rows;
+    expect(await errorCode(db.admin.execute(sql`insert into agency_invoiced_visits (id, circle_id, visit_report_id, invoice_id) values (gen_random_uuid(), ${circle.circleId}, ${claim?.visit_report_id ?? ""}, ${invoiceId})`))).toBe("23505");
+    expect(await errorCode(db.admin.execute(sql`delete from agency_invoiced_visits where id = ${claim?.id ?? ""}`))).toBe("23001");
+    expect(await errorCode(db.admin.execute(sql`update agency_invoiced_visits set invoice_id = invoice_id where id = ${claim?.id ?? ""}`))).toBe("23001");
+    await asPersona(circle, "elena", (tx) => declineAgencyInvoice(tx, { circleId: circle.circleId, billId }));
+    expect(await errorCode(db.admin.execute(sql`update agency_invoiced_visits set released_at = null where id = ${claim?.id ?? ""}`))).toBe("23001");
+  });
+
   it("is never changed or deleted, nor its lines", async () => {
     const circle = await visitorWithCircle(db);
     const { invoiceId } = await invoiced(circle);

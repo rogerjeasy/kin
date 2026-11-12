@@ -19,6 +19,7 @@
 --   KB018  a reviewer asked to pay more than the agency invoiced
 ALTER TABLE public.agency_invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agency_invoice_lines ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.agency_invoiced_visits ENABLE ROW LEVEL SECURITY;
 --> statement-breakpoint
 
 -- Like every circle table: the service acts for the circle it names, and the
@@ -37,6 +38,12 @@ CREATE POLICY app_member_read ON public.agency_invoices FOR SELECT TO kin_app
   USING (kin_private.sees_circle_money(circle_id));
 CREATE POLICY app_member_read ON public.agency_invoice_lines FOR SELECT TO kin_app
   USING (kin_private.sees_circle_money(circle_id));
+CREATE POLICY service_own_circle ON public.agency_invoiced_visits FOR ALL TO kin_service
+  USING (circle_id = kin_private.circle_id()) WITH CHECK (circle_id = kin_private.circle_id());
+CREATE POLICY provisioner_new_circle ON public.agency_invoiced_visits FOR INSERT TO kin_provisioner
+  WITH CHECK (kin_private.is_provisioning(circle_id));
+CREATE POLICY app_member_read ON public.agency_invoiced_visits FOR SELECT TO kin_app
+  USING (kin_private.sees_circle_money(circle_id));
 --> statement-breakpoint
 
 -- No person's role reads the raw body the agency sent; the service may, as
@@ -44,8 +51,8 @@ CREATE POLICY app_member_read ON public.agency_invoice_lines FOR SELECT TO kin_a
 GRANT SELECT (id, circle_id, agency_key_id, body_sha256, state, refusal, invoice_number, period_start, period_end, total_cents, currency, due_on,
   paypal_email, bill_id, seeded, received_at) ON public.agency_invoices TO kin_app;
 GRANT SELECT ON public.agency_invoices TO kin_service;
-GRANT SELECT ON public.agency_invoice_lines TO kin_app, kin_service;
-GRANT INSERT ON public.agency_invoices, public.agency_invoice_lines TO kin_provisioner;
+GRANT SELECT ON public.agency_invoice_lines, public.agency_invoiced_visits TO kin_app, kin_service;
+GRANT INSERT ON public.agency_invoices, public.agency_invoice_lines, public.agency_invoiced_visits TO kin_provisioner;
 --> statement-breakpoint
 
 -- An invoice and its lines are never changed or deleted: the status the
@@ -58,6 +65,27 @@ CREATE TRIGGER append_only BEFORE UPDATE OR DELETE ON public.agency_invoice_line
   FOR EACH ROW EXECUTE FUNCTION kin_private.refuse_change();
 CREATE TRIGGER append_only_truncate BEFORE TRUNCATE ON public.agency_invoice_lines
   FOR EACH STATEMENT EXECUTE FUNCTION kin_private.refuse_change();
+CREATE TRIGGER no_delete BEFORE DELETE ON public.agency_invoiced_visits
+  FOR EACH ROW EXECUTE FUNCTION kin_private.refuse_change();
+CREATE TRIGGER no_delete_truncate BEFORE TRUNCATE ON public.agency_invoiced_visits
+  FOR EACH STATEMENT EXECUTE FUNCTION kin_private.refuse_change();
+--> statement-breakpoint
+
+-- Which invoice holds a visit never changes; it is released once, when the
+-- family declines the invoice, and never taken back.
+CREATE FUNCTION kin_private.assert_claim_released_once() RETURNS trigger
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+  AS $$
+  BEGIN
+    IF (to_jsonb(NEW) - 'released_at') IS DISTINCT FROM (to_jsonb(OLD) - 'released_at') OR OLD.released_at IS NOT NULL OR NEW.released_at IS NULL THEN
+      RAISE EXCEPTION 'kin: agency_invoiced_visits % is only ever released, once', OLD.id USING ERRCODE = 'restrict_violation';
+    END IF;
+    RETURN NEW;
+  END
+  $$;
+--> statement-breakpoint
+CREATE TRIGGER released_once BEFORE UPDATE ON public.agency_invoiced_visits
+  FOR EACH ROW EXECUTE FUNCTION kin_private.assert_claim_released_once();
 --> statement-breakpoint
 
 -- A reviewer may pay an agency less than it invoiced (only the visits the
@@ -103,9 +131,9 @@ CREATE TRIGGER label_invoice_payment BEFORE INSERT ON public.proposals
 -- invoice (its total already recomputed from the lines), or null with
 -- `p_refusal` when the body was not one. The same invoice number with the
 -- same body returns the invoice already kept; with another body it is
--- refused. Every line must be a visit this agency reported to this circle,
+-- refused. Every line must be a visit this agency reported to this circle (each is locked for the rest of the transaction),
 -- under this key or another of the circle's keys with the same name, and on
--- no other invoice the family has not declined; otherwise the body is kept as
+-- no other live invoice (agency_invoiced_visits); otherwise the body is kept as
 -- refused, with why. Written: the invoice, its lines, the agency as a new
 -- payee with no PayPal address the first time, and a bill waiting for
 -- review. Nothing else: no proposal, no approval, no payment.
@@ -154,15 +182,12 @@ CREATE FUNCTION kin_private.receive_agency_invoice(p_key_id text, p_secret_hash 
           SELECT r.id INTO v_visit FROM public.agency_visit_reports r JOIN public.agency_keys k ON k.circle_id = r.circle_id AND k.id = r.agency_key_id
             WHERE r.circle_id = v_key.circle_id AND r.state = 'accepted' AND r.external_id = v_line ->> 'visitId'
               AND (k.id = v_key.id OR lower(btrim(k.label)) = lower(btrim(v_key.label)))
-            ORDER BY (k.id = v_key.id) DESC, r.received_at DESC LIMIT 1;
+            ORDER BY (k.id = v_key.id) DESC, r.received_at DESC LIMIT 1
+            -- Held until this transaction ends, so a second invoice for the same visit, under any key, waits and then sees this one.
+            FOR UPDATE OF r;
           IF v_visit IS NULL THEN
             v_unknown := v_unknown || (v_line ->> 'visitId');
-          ELSIF EXISTS (
-            SELECT 1 FROM public.agency_invoice_lines l
-              JOIN public.agency_invoices i ON i.circle_id = l.circle_id AND i.id = l.invoice_id
-              JOIN public.bills b ON b.circle_id = i.circle_id AND b.id = i.bill_id
-            WHERE l.circle_id = v_key.circle_id AND l.visit_report_id = v_visit AND b.state <> 'rejected'
-          ) THEN
+          ELSIF EXISTS (SELECT 1 FROM public.agency_invoiced_visits c WHERE c.circle_id = v_key.circle_id AND c.visit_report_id = v_visit AND c.released_at IS NULL) THEN
             v_invoiced := v_invoiced || (v_line ->> 'visitId');
           END IF;
           v_visits := v_visits || v_visit;
@@ -202,6 +227,9 @@ CREATE FUNCTION kin_private.receive_agency_invoice(p_key_id text, p_secret_hash 
       v_position := v_position + 1;
       INSERT INTO public.agency_invoice_lines (id, circle_id, invoice_id, position, visit_report_id, minutes, amount_cents)
         VALUES (gen_random_uuid(), v_key.circle_id, v_id, v_position, v_visits[v_position], (v_line ->> 'minutes')::integer, (v_line ->> 'amountCents')::bigint);
+      -- The unique index on live claims refuses a second invoice for this visit even if every check above were skipped.
+      INSERT INTO public.agency_invoiced_visits (id, circle_id, visit_report_id, invoice_id)
+        VALUES (gen_random_uuid(), v_key.circle_id, v_visits[v_position], v_id);
     END LOOP;
     INSERT INTO public.audit_log (id, circle_id, actor, member_id, action, subject_type, subject_id, details, origin)
       VALUES (gen_random_uuid(), v_key.circle_id, 'service', NULL, 'agency.invoice_received', 'agency_invoice', v_id,
@@ -292,6 +320,9 @@ CREATE FUNCTION kin_private.decline_agency_invoice(p_circle uuid, p_bill uuid) R
       RAISE EXCEPTION 'kin: the invoice is not waiting for review' USING ERRCODE = 'KB005';
     END IF;
     UPDATE public.bills SET state = 'rejected' WHERE circle_id = p_circle AND id = p_bill;
+    UPDATE public.agency_invoiced_visits c SET released_at = now()
+      FROM public.agency_invoices i
+      WHERE i.circle_id = p_circle AND i.bill_id = p_bill AND c.circle_id = p_circle AND c.invoice_id = i.id AND c.released_at IS NULL;
     INSERT INTO public.audit_log (id, circle_id, actor, member_id, action, subject_type, subject_id, details, origin)
       VALUES (gen_random_uuid(), p_circle, 'member', v_member, 'agency.invoice_declined', 'bill', p_bill, '{}'::jsonb, 'web');
     RETURN true;
@@ -301,6 +332,7 @@ CREATE FUNCTION kin_private.decline_agency_invoice(p_circle uuid, p_bill uuid) R
 
 REVOKE ALL ON FUNCTION kin_private.assert_within_invoice() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.label_invoice_payment() FROM PUBLIC;
+REVOKE ALL ON FUNCTION kin_private.assert_claim_released_once() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.receive_agency_invoice(text, text, text, jsonb, text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.agency_invoice_status(text, text, text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.decline_agency_invoice(uuid, uuid) FROM PUBLIC;

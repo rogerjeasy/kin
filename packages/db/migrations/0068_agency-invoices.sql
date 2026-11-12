@@ -13,6 +13,15 @@ CREATE TABLE "agency_invoice_lines" (
 	CONSTRAINT "agency_invoice_lines_amount" CHECK ("agency_invoice_lines"."amount_cents" > 0 and "agency_invoice_lines"."amount_cents" <= 9007199254740991)
 );
 --> statement-breakpoint
+CREATE TABLE "agency_invoiced_visits" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"circle_id" uuid NOT NULL,
+	"visit_report_id" uuid NOT NULL,
+	"invoice_id" uuid NOT NULL,
+	"released_at" timestamp with time zone,
+	CONSTRAINT "agency_invoiced_visits_once" UNIQUE("invoice_id","visit_report_id")
+);
+--> statement-breakpoint
 CREATE TABLE "agency_invoices" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"circle_id" uuid NOT NULL,
@@ -48,10 +57,13 @@ CREATE TABLE "agency_invoices" (
 --> statement-breakpoint
 ALTER TABLE "agency_invoice_lines" ADD CONSTRAINT "agency_invoice_lines_invoice_fk" FOREIGN KEY ("circle_id","invoice_id") REFERENCES "public"."agency_invoices"("circle_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "agency_invoice_lines" ADD CONSTRAINT "agency_invoice_lines_visit_fk" FOREIGN KEY ("circle_id","visit_report_id") REFERENCES "public"."agency_visit_reports"("circle_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "agency_invoiced_visits" ADD CONSTRAINT "agency_invoiced_visits_visit_fk" FOREIGN KEY ("circle_id","visit_report_id") REFERENCES "public"."agency_visit_reports"("circle_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "agency_invoiced_visits" ADD CONSTRAINT "agency_invoiced_visits_invoice_fk" FOREIGN KEY ("circle_id","invoice_id") REFERENCES "public"."agency_invoices"("circle_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "agency_invoices" ADD CONSTRAINT "agency_invoices_circle_fk" FOREIGN KEY ("circle_id") REFERENCES "public"."circles"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "agency_invoices" ADD CONSTRAINT "agency_invoices_key_fk" FOREIGN KEY ("circle_id","agency_key_id") REFERENCES "public"."agency_keys"("circle_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "agency_invoices" ADD CONSTRAINT "agency_invoices_bill_fk" FOREIGN KEY ("circle_id","bill_id") REFERENCES "public"."bills"("circle_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "agency_invoice_lines_visit_idx" ON "agency_invoice_lines" USING btree ("circle_id","visit_report_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "agency_invoiced_visits_live" ON "agency_invoiced_visits" USING btree ("circle_id","visit_report_id") WHERE "agency_invoiced_visits"."released_at" is null;--> statement-breakpoint
 CREATE UNIQUE INDEX "agency_invoices_number" ON "agency_invoices" USING btree ("agency_key_id","invoice_number") WHERE "agency_invoices"."invoice_number" is not null;--> statement-breakpoint
 CREATE UNIQUE INDEX "agency_invoices_one_per_bill" ON "agency_invoices" USING btree ("circle_id","bill_id") WHERE "agency_invoices"."bill_id" is not null;--> statement-breakpoint
 CREATE INDEX "agency_invoices_received_idx" ON "agency_invoices" USING btree ("circle_id","received_at");

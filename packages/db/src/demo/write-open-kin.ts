@@ -2,7 +2,7 @@ import { calendarDay } from "@kin/domain";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import type { Transaction } from "../connection.ts";
-import { agencyInvoiceLines, agencyInvoices, agencyKeys, agencyVisitReports, bills, delegationCalls, delegations, payees } from "../schema/index.ts";
+import { agencyInvoiceLines, agencyInvoicedVisits, agencyInvoices, agencyKeys, agencyVisitReports, bills, delegationCalls, delegations, payees } from "../schema/index.ts";
 import type { DemoTime } from "./demo-time.ts";
 import { ROSES_CIRCLE, type PersonaKey } from "./roses-circle.ts";
 import { SCHEDULED_SHIFTS } from "./roses-shifts.ts";
@@ -176,4 +176,5 @@ async function writeSampleInvoice(tx: Transaction, rows: Rows & { readonly keyId
     receivedAt: new Date(time.now.getTime() - 30 * MINUTE_MS),
   });
   await tx.insert(agencyInvoiceLines).values(visits.map((visit, index) => ({ id: randomUUID(), circleId, invoiceId, position: index + 1, visitReportId: visit.id, minutes: 240, amountCents: 4 * SUNRISE_CENTS_PER_HOUR })));
+  await tx.insert(agencyInvoicedVisits).values(visits.map((visit) => ({ id: randomUUID(), circleId, visitReportId: visit.id, invoiceId })));
 }

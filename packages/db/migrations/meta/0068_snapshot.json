@@ -1,5 +1,5 @@
 {
-  "id": "56ea94b3-c520-4691-8d74-c4e166d760cf",
+  "id": "b125f2b3-ed6e-414a-b3c7-235bc51a383c",
   "prevId": "6a44c7b3-d0b4-4611-9fb0-7ef3d486d5e2",
   "version": "7",
   "dialect": "postgresql",
@@ -10614,6 +10614,112 @@
           "value": "\"agency_invoice_lines\".\"amount_cents\" > 0 and \"agency_invoice_lines\".\"amount_cents\" <= 9007199254740991"
         }
       },
+      "isRLSEnabled": false
+    },
+    "public.agency_invoiced_visits": {
+      "name": "agency_invoiced_visits",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visit_report_id": {
+          "name": "visit_report_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invoice_id": {
+          "name": "invoice_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "released_at": {
+          "name": "released_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "agency_invoiced_visits_live": {
+          "name": "agency_invoiced_visits_live",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "visit_report_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"agency_invoiced_visits\".\"released_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agency_invoiced_visits_visit_fk": {
+          "name": "agency_invoiced_visits_visit_fk",
+          "tableFrom": "agency_invoiced_visits",
+          "tableTo": "agency_visit_reports",
+          "columnsFrom": [
+            "circle_id",
+            "visit_report_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "agency_invoiced_visits_invoice_fk": {
+          "name": "agency_invoiced_visits_invoice_fk",
+          "tableFrom": "agency_invoiced_visits",
+          "tableTo": "agency_invoices",
+          "columnsFrom": [
+            "circle_id",
+            "invoice_id"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agency_invoiced_visits_once": {
+          "name": "agency_invoiced_visits_once",
+          "nullsNotDistinct": false,
+          "columns": [
+            "invoice_id",
+            "visit_report_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.agency_invoices": {

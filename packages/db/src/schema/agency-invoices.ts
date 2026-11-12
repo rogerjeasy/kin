@@ -77,6 +77,30 @@ export const agencyInvoices = pgTable(
   ],
 );
 
+/**
+ * Which invoice holds each visit: one row per line of an accepted invoice,
+ * released only when the family declines that invoice. The partial unique
+ * index makes a visit sit on at most one live invoice whatever the order or
+ * concurrency of requests, so no agency, under any of its keys, can bill a
+ * visit twice. A row is never deleted; its release is set once.
+ */
+export const agencyInvoicedVisits = pgTable(
+  "agency_invoiced_visits",
+  {
+    id: id(),
+    circleId: circleId(),
+    visitReportId: uuid("visit_report_id").notNull(),
+    invoiceId: uuid("invoice_id").notNull(),
+    releasedAt: at("released_at"),
+  },
+  (t) => [
+    foreignKey({ name: "agency_invoiced_visits_visit_fk", columns: [t.circleId, t.visitReportId], foreignColumns: [agencyVisitReports.circleId, agencyVisitReports.id] }),
+    foreignKey({ name: "agency_invoiced_visits_invoice_fk", columns: [t.circleId, t.invoiceId], foreignColumns: [agencyInvoices.circleId, agencyInvoices.id] }),
+    uniqueIndex("agency_invoiced_visits_live").on(t.circleId, t.visitReportId).where(sql`${t.releasedAt} is null`),
+    unique("agency_invoiced_visits_once").on(t.invoiceId, t.visitReportId),
+  ],
+);
+
 /** One line of an accepted invoice: a visit the agency reported, the minutes and what it costs. Never changed. */
 export const agencyInvoiceLines = pgTable(
   "agency_invoice_lines",

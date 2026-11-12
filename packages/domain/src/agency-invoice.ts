@@ -52,7 +52,7 @@ export const AGENCY_INVOICE_SCHEMA = {
   additionalProperties: false,
   required: ["invoiceNumber", "periodStart", "periodEnd", "lines", "totalCents", "currency", "dueOn"],
   properties: {
-    invoiceNumber: { type: "string", description: "The agency's own invoice number. Sending the same number and body again changes nothing; another body under it is refused.", maxLength: 40, pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]*$" },
+    invoiceNumber: { type: "string", description: "The agency's own invoice number. Sending the same number and body again changes nothing; another body under it is refused.", maxLength: 40, pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
     periodStart: { type: "string", format: "date", description: "The first day the invoice covers (YYYY-MM-DD).", maxLength: 10, pattern: DAY_PATTERN },
     periodEnd: { type: "string", format: "date", description: `The last day it covers, at most ${MAX_INVOICE_PERIOD_DAYS} days after the first.`, maxLength: 10, pattern: DAY_PATTERN },
     lines: { type: "array", description: "The visits charged for, each at most once.", minItems: 1, maxItems: MAX_INVOICE_LINES, items: AGENCY_INVOICE_LINE_SCHEMA },
