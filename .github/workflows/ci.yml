@@ -51,7 +51,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: docker build -f apps/web/Dockerfile -t kin-web:ci .
+      # AG Studio's licence key, as the deployed image is built with it. Unset
+      # (a fork, or before the secret exists) the studio runs unlicensed, and
+      # no test depends on the key.
+      - run: docker build --build-arg NEXT_PUBLIC_AG_STUDIO_LICENSE -f apps/web/Dockerfile -t kin-web:ci .
+        env:
+          NEXT_PUBLIC_AG_STUDIO_LICENSE: ${{ secrets.AG_STUDIO_LICENSE }}
       # The image must start and serve its pages, as App Runner will run it.
       - run: |
           docker run -d --name kin-web -p 3000:3000 kin-web:ci
@@ -89,6 +94,21 @@ jobs:
           curl -sf -w " health %{http_code}\n" http://localhost:4200/health
       - if: failure()
         run: docker logs kin-voice || true
+      # The demo pharmacy's image (apps/demo-merchant/Dockerfile) must start
+      # with only its signing secret, as App Runner runs it before merchant:store
+      # fills its PayPal app, answer its health check and refuse an unsigned
+      # order. The secret is made up for this run.
+      - run: docker build -f apps/demo-merchant/Dockerfile -t kin-demo-merchant:ci .
+      - run: |
+          docker run -d --name kin-demo-merchant -p 4100:4100 -e KIN_DEMO_MERCHANT_SIGNING_SECRET="$(openssl rand -hex 32)" kin-demo-merchant:ci
+          for _ in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:4100/health && break
+            sleep 1
+          done
+          curl -sf -w " health %{http_code}\n" http://localhost:4100/health
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST -d '{}' http://localhost:4100/orders)" = 401
+      - if: failure()
+        run: docker logs kin-demo-merchant || true
 
   infra:
     name: Synthesize infrastructure

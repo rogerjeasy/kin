@@ -7,7 +7,7 @@ import { startDemo } from "@/server/demo-actions";
 type DemoButtonProps = {
   locale: Locale;
   label: string;
-  variant?: "default" | "outline" | "ghost";
+  variant?: "default" | "inverse" | "outline" | "ghost";
   size?: "default" | "sm";
   className?: string;
 };

@@ -127,7 +127,7 @@ describe("a refill an outside assistant proposes, under the parent's standing pe
     const seen = await snapshot(circle, circle.userId);
     const world = askKinWorld({ circle: seen, locale: "en", dictionary: await getDictionary("en"), db: db.app, userId: circle.userId, paypal: null, executions: async () => [] });
     const output = await askKinTools(world).propose_refill({}, { circleId: circle.circleId, memberId: seen.viewer.memberId, role: seen.viewer.role });
-    expect(output.data).toMatchObject({ proposed: true, approval: "the parent's standing permission covers it" });
+    expect(output.data).toMatchObject({ proposed: true, approval: expect.stringContaining("approved at once by the parent's own standing permission") });
     expect(await purchases(circle.circleId)).toEqual([expect.objectContaining({ state: "approved", approvals: 1, uses: 1 })]);
   });
 

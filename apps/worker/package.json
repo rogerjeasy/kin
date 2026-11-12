@@ -13,6 +13,7 @@
   "dependencies": {
     "@aws-crypto/client-node": "5.0.2",
     "@aws-sdk/client-secrets-manager": "3.1143.0",
+    "@kin/auth": "workspace:*",
     "@kin/config": "workspace:*",
     "@kin/db": "workspace:*",
     "@kin/domain": "workspace:*",

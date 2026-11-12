@@ -12,7 +12,8 @@
       "paid": "Has {caregiver} been paid?",
       "owes": "Who owes whom this month?",
       "demand": "Is a {amount} demand from {payee} real?",
-      "refill": "Reorder {parent}'s refill"
+      "refill": "Reorder {parent}'s refill",
+      "paypalRecord": "Show me PayPal's own record of the last top-up"
     },
     "form": {
       "label": "Your question",
@@ -59,6 +60,9 @@
       "get_paypal_payout_status": "Checked the payouts with PayPal",
       "get_paypal_topup_status": "Checked the top-ups with PayPal",
       "get_subscription_status": "Checked the monthly shares with PayPal",
+      "get_paypal_order": "Read PayPal's own record of the top-up (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "Read PayPal's own record of the invoice (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "Checked PayPal for disputes on the top-ups (PayPal Agent Toolkit)",
       "propose_refill": "Proposed a refill",
       "unknown": "Asked for a tool Kin does not have"
     },
@@ -111,13 +115,22 @@
       "topUp": "{member} topped up {amount} on {day}.",
       "topUpSimulated": "{member} topped up {amount} on {day}. It was simulated.",
       "topUpNone": "The record holds no top-ups.",
+      "paypalOrder": "PayPal's own record of {member}'s top-up of {amount} on {day}: the order is {status}.",
+      "paypalOrderSimulated": "{member}'s top-up of {amount} on {day} was simulated, so PayPal holds no record of it.",
+      "paypalUnread": "PayPal could not be read just now, so Kin shows only its own record.",
+      "paypalInvoice": "PayPal's invoice to {member} for {amount} is {status}.",
+      "paypalInvoiceSimulated": "The invoice to {member} for {amount} was simulated, so PayPal holds no record of it.",
+      "paypalInvoiceNone": "Kin has sent no invoices.",
+      "paypalDispute": "PayPal shows a dispute on {member}'s top-up of {amount}: {status}.",
+      "paypalDisputesNone": "PayPal shows no dispute on the circle's newest real top-ups.",
+      "paypalDisputesSimulated": "The circle's top-ups were simulated, so PayPal holds no disputes for them.",
       "share": "{member}'s monthly share is {amount}.",
       "shareNone": "No monthly shares are set up.",
       "refillNone": "The family has set up no refills.",
       "refillChoose": "Which refill? The family allows: {items}.",
       "refillWaiting": "A refill of {item} already waits, or the circle is paused, so Kin proposed nothing.",
       "refillRefused": "Kin could not propose {item} at {price}. The family's rules did not allow it.",
-      "refillCovered": "Kin proposed {item} at {price}. The parent's standing permission covers it.",
+      "refillCovered": "{parent}'s standing permission approved {item} at {price} from {seller}, so nobody needs to say yes, and the order is being placed. Kin did not approve it.",
       "refillProposed": "Kin proposed {item} at {price}. It waits for a yes.",
       "giftProposed": "Kin read back {amount} to {payee} from your Purse. It waits for your yes.",
       "giftHeld": "Kin read back {amount} to {payee}. If you say yes, Kin waits a day and tells your family.",
@@ -135,6 +148,11 @@
       "text": "Demo visitors may ask Kin a few questions, so everyone can try it. In a circle of your own, Ask Kin answers as many as your family needs.",
       "signUp": "Sign up",
       "stay": "Keep exploring the demo"
+    },
+    "orderedProposal": {
+      "title": "Approved under {parent}’s standing permission",
+      "text": "{amount} at {seller}, and the order is being placed. Kin did not approve it: {parent}’s own standing permission did.",
+      "link": "See the order on Approvals"
     }
   },
   "meta": {
@@ -1286,7 +1304,28 @@
         "restartNote": "Gives you a fresh copy of Rose’s circle. The one you have now is archived, not deleted.",
         "viewAs": "See the circle as",
         "seat": "You are {name}, {role}",
-        "leave": "Leave the demo"
+        "leave": "Leave the demo",
+        "guide": {
+          "title": "Try it in {count} steps",
+          "show": "Show steps",
+          "hide": "Hide steps",
+          "dismiss": "Put the guide away",
+          "reopen": "Show the guide",
+          "steps": {
+            "topUp": "Add money to the pool",
+            "ask": "Ask Kin: “{question}”",
+            "approve": "As {parent}, approve {caregiver}’s pay",
+            "listen": "Listen as {parent}",
+            "verify": "Check the record"
+          },
+          "badges": {
+            "sandbox": "PayPal sandbox",
+            "claude": "Claude agent",
+            "spoken": "Spoken aloud",
+            "provable": "Provable",
+            "simulated": "Simulated"
+          }
+        }
       },
       "visitor": "Demo visitor",
       "presenceHold": {
@@ -1442,6 +1481,10 @@
       "comingUp": {
         "title": "Coming up",
         "link": "All bills"
+      },
+      "protects": {
+        "title": "How Kin protects {parent}",
+        "text": "Checks, wishes and helpers around the money. Each opens its own screen."
       }
     },
     "topUp": {
@@ -2403,6 +2446,10 @@
       "ordersTitle": "Orders",
       "ordersEmpty": "No refill has been proposed yet.",
       "simulated": "Simulated: the pharmacy is a stand-in and no real money moves.",
+      "sandbox": "The pharmacy is a stand-in. Its charges go through PayPal’s sandbox, with test money and no real money; delivery is simulated.",
+      "paidSandbox": "PayPal sandbox",
+      "paidSimulated": "Simulated",
+      "capture": "PayPal capture {id}",
       "trackLabel": "Where the order is",
       "states": {
         "awaiting": "Waiting for a yes",
@@ -4304,6 +4351,106 @@
       },
       "alerted": "Kin alerted {alerted}.",
       "said": "What was said: “{claim}”"
+    },
+    "studio": {
+      "title": "Family money studio",
+      "lede": "The circle's record as a dashboard you can shape: money in and out, each share given against the share agreed, caregiver pay, PayPal's fees and what PayPal confirmed. It reads the same entries as the Record and changes none of them.",
+      "link": "Money studio",
+      "eyebrow": "Built with AG Studio",
+      "readOnly": "You can look, filter and ask. An observer's studio cannot add or move widgets.",
+      "tables": {
+        "ledger": "Ledger",
+        "fairness": "Fairness"
+      },
+      "fields": {
+        "id": "Entry ID",
+        "day": "Day",
+        "month": "Month",
+        "kind": "Kind",
+        "person": "Who or what",
+        "category": "Category",
+        "amount": "Amount",
+        "moneyIn": "Money in",
+        "moneyOut": "Money out",
+        "fee": "PayPal fee",
+        "caregiverPay": "Caregiver pay",
+        "caregiver": "Caregiver",
+        "proof": "Sandbox or simulated",
+        "simulated": "Simulated",
+        "paypalVerified": "Confirmed by PayPal",
+        "paypalId": "PayPal ID",
+        "member": "Member",
+        "share": "Agreed share",
+        "shareIndex": "Share colour",
+        "given": "Given",
+        "agreed": "Agreed",
+        "position": "Settles by"
+      },
+      "widgets": {
+        "inOut": "Money in and out, by month",
+        "caregiverPay": "Caregiver pay, by month",
+        "proof": "PayPal sandbox against simulated",
+        "fees": "PayPal's fees, by month",
+        "ledger": "Every entry",
+        "group": "Kin",
+        "fairnessGap": {
+          "label": "Fairness gap",
+          "title": "Each share, given against agreed",
+          "description": "Shows each member's money given beside their agreed share, and what settling up would move.",
+          "given": "Given {amount}",
+          "agreed": "agreed {amount}",
+          "owed": "The pool owes {name} {amount}",
+          "owes": "{name} owes {amount}",
+          "even": "{name} is even"
+        },
+        "verified": {
+          "label": "PayPal-verified",
+          "title": "Confirmed by PayPal",
+          "description": "Counts the entries a real PayPal sandbox event stands behind, with PayPal's own IDs.",
+          "count": "Entries PayPal confirmed",
+          "none": "None yet. Every entry in this circle is simulated, and labelled so.",
+          "more": "and {count} more"
+        }
+      },
+      "summary": {
+        "title": "The record at a glance",
+        "moneyIn": "Money in",
+        "moneyOut": "Money out",
+        "fees": "PayPal's fees",
+        "caregiverPay": "Caregiver pay",
+        "sandbox": "PayPal sandbox entries",
+        "simulated": "Simulated entries",
+        "fairness": "Shares in {month}",
+        "noFairness": "No agreement in force, so there are no shares to compare.",
+        "allTime": "Since the circle began"
+      },
+      "notes": {
+        "lapsed": "The studio's licence has ended, so Kin shows its own summary of the same record.",
+        "narrow": "On a small screen Kin shows its summary. Open the studio on a wider screen to build your own views.",
+        "failed": "The studio could not open, so Kin shows its own summary of the same record.",
+        "loading": "Opening the studio…"
+      },
+      "assistant": {
+        "unavailable": "The studio's assistant is not available right now. The dashboard still works.",
+        "cannot": "I can't do that here. I can only read the record and change what this dashboard shows.",
+        "limit": "You have asked the studio's assistant a lot this hour. Please try again later.",
+        "unchecked": "I made the changes on the dashboard, but I could not check a summary against the record, so I won't put one into words.",
+        "failed": "The assistant could not answer. Please try again.",
+        "starters": {
+          "caregiverPay": {
+            "label": "Caregiver pay by month",
+            "prompt": "Show caregiver pay by month as a line chart."
+          },
+          "fairness": {
+            "label": "Who is behind on their share?",
+            "prompt": "Who has given less than their agreed share, and by how much?"
+          },
+          "fees": {
+            "label": "PayPal's fees",
+            "prompt": "Add a chart of PayPal's fees by kind of entry."
+          }
+        }
+      }
     }
   },
   "aiProvenance": {

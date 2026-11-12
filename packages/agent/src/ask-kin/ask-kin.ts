@@ -63,7 +63,7 @@ export type AskKinResult =
       readonly source: "claude" | "template";
       readonly templateReason: TemplateReason | null;
       readonly calls: readonly AskKinCall[];
-      /** A proposal raised while answering. It waits for the family's yes. */
+      /** A proposal raised while answering: waiting for a yes, or approved at once by the parent's standing permission. */
       readonly proposal: RaisedProposal | null;
     }
   /** The model could not be reached before any tool ran, and Kin's own routing found no tool for the question. A retry may help. */

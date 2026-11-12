@@ -36,6 +36,14 @@ describe("readConfig", () => {
     });
   });
 
+  it("reads AG Studio's licence key from the environment only, and an empty secret as unset", () => {
+    expect(read().agStudioLicense).toBeNull();
+    expect(read({}, { ...env, KIN_AG_STUDIO_LICENSE: "" }).agStudioLicense).toBeNull();
+    expect(read({ "kin:agStudioLicense": "from-cdk-json" }).agStudioLicense).toBeNull();
+    expect(read({}, { ...env, KIN_AG_STUDIO_LICENSE: " [v3]_[0102]_key \n" }).agStudioLicense).toBe("[v3]_[0102]_key");
+    expect(() => read({}, { ...env, KIN_AG_STUDIO_LICENSE: "two words" })).toThrow(InfraConfigError);
+  });
+
   it("prefers an alert email passed as context", () => {
     expect(read({ "kin:alertEmail": "b@example.com" }).alertEmail).toBe("b@example.com");
   });
@@ -94,6 +102,14 @@ describe("readConfig", () => {
     const deployed = readConfig({ context: (key) => checkedIn.context[key], env });
     expect(deployed.demoSandboxPayeeEmail).toMatch(/@personal\.example\.com$/);
     expect(deployed.demoInvoiceRecipientEmail).toMatch(/@personal\.example\.com$/);
+  });
+
+  it("leaves the demo pharmacy off unless switched on, and only beside the worker that buys from it", () => {
+    const paypal = { clientId: "client", webhookId: "WH-1" };
+    expect(read({ "kin:paypal": paypal }).demoMerchant).toBe(false);
+    expect(read({ "kin:paypal": paypal, "kin:demoMerchant": true }).demoMerchant).toBe(true);
+    expect(() => read({ "kin:paypal": paypal, "kin:demoMerchant": "yes" })).toThrow(InfraConfigError);
+    expect(() => read({ "kin:demoMerchant": true })).toThrow(/needs kin:paypal/);
   });
 
   it("leaves the phone service off, with no address and no numbers, unless switched on", () => {

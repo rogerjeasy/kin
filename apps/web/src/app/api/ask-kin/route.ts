@@ -1,3 +1,4 @@
+import { agentToolkit } from "@/server/agent-toolkit";
 import { runAskKin } from "@/server/ask-kin/ask-kin";
 import { questionAllowanceFor } from "@/server/ask-kin/demo-questions";
 import { paypalReader } from "@/server/ask-kin/world";
@@ -9,7 +10,7 @@ import { topUpServices, type TopUpServices } from "@/server/paypal";
 /** A question, its language and six earlier turns fit in this, with room to spare. */
 const MAX_ASK_BYTES = 16_384;
 
-const paypalOf = (services: TopUpServices | null) => (services === null ? null : paypalReader(services.pool));
+const paypalOf = (services: TopUpServices | null) => (services === null ? null : paypalReader(services.pool, agentToolkit()));
 
 export function POST(request: Request): Promise<Response> {
   return circleJsonRoute(request, { maxBytes: MAX_ASK_BYTES, label: "ask_kin" }, async ({ viewer, circle }, input) =>

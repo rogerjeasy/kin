@@ -104,6 +104,19 @@ export type InfraConfig = {
    * Needs `kin:voice`.
    */
   readonly presenceLineNumbers: string | null;
+  /**
+   * Whether the demo pharmacy (apps/demo-merchant) runs on App Runner as KinDemoMerchant, and the worker buys a demo
+   * circle's approved refills from it. Off unless `kin:demoMerchant` is `true`. Needs `kin:paypal`, since only the worker
+   * buys. Its secrets are stored with `merchant:store`; until then it charges nothing and the refill waits.
+   */
+  readonly demoMerchant: boolean;
+  /**
+   * AG Studio's licence key, built into the web image for the family money
+   * studio. A browser licence is public once deployed, but it is never
+   * committed, so it is read only from KIN_AG_STUDIO_LICENSE (in the pipeline,
+   * the AG_STUDIO_LICENSE secret). Unset, the studio runs unlicensed.
+   */
+  readonly agStudioLicense: string | null;
 };
 
 /**
@@ -168,7 +181,23 @@ export function readConfig({ context, env }: Source): InfraConfig {
     demoSandboxPayeeEmail: demoSandboxPayee(context("kin:demoSandboxPayeeEmail"), context("kin:paypal")),
     demoInvoiceRecipientEmail: demoInvoiceRecipient(context("kin:demoInvoiceRecipientEmail"), context("kin:paypal")),
     ...twilio({ context, env }),
+    demoMerchant: demoMerchant(context("kin:demoMerchant"), context("kin:paypal")),
+    agStudioLicense: optionalLicence(env["KIN_AG_STUDIO_LICENSE"]),
   };
+}
+
+function demoMerchant(value: unknown, paypal: unknown): boolean {
+  const on = flag(value, "kin:demoMerchant");
+  if (on && (paypal === undefined || paypal === null)) throw new InfraConfigError("kin:demoMerchant needs kin:paypal: only the worker buys from the demo pharmacy");
+  return on;
+}
+
+/** A licence key is one line of printable text; an empty secret reads as unset. */
+function optionalLicence(value: string | undefined): string | null {
+  const key = value?.trim() ?? "";
+  if (key === "") return null;
+  if (!/^[\x21-\x7e]+$/u.test(key)) throw new InfraConfigError("KIN_AG_STUDIO_LICENSE must be one line of printable text, or unset.");
+  return key;
 }
 
 function twilio({ context, env }: Source): Pick<InfraConfig, "voice" | "voicePublicUrl" | "twilioCallerNumber" | "twilioSmsFrom" | "presenceLineNumbers"> {

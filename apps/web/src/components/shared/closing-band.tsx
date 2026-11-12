@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/locales";
 import { localizedPath } from "@/i18n/routing";
 
 import { ButtonLink } from "./button-link";
+import { DemoButton } from "./demo-button";
 import { GlowKnot } from "./glow-knot";
 import { Heading } from "./heading";
 import { TextLink } from "./text-link";
@@ -19,7 +20,7 @@ type ClosingBandProps = {
   current?: RouteKey;
 };
 
-/** The last thing on every page: one more invitation to start, lit by the knot. */
+/** The last thing on every page: one more invitation to try the demo or start, lit by the knot. */
 export function ClosingBand({ locale, title, nav, current }: ClosingBandProps) {
   return (
     <InsetSection tone="ink" labelledBy={HEADING_ID} className="pb-2 sm:pb-4" containerClassName="py-16 sm:py-20 lg:py-24">
@@ -31,7 +32,8 @@ export function ClosingBand({ locale, title, nav, current }: ClosingBandProps) {
             {title}
           </Heading>
           <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-3">
-            <ButtonLink href={localizedPath(locale, routes.start)} variant="inverse">
+            <DemoButton locale={locale} label={nav.demo} variant="inverse" />
+            <ButtonLink href={localizedPath(locale, routes.start)} variant="outline" className="border-band-border bg-foreground/5 hover:bg-foreground/10">
               {nav.startLong}
             </ButtonLink>
             {current === "howItWorks" ? null : (

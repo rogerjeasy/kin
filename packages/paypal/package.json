@@ -24,6 +24,7 @@
   "dependencies": {
     "@aws-sdk/client-sqs": "3.1143.0",
     "@kin/config": "workspace:*",
-    "@kin/domain": "workspace:*"
+    "@kin/domain": "workspace:*",
+    "@paypal/agent-toolkit": "1.11.0"
   }
 }

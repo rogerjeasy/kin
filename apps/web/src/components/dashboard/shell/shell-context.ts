@@ -8,6 +8,12 @@ import type { NavBadge } from "./nav-badge";
 /** One persona of the demo circle, whose seat a visitor can take. */
 export type DemoPersona = { memberId: string; name: string; role: string; portrait: string | null; current: boolean };
 
+/** One step of the demo guide, worded: where it leads, what is real behind it, and the seat to take first, if any. */
+export type DemoGuideStepView = { key: string; number: string; title: string; badge: string; real: boolean; href: string; seat: string | null };
+
+/** The demo guide as the banner shows it, or put away by this visitor. */
+export type DemoGuideView = { hidden: boolean; title: string; steps: readonly DemoGuideStepView[] };
+
 /** What every part of the circle's frame needs. */
 export type ShellContext = {
   locale: Locale;
@@ -21,8 +27,8 @@ export type ShellContext = {
   viewer: { kind: "person" | "visitor"; name: string; email: string | null };
   /** The circle on show: its name, its parent's portrait, and whether it is a demo. */
   circle: { name: string; portrait: string | null; parentName: string; demo: boolean };
-  /** In the demo, whose seat the visitor holds and the others they can take. */
-  demo: { seat: string; text: string; personas: readonly DemoPersona[] } | null;
+  /** In the demo, whose seat the visitor holds and the others they can take, and the five-step guide. */
+  demo: { seat: string; text: string; personas: readonly DemoPersona[]; guide: DemoGuideView } | null;
   /** The sections the viewer's role may open. */
   sections: readonly DashboardSection[];
   /** The pause sheet's words, with the length of a pause and the parent filled in. */

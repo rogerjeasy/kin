@@ -1,6 +1,6 @@
 import type { CircleSnapshot } from "../circle-snapshot.ts";
 import { readCircle } from "../read-circle.ts";
-import { eq, sql, type SQL } from "drizzle-orm";
+import { asc, eq, sql, type SQL } from "drizzle-orm";
 
 import { monthlyShares, paypalEvents } from "../schema/index.ts";
 import { asPerson, asService } from "../scope.ts";
@@ -23,7 +23,12 @@ export function snapshotFor(db: TestDatabases, userId: string, circleId: string)
 /** The PayPal events stored for a circle, by PayPal's event ID and state, read as the service. */
 export async function paypalEventStates(db: TestDatabases, circleId: string): Promise<{ eventId: string; state: string }[]> {
   return asService(db.service, circleId, (tx) =>
-    tx.select({ eventId: paypalEvents.eventId, state: paypalEvents.state }).from(paypalEvents).where(eq(paypalEvents.circleId, circleId)),
+    // In arrival order, and by ID when two arrive in the same instant: without an order PostgreSQL may return them either way.
+    tx
+      .select({ eventId: paypalEvents.eventId, state: paypalEvents.state })
+      .from(paypalEvents)
+      .where(eq(paypalEvents.circleId, circleId))
+      .orderBy(asc(paypalEvents.receivedAt), asc(paypalEvents.eventId)),
   );
 }
 

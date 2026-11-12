@@ -12,7 +12,8 @@
       "paid": "{caregiver} a-t-elle été payée ?",
       "owes": "Qui doit quoi à qui ce mois-ci ?",
       "demand": "Une demande de {amount} de {payee} est-elle réelle ?",
-      "refill": "Renouveler l'ordonnance de {parent}"
+      "refill": "Renouveler l'ordonnance de {parent}",
+      "paypalRecord": "Montre-moi le dossier de PayPal sur le dernier apport"
     },
     "form": {
       "label": "Votre question",
@@ -59,6 +60,9 @@
       "get_paypal_payout_status": "A vérifié les versements auprès de PayPal",
       "get_paypal_topup_status": "A vérifié les apports auprès de PayPal",
       "get_subscription_status": "A vérifié les parts mensuelles auprès de PayPal",
+      "get_paypal_order": "A lu le dossier de PayPal sur l'apport (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "A lu le dossier de PayPal sur la facture (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "A cherché chez PayPal des litiges sur les apports (PayPal Agent Toolkit)",
       "propose_refill": "A proposé un renouvellement",
       "unknown": "A demandé un outil que Kin n'a pas"
     },
@@ -111,13 +115,22 @@
       "topUp": "{member} a versé {amount} le {day}.",
       "topUpSimulated": "{member} a versé {amount} le {day}. C'était simulé.",
       "topUpNone": "Le registre ne contient aucun apport.",
+      "paypalOrder": "Selon le dossier de PayPal, l'apport de {amount} de {member} le {day} : la commande est {status}.",
+      "paypalOrderSimulated": "L'apport de {amount} de {member} le {day} était simulé ; PayPal n'en a donc aucune trace.",
+      "paypalUnread": "PayPal n'a pas pu être lu pour l'instant ; Kin ne montre que son propre registre.",
+      "paypalInvoice": "La facture PayPal de {amount} envoyée à {member} est {status}.",
+      "paypalInvoiceSimulated": "La facture de {amount} envoyée à {member} était simulée ; PayPal n'en a donc aucune trace.",
+      "paypalInvoiceNone": "Kin n'a envoyé aucune facture.",
+      "paypalDispute": "PayPal signale un litige sur l'apport de {amount} de {member} : {status}.",
+      "paypalDisputesNone": "PayPal ne signale aucun litige sur les derniers apports réels du cercle.",
+      "paypalDisputesSimulated": "Les apports du cercle étaient simulés ; PayPal n'a donc aucun litige à leur sujet.",
       "share": "La part mensuelle de {member} est de {amount}.",
       "shareNone": "Aucune part mensuelle n'est en place.",
       "refillNone": "La famille n'a prévu aucun renouvellement.",
       "refillChoose": "Quel renouvellement ? La famille autorise : {items}.",
       "refillWaiting": "Un renouvellement de {item} attend déjà, ou le cercle est en pause : Kin n'a rien proposé.",
       "refillRefused": "Kin n'a pas pu proposer {item} à {price}. Les règles de la famille ne le permettaient pas.",
-      "refillCovered": "Kin a proposé {item} à {price}. L'autorisation permanente du parent le couvre.",
+      "refillCovered": "L'autorisation permanente de {parent} a approuvé {item} à {price} chez {seller} : personne n'a besoin de dire oui, et la commande est en cours. Ce n'est pas Kin qui l'a approuvé.",
       "refillProposed": "Kin a proposé {item} à {price}. Il attend un oui.",
       "giftProposed": "Kin a relu {amount} pour {payee} depuis votre porte-monnaie. Il attend votre oui.",
       "giftHeld": "Kin a relu {amount} pour {payee}. Si vous dites oui, Kin attend un jour et prévient votre famille.",
@@ -135,6 +148,11 @@
       "text": "Les visiteurs de la démo peuvent poser quelques questions à Kin, pour que chacun puisse l’essayer. Dans votre propre cercle, Kin répond à toutes les questions dont votre famille a besoin.",
       "signUp": "S’inscrire",
       "stay": "Continuer à explorer la démo"
+    },
+    "orderedProposal": {
+      "title": "Approuvé par l’autorisation permanente de {parent}",
+      "text": "{amount} chez {seller}, et la commande est en cours. Ce n’est pas Kin qui l’a approuvé : c’est l’autorisation permanente de {parent} elle-même.",
+      "link": "Voir la commande dans les approbations"
     }
   },
   "meta": {
@@ -1286,7 +1304,28 @@
         "restartNote": "Vous recevez une nouvelle copie du cercle de Rose. L’actuelle est archivée, pas supprimée.",
         "viewAs": "Voir le cercle en tant que",
         "seat": "Vous êtes {name}, {role}",
-        "leave": "Quitter la démo"
+        "leave": "Quitter la démo",
+        "guide": {
+          "title": "Essayez en {count} étapes",
+          "show": "Voir les étapes",
+          "hide": "Masquer les étapes",
+          "dismiss": "Ranger le guide",
+          "reopen": "Afficher le guide",
+          "steps": {
+            "topUp": "Ajouter de l’argent à la cagnotte",
+            "ask": "Demandez à Kin : « {question} »",
+            "approve": "En tant que {parent}, approuvez la paie de {caregiver}",
+            "listen": "Écoutez en tant que {parent}",
+            "verify": "Vérifier le registre"
+          },
+          "badges": {
+            "sandbox": "Sandbox PayPal",
+            "claude": "Agent Claude",
+            "spoken": "Lu à voix haute",
+            "provable": "Vérifiable",
+            "simulated": "Simulé"
+          }
+        }
       },
       "visitor": "Visiteur de la démo",
       "presenceHold": {
@@ -1442,6 +1481,10 @@
       "comingUp": {
         "title": "À venir",
         "link": "Toutes les factures"
+      },
+      "protects": {
+        "title": "Comment Kin protège {parent}",
+        "text": "Vérifications, souhaits et aides autour de l’argent. Chacun ouvre son propre écran."
       }
     },
     "topUp": {
@@ -2403,6 +2446,10 @@
       "ordersTitle": "Commandes",
       "ordersEmpty": "Aucun renouvellement n’a encore été proposé.",
       "simulated": "Simulé : la pharmacie est une doublure et aucun argent réel ne bouge.",
+      "sandbox": "La pharmacie est une doublure. Ses débits passent par la sandbox de PayPal, avec de l’argent de test et aucun argent réel ; la livraison est simulée.",
+      "paidSandbox": "Sandbox PayPal",
+      "paidSimulated": "Simulé",
+      "capture": "Capture PayPal {id}",
       "trackLabel": "Où en est la commande",
       "states": {
         "awaiting": "En attente d’un oui",
@@ -4304,6 +4351,106 @@
       },
       "alerted": "Kin a prévenu {alerted}.",
       "said": "Ce qui a été dit : « {claim} »"
+    },
+    "studio": {
+      "title": "Studio financier de la famille",
+      "lede": "Le registre du cercle sous forme de tableau de bord à votre façon : l’argent entrant et sortant, ce que chacun a donné comparé à la part convenue, la paie de l’aide à domicile, les frais PayPal et ce que PayPal a confirmé. Il lit les mêmes écritures que le Registre et n’en modifie aucune.",
+      "link": "Studio financier",
+      "eyebrow": "Conçu avec AG Studio",
+      "readOnly": "Vous pouvez regarder, filtrer et poser des questions. En lecture seule, le studio ne permet pas d’ajouter ni de déplacer des blocs.",
+      "tables": {
+        "ledger": "Registre comptable",
+        "fairness": "Équité"
+      },
+      "fields": {
+        "id": "ID de l’écriture",
+        "day": "Jour",
+        "month": "Mois",
+        "kind": "Type",
+        "person": "Qui ou quoi",
+        "category": "Catégorie",
+        "amount": "Montant",
+        "moneyIn": "Argent entrant",
+        "moneyOut": "Argent sortant",
+        "fee": "Frais PayPal",
+        "caregiverPay": "Paie de l’aide à domicile",
+        "caregiver": "Aide à domicile",
+        "proof": "Sandbox ou simulé",
+        "simulated": "Simulé",
+        "paypalVerified": "Confirmé par PayPal",
+        "paypalId": "ID PayPal",
+        "member": "Membre",
+        "share": "Part convenue",
+        "shareIndex": "Couleur de la part",
+        "given": "Donné",
+        "agreed": "Convenu",
+        "position": "Montant à régulariser"
+      },
+      "widgets": {
+        "inOut": "Argent entrant et sortant, par mois",
+        "caregiverPay": "Paie de l’aide à domicile, par mois",
+        "proof": "Sandbox PayPal comparé au simulé",
+        "fees": "Frais PayPal, par mois",
+        "ledger": "Toutes les écritures",
+        "group": "Kin",
+        "fairnessGap": {
+          "label": "Écart d’équité",
+          "title": "Ce que chacun a donné, comparé à sa part",
+          "description": "Montre ce que chaque membre a donné à côté de sa part convenue, et ce que la régularisation déplacerait.",
+          "given": "Donné {amount}",
+          "agreed": "convenu {amount}",
+          "owed": "La cagnotte doit {amount} à {name}",
+          "owes": "{name} doit {amount}",
+          "even": "{name} est à jour"
+        },
+        "verified": {
+          "label": "Vérifié par PayPal",
+          "title": "Confirmé par PayPal",
+          "description": "Compte les écritures appuyées par un vrai événement de la sandbox PayPal, avec les identifiants de PayPal lui-même.",
+          "count": "Écritures confirmées par PayPal",
+          "none": "Aucune pour l’instant. Chaque écriture de ce cercle est simulée, et indiquée comme telle.",
+          "more": "et {count} de plus"
+        }
+      },
+      "summary": {
+        "title": "Le registre en un coup d’œil",
+        "moneyIn": "Argent entrant",
+        "moneyOut": "Argent sortant",
+        "fees": "Frais PayPal",
+        "caregiverPay": "Paie de l’aide à domicile",
+        "sandbox": "Écritures de la sandbox PayPal",
+        "simulated": "Écritures simulées",
+        "fairness": "Parts en {month}",
+        "noFairness": "Aucun accord n’est en vigueur, il n’y a donc pas de parts à comparer.",
+        "allTime": "Depuis le début du cercle"
+      },
+      "notes": {
+        "lapsed": "La licence du studio a pris fin, alors Kin affiche son propre résumé du même registre.",
+        "narrow": "Sur un petit écran, Kin affiche son résumé. Ouvrez le studio sur un écran plus large pour créer vos propres vues.",
+        "failed": "Le studio n’a pas pu s’ouvrir, alors Kin affiche son propre résumé du même registre.",
+        "loading": "Ouverture du studio…"
+      },
+      "assistant": {
+        "unavailable": "L’assistant du studio n’est pas disponible pour le moment. Le tableau de bord fonctionne toujours.",
+        "cannot": "Je ne peux pas faire cela ici. Je peux seulement lire le registre et changer ce que ce tableau de bord affiche.",
+        "limit": "Vous avez posé beaucoup de questions à l’assistant du studio cette heure-ci. Réessayez plus tard.",
+        "unchecked": "J’ai fait les changements sur le tableau de bord, mais je n’ai pas pu vérifier un résumé avec le registre, donc je ne le mettrai pas en mots.",
+        "failed": "L’assistant n’a pas pu répondre. Veuillez réessayer.",
+        "starters": {
+          "caregiverPay": {
+            "label": "Paie de l’aide à domicile par mois",
+            "prompt": "Montre la paie de l’aide à domicile par mois sous forme de courbe."
+          },
+          "fairness": {
+            "label": "Qui est en retard sur sa part ?",
+            "prompt": "Qui a donné moins que sa part convenue, et de combien ?"
+          },
+          "fees": {
+            "label": "Frais PayPal",
+            "prompt": "Ajoute un graphique des frais PayPal par type d’écriture."
+          }
+        }
+      }
     }
   },
   "aiProvenance": {

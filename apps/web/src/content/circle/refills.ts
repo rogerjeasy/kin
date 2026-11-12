@@ -20,7 +20,27 @@ export type OrderView = {
   readonly viaMandate: boolean;
   /** Bought under a standing permission although it is more than the parent usually decides herself. */
   readonly aboveUsualLimit: boolean;
+  /**
+   * How it was paid, as its ledger entry says: through PayPal's sandbox, with PayPal's capture ID, or simulated.
+   * `null` until it is bought (AGENTS.md section 5, rule 9).
+   */
+  readonly payment: OrderPayment | null;
 };
+
+export type OrderPayment = { readonly kind: "sandbox"; readonly captureId: string } | { readonly kind: "simulated" };
+
+/** The ledger entry the purchase was recorded under decides whether real sandbox money stands behind it. */
+function paymentOf(circle: CircleSnapshot, purchase: PurchaseRecord): OrderPayment | null {
+  if (purchase.paidItemId === null) return null;
+  const entry = circle.ledger.entries.find((each) => each.kind === "purchase_captured" && each.source.type === "paypal_event" && each.source.id === purchase.paidItemId);
+  if (entry === undefined) return null;
+  return entry.simulated ? { kind: "simulated" } : { kind: "sandbox", captureId: entry.source.id };
+}
+
+/** Whether any of the orders was paid through PayPal's sandbox, so the screen does not call every order simulated. */
+export function anyPaidInSandbox(orders: readonly OrderView[]): boolean {
+  return orders.some((order) => order.payment?.kind === "sandbox");
+}
 
 const WAITING: readonly string[] = ["pending_approval", "approved", "executing"];
 
@@ -35,6 +55,7 @@ export function refillViews(circle: CircleSnapshot): { readonly rules: readonly 
         proposalState: stateOf.get(purchase.proposalId) ?? "pending_approval",
         viaMandate,
         aboveUsualLimit: viaMandate && aboveUsualLimit(circle, purchase.cents),
+        payment: paymentOf(circle, purchase),
       };
     })
     .toReversed();

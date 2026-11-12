@@ -1,5 +1,5 @@
 -- Paying a bill Kin read from a letter (docs/architecture.md sections 7.4 to
--- 7.6 and 9.4, decision 105).
+-- 7.6 and 9.4, decision 108).
 --
 -- A person who shares the cost reviews the bill: they confirm the payee, the
 -- amount and the due day, and say how it is paid. A payee with a PayPal email

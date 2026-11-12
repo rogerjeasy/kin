@@ -1,4 +1,4 @@
-import { DownloadIcon, FileTextIcon, ListChecksIcon, ScaleIcon, ShieldCheckIcon } from "lucide-react";
+import { DownloadIcon, FileTextIcon, LayoutDashboardIcon, ListChecksIcon, ScaleIcon, ShieldCheckIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/dashboard/ui/empty-state";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { Button } from "@/components/ui/button";
-import { dashboardRoutes, packetRoute, verifyRoute } from "@/content/dashboard-routes";
+import { dashboardRoutes, packetRoute, studioRoute, verifyRoute } from "@/content/dashboard-routes";
 import { circleFormatters } from "@/content/circle/format";
 import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
@@ -42,6 +42,12 @@ export default async function RecordPage({ params }: PageProps<"/[locale]/dashbo
           items.length > 0 ? (
             // A plain link: the browser downloads the file, and the route checks the viewer again.
             <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+              <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">
+                <Link href={localizedPath(locale, studioRoute)}>
+                  <LayoutDashboardIcon aria-hidden="true" />
+                  {dictionary.dashboard.studio.link}
+                </Link>
+              </Button>
               <Button asChild variant="outline" size="sm" className="min-h-11 w-full sm:w-auto">
                 <Link href={`${recordBase}/statement`}>
                   <FileTextIcon aria-hidden="true" />

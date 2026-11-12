@@ -459,6 +459,11 @@ export type PurchaseRecord = {
   readonly merchantOrder: string | null;
   readonly orderedAt: Date | null;
   readonly deliveredAt: Date | null;
+  /**
+   * What the bought refill's ledger entry stands on, from Kin's execution record: PayPal's capture ID for a sandbox
+   * charge, or a simulated purchase's marker. `null` until it is bought. Whether it is simulated is the ledger entry's to say.
+   */
+  readonly paidItemId: string | null;
 };
 
 export type DocumentRecord = {
