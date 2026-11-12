@@ -107,6 +107,12 @@ export const CIRCLE_ACTIONS = {
   "presence.manage": ["organizer", "parent"],
   /** Send a caregiver's bill for the family's approval, or decline it: the members who share the cost. */
   "caregiver_bill.review": ["organizer", "contributor"],
+  /**
+   * Confirm a bill Kin read from a letter (payee, amount, due day) and say how it is paid: by PayPal, raising a
+   * proposal that waits for the agreement's yeses, or outside Kin; and record one paid outside Kin as one's own
+   * receipt, which another member approves. The members who share the cost.
+   */
+  "bill.review": ["organizer", "contributor"],
   /** File a receipt for money spent from one's own pocket: the members who share the cost. */
   "receipt.submit": ["organizer", "contributor"],
   /** Approve or decline another member's receipt. The database refuses a member's decision on their own. */
