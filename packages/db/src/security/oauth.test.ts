@@ -153,11 +153,14 @@ describe("who may say yes", () => {
 });
 
 describe("the table of codes", () => {
-  it("is read by no role, not even the service: only the two operations reach it", async () => {
+  it("shows no person a row, not even their own, and no role a code's hash or challenge: only the two operations reach it", async () => {
     const { circle, marcus } = await realCircleWithSeats();
     await consent(marcus, circle.circleId);
+    expect(await asPerson(db.app, marcus, (tx) => tx.execute<{ count: string }>(sql`select count(*) from oauth_codes`))).toMatchObject({ rows: [{ count: "0" }] });
     expect(await errorCode(asPerson(db.app, marcus, (tx) => tx.execute(sql`select * from oauth_codes`)))).toBe(REFUSED.permission);
     expect(await errorCode(asService(db.service, circle.circleId, (tx) => tx.execute(sql`select code_hash from oauth_codes`)))).toBe(REFUSED.permission);
+    expect(await errorCode(asService(db.service, circle.circleId, (tx) => tx.execute(sql`select code_challenge from oauth_codes`)))).toBe(REFUSED.permission);
+    expect(await asService(db.service, circle.circleId, (tx) => tx.execute<{ count: string }>(sql`select count(*) from oauth_codes`))).toMatchObject({ rows: [{ count: "1" }] });
     expect(await errorCode(db.app.execute(sql`select kin_private.issue_delegation(${circle.circleId}::uuid, ${circle.members.marcus}::uuid, 'x', 'read', ${sha("t")}, 'abcd', now() + interval '1 day', false, null)`))).toBe(REFUSED.permission);
   });
 });

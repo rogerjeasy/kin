@@ -7,11 +7,12 @@
 -- written by the member, as themselves, and traded once by the client with
 -- nobody signed in, exactly like a check-in link: only the holder of the
 -- code, its PKCE verifier, its client ID and its redirect URI can trade it.
--- No role reads oauth_codes; the two operations below are the only way in.
+-- No role reads a code's hash or its challenge, and no person reads a row of
+-- oauth_codes; the two operations below are the only way in.
 --
 -- Client registrations hold no circle data and are not stored at all: the
 -- web app signs a registered client's name and redirect URIs into its client
--- ID (packages/auth/src/oauth.ts), so there is no global table to guard.
+-- ID (packages/auth/src/oauth-server.ts), so there is no global table to guard.
 --
 -- Refusals that screens word, by SQLSTATE:
 --   42501  the person may not do this
@@ -22,10 +23,15 @@ ALTER TABLE public.oauth_codes ENABLE ROW LEVEL SECURITY;
 --> statement-breakpoint
 
 -- Like every circle table: the service acts for the circle it names. No
--- screen reads a code, so kin_app has no policy and no grant (a code's hash
--- is a credential, like a check-in link's).
+-- screen reads a code, so kin_app has no policy and sees no row; it is
+-- granted only the row's ID and circle, like a family code's, so a count
+-- proves it reads nothing. The service may read what a code was for, never
+-- its hash or challenge (a code is a credential, like a check-in link).
 CREATE POLICY service_own_circle ON public.oauth_codes FOR ALL TO kin_service
   USING (circle_id = kin_private.circle_id()) WITH CHECK (circle_id = kin_private.circle_id());
+GRANT SELECT (id, circle_id) ON public.oauth_codes TO kin_app;
+GRANT SELECT (id, circle_id, member_id, client_id, client_name, redirect_uri, scope, days, resource, created_at, expires_at, used_at, delegation_id)
+  ON public.oauth_codes TO kin_service;
 GRANT SELECT (oauth_client) ON public.delegations TO kin_app, kin_service;
 --> statement-breakpoint
 
