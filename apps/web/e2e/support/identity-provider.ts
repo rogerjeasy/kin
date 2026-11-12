@@ -29,9 +29,17 @@ const STEP_UP_METHODS = ["pwd", "otp", "mfa"] as const;
 const PASSWORD_ONLY = ["pwd"] as const;
 const SELF_SERVICE_SCOPE = "aws.cognito.signin.user.admin";
 
-type PendingCode = { challenge: string; nonce: string; stepUp: boolean };
+type PendingCode = { challenge: string; nonce: string; stepUp: boolean; fresh: boolean; scope: string };
 const codes = new Map<string, PendingCode>();
-const refreshTokens = new Set<string>();
+/** Each live refresh token and the scopes it was granted, as Cognito keeps them. */
+const refreshTokens = new Map<string, string>();
+/** Access tokens the stand-in no longer honours, because their refresh token was revoked. */
+const revokedAccess = new Set<string>();
+const accessOfRefresh = new Map<string, string>();
+let revocations = 0;
+/** Every call made with a person's own token, and whether it carried what Cognito would demand. */
+const selfServiceCalls: { operation: string; allowed: boolean }[] = [];
+const SESSION_SCOPES = "openid email profile";
 // A test can ask for the next step-up to come back with one factor only, as
 // if the person had skipped their authenticator app.
 let nextStepUpOneFactor = false;
@@ -41,13 +49,17 @@ let nextStepUpOneFactor = false;
 const groups = new Set<string>();
 const authenticator: { pending: string | null; enabled: boolean } = { pending: null, enabled: false };
 
-function tokens(nonce?: string, refresh = true, methods: readonly string[] | null = null) {
+function tokens(nonce?: string, refresh = true, methods: readonly string[] | null = null, scope = SESSION_SCOPES) {
   const stepUp = methods ? { amr: methods, acr: methods.includes("otp") ? "urn:cognito:loa:4" : "urn:cognito:loa:1", jti: randomUUID() } : {};
-  const claims = cognitoClaims({ issuer, clientId: IDENTITY_PROVIDER.clientId, ...IDENTITY_PROVIDER.person, nonce, groups: [...groups], ...stepUp });
+  const claims = cognitoClaims({ issuer, clientId: IDENTITY_PROVIDER.clientId, ...IDENTITY_PROVIDER.person, nonce, groups: [...groups], scope, ...stepUp });
   const refreshToken = randomUUID();
-  if (refresh) refreshTokens.add(refreshToken);
+  const accessToken = signer.sign(claims.access);
+  if (refresh) {
+    refreshTokens.set(refreshToken, scope);
+    accessOfRefresh.set(refreshToken, accessToken);
+  }
   return {
-    access_token: signer.sign(claims.access),
+    access_token: accessToken,
     id_token: signer.sign(claims.id),
     token_type: "Bearer",
     expires_in: 3600,
@@ -85,8 +97,11 @@ function authorize(url: URL, response: ServerResponse) {
   const code = randomUUID();
   // Like Cognito: a step-up asks for a fresh sign-in at a level, and the
   // tokens say which methods the person completed.
-  const stepUp = params.get("acr_values") !== null && params.get("prompt") === "login" && params.get("max_age") === "0";
-  codes.set(code, { challenge, nonce: params.get("nonce") ?? "", stepUp });
+  const fresh = params.get("prompt") === "login" && params.get("max_age") === "0";
+  const stepUp = fresh && params.get("acr_values") !== null;
+  // Only the scopes the client may have, as the app client allows them.
+  const scope = (params.get("scope") ?? SESSION_SCOPES).split(" ").filter((each) => [...SESSION_SCOPES.split(" "), SELF_SERVICE_SCOPE].includes(each)).join(" ");
+  codes.set(code, { challenge, nonce: params.get("nonce") ?? "", stepUp, fresh, scope });
   back.searchParams.set("code", code);
   return redirect(response, back.href);
 }
@@ -101,12 +116,26 @@ async function token(request: IncomingMessage, response: ServerResponse) {
     const verifier = params.get("code_verifier") ?? "";
     const proved = pending && createHash("sha256").update(verifier).digest("base64url") === pending.challenge;
     if (!proved || params.get("redirect_uri") !== redirectUri) return send(response, 400, { error: "invalid_grant" });
-    return send(response, 200, tokens(pending.nonce || undefined, true, pending.stepUp ? stepUpMethods() : null));
+    // A fresh sign-in is a new auth_time; one with an authenticator app set up also asks for its code, as Cognito's level 4.
+    const methods = pending.stepUp ? stepUpMethods() : pending.fresh ? (authenticator.enabled ? STEP_UP_METHODS : PASSWORD_ONLY) : null;
+    return send(response, 200, tokens(pending.nonce || undefined, true, methods, pending.scope));
   }
-  if (params.get("grant_type") === "refresh_token" && refreshTokens.has(params.get("refresh_token") ?? "")) {
-    return send(response, 200, tokens(undefined, false));
+  const scope = refreshTokens.get(params.get("refresh_token") ?? "");
+  if (params.get("grant_type") === "refresh_token" && scope !== undefined) {
+    return send(response, 200, tokens(undefined, false, null, scope));
   }
   return send(response, 400, { error: "invalid_grant" });
+}
+
+async function revoke(request: IncomingMessage, response: ServerResponse) {
+  const params = await form(request);
+  if (params.get("client_id") !== IDENTITY_PROVIDER.clientId) return send(response, 400, { error: "invalid_client" });
+  const refreshToken = params.get("token") ?? "";
+  // Like Cognito: the refresh token and every token issued from it stop working.
+  const access = accessOfRefresh.get(refreshToken);
+  if (access !== undefined) revokedAccess.add(access);
+  if (refreshTokens.delete(refreshToken)) revocations += 1;
+  return send(response, 200, {});
 }
 
 /** The factors a step-up proves: the authenticator's only once the person has one, as with Cognito's level 4. */
@@ -146,9 +175,14 @@ async function userPoolApi(request: IncomingMessage, response: ServerResponse) {
     groups.add(body["GroupName"]);
     return send(response, 200, {});
   }
+  if (operation === "AdminGetUser") {
+    if (body["Username"] !== IDENTITY_PROVIDER.person.sub) return apiError(response, "UserNotFoundException");
+    return send(response, 200, { Username: IDENTITY_PROVIDER.person.sub, ...(authenticator.enabled ? { UserMFASettingList: ["SOFTWARE_TOKEN_MFA"], PreferredMfaSetting: "SOFTWARE_TOKEN_MFA" } : {}) });
+  }
   const claims = accessClaims(body["AccessToken"]);
-  if (claims === null || !String(claims["scope"] ?? "").split(" ").includes(SELF_SERVICE_SCOPE)) return apiError(response, "NotAuthorizedException");
-  if (operation === "GetUser") return send(response, 200, { Username: IDENTITY_PROVIDER.person.sub, ...(authenticator.enabled ? { UserMFASettingList: ["SOFTWARE_TOKEN_MFA"], PreferredMfaSetting: "SOFTWARE_TOKEN_MFA" } : {}) });
+  const allowed = claims !== null && !revokedAccess.has(String(body["AccessToken"])) && String(claims["scope"] ?? "").split(" ").includes(SELF_SERVICE_SCOPE);
+  selfServiceCalls.push({ operation, allowed });
+  if (!allowed) return apiError(response, "NotAuthorizedException");
   if (operation === "AssociateSoftwareToken") {
     authenticator.pending = newTotpSecret(randomBytes);
     return send(response, 200, { SecretCode: authenticator.pending });
@@ -173,7 +207,11 @@ const server = createServer((request, response) => {
     nextStepUpOneFactor = true;
     return send(response, 200, { ok: true });
   }
-  if (request.method === "GET" && url.pathname === "/test/account") return send(response, 200, { groups: [...groups].toSorted(), authenticator: authenticator.enabled });
+  if (request.method === "GET" && url.pathname === "/test/account") return send(response, 200, { groups: [...groups].toSorted(), authenticator: authenticator.enabled, revocations, selfServiceCalls });
+  if (request.method === "POST" && url.pathname === "/oauth2/revoke") {
+    revoke(request, response).catch(() => send(response, 500, { error: "server_error" }));
+    return;
+  }
   if (request.method === "POST" && url.pathname === "/" && request.headers["x-amz-target"]) {
     userPoolApi(request, response).catch(() => send(response, 500, { __type: "InternalErrorException" }));
     return;

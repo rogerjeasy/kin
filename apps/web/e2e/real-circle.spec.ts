@@ -163,11 +163,36 @@ test.describe("a yes to real money", () => {
     await expect(page.getByRole("main")).toContainText(security.status.not_set);
   });
 
-  test("asks first for an authenticator app, set up with the person's own code", async ({ page, request }) => {
+  test("never gives a session the power to change the account, nor a set-up to one that did not sign in again", async ({ page, request }) => {
+    await page.goto("/dashboard/circle/security");
+    const access = (await page.context().cookies()).find((cookie) => cookie.name === "__Host-kin-access");
+    const claims = JSON.parse(Buffer.from(access?.value.split(".")[1] ?? "", "base64url").toString("utf8")) as Record<string, unknown>;
+    expect(String(claims["scope"]).split(" ")).not.toContain("aws.cognito.signin.user.admin");
+    // Confirming with no fresh sign-in behind it finds nothing to confirm.
+    const confirm = await page.evaluate(async () => (await fetch("/api/account/authenticator", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code: "123456" }) })).status);
+    expect(confirm).toBe(401);
+    for (const route of ["/auth/enrol-authenticator", "/api/account/authenticator"]) {
+      const foreign = await request.post(route, { form: { locale: "en" }, headers: { origin: "https://evil.example" }, maxRedirects: 0 });
+      expect(foreign.status()).toBe(403);
+    }
+  });
+
+  test("asks first for an authenticator app, set up after a fresh sign-in with the person's own code", async ({ page, request }) => {
     await page.goto("/dashboard/circle/security");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(security.title);
+    await expect(page.getByRole("main")).toContainText(security.beginHint);
+    const sessionBefore = (await page.context().cookies()).find((cookie) => cookie.name === "__Host-kin-access")?.value;
+    // The button sends the person to sign in again; the stand-in signs them straight back.
     await page.getByRole("button", { name: security.begin }).click();
+    await expect(page).toHaveURL("/dashboard/circle/security");
+    await expect(page.getByRole("main")).toContainText(security.status.pending);
     await expect(page.getByRole("img", { name: security.qrLabel })).toBeVisible();
+    // The fresh sign-in's tokens never became the session.
+    expect((await page.context().cookies()).find((cookie) => cookie.name === "__Host-kin-access")?.value).toBe(sessionBefore);
+    const sealed = (await page.context().cookies()).find((cookie) => cookie.name === "__Host-kin-enrolment");
+    expect(sealed?.httpOnly).toBe(true);
+    expect(sealed?.value).not.toMatch(/eyJ/);
+    await expectNoHorizontalOverflow(page);
     const secret = (await page.getByLabel(security.manual).inputValue()).replace(/\s/g, "");
     expect(secret).toMatch(/^[A-Z2-7]{16,}$/);
 
@@ -181,16 +206,19 @@ test.describe("a yes to real money", () => {
     await page.reload();
     await expect(page.getByRole("main")).toContainText(security.status.enabled);
     await expect(page.getByRole("button", { name: security.begin })).toHaveCount(0);
-    const account = (await (await request.get(`http://localhost:${IDENTITY_PROVIDER.port}/test/account`)).json()) as { authenticator: boolean };
+    expect((await page.context().cookies()).some((cookie) => cookie.name === "__Host-kin-enrolment")).toBe(false);
+    const account = (await (await request.get(`http://localhost:${IDENTITY_PROVIDER.port}/test/account`)).json()) as { authenticator: boolean; revocations: number; selfServiceCalls: { operation: string; allowed: boolean }[] };
     expect(account.authenticator).toBe(true);
+    // Every call that changed the account carried the fresh sign-in's token, and that token was revoked after.
+    expect(account.selfServiceCalls.filter((call) => call.allowed).map((call) => call.operation)).toEqual(expect.arrayContaining(["AssociateSoftwareToken", "VerifySoftwareToken", "SetUserMFAPreference"]));
+    expect(account.revocations).toBeGreaterThanOrEqual(1);
   });
 
-  test("refuses to replace an authenticator app that is set up, and to start from another site", async ({ page, request }) => {
+  test("refuses to replace an authenticator app that is set up", async ({ page }) => {
     await page.goto("/dashboard/circle/security");
-    const begin = await page.evaluate(async () => (await fetch("/api/account/authenticator", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ operation: "begin" }) })).status);
-    expect(begin).toBe(403);
-    const foreign = await request.post("/api/account/authenticator", { data: { operation: "begin" }, headers: { origin: "https://evil.example" } });
-    expect(foreign.status()).toBe(403);
+    const again = await page.request.post("/auth/enrol-authenticator", { form: { locale: "en" }, headers: { origin: E2E_APP_ORIGIN }, maxRedirects: 0 });
+    expect(again.status()).toBe(303);
+    expect(again.headers()["location"]).toContain("/dashboard/circle/security?problem=refused");
   });
 
   for (const viewport of viewports) {

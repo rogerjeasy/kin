@@ -4270,10 +4270,9 @@
         "enabled": "Tu aplicación de autenticación está configurada. Kin pide su código cada vez que apruebas un pago real.",
         "not_set": "Todavía no tienes una aplicación de autenticación. Hasta que configures una, no puedes aprobar pagos reales.",
         "demo": "En la demo, las aprobaciones mueven dinero simulado y no necesitan un segundo factor. En un círculo real, cada persona configura aquí una aplicación de autenticación.",
-        "sign_in_again": "Para configurar tu aplicación, Kin necesita que vuelvas a iniciar sesión primero.",
-        "unavailable": "Kin no puede contactar con el servicio de acceso ahora mismo. Inténtalo de nuevo en un momento."
+        "unavailable": "Kin no puede contactar con el servicio de acceso ahora mismo. Inténtalo de nuevo en un momento.",
+        "pending": "Su inicio de sesión está confirmado. Escanee el código de abajo en los próximos diez minutos y luego escriba el código que muestra su aplicación."
       },
-      "signInAgain": "Volver a iniciar sesión",
       "begin": "Configurar una aplicación de autenticación",
       "beginning": "Iniciando…",
       "scan": "Escanea este código con una aplicación de autenticación, como Google Authenticator, Microsoft Authenticator o 1Password.",
@@ -4290,11 +4289,13 @@
       "errors": {
         "wrong_code": "Ese código no coincide. Comprueba la hora de tu teléfono y escribe el código más reciente.",
         "too_many_tries": "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
-        "sign_in_again": "Tu inicio de sesión es demasiado antiguo para cambiar tu cuenta. Vuelve a iniciar sesión y luego configura tu aplicación.",
+        "sign_in_again": "Esta configuración caducó o no empezó con un inicio de sesión nuevo. Empiece de nuevo: Kin le pedirá que inicie sesión una vez más.",
         "unavailable": "Kin no puede contactar con el servicio de acceso ahora mismo. Inténtalo de nuevo en un momento.",
         "refused": "No se puede hacer desde aquí. Si tu aplicación ya está configurada, no hay que cambiar nada.",
         "invalid": "Algo no se envió como se esperaba. Inténtalo de nuevo."
-      }
+      },
+      "beginHint": "Kin le pide primero que vuelva a iniciar sesión, para que nadie que use un teléfono o un ordenador con su sesión abierta pueda configurar su propia aplicación.",
+      "startAgain": "Empezar de nuevo"
     }
   },
   "aiProvenance": {

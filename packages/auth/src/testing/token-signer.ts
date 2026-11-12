@@ -49,7 +49,7 @@ export function cognitoClaims(options: {
   const stepUp = { ...(options.amr ? { amr: options.amr } : {}), ...(options.acr ? { acr: options.acr } : {}) };
   const common = { iss: options.issuer, sub: options.sub, iat, exp, auth_time: authTime, ...stepUp };
   return {
-    access: { ...common, token_use: "access", client_id: options.clientId, scope: options.scope ?? "openid email profile aws.cognito.signin.user.admin", "cognito:groups": options.groups ?? [] },
+    access: { ...common, token_use: "access", client_id: options.clientId, scope: options.scope ?? "openid email profile", "cognito:groups": options.groups ?? [] },
     id: {
       ...common,
       token_use: "id",

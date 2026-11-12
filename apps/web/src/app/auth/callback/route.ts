@@ -4,6 +4,7 @@ import { AuthError, exchangeCode } from "@kin/auth";
 import type { NextRequest } from "next/server";
 
 import { withOwedAccountTypes } from "@/server/auth/account-groups";
+import { startEnrolment } from "@/server/auth/authenticator";
 import { authConfig, sessionVerifier } from "@/server/auth/config";
 import { COOKIES, clearedSignInCookie, sessionCookies } from "@/server/auth/cookies";
 import { signInPath } from "@/server/auth/next-path";
@@ -36,6 +37,13 @@ export async function GET(request: NextRequest) {
     const exchanged = await exchangeCode(config, code, flow.verifier);
     const session = await sessionVerifier().verify(exchanged, { nonce: flow.nonce });
     if (!session) return back("failed");
+    if (flow.enrol) {
+      // These tokens carry the self-service scope: they never become the
+      // session. The person keeps the session they had.
+      const started = await startEnrolment(session, exchanged, flow.enrol.userId, new Date());
+      if ("problem" in started) return redirectWithCookies(`${flow.next}?${new URLSearchParams({ problem: started.problem }).toString()}`, config.webOrigin, [clearedSignInCookie()]);
+      return redirectWithCookies(flow.next, config.webOrigin, [clearedSignInCookie(), started.cookie]);
+    }
     // The nonce is checked on the tokens of this sign-in; renewed tokens carry the same person and sign-in.
     const { tokens } = await withOwedAccountTypes({ session, tokens: exchanged }, exchanged.refreshToken);
     const cookies = [clearedSignInCookie(), ...sessionCookies(tokens)];

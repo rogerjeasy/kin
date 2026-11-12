@@ -4270,10 +4270,9 @@
         "enabled": "Votre application d’authentification est configurée. Kin demande son code chaque fois que vous approuvez un paiement réel.",
         "not_set": "Vous n’avez pas encore d’application d’authentification. Tant qu’elle n’est pas configurée, vous ne pouvez pas approuver de paiements réels.",
         "demo": "Dans la démo, les approbations déplacent de l’argent simulé et ne demandent pas de second facteur. Dans un vrai cercle, chacun configure ici une application d’authentification.",
-        "sign_in_again": "Pour configurer votre application, Kin a d’abord besoin que vous vous reconnectiez.",
-        "unavailable": "Kin ne peut pas joindre le service de connexion pour le moment. Veuillez réessayer dans un instant."
+        "unavailable": "Kin ne peut pas joindre le service de connexion pour le moment. Veuillez réessayer dans un instant.",
+        "pending": "Votre connexion est confirmée. Scannez le code ci-dessous dans les dix minutes, puis saisissez le code affiché par votre application."
       },
-      "signInAgain": "Se reconnecter",
       "begin": "Configurer une application d’authentification",
       "beginning": "Démarrage…",
       "scan": "Scannez ce code avec une application d’authentification, comme Google Authenticator, Microsoft Authenticator ou 1Password.",
@@ -4290,11 +4289,13 @@
       "errors": {
         "wrong_code": "Ce code ne correspond pas. Vérifiez l’heure de votre téléphone et saisissez le code le plus récent.",
         "too_many_tries": "Trop d’essais. Attendez quelques minutes, puis réessayez.",
-        "sign_in_again": "Votre connexion est trop ancienne pour modifier votre compte. Reconnectez-vous, puis configurez votre application.",
+        "sign_in_again": "Cette configuration a expiré ou n’a pas commencé par une nouvelle connexion. Recommencez : Kin vous demandera de vous reconnecter une fois de plus.",
         "unavailable": "Kin ne peut pas joindre le service de connexion pour le moment. Veuillez réessayer dans un instant.",
         "refused": "Ce n’est pas possible ici. Si votre application est déjà configurée, rien ne doit changer.",
         "invalid": "Quelque chose n’a pas été envoyé comme prévu. Veuillez réessayer."
-      }
+      },
+      "beginHint": "Kin vous demande d’abord de vous reconnecter, pour que personne utilisant un téléphone ou un ordinateur resté connecté ne puisse configurer sa propre application.",
+      "startAgain": "Recommencer"
     }
   },
   "aiProvenance": {

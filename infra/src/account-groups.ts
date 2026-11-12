@@ -1,8 +1,9 @@
 /**
- * The one change to the user pool that Kin's code makes: adding a person to
- * an account type group. The web app does it after a sign-in or a renewal
- * (packages/auth `accountTypesOwed`), so a new account has its default type
- * from its first visit, with no Lambda trigger: the account's Lambda quota is
- * small and shared (docs/architecture.md decision 40).
+ * What Kin's web app may do to its user pool with its own AWS identity
+ * (packages/auth `cognitoAdmin`): add a person to an account type group after
+ * a sign-in or a renewal, and read whether they have an authenticator app.
+ * Nothing that changes an attribute, a password or a second factor. The web
+ * app grants the default type at the first sign-in, so there is no Lambda
+ * trigger: the account's Lambda quota is small and shared (decision 40).
  */
-export const ADD_TO_GROUP = "cognito-idp:AdminAddUserToGroup";
+export const POOL_ADMIN_ACTIONS = ["cognito-idp:AdminAddUserToGroup", "cognito-idp:AdminGetUser"] as const;

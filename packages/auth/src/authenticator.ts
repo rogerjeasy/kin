@@ -21,13 +21,12 @@ export class AuthenticatorError extends Error {
 }
 
 /**
- * A person's own authenticator app, set up with their own access token. The
- * user pool lets a token change only its own person, and only when it carries
- * the `aws.cognito.signin.user.admin` scope.
+ * A person's own authenticator app, set up with an access token from the one
+ * fresh sign-in that asks for the `aws.cognito.signin.user.admin` scope.
+ * Cognito offers no administrator call for these two steps: they take either
+ * that token or the session of a sign-in challenge Kin does not run.
  */
 export type Authenticator = {
-  /** Whether the person's account already asks for a code from an authenticator app. */
-  enabled(accessToken: string): Promise<boolean>;
   /** Starts setting one up, and returns the secret the app needs. Nothing changes until `confirm`. */
   begin(accessToken: string): Promise<{ readonly secret: string }>;
   /** Proves the app works with one of its codes, and makes it the account's second factor. */
@@ -47,11 +46,6 @@ const TOO_MANY = new Set(["LimitExceededException", "TooManyRequestsException", 
 export function cognitoAuthenticator(pool: UserPool, fetcher: Fetch = fetch): Authenticator {
   const call = (operation: string, body: Record<string, unknown>) => userPoolCall(pool, fetcher, operation, body);
   return {
-    async enabled(accessToken) {
-      const user = await call("GetUser", { AccessToken: accessToken });
-      const list = user["UserMFASettingList"];
-      return Array.isArray(list) && list.includes("SOFTWARE_TOKEN_MFA");
-    },
     async begin(accessToken) {
       const answer = await call("AssociateSoftwareToken", { AccessToken: accessToken });
       const secret = answer["SecretCode"];

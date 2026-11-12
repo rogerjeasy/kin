@@ -2,7 +2,7 @@ import type { AuthConfig } from "@kin/config";
 import { describe, expect, it } from "vitest";
 
 import { AuthError } from "./auth-error.ts";
-import { authorizeUrl, exchangeCode, logoutUrl, parseAuthScreen, parseTokenSet, refreshTokens, type Fetch } from "./oauth.ts";
+import { authorizeUrl, exchangeCode, logoutUrl, parseAuthScreen, parseTokenSet, refreshTokens, revokeRefreshToken, type Fetch } from "./oauth.ts";
 import { createSignInSecrets, pkceChallenge } from "./pkce.ts";
 
 const config: AuthConfig = {
@@ -38,7 +38,7 @@ describe("the sign-in address", () => {
       response_type: "code",
       client_id: "client-1",
       redirect_uri: "https://kin.example/auth/callback",
-      scope: "openid email profile aws.cognito.signin.user.admin",
+      scope: "openid email profile",
       state: "state-1",
       nonce: "nonce-1",
       code_challenge: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
@@ -62,7 +62,7 @@ describe("the sign-in address", () => {
 
   it("asks for a fresh sign-in with an authenticator app for a step-up, and nothing more otherwise", () => {
     const plain = new URL(authorizeUrl(config, secrets, "en", "sign-in"));
-    const stepUp = new URL(authorizeUrl(config, secrets, "en", "sign-in", true));
+    const stepUp = new URL(authorizeUrl(config, secrets, "en", "sign-in", "step-up"));
     expect(["prompt", "max_age", "acr_values"].some((key) => plain.searchParams.has(key))).toBe(false);
     expect(Object.fromEntries(stepUp.searchParams)).toEqual({
       ...Object.fromEntries(plain.searchParams),
@@ -70,6 +70,31 @@ describe("the sign-in address", () => {
       max_age: "0",
       acr_values: "urn:cognito:loa:4",
     });
+  });
+
+  it("never asks for the self-service scope for a session, only for an enrolment, which also starts from scratch", () => {
+    const plain = new URL(authorizeUrl(config, secrets, "en", "sign-in"));
+    const stepUp = new URL(authorizeUrl(config, secrets, "en", "sign-in", "step-up"));
+    const enrolment = new URL(authorizeUrl(config, secrets, "en", "sign-in", "enrolment"));
+    for (const url of [plain, stepUp]) expect(url.searchParams.get("scope")).not.toContain("aws.cognito.signin.user.admin");
+    expect(Object.fromEntries(enrolment.searchParams)).toEqual({
+      ...Object.fromEntries(plain.searchParams),
+      scope: "openid email profile aws.cognito.signin.user.admin",
+      prompt: "login",
+      max_age: "0",
+    });
+  });
+
+  it("revokes a refresh token at the provider, and says when it could not", async () => {
+    const calls: { url: string; body: string }[] = [];
+    const ok: Fetch = async (url, init) => {
+      calls.push({ url, body: String(init.body) });
+      return new Response(null, { status: 200 });
+    };
+    await revokeRefreshToken(config, "refresh-1", ok);
+    expect(calls).toEqual([{ url: "https://login.example/oauth2/revoke", body: "client_id=client-1&token=refresh-1" }]);
+    await expect(revokeRefreshToken(config, "r", async () => new Response(null, { status: 400 }))).rejects.toMatchObject({ reason: "rejected" });
+    await expect(revokeRefreshToken(config, "r", async () => new Response(null, { status: 503 }))).rejects.toMatchObject({ reason: "unavailable" });
   });
 
   it("never sends the verifier itself", () => {

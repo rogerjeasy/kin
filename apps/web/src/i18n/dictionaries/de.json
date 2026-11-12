@@ -4270,10 +4270,9 @@
         "enabled": "Ihre Authentifizierungs-App ist eingerichtet. Kin fragt bei jeder Freigabe einer echten Zahlung nach ihrem Code.",
         "not_set": "Sie haben noch keine Authentifizierungs-App. Solange keine eingerichtet ist, können Sie keine echten Zahlungen freigeben.",
         "demo": "In der Demo bewegen Freigaben simuliertes Geld und brauchen keinen zweiten Faktor. In einem echten Kreis richtet jede Person hier eine Authentifizierungs-App ein.",
-        "sign_in_again": "Um Ihre App einzurichten, müssen Sie sich zuerst erneut anmelden.",
-        "unavailable": "Kin erreicht den Anmeldedienst gerade nicht. Bitte versuchen Sie es gleich noch einmal."
+        "unavailable": "Kin erreicht den Anmeldedienst gerade nicht. Bitte versuchen Sie es gleich noch einmal.",
+        "pending": "Ihre Anmeldung ist bestätigt. Scannen Sie den Code unten innerhalb von zehn Minuten und geben Sie dann den Code aus Ihrer App ein."
       },
-      "signInAgain": "Erneut anmelden",
       "begin": "Authentifizierungs-App einrichten",
       "beginning": "Wird gestartet…",
       "scan": "Scannen Sie diesen Code mit einer Authentifizierungs-App, etwa Google Authenticator, Microsoft Authenticator oder 1Password.",
@@ -4290,11 +4289,13 @@
       "errors": {
         "wrong_code": "Dieser Code passt nicht. Prüfen Sie die Uhrzeit Ihres Telefons und geben Sie den neuesten Code ein.",
         "too_many_tries": "Zu viele Versuche. Warten Sie einige Minuten und versuchen Sie es dann erneut.",
-        "sign_in_again": "Ihre Anmeldung ist zu alt, um Ihr Konto zu ändern. Melden Sie sich erneut an und richten Sie dann Ihre App ein.",
+        "sign_in_again": "Diese Einrichtung ist abgelaufen oder begann nicht mit einer neuen Anmeldung. Beginnen Sie neu: Kin bittet Sie noch einmal, sich anzumelden.",
         "unavailable": "Kin erreicht den Anmeldedienst gerade nicht. Bitte versuchen Sie es gleich noch einmal.",
         "refused": "Das ist hier nicht möglich. Wenn Ihre App schon eingerichtet ist, muss sich nichts ändern.",
         "invalid": "Etwas wurde nicht wie erwartet gesendet. Bitte versuchen Sie es erneut."
-      }
+      },
+      "beginHint": "Kin bittet Sie zuerst, sich erneut anzumelden, damit niemand an einem Telefon oder Computer, an dem Sie angemeldet geblieben sind, seine eigene App einrichten kann.",
+      "startAgain": "Neu beginnen"
     }
   },
   "aiProvenance": {

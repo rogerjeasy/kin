@@ -1,19 +1,17 @@
-import { accountTypesOwed, refreshTokens, userPoolOf, type Session, type TokenSet } from "@kin/auth";
-import { cognitoAccountGroups, type AccountGroups } from "@kin/auth/cognito-groups";
+import { accountTypesOwed, refreshTokens, type Session, type TokenSet } from "@kin/auth";
+import type { CognitoAdmin } from "@kin/auth/cognito-admin";
 import { readAccountGroupsEnabled } from "@kin/config";
 
 import { joinInvitedCircles } from "../circle";
 import { authConfig, sessionVerifier } from "./config";
+import { poolAdmin } from "./pool-admin";
 
 /** A verified session and the tokens that prove it. */
 export type SignedIn = { readonly session: Session; readonly tokens: TokenSet };
 
-let groups: AccountGroups | null | undefined;
-
-/** The user pool's groups, or `null` where this server may not change them. */
-function accountGroups(): AccountGroups | null {
-  groups ??= readAccountGroupsEnabled(process.env) ? cognitoAccountGroups(userPoolOf(authConfig().issuer)) : null;
-  return groups;
+/** The user pool, or `null` where this server may not change its groups. */
+function accountGroups(): CognitoAdmin | null {
+  return readAccountGroupsEnabled(process.env) ? poolAdmin() : null;
 }
 
 const errorName = (error: unknown): string => (error instanceof Error ? error.name : "unknown");

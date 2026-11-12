@@ -4270,10 +4270,9 @@
         "enabled": "Your authenticator app is set up. Kin asks for its code each time you approve a real payment.",
         "not_set": "You have no authenticator app yet. Until you set one up, you cannot approve real payments.",
         "demo": "In the demo, approvals move simulated money and need no second factor. In a real circle, each person sets up an authenticator app here.",
-        "sign_in_again": "To set up your app, Kin needs you to sign in again first.",
-        "unavailable": "Kin cannot reach the sign-in service just now. Please try again in a moment."
+        "unavailable": "Kin cannot reach the sign-in service just now. Please try again in a moment.",
+        "pending": "Your sign-in is confirmed. Scan the code below within ten minutes, then type the code your app shows."
       },
-      "signInAgain": "Sign in again",
       "begin": "Set up an authenticator app",
       "beginning": "Starting…",
       "scan": "Scan this code with an authenticator app, such as Google Authenticator, Microsoft Authenticator or 1Password.",
@@ -4290,11 +4289,13 @@
       "errors": {
         "wrong_code": "That code did not match. Check the time on your phone and type the newest code.",
         "too_many_tries": "Too many tries. Wait a few minutes, then try again.",
-        "sign_in_again": "Your sign-in is too old to change your account. Sign in again, then set up your app.",
+        "sign_in_again": "This set-up has run out or was not started by a fresh sign-in. Start again: Kin will ask you to sign in once more.",
         "unavailable": "Kin cannot reach the sign-in service just now. Please try again in a moment.",
         "refused": "This cannot be done from here. If your app is already set up, nothing needs to change.",
         "invalid": "Something was not sent as expected. Please try again."
-      }
+      },
+      "beginHint": "Kin asks you to sign in again first, so nobody using a phone or computer you left signed in can set up their own app.",
+      "startAgain": "Start again"
     }
   },
   "aiProvenance": {

@@ -12,6 +12,8 @@ export const COOKIES = {
   id: "__Host-kin-id",
   refresh: "__Host-kin-refresh",
   signIn: "__Host-kin-sign-in",
+  /** An authenticator enrolment in progress, sealed by the server (enrolment-seal.ts). */
+  enrolment: "__Host-kin-enrolment",
 } as const;
 
 const REFRESH_SECONDS = 7 * 24 * 60 * 60;
@@ -54,6 +56,19 @@ export function clearedSessionCookies(): CookieToSet[] {
 
 export function signInCookie(value: string): CookieToSet {
   return { name: COOKIES.signIn, value, options: { ...base, maxAge: SIGN_IN_SECONDS } };
+}
+
+/**
+ * Lax like the session's: the browser arrives from the provider's page, and a
+ * strict cookie would be held back on that first screen. Only Kin's own
+ * pages can use it: the route that confirms checks the origin.
+ */
+export function enrolmentCookie(value: string, maxAge: number): CookieToSet {
+  return { name: COOKIES.enrolment, value, options: { ...base, maxAge } };
+}
+
+export function clearedEnrolmentCookie(): CookieToSet {
+  return { name: COOKIES.enrolment, value: "", options: { ...base, maxAge: 0 } };
 }
 
 export function clearedSignInCookie(): CookieToSet {

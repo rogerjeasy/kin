@@ -1,15 +1,20 @@
-import { AdminAddUserToGroupCommand, CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
+import { AdminAddUserToGroupCommand, AdminGetUserCommand, CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
 
 import { GRANTABLE_ACCOUNT_TYPES, type GrantableAccountType } from "./account-groups.ts";
 import type { UserPool } from "./user-pool.ts";
 
-/** Puts a person in an account type's group. The only write Kin makes to its user pool. */
-export type AccountGroups = {
+/**
+ * What the web app may do to Kin's user pool with its own AWS identity: add
+ * a person to an account type group, and read whether their account has an
+ * authenticator app. Its IAM policy names these two actions on this one pool.
+ */
+export type CognitoAdmin = {
   grant(username: string, type: GrantableAccountType): Promise<void>;
+  authenticatorEnabled(username: string): Promise<boolean>;
 };
 
-/** What the adapter needs of the SDK client: one call, so a test can stand in for it. */
-export type GroupClient = { send(command: AdminAddUserToGroupCommand): Promise<unknown> };
+/** What the adapter needs of the SDK client, so a test can stand in for it. */
+export type AdminClient = { send(command: AdminAddUserToGroupCommand | AdminGetUserCommand): Promise<unknown> };
 
 /** A type that is not one Kin grants was asked for. A cast cannot get past this. */
 export class UngrantableAccountTypeError extends Error {
@@ -24,16 +29,18 @@ export class UngrantableAccountTypeError extends Error {
 const TIMEOUT_MS = 5_000;
 
 /**
- * Adds people to account type groups with the caller's AWS identity: the web
- * app's instance role, or the sign-up function's. Their IAM policy names the
- * one user pool; this code names the only groups. Adding a person to a group
- * they are in already succeeds, so a retry is safe.
+ * Adding a person to a group they are in already succeeds, so a retry is
+ * safe. IAM cannot limit which group, so this code names the only two.
  */
-export function cognitoAccountGroups(pool: UserPool, client: GroupClient = sdkClient(pool)): AccountGroups {
+export function cognitoAdmin(pool: UserPool, client: AdminClient = sdkClient(pool)): CognitoAdmin {
   return {
     async grant(username, type) {
       if (!(GRANTABLE_ACCOUNT_TYPES as readonly string[]).includes(type)) throw new UngrantableAccountTypeError();
       await client.send(new AdminAddUserToGroupCommand({ UserPoolId: pool.userPoolId, Username: username, GroupName: type }));
+    },
+    async authenticatorEnabled(username) {
+      const user = (await client.send(new AdminGetUserCommand({ UserPoolId: pool.userPoolId, Username: username }))) as { UserMFASettingList?: unknown };
+      return Array.isArray(user.UserMFASettingList) && user.UserMFASettingList.includes("SOFTWARE_TOKEN_MFA");
     },
   };
 }

@@ -31,5 +31,5 @@ export async function POST(request: NextRequest) {
   if (typeof proposalId !== "string" || !UUID.test(proposalId)) return redirectWithCookies(next, config.webOrigin, []);
   const secrets = createSignInSecrets();
   const flow = encodeFlow({ ...secrets, next, stepUp: { proposalId, userId: viewer.userId } });
-  return redirectWithCookies(authorizeUrl(config, secrets, locale, "sign-in", true), config.webOrigin, [signInCookie(flow)]);
+  return redirectWithCookies(authorizeUrl(config, secrets, locale, "sign-in", "step-up"), config.webOrigin, [signInCookie(flow)]);
 }

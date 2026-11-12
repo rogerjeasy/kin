@@ -8,11 +8,20 @@ import { STEP_UP_LEVEL } from "./step-up.ts";
 export const CALLBACK_PATH = "/auth/callback";
 
 /**
- * `aws.cognito.signin.user.admin` lets the access token change its own person
- * and nobody else: Kin needs it to set up an authenticator app.
+ * `aws.cognito.signin.user.admin` lets an access token change its own person
+ * in the user pool: attributes, settings, second factor. A session never
+ * carries it. Only the one fresh sign-in that sets up an authenticator app
+ * asks for it, and that token stays on the server (decision 104).
  */
 export const USER_SELF_SERVICE_SCOPE = "aws.cognito.signin.user.admin";
-const SCOPES = `openid email profile ${USER_SELF_SERVICE_SCOPE}`;
+const SCOPES = "openid email profile";
+
+/**
+ * Why a sign-in is asked for from scratch: a step-up proves a second factor
+ * before a yes to real money; an enrolment proves the person, minutes ago,
+ * before their account's second factor is set.
+ */
+export type FreshSignIn = "step-up" | "enrolment";
 
 /** The languages Cognito's managed login pages are shown in, among Kin's own. */
 const LOGIN_LANGUAGES = new Set(["en", "fr", "de", "it", "es"]);
@@ -35,22 +44,25 @@ export function parseAuthScreen(value: string | null): AuthScreen {
 
 /**
  * Where to send the browser to sign in or sign up, carrying this attempt's
- * secrets. A step-up asks the person to sign in again from scratch, with the
- * second factor that approving real money needs.
+ * secrets. A fresh sign-in asks the person to sign in again from scratch: a
+ * step-up with the second factor that approving real money needs, an
+ * enrolment with the one scope that can set that factor up.
  */
-export function authorizeUrl(config: AuthConfig, secrets: SignInSecrets, language: string, screen: AuthScreen, stepUp = false): string {
+export function authorizeUrl(config: AuthConfig, secrets: SignInSecrets, language: string, screen: AuthScreen, fresh: FreshSignIn | null = null): string {
   const url = new URL(SCREEN_PATHS[screen], config.loginUrl);
+  const stepUp = fresh === "step-up";
   url.search = new URLSearchParams({
     response_type: "code",
     client_id: config.clientId,
     redirect_uri: callbackUrl(config),
-    scope: SCOPES,
+    scope: fresh === "enrolment" ? `${SCOPES} ${USER_SELF_SERVICE_SCOPE}` : SCOPES,
     state: secrets.state,
     nonce: secrets.nonce,
     code_challenge: pkceChallenge(secrets.verifier),
     code_challenge_method: "S256",
     ...(LOGIN_LANGUAGES.has(language) ? { lang: language } : {}),
-    ...(stepUp ? { prompt: "login", max_age: "0", acr_values: STEP_UP_LEVEL } : {}),
+    ...(fresh === null ? {} : { prompt: "login", max_age: "0" }),
+    ...(stepUp ? { acr_values: STEP_UP_LEVEL } : {}),
   }).toString();
   return url.href;
 }
@@ -89,6 +101,26 @@ export function exchangeCode(config: AuthConfig, code: string, verifier: string,
 /** Gets fresh access and ID tokens with the refresh token. */
 export function refreshTokens(config: AuthConfig, refreshToken: string, fetcher: Fetch = fetch): Promise<TokenSet> {
   return tokenRequest(config, fetcher, { grant_type: "refresh_token", refresh_token: refreshToken });
+}
+
+/**
+ * Ends a refresh token, and with it every access and ID token issued from it:
+ * Cognito revokes the whole family that shares its `origin_jti`.
+ */
+export async function revokeRefreshToken(config: AuthConfig, refreshToken: string, fetcher: Fetch = fetch): Promise<void> {
+  let response: Response;
+  try {
+    response = await fetcher(new URL("/oauth2/revoke", config.loginUrl).href, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ client_id: config.clientId, token: refreshToken }).toString(),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch {
+    throw new AuthError("unavailable", "The identity provider could not be reached to revoke a token");
+  }
+  if (response.status >= 500) throw new AuthError("unavailable", `The identity provider failed to revoke a token with status ${response.status}`);
+  if (!response.ok) throw new AuthError("rejected", `The identity provider refused to revoke a token with status ${response.status}`);
 }
 
 async function tokenRequest(config: AuthConfig, fetcher: Fetch, grant: Record<string, string>): Promise<TokenSet> {

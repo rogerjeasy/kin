@@ -9,7 +9,8 @@ import { fileURLToPath } from "node:url";
 import type { InfraConfig } from "./config.ts";
 import { DATABASE_SETTINGS, PAYPAL_SETTINGS, SHARED_CONNECTOR, TWILIO_SETTINGS } from "./database-settings.ts";
 import { WEB_SETTINGS } from "./web-settings.ts";
-import { ADD_TO_GROUP } from "./account-groups.ts";
+import { POOL_ADMIN_ACTIONS } from "./account-groups.ts";
+import { GMAIL_SECRET_ARN_PARAMETER } from "./gmail-secret-name.ts";
 
 /** Claude Opus 4.6 as a US cross-region inference profile, and the foundation model it routes to. Matches `BEDROCK_INVOKE_DEFAULT_MODEL` in `@kin/config`. */
 const CLAUDE_INFERENCE_PROFILE = "us.anthropic.claude-opus-4-6-v1";
@@ -84,11 +85,12 @@ export class WebStack extends Stack {
       assumedBy: new iam.ServicePrincipal("tasks.apprunner.amazonaws.com"),
     });
     instance.addToPolicy(new iam.PolicyStatement({ actions: ["secretsmanager:GetSecretValue"], resources: [appSecret, provisionerSecret, demoSessionKey] }));
-    // The only change the web app makes to Kin's user pool: a person who holds
-    // a caregiver's seat, or an account made before every sign-up got the
-    // default type, is added to that group (packages/auth `accountTypesOwed`).
-    // IAM cannot limit the group, so the code names the only two it grants.
-    instance.addToPolicy(new iam.PolicyStatement({ actions: [ADD_TO_GROUP], resources: [setting(WEB_SETTINGS.authUserPoolArn)] }));
+    // What the web app may do to Kin's user pool, with its own identity: add a
+    // person who holds a caregiver's seat, or an account made before every
+    // sign-up got the default type, to that group (packages/auth
+    // `accountTypesOwed`; IAM cannot limit the group, so the code names the only
+    // two it grants), and read whether a person has an authenticator app.
+    instance.addToPolicy(new iam.PolicyStatement({ actions: [...POOL_ADMIN_ACTIONS], resources: [setting(WEB_SETTINGS.authUserPoolArn)] }));
     instance.addToPolicy(
       new iam.PolicyStatement({
         actions: ["kms:Decrypt"],
@@ -124,6 +126,16 @@ export class WebStack extends Stack {
       secrets.push({ name: "KIN_PAYPAL_CLIENT_SECRET", value: paypalSecret });
       // The web only says how demo payouts are paid; the worker pays them.
       if (config.demoSandboxPayeeEmail !== null) environment.push({ name: "KIN_DEMO_SANDBOX_PAYEE_EMAIL", value: config.demoSandboxPayeeEmail });
+    }
+
+    // The email that tells a person an authenticator app was just set up on
+    // their account: from the Gmail account that sends sign-in codes. Unset,
+    // the app is still set up and the email is skipped, with a log line.
+    if (config.senderEmail !== null) {
+      const gmailSecret = setting(GMAIL_SECRET_ARN_PARAMETER);
+      instance.addToPolicy(new iam.PolicyStatement({ actions: ["secretsmanager:GetSecretValue"], resources: [gmailSecret] }));
+      environment.push({ name: "KIN_SENDER_EMAIL", value: config.senderEmail });
+      secrets.push({ name: "KIN_GMAIL_APP_PASSWORD", value: gmailSecret });
     }
 
     // Texting a check-in link: the web app sends the message itself with

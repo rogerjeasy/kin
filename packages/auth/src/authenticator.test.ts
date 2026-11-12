@@ -66,11 +66,6 @@ describe("setting up an authenticator app", () => {
     expect(await reasonOf(unreachable.begin("a"))).toBe("unavailable");
   });
 
-  it("reads whether the app is already the second factor", async () => {
-    expect(await userPool({ GetUser: { status: 200, body: { UserMFASettingList: ["SOFTWARE_TOKEN_MFA"] } } }).authenticator.enabled("a")).toBe(true);
-    expect(await userPool({ GetUser: { status: 200, body: { Username: "u" } } }).authenticator.enabled("a")).toBe(false);
-  });
-
   it("puts Kin's name, the account and the secret in the app's address", () => {
     expect(authenticatorUri("sam@example.com", SECRET)).toBe(`otpauth://totp/Kin%3Asam%40example.com?secret=${SECRET}&issuer=Kin`);
   });

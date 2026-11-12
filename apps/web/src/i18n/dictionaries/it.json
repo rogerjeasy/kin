@@ -4270,10 +4270,9 @@
         "enabled": "La tua app di autenticazione è configurata. Kin chiede il suo codice ogni volta che approvi un pagamento reale.",
         "not_set": "Non hai ancora un’app di autenticazione. Finché non ne configuri una, non puoi approvare pagamenti reali.",
         "demo": "Nella demo le approvazioni muovono denaro simulato e non richiedono un secondo fattore. In un cerchio reale, ogni persona configura qui un’app di autenticazione.",
-        "sign_in_again": "Per configurare la tua app, Kin ha bisogno che tu acceda di nuovo.",
-        "unavailable": "Kin non riesce a raggiungere il servizio di accesso in questo momento. Riprova tra poco."
+        "unavailable": "Kin non riesce a raggiungere il servizio di accesso in questo momento. Riprova tra poco.",
+        "pending": "Il tuo accesso è confermato. Scansiona il codice qui sotto entro dieci minuti, poi inserisci il codice mostrato dalla tua app."
       },
-      "signInAgain": "Accedi di nuovo",
       "begin": "Configura un’app di autenticazione",
       "beginning": "Avvio…",
       "scan": "Scansiona questo codice con un’app di autenticazione, come Google Authenticator, Microsoft Authenticator o 1Password.",
@@ -4290,11 +4289,13 @@
       "errors": {
         "wrong_code": "Il codice non corrisponde. Controlla l’ora del telefono e inserisci il codice più recente.",
         "too_many_tries": "Troppi tentativi. Attendi qualche minuto, poi riprova.",
-        "sign_in_again": "Il tuo accesso è troppo vecchio per modificare l’account. Accedi di nuovo, poi configura l’app.",
+        "sign_in_again": "Questa configurazione è scaduta o non è iniziata con un nuovo accesso. Ricomincia: Kin ti chiederà di accedere ancora una volta.",
         "unavailable": "Kin non riesce a raggiungere il servizio di accesso in questo momento. Riprova tra poco.",
         "refused": "Non è possibile da qui. Se la tua app è già configurata, non serve cambiare nulla.",
         "invalid": "Qualcosa non è stato inviato come previsto. Riprova."
-      }
+      },
+      "beginHint": "Kin ti chiede prima di accedere di nuovo, così nessuno che usi un telefono o un computer rimasto collegato può configurare la propria app.",
+      "startAgain": "Ricomincia"
     }
   },
   "aiProvenance": {
