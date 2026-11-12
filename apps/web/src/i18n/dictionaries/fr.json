@@ -4922,14 +4922,16 @@
       "eyebrow": "OpenAPI",
       "title": "Le document publié",
       "lede": "Construit à partir des schémas sur lesquels le serveur vérifie les requêtes, il ne peut donc pas s’en écarter.",
-      "link": "Ouvrir le document OpenAPI"
+      "link": "Ouvrir le document OpenAPI",
+      "sdks": "Des SDK TypeScript et Python, générés par APIMatic à partir de ce même document. Chacun contient un exemple signé pour l’API des agences.",
+      "typescript": "SDK TypeScript",
+      "python": "SDK Python"
     },
     "next": {
       "eyebrow": "À venir",
       "title": "Pas encore construit",
       "items": [
         "Connexion par OAuth 2.1 avec PKCE, pour qu’un client soit autorisé sans copier de jeton.",
-        "Des SDK générés à partir du document OpenAPI, par exemple avec APIMatic.",
         "Les factures des agences par la même API signée."
       ]
     }

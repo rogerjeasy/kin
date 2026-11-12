@@ -4922,14 +4922,16 @@
       "eyebrow": "OpenAPI",
       "title": "Das veröffentlichte Dokument",
       "lede": "Aus den Schemas gebaut, gegen die der Server Anfragen prüft, sodass es nicht davon abweichen kann.",
-      "link": "OpenAPI-Dokument öffnen"
+      "link": "OpenAPI-Dokument öffnen",
+      "sdks": "SDKs für TypeScript und Python, von APIMatic aus genau diesem Dokument erzeugt. Jedes enthält ein signiertes Beispiel für die Agentur-API.",
+      "typescript": "TypeScript-SDK",
+      "python": "Python-SDK"
     },
     "next": {
       "eyebrow": "Als Nächstes",
       "title": "Noch nicht gebaut",
       "items": [
         "Anmeldung über OAuth 2.1 mit PKCE, damit ein Client ohne Kopieren eines Tokens autorisiert wird.",
-        "Aus dem OpenAPI-Dokument erzeugte SDKs, zum Beispiel mit APIMatic.",
         "Rechnungen von Agenturen über dieselbe signierte API."
       ]
     }
