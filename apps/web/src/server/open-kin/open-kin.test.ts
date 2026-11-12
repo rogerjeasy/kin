@@ -192,7 +192,8 @@ describe("the OpenAPI document", () => {
   it("publishes the visit schema the API checks and every MCP tool's input schema, and lists no tool that approves", () => {
     const document = openApiDocument(ORIGIN) as { openapi: string; paths: Record<string, unknown>; components: { schemas: Record<string, { additionalProperties?: boolean }> }; "x-kin-mcp-tools": Record<string, { kind: string }> };
     expect(document.openapi).toBe("3.1.0");
-    expect(Object.keys(document.paths)).toEqual(["/api/v1/visits", "/api/mcp", "/.well-known/oauth-protected-resource/api/mcp"]);
+    expect(Object.keys(document.paths)).toEqual(["/api/v1/visits", "/api/v1/invoices", "/api/v1/invoices/{number}", "/api/mcp", "/.well-known/oauth-protected-resource/api/mcp"]);
+    expect(document.components.schemas["AgencyInvoice"]?.additionalProperties).toBe(false);
     expect(document.components.schemas["VisitReport"]?.additionalProperties).toBe(false);
     for (const [name, tool] of Object.entries(document["x-kin-mcp-tools"])) {
       expect(["read", "propose"]).toContain(tool.kind);

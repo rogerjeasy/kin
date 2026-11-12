@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { VisitPreview } from "@/components/dashboard/ai/visit-preview";
 import { CaregiverBills } from "@/components/dashboard/caregiver-billing/caregiver-bills";
 
+import { AgencyInvoices } from "@/components/dashboard/bills/agency-invoices";
 import { ChecksPanel } from "@/components/dashboard/bills/checks-panel";
 import { LettersSection } from "@/components/dashboard/letters/letters-section";
 import { OfficeLineLink } from "@/components/dashboard/office-line/office-line-link";
@@ -24,10 +25,13 @@ import { moneyKind } from "@/content/circle/provenance";
 import { paidBills } from "@/content/circle/record";
 import { latestClaimCheck } from "@/content/circle/safety";
 import { upcomingBills, upcomingMonth } from "@/content/circle/upcoming";
+import { invoiceViews } from "@/content/open-kin/invoice-views";
 import { circleSlots } from "@/content/circle/words";
 import { dashboardMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
 import { dashboardContext, may } from "@/server/dashboard-context";
+import { databases } from "@/server/database";
+import { invoiceScreen } from "@/server/open-kin/connections";
 import { structuredModel } from "@/server/model";
 import { demoPayeeOf, payoutProofsOf } from "@/server/sandbox-payout";
 import { speechServices } from "@/server/speech";
@@ -57,6 +61,9 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
   // The latest demand Kin checked, whatever it found: one that matches nothing on record matters most.
   const latest = may(circle, "safety.view") ? latestClaimCheck(circle) : null;
   const check = latest ? checkWords({ dictionary, names, format, parent: slots.parent }, latest, "bills") : null;
+  // An agency's invoices are about the circle's money: only whoever sees it reads them, as row-level security also holds.
+  const agencyScreen = may(circle, "money.view") ? await invoiceScreen({ db: databases().app, userId: viewer.userId, circle }) : null;
+  const invoices = agencyScreen === null ? [] : invoiceViews({ invoices: agencyScreen.invoices, agencyOf: (id) => agencyScreen.agencyKeys.find((key) => key.id === id)?.label ?? "", circle, copy: bills.invoices, kinds: dictionary.dashboard.shifts.kinds, format });
 
   const upcomingTable = (
     <DataTable
@@ -121,6 +128,9 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
       <CaregiverBills circle={circle} viewer={viewer} locale={locale} canDescribe={structuredModel() !== null} speech={speechServices() === null ? null : dictionary.dashboard.speech} copy={dictionary.dashboard.caregiverBilling} ai={dictionary.aiProvenance} demoNote={demoPayeeNote(dictionary.sandboxPayout, demoPayeeOf(circle))} sandbox={{ paid: new Set(byProposal.keys()), tag: dictionary.sandboxPayout.tag }} />
       {may(circle, "safety.view") ? (
         <LettersSection circle={circle} locale={locale} copy={dictionary.dashboard.letters} ai={dictionary.aiProvenance} speech={speechServices() === null ? null : dictionary.dashboard.speech} canReadPhotos={structuredModel() !== null} offerSample={circle.circle.demo} mayAct={may(circle, "letter.read")} mayReview={may(circle, "bill.review")} approvalsHref={localizedPath(locale, dashboardRoutes.approvals)} />
+      ) : null}
+      {agencyScreen !== null ? (
+        <AgencyInvoices invoices={invoices} circle={circle} format={format} mayReview={may(circle, "bill.review")} approvalsHref={localizedPath(locale, dashboardRoutes.approvals)} copy={bills.invoices} billCopy={dictionary.dashboard.letters.bills} sampleLabel={dictionary.openKin.list.sample} />
       ) : null}
       {circle.circle.demo && may(circle, "letter.read") && structuredModel() !== null ? <VisitPreview locale={locale} copy={dictionary.aiProvenance} billing={dictionary.dashboard.caregiverBilling} /> : null}
       {may(circle, "safety.view") ? <OfficeLineLink href={localizedPath(locale, officeLineRoute)} title={dictionary.dashboard.officeLine.title} text={dictionary.dashboard.officeLine.linkText} label={dictionary.dashboard.officeLine.link} /> : null}

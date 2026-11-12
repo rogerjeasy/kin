@@ -1589,6 +1589,10 @@
         "letter_bill": {
           "title": "Fattura {name}",
           "text": "Letta da una lettera e controllata dalla famiglia. Viene pagata con PayPal dal fondo solo dopo ogni sì che l’accordo richiede."
+        },
+        "agency_invoice": {
+          "title": "Fattura di {name}",
+          "text": "Inviata dall’agenzia tramite l’API firmata di Kin e confrontata con le visite confermate dalla famiglia. PayPal la paga dal fondo solo dopo ogni sì richiesto dall’accordo."
         }
       },
       "raisedBy": "Proposto da {name}, {date}",
@@ -1693,6 +1697,32 @@
         },
         "noDuplicates": "Nessuna bolletta doppia questo mese.",
         "noJumps": "Nessun importo è aumentato senza motivo."
+      },
+      "invoices": {
+        "title": "Fatture delle agenzie",
+        "lede": "Il software di fatturazione di un’agenzia di assistenza invia le sue fatture a Kin con la propria chiave firmata. Kin confronta ogni riga con le visite confermate dalla famiglia. Non si paga nulla finché una persona non la controlla e la famiglia dice sì.",
+        "empty": "Nessuna agenzia ha inviato una fattura.",
+        "heading": "Da {agency}, fattura {number}",
+        "period": "Dal {from} al {to}",
+        "due": "Scade il {day}",
+        "lines": "Cosa addebita l’agenzia",
+        "line": "{caregiver}, {when}",
+        "when": "{kind}, dalle {from} alle {to}",
+        "minutes": "{count} minuti",
+        "flags": {
+          "no_family_word": "La famiglia non ha confermato questa visita",
+          "hours_differ": "Le ore non coincidono con l’entrata e l’uscita registrate dall’assistente",
+          "paid_already": "Kin ha già pagato l’assistente per questo turno"
+        },
+        "matches": "Corrisponde a un turno confermato dalla famiglia",
+        "warning": "{count} righe su {total} vanno guardate meglio prima che qualcuno dica sì.",
+        "allClear": "Ogni riga corrisponde a un turno confermato dalla famiglia.",
+        "paypal": "L’agenzia accetta PayPal a {email}; la famiglia conferma l’indirizzo quando controlla la fattura.",
+        "noPaypal": "L’agenzia non ha dato un indirizzo PayPal, quindi la fattura si paga fuori da Kin.",
+        "lessThanInvoiced": "Chi controlla può pagare meno del fatturato, per le visite che la famiglia conferma, mai di più.",
+        "declined": "Rifiutata",
+        "decline": "Rifiuta questa fattura",
+        "declining": "Rifiuto in corso…"
       }
     },
     "fairness": {
@@ -2655,7 +2685,8 @@
           "amount": "Scrivi l’importo come nella lettera, ad esempio 61.00.",
           "due": "Scegli una data valida.",
           "receiver": "Scrivi un indirizzo email PayPal o scegli Fuori da Kin.",
-          "unavailable": "Kin non è raggiungibile. Riprova."
+          "unavailable": "Kin non è raggiungibile. Riprova.",
+          "above_invoice": "L’agenzia ha fatturato meno di così. Paghi al massimo quanto fatturato."
         }
       }
     },
@@ -4876,7 +4907,22 @@
       "evidence": "Solo una prova: da una segnalazione non si paga nulla.",
       "note": "L’agenzia ha scritto: «{note}»",
       "refused": "Un contenuto che Kin non ha potuto leggere, conservato così come è stato inviato.",
-      "shiftsLink": "Dia la parola della famiglia sul turno"
+      "shiftsLink": "Dia la parola della famiglia sul turno",
+      "invoices": "Fatture ricevute",
+      "noInvoices": "Nessuna fattura ricevuta finora.",
+      "invoice": "{agency}: fattura {number}, {amount}",
+      "invoiceLines": "{count} righe · ricevuta {received}",
+      "billsLink": "Controllala in Fatture",
+      "invoiceRefusals": {
+        "shape": "Una fattura che Kin non ha potuto leggere, conservata così com’è arrivata.",
+        "total": "Una fattura il cui totale non era la somma delle righe, rifiutata.",
+        "currency": "Una fattura con una riga in un’altra valuta, rifiutata.",
+        "duplicate_line": "Una fattura che addebitava due volte una visita, rifiutata.",
+        "period": "Una fattura con date che non formano un periodo reale, rifiutata.",
+        "unknown_visit": "Una fattura per una visita mai segnalata dall’agenzia, rifiutata.",
+        "visit_invoiced": "Una fattura per una visita già su un’altra fattura, rifiutata.",
+        "circle_currency": "Una fattura non nella valuta della cerchia, rifiutata."
+      }
     }
   },
   "developers": {
@@ -4916,7 +4962,12 @@
       "title": "Segnalare una visita",
       "lede": "Invii con POST una visita a /api/v1/visits, firmata con la chiave creata dall’organizzatore del cerchio. Kin la conserva come prova accanto al turno. Non paga nulla.",
       "sign": "Firmi il corpo grezzo",
-      "responses": "201 conservata · 200 già conservata · 401 chiave o firma · 409 stesso ID, altro corpo · 422 conservata ma illeggibile"
+      "responses": "201 conservata · 200 già conservata · 401 chiave o firma · 409 stesso ID, altro corpo · 422 conservata ma illeggibile",
+      "invoiceTitle": "Inviare una fattura",
+      "invoiceLede": "Invii una fattura con POST a /api/v1/invoices, firmata esattamente come una visita. Ogni riga indica una visita già segnalata dall’agenzia, in centesimi interi; Kin rifà la somma da sé. La fattura diventa una fattura che la famiglia controlla rispetto alle visite confermate. Da sola non paga nulla.",
+      "invoiceSign": "Firmare e inviare una fattura",
+      "statusSign": "Chiedere a che punto è (firmi il percorso)",
+      "invoiceResponses": "201 conservata per il controllo · 200 già conservata · 401 chiave o firma · 409 stesso numero, altro contenuto · 422 conservata ma rifiutata, con il motivo · GET: received, under_review, approved, paid, declined"
     },
     "openapi": {
       "eyebrow": "OpenAPI",
@@ -4929,8 +4980,7 @@
       "title": "Non ancora realizzato",
       "items": [
         "Accesso tramite OAuth 2.1 con PKCE, per autorizzare un client senza copiare un token.",
-        "SDK generati dal documento OpenAPI, per esempio con APIMatic.",
-        "Fatture delle agenzie tramite la stessa API firmata."
+        "SDK generati dal documento OpenAPI, per esempio con APIMatic."
       ]
     }
   }

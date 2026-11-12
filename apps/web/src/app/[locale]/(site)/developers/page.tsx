@@ -7,7 +7,7 @@ import { ToolCatalogue } from "@/components/developers/tool-catalogue";
 import { CopyBlock } from "@/components/shared/copy-block";
 import { ClosingBand } from "@/components/shared/closing-band";
 import { StatusNote } from "@/components/shared/status-note";
-import { claudeCodeCommand, curlToolsList, curlVisit, mcpJsonConfig } from "@/content/open-kin/connect-snippets";
+import { claudeCodeCommand, curlInvoice, curlInvoiceStatus, curlToolsList, curlVisit, mcpJsonConfig } from "@/content/open-kin/connect-snippets";
 import { pageContext, pageMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
 import { authConfig } from "@/server/auth/config";
@@ -65,13 +65,20 @@ export default async function DevelopersPage({ params }: PageProps<"/[locale]/de
           <p className="text-sm text-muted-foreground">{copy.agency.responses}</p>
         </div>
       </ContentSection>
-      <ContentSection id="openapi" tone="muted" eyebrow={copy.openapi.eyebrow} title={copy.openapi.title} lede={copy.openapi.lede}>
+      <ContentSection id="invoices" tone="muted" eyebrow={copy.agency.eyebrow} title={copy.agency.invoiceTitle} lede={copy.agency.invoiceLede}>
+        <div className="grid min-w-0 gap-5 lg:max-w-4xl">
+          <CopyBlock label={copy.agency.invoiceSign} value={curlInvoice(origin, "agk_…", "kin_ags_…")} {...labels} />
+          <CopyBlock label={copy.agency.statusSign} value={curlInvoiceStatus(origin, "agk_…", "kin_ags_…")} {...labels} />
+          <p className="text-sm text-muted-foreground">{copy.agency.invoiceResponses}</p>
+        </div>
+      </ContentSection>
+      <ContentSection id="openapi" eyebrow={copy.openapi.eyebrow} title={copy.openapi.title} lede={copy.openapi.lede}>
         {/* A JSON document, not a page: a plain link, so the browser opens it. */}
         <a href="/api/v1/openapi.json" className="inline-flex min-h-11 items-center font-medium">
           <span className="border-b border-current pb-0.5">{copy.openapi.link}</span>
         </a>
       </ContentSection>
-      <ContentSection id="next" eyebrow={copy.next.eyebrow} title={copy.next.title}>
+      <ContentSection id="next" tone="muted" eyebrow={copy.next.eyebrow} title={copy.next.title}>
         <div className="grid max-w-3xl gap-3">
           {copy.next.items.map((item) => (
             <StatusNote key={item} title={copy.next.eyebrow} text={item} />

@@ -1589,6 +1589,10 @@
         "letter_bill": {
           "title": "Facture {name}",
           "text": "Lue dans un courrier et vérifiée par la famille. Elle est payée par PayPal depuis la cagnotte seulement après chaque oui que l’accord demande."
+        },
+        "agency_invoice": {
+          "title": "Facture de {name}",
+          "text": "Envoyée par l’agence via l’API signée de Kin et vérifiée par rapport aux visites que la famille a confirmées. PayPal la paie depuis la cagnotte seulement après chaque oui que l’accord demande."
         }
       },
       "raisedBy": "Proposé par {name} le {date}",
@@ -1693,6 +1697,32 @@
         },
         "noDuplicates": "Aucune facture en double ce mois-ci.",
         "noJumps": "Aucun montant n’a augmenté sans raison."
+      },
+      "invoices": {
+        "title": "Factures des agences",
+        "lede": "Le logiciel de facturation d’une agence d’aide à domicile envoie ses factures à Kin avec sa clé signée. Kin vérifie chaque ligne par rapport aux visites que la famille a confirmées. Rien n’est payé avant qu’une personne l’examine et que la famille dise oui.",
+        "empty": "Aucune agence n’a envoyé de facture.",
+        "heading": "De {agency}, facture {number}",
+        "period": "Du {from} au {to}",
+        "due": "À payer le {day}",
+        "lines": "Ce que l’agence facture",
+        "line": "{caregiver}, {when}",
+        "when": "{kind}, de {from} à {to}",
+        "minutes": "{count} minutes",
+        "flags": {
+          "no_family_word": "La famille n’a pas confirmé cette visite",
+          "hours_differ": "Les heures diffèrent de l’arrivée et du départ pointés par l’aide",
+          "paid_already": "Kin a déjà payé l’aide pour ce créneau"
+        },
+        "matches": "Correspond à un créneau que la famille a confirmé",
+        "warning": "{count} lignes sur {total} méritent un examen avant que quiconque dise oui.",
+        "allClear": "Chaque ligne correspond à un créneau que la famille a confirmé.",
+        "paypal": "L’agence accepte PayPal à {email} ; la famille confirme cette adresse en examinant la facture.",
+        "noPaypal": "L’agence n’a donné aucune adresse PayPal, la facture est donc payée hors de Kin.",
+        "lessThanInvoiced": "Qui examine peut payer moins que facturé, pour les visites que la famille confirme, jamais plus.",
+        "declined": "Refusée",
+        "decline": "Refuser cette facture",
+        "declining": "Refus en cours…"
       }
     },
     "fairness": {
@@ -2655,7 +2685,8 @@
           "amount": "Indiquez le montant comme sur le courrier, par exemple 61.00.",
           "due": "Choisissez une date réelle.",
           "receiver": "Indiquez une adresse e-mail PayPal, ou choisissez Hors de Kin.",
-          "unavailable": "Kin est injoignable. Réessayez."
+          "unavailable": "Kin est injoignable. Réessayez.",
+          "above_invoice": "L’agence a facturé moins que cela. Payez au plus ce qu’elle a facturé."
         }
       }
     },
@@ -4876,7 +4907,22 @@
       "evidence": "Simple preuve : rien n’est payé à partir d’un signalement.",
       "note": "L’agence a écrit : « {note} »",
       "refused": "Un contenu que Kin n’a pas pu lire, conservé tel qu’il a été envoyé.",
-      "shiftsLink": "Donner la parole de la famille sur la visite"
+      "shiftsLink": "Donner la parole de la famille sur la visite",
+      "invoices": "Factures reçues",
+      "noInvoices": "Aucune facture reçue pour l’instant.",
+      "invoice": "{agency} : facture {number}, {amount}",
+      "invoiceLines": "{count} lignes · reçue {received}",
+      "billsLink": "L’examiner dans Factures",
+      "invoiceRefusals": {
+        "shape": "Une facture que Kin n’a pas pu lire, gardée telle qu’envoyée.",
+        "total": "Une facture dont le total n’était pas la somme de ses lignes, refusée.",
+        "currency": "Une facture avec une ligne dans une autre devise, refusée.",
+        "duplicate_line": "Une facture qui comptait deux fois une visite, refusée.",
+        "period": "Une facture dont les dates ne forment pas une vraie période, refusée.",
+        "unknown_visit": "Une facture pour une visite que l’agence n’a jamais signalée, refusée.",
+        "visit_invoiced": "Une facture pour une visite déjà sur une autre facture, refusée.",
+        "circle_currency": "Une facture qui n’est pas dans la devise du cercle, refusée."
+      }
     }
   },
   "developers": {
@@ -4916,7 +4962,12 @@
       "title": "Signaler une visite",
       "lede": "Envoyez une visite par POST à /api/v1/visits, signée avec la clé créée par la personne responsable du cercle. Kin la garde comme preuve à côté de la visite. Elle ne paie rien.",
       "sign": "Signer le corps brut",
-      "responses": "201 conservée · 200 déjà conservée · 401 clé ou signature · 409 même identifiant, autre contenu · 422 conservée mais illisible"
+      "responses": "201 conservée · 200 déjà conservée · 401 clé ou signature · 409 même identifiant, autre contenu · 422 conservée mais illisible",
+      "invoiceTitle": "Envoyer une facture",
+      "invoiceLede": "Envoyez une facture en POST à /api/v1/invoices, signée exactement comme une visite. Chaque ligne désigne une visite déjà signalée par l’agence, en centimes entiers ; Kin refait la somme lui-même. La facture devient une facture que la famille examine face aux visites confirmées. Elle ne paie rien d’elle-même.",
+      "invoiceSign": "Signer et envoyer une facture",
+      "statusSign": "Demander où elle en est (signez le chemin)",
+      "invoiceResponses": "201 gardée pour examen · 200 déjà gardée · 401 clé ou signature · 409 même numéro, autre contenu · 422 gardée mais refusée, avec le motif · GET : received, under_review, approved, paid, declined"
     },
     "openapi": {
       "eyebrow": "OpenAPI",
@@ -4929,8 +4980,7 @@
       "title": "Pas encore construit",
       "items": [
         "Connexion par OAuth 2.1 avec PKCE, pour qu’un client soit autorisé sans copier de jeton.",
-        "Des SDK générés à partir du document OpenAPI, par exemple avec APIMatic.",
-        "Les factures des agences par la même API signée."
+        "Des SDK générés à partir du document OpenAPI, par exemple avec APIMatic."
       ]
     }
   }

@@ -71,7 +71,50 @@ export async function manageAgencyKey(context: AgencyContext, input: unknown): P
   }
 }
 
-const reply = (status: number, body: Record<string, unknown>) => Response.json(body, { status, headers: { "cache-control": "no-store" } });
+/** An answer to an agency's software: JSON, never cached. */
+export const agencyReply = (status: number, body: Record<string, unknown>) => Response.json(body, { status, headers: { "cache-control": "no-store" } });
+const reply = agencyReply;
+
+export type AgencyServices = { readonly db: Database; readonly signingKey: string | null; readonly now?: () => Date };
+/** A request whose signature verified: the key it names, the secret's hash the database recognises it by, and what was signed. */
+export type VerifiedAgencyRequest = { readonly keyId: string; readonly secretHash: string; readonly signed: string };
+
+/**
+ * The one check every agency request passes before anything is read or kept
+ * (docs/architecture.md section 13.5): a key ID of the right shape and an
+ * HMAC-SHA256 signature over `<t>.<signed>` within the window, where `signed`
+ * is the raw body of a POST (`body: { maxBytes }`) or, for a GET, the
+ * request's path. Whether the key is live is the database's to say, in the
+ * same transaction as the work. Returns the refusal to send, or what verified.
+ */
+export async function verifyAgencyRequest(request: Request, services: AgencyServices, body: { readonly maxBytes: number } | "path"): Promise<VerifiedAgencyRequest | Response> {
+  const keyId = request.headers.get(AGENCY_KEY_HEADER);
+  if (services.signingKey === null) return reply(503, { error: "unavailable", message: "Agency reporting is not switched on in this deployment." });
+  if (!isAgencyKeyId(keyId)) return reply(401, { error: "unauthorized", message: `Send the agency key's ID in ${AGENCY_KEY_HEADER} and a signature in ${AGENCY_SIGNATURE_HEADER}.` });
+  let signed: string;
+  if (body === "path") {
+    signed = new URL(request.url).pathname;
+  } else {
+    if (!/^application\/json\b/iu.test(request.headers.get("content-type") ?? "")) return reply(415, { error: "unsupported_media_type", message: "Send application/json." });
+    const rawBody = await readCappedText(request, body.maxBytes);
+    if (rawBody === null) return reply(413, { error: "too_large", message: `At most ${Math.floor(body.maxBytes / 1024)} KB per request.` });
+    if (rawBody === "") return reply(400, { error: "empty", message: "The body is empty." });
+    signed = rawBody;
+  }
+  const secret = agencySecret(services.signingKey, keyId);
+  const verdict = verifyAgencySignature({ secret, header: request.headers.get(AGENCY_SIGNATURE_HEADER), rawBody: signed, now: (services.now ?? (() => new Date()))() });
+  if (!verdict.ok) return reply(401, { error: "unauthorized", message: verdict.reason === "stale" ? "The signature's timestamp is outside the five-minute window." : "The signature does not match this key and body." });
+  return { keyId, secretHash: hashAgencySecret(secret), signed };
+}
+
+/** A body as JSON, or `undefined` when it is not JSON at all. */
+export function jsonOrUndefined(text: string): unknown {
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return undefined;
+  }
+}
 
 /** What Kin tells the agency a report is, every time, so no integration can mistake it for a payment. */
 const EVIDENCE_NOTE = "Kept as evidence beside the shift on the family's calendar. The family still confirms the visit in Kin; nothing is paid from a report.";
@@ -81,27 +124,14 @@ const EVIDENCE_NOTE = "Kept as evidence beside the shift on the family's calenda
  * signature is checked before anything is stored, then the raw body is kept,
  * then it is read: a body Kin cannot read is kept as refused and answered 422.
  */
-export async function receiveVisit(request: Request, services: { readonly db: Database; readonly signingKey: string | null; readonly now?: () => Date }): Promise<Response> {
-  const keyId = request.headers.get(AGENCY_KEY_HEADER);
-  if (services.signingKey === null) return reply(503, { error: "unavailable", message: "Agency reporting is not switched on in this deployment." });
-  if (!isAgencyKeyId(keyId)) return reply(401, { error: "unauthorized", message: `Send the agency key's ID in ${AGENCY_KEY_HEADER} and a signature in ${AGENCY_SIGNATURE_HEADER}.` });
-  if (!/^application\/json\b/iu.test(request.headers.get("content-type") ?? "")) return reply(415, { error: "unsupported_media_type", message: "Send application/json." });
-  const rawBody = await readCappedText(request, MAX_VISIT_BYTES);
-  if (rawBody === null) return reply(413, { error: "too_large", message: "One visit per request, at most 16 KB." });
-  if (rawBody === "") return reply(400, { error: "empty", message: "The body is empty." });
-  const secret = agencySecret(services.signingKey, keyId);
-  const verdict = verifyAgencySignature({ secret, header: request.headers.get(AGENCY_SIGNATURE_HEADER), rawBody, now: (services.now ?? (() => new Date()))() });
-  if (!verdict.ok) return reply(401, { error: "unauthorized", message: verdict.reason === "stale" ? "The signature's timestamp is outside the five-minute window." : "The signature does not match this key and body." });
-
-  let json: unknown;
-  try {
-    json = JSON.parse(rawBody) as unknown;
-  } catch {
-    json = undefined;
-  }
+export async function receiveVisit(request: Request, services: AgencyServices): Promise<Response> {
+  const verified = await verifyAgencyRequest(request, services, { maxBytes: MAX_VISIT_BYTES });
+  if (verified instanceof Response) return verified;
+  const { keyId, secretHash, signed: rawBody } = verified;
+  const json = jsonOrUndefined(rawBody);
   const parsed = json === undefined ? ({ ok: false, reason: "shape" } as const) : parseVisitReport(json);
   try {
-    const received = await receiveAgencyVisit(services.db, { keyId, secretHash: hashAgencySecret(secret), rawBody, parsed });
+    const received = await receiveAgencyVisit(services.db, { keyId, secretHash, rawBody, parsed });
     if (received.state === "refused") return reply(422, { id: received.id, status: "refused", reason: parsed.ok ? "shape" : parsed.reason, message: "The body is not a visit Kin can read. It was kept as sent; see the OpenAPI document." });
     return reply(received.duplicate ? 200 : 201, { id: received.id, status: "received", duplicate: received.duplicate, caregiverMatched: received.caregiverMatched, note: EVIDENCE_NOTE });
   } catch (error) {

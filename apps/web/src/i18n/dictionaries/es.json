@@ -1589,6 +1589,10 @@
         "letter_bill": {
           "title": "Factura de {name}",
           "text": "Leída de una carta y revisada por la familia. Se paga con PayPal del fondo solo después de cada sí que pide el acuerdo."
+        },
+        "agency_invoice": {
+          "title": "Factura de {name}",
+          "text": "Enviada por la agencia a través de la API firmada de Kin y cotejada con las visitas que la familia confirmó. PayPal la paga desde el fondo solo después de cada sí que pide el acuerdo."
         }
       },
       "raisedBy": "Lo propuso {name}, {date}",
@@ -1693,6 +1697,32 @@
         },
         "noDuplicates": "No hay facturas duplicadas este mes.",
         "noJumps": "Ningún monto subió sin motivo."
+      },
+      "invoices": {
+        "title": "Facturas de agencias",
+        "lede": "El programa de facturación de una agencia de cuidados envía sus facturas a Kin con su clave firmada. Kin coteja cada línea con las visitas que la familia confirmó. No se paga nada hasta que una persona la revisa y la familia dice que sí.",
+        "empty": "Ninguna agencia ha enviado una factura.",
+        "heading": "De {agency}, factura {number}",
+        "period": "Del {from} al {to}",
+        "due": "Vence el {day}",
+        "lines": "Lo que cobra la agencia",
+        "line": "{caregiver}, {when}",
+        "when": "{kind}, de {from} a {to}",
+        "minutes": "{count} minutos",
+        "flags": {
+          "no_family_word": "La familia no ha confirmado esta visita",
+          "hours_differ": "Las horas no coinciden con la entrada y la salida que marcó la cuidadora",
+          "paid_already": "Kin ya pagó a la cuidadora por este turno"
+        },
+        "matches": "Coincide con un turno que la familia confirmó",
+        "warning": "{count} de {total} líneas merecen una revisión antes de que nadie diga que sí.",
+        "allClear": "Cada línea coincide con un turno que la familia confirmó.",
+        "paypal": "La agencia acepta PayPal en {email}; la familia confirma esa dirección al revisar la factura.",
+        "noPaypal": "La agencia no dio una dirección de PayPal, así que la factura se paga fuera de Kin.",
+        "lessThanInvoiced": "Quien revisa puede pagar menos de lo facturado, por las visitas que la familia respalda, nunca más.",
+        "declined": "Rechazada",
+        "decline": "Rechazar esta factura",
+        "declining": "Rechazando…"
       }
     },
     "fairness": {
@@ -2655,7 +2685,8 @@
           "amount": "Escriba el importe como en la carta, por ejemplo 61.00.",
           "due": "Elija una fecha real.",
           "receiver": "Escriba un correo de PayPal o elija Fuera de Kin.",
-          "unavailable": "No se pudo contactar con Kin. Inténtelo de nuevo."
+          "unavailable": "No se pudo contactar con Kin. Inténtelo de nuevo.",
+          "above_invoice": "La agencia facturó menos que eso. Pague como mucho lo facturado."
         }
       }
     },
@@ -4876,7 +4907,22 @@
       "evidence": "Solo una prueba: un informe no paga nada.",
       "note": "La agencia escribió: “{note}”",
       "refused": "Un contenido que Kin no pudo leer, guardado tal como se envió.",
-      "shiftsLink": "Dar la palabra de la familia sobre el turno"
+      "shiftsLink": "Dar la palabra de la familia sobre el turno",
+      "invoices": "Facturas recibidas",
+      "noInvoices": "Aún no se ha recibido ninguna factura.",
+      "invoice": "{agency}: factura {number}, {amount}",
+      "invoiceLines": "{count} líneas · recibida {received}",
+      "billsLink": "Revisarla en Facturas",
+      "invoiceRefusals": {
+        "shape": "Una factura que Kin no pudo leer, guardada tal como llegó.",
+        "total": "Una factura cuyo total no era la suma de sus líneas, rechazada.",
+        "currency": "Una factura con una línea en otra moneda, rechazada.",
+        "duplicate_line": "Una factura que cobraba dos veces una visita, rechazada.",
+        "period": "Una factura con fechas que no forman un periodo real, rechazada.",
+        "unknown_visit": "Una factura por una visita que la agencia nunca informó, rechazada.",
+        "visit_invoiced": "Una factura por una visita que ya está en otra factura, rechazada.",
+        "circle_currency": "Una factura que no está en la moneda del círculo, rechazada."
+      }
     }
   },
   "developers": {
@@ -4916,7 +4962,12 @@
       "title": "Informar de una visita",
       "lede": "Envíe con POST una visita a /api/v1/visits, firmada con la clave que creó el organizador del círculo. Kin la guarda como prueba junto al turno. No paga nada.",
       "sign": "Firme el cuerpo sin procesar",
-      "responses": "201 guardada · 200 ya guardada · 401 clave o firma · 409 mismo ID, otro cuerpo · 422 guardada pero ilegible"
+      "responses": "201 guardada · 200 ya guardada · 401 clave o firma · 409 mismo ID, otro cuerpo · 422 guardada pero ilegible",
+      "invoiceTitle": "Enviar una factura",
+      "invoiceLede": "Envíe una factura con POST a /api/v1/invoices, firmada igual que una visita. Cada línea nombra una visita que la agencia ya informó, en céntimos enteros; Kin suma las líneas por su cuenta. La factura pasa a ser una factura que la familia revisa con las visitas que confirmó. Por sí sola no paga nada.",
+      "invoiceSign": "Firmar y enviar una factura",
+      "statusSign": "Preguntar en qué punto está (firme la ruta)",
+      "invoiceResponses": "201 guardada para revisión · 200 ya guardada · 401 clave o firma · 409 mismo número, otro contenido · 422 guardada pero rechazada, con el motivo · GET: received, under_review, approved, paid, declined"
     },
     "openapi": {
       "eyebrow": "OpenAPI",
@@ -4929,8 +4980,7 @@
       "title": "Aún sin construir",
       "items": [
         "Iniciar sesión con OAuth 2.1 y PKCE, para autorizar a un cliente sin copiar un token.",
-        "SDK generados a partir del documento OpenAPI, por ejemplo con APIMatic.",
-        "Facturas de agencias a través de la misma API firmada."
+        "SDK generados a partir del documento OpenAPI, por ejemplo con APIMatic."
       ]
     }
   }
