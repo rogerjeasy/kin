@@ -58,6 +58,9 @@ test.describe("the studio on a laptop", () => {
     await expect(shares.getByRole("listitem")).not.toHaveCount(0);
     // Every figure is written by Kin's money formatter, never as raw cents.
     await expect(shares).toContainText("$");
+    // AG Studio's own charts finish drawing from the same rows.
+    await expect(page.getByRole("figure", { name: /^chart/u })).toHaveCount(4, { timeout: 20_000 });
+    await maybeScreenshot(page, "studio-drawn");
   });
 
   test("lets an observer look, but not build", async ({ page }) => {

@@ -11,6 +11,17 @@ const ledger = (field: string, aggregation?: "sum"): AgWidgetFieldReference => (
 const fairness = (field: string, aggregation?: "sum"): AgWidgetFieldReference => ({ id: `${FAIRNESS}.${field}`, ...(aggregation ? { aggregation } : {}) });
 const titled = (text: string) => ({ title: { enabled: true, text } });
 
+/** Months left to right as time runs. */
+const byMonth = [{ field: ledger("month"), direction: "asc" as const }];
+/**
+ * AG Charts writes a value axis in its own compact numbers, which for whole
+ * cents would read as raw cents ("40K"). So the axis keeps its lines but not
+ * its numbers, and each bar or point carries its own label, which AG Studio
+ * writes with the field's formatter: Kin's money formatter.
+ */
+const labelled = { series: { label: { enabled: true } } };
+const quietValueAxis = { valueAxis: { label: { color: "transparent" } } };
+
 type Layout = { readonly xTrack: number; readonly yTrack: number; readonly xSpan: number; readonly ySpan: number };
 
 /** One widget of the opening page: its state and where it sits on AG Studio's 24-column canvas. */
@@ -39,12 +50,12 @@ export function studioWidgets(copy: StudioCopy): StudioWidget[] {
     },
     {
       id: "in-out",
-      state: { type: "column-chart-grouped", dataMapping: { categoryKey: [ledger("month")], valueKey: [ledger("inCents", "sum"), ledger("outCents", "sum")] }, format: titled(widgets.inOut) },
+      state: { type: "column-chart-grouped", dataMapping: { categoryKey: [ledger("month")], valueKey: [ledger("inCents", "sum"), ledger("outCents", "sum")] }, sort: byMonth, format: { ...titled(widgets.inOut), style: { theme: { bar: labelled }, custom: quietValueAxis } } },
       layout: { xTrack: 0, yTrack: 16, xSpan: 12, ySpan: 14 },
     },
     {
       id: "caregiver-pay",
-      state: { type: "line-chart", dataMapping: { categoryKey: [ledger("month")], valueKey: [ledger("caregiverPayCents", "sum")] }, format: titled(widgets.caregiverPay) },
+      state: { type: "line-chart", dataMapping: { categoryKey: [ledger("month")], valueKey: [ledger("caregiverPayCents", "sum")] }, sort: byMonth, format: { ...titled(widgets.caregiverPay), style: { theme: { line: labelled }, custom: quietValueAxis } } },
       layout: { xTrack: 12, yTrack: 16, xSpan: 12, ySpan: 14 },
     },
     {
@@ -54,7 +65,7 @@ export function studioWidgets(copy: StudioCopy): StudioWidget[] {
     },
     {
       id: "fees",
-      state: { type: "column-chart-grouped", dataMapping: { categoryKey: [ledger("month")], valueKey: [ledger("feeCents", "sum")] }, format: titled(widgets.fees) },
+      state: { type: "column-chart-grouped", dataMapping: { categoryKey: [ledger("month")], valueKey: [ledger("feeCents", "sum")] }, sort: byMonth, format: { ...titled(widgets.fees), style: { theme: { bar: labelled }, custom: quietValueAxis } } },
       layout: { xTrack: 10, yTrack: 30, xSpan: 14, ySpan: 14 },
     },
     {
