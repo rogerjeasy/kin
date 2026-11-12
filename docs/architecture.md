@@ -1,11 +1,5 @@
 # Kin: architecture
 
-Architecture of the complete Kin application for the PayPal AI Hackathon 2026. Draft 1, 13 October 2026; updated 12 November 2026.
-
-`project-description.md` says what Kin is and `tech-stack.md` lists the tools. This document covers how Kin is built, how money moves, how the AI is contained and how it runs on AWS.
-
-**Status of this document.** The design of the whole application, with notes on what is built. Section 23 is the authority on what is built, tested and verified. Marked **Planned, not built**: PayPal's sandbox MCP server (8.2; the Agent Toolkit's read actions are built, decision 106) and typed agent conversations (9.2, 9.3) other than the read-only "Ask Kin" in 9.3. Unlike the diagrams in sections 1, 4 and 14, the web app runs on AWS App Runner, not Fargate behind a load balancer, and `voice` is a second App Runner service, `KinVoice`. Neither has a load balancer in front (decisions 68 and 85).
-
 **Contents**
 
 1. Summary

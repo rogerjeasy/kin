@@ -4,8 +4,6 @@
 
 Product description. PayPal AI Hackathon 2026. Draft 1, 13 October 2026.
 
-This covers the product, not its implementation, and describes more than is built. `README.md` lists what is live and what is simulated; `architecture.md` section 23 records what is verified.
-
 ---
 
 ## 1. Summary
@@ -51,13 +49,13 @@ Americans aged 60 and over reported nearly $4.9 billion in fraud losses in 2024,
 
 ### 2.5 Today's tools each solve one slice
 
-| What families use today | What it does well | What it leaves unsolved |
-|---|---|---|
-| Expense-splitting apps | Tracks who owes whom | No pool, bill payment, caregiver, parent or audit trail |
-| A joint bank account or shared card | One place for the money | Legal and tax complications, no fairness tracking, anyone can drain it, the parent can't see it |
-| Care-coordination apps | Schedules, updates, tasks | No money |
-| Fraud-monitoring services for seniors | Alerts on unusual activity | Watches the parent's accounts; pays and shares nothing |
-| A spreadsheet and a group chat | Free and flexible | One tired person keeps it going |
+| What families use today | What it does well |
+|---|---|
+| Expense-splitting apps | Tracks who owes whom |
+| A joint bank account or shared card | One place for the money |
+| Care-coordination apps | Schedules, updates, tasks |
+| Fraud-monitoring services for seniors | Alerts on unusual activity |
+| A spreadsheet and a group chat | Free and flexible |
 
 Nothing combines the shared pool, the fair split, the caregiver's pay and the parent's own voice. Kin does.
 

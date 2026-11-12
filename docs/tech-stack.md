@@ -1,9 +1,5 @@
 # Kin: technology stack
 
-Tools and services for Kin, PayPal AI Hackathon 2026. Draft 1, 13 October 2026; updated 12 November 2026.
-
-What to build with and why, not a design or a plan. The product is in `project-description.md`. Decision numbers refer to `architecture.md` section 21.
-
 ---
 
 ## 1. The stack at a glance

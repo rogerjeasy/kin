@@ -6,13 +6,13 @@ They build on Kin as `project-description.md` and `architecture.md` describe it 
 
 Parts of all five are built, as each section's status note says. Anything listed as not built is still a design; under `AGENTS.md` section 1, build it only from an approved spec.
 
-| # | Feature | One line | Status | Estimated effort when designed |
-|---|---|---|---|---|
-| 1 | Spoken mandates | The parent's voice becomes a bounded standing permission the agent buys under | Partly built (decision 64) | ~4 days |
-| 2 | The family office line | Kin takes the scam call so the parent never has to | Partly built and hosted (decisions 68, 85) | ~3 days |
-| 3 | The independent auditor | A tamper-evident ledger, an offline verifier, and a second AI that checks the first | Partly built (decision 66) | ~4 days |
-| 4 | The rehearsable agreement | Policy as code, a what-if simulator, a dry-run month | Simulator built (decision 65) | ~3 days |
-| 5 | Cross-border circles | One fair pool for a family in three currencies | Display only, simulated rates | ~3 days |
+| # | Feature | One line | Status |
+|---|---|---|---|
+| 1 | Spoken mandates | The parent's voice becomes a bounded standing permission the agent buys under | Partly built (decision 64) |
+| 2 | The family office line | Kin takes the scam call so the parent never has to | Partly built and hosted (decisions 68, 85) |
+| 3 | The independent auditor | A tamper-evident ledger, an offline verifier, and a second AI that checks the first | Partly built (decision 66) |
+| 4 | The rehearsable agreement | Policy as code, a what-if simulator, a dry-run month | Simulator built (decision 65) |
+| 5 | Cross-border circles | One fair pool for a family in three currencies | Display only, simulated rates |
 
 ---
 
