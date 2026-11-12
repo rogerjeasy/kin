@@ -249,7 +249,7 @@ The infrastructure is AWS CDK in `infra/`, with these stacks: KinGuardrails, Kin
 
 - GitHub Actions `ci.yml` runs on every pull request and push to `main`: `pnpm check`, the key end-to-end journeys (`pnpm test:e2e:key`; `pnpm test:e2e` runs all of them), Docker builds of the web, migration, worker and voice images with a smoke request, and `cdk synth`.
 - `deploy.yml` runs after CI passes on `main`: it deploys the stacks, runs the database migration task, rolls out the web, worker and voice images, and smoke-tests the live app. GitHub reaches AWS through OpenID Connect, with no stored keys.
-- There is no staging environment: a merge to `main` redeploys the URL judges use. Hold merges during the judging window (1 to 15 December 2026).
+- There is no staging environment: a merge to `main` redeploys the URL judges use. Hold merges until the winners are announced on 21 December 2026: judging runs 1 to 15 December, and the organizers ask that nothing change after the submission deadline.
 
 To run the CDK by hand: `AWS_PROFILE=<profile> KIN_ALERT_EMAIL=<address> pnpm --filter @kin/infra run <synth|diff|deploy>`. See `AGENTS.md` section 3 for bootstrapping and for switching on email, PayPal, Claude and speech in AWS.
 
@@ -258,7 +258,7 @@ To run the CDK by hand: `AWS_PROFILE=<profile> KIN_ALERT_EMAIL=<address> pnpm --
 - `docs/project-description.md`: the product, the people it is for, and the full feature set it aims at
 - `docs/architecture.md`: services, data model, money flow, PayPal, AI, voice, security, testing, decisions and what is verified
 - `docs/tech-stack.md`: tool choices and their reasons
-- `docs/feature-proposals.md`: proposed features, not yet approved or built
+- `docs/feature-proposals.md`: feature designs and how much of each is built
 - `docs/submission/devpost-description.md`: the Devpost write-up
 
 ## License
