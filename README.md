@@ -1,53 +1,44 @@
 # Kin
 
-**Nothing about Mom's money without Mom.** Kin is a shared money layer for families caring for an aging parent: siblings pay into one family pool through PayPal, Claude reads the bills and the caregiver's week and proposes each payment, the family approves, PayPal moves the money, and Kin tells the parent about every dollar, out loud. Built for the PayPal AI Hackathon 2026, in the PayPal sandbox with test money.
+**Nothing about Mom's money without Mom.** Kin is a shared money layer for families caring for an aging parent. Siblings pay into one family pool through PayPal. Claude reads the bills and the caregiver's week and proposes each payment. The family approves, PayPal moves the money, and Kin tells the parent about every dollar, out loud. Built for the PayPal AI Hackathon 2026, in the PayPal sandbox with test money.
 
-- **Live demo:** https://mzdg4f3stk.us-east-1.awsapprunner.com. Press **Try the demo** for your own copy of Rose's circle (Rose, 81, her three children and her caregiver). No account is needed.
-- **Video:** under three minutes, linked from the Devpost entry.
+- **Video (under 3 minutes):** VIDEO_URL
+- **Try it, no account:** https://mzdg4f3stk.us-east-1.awsapprunner.com → **Try the demo**. You get your own copy of Rose's circle: Rose, 81, her three children and her caregiver Amara. The banner shows a five-step path; each step says what is real.
+- **PayPal sandbox buyer for the top-up:** `sb-myskz53353349@personal.example.com` / `G_8h$[X+` (a PayPal sandbox test account: test money only).
 - **Licence:** MIT (`LICENSE`).
 
-![Kin's architecture: people, the web app and agent layer, the deterministic money core, the worker, Aurora, and PayPal, Claude on Bedrock, speech and Cognito](docs/images/architecture.svg)
+**The rule throughout:** the AI proposes, people approve, and PayPal's own record decides what happened. Claude never holds a tool that moves money and never computes an amount. Every figure it says is checked against the record before anyone hears it.
 
-**The rule throughout:** the AI proposes, people approve, and PayPal's own record decides what happened. Claude never holds a tool that moves money, never computes an amount, and every figure it says is checked against the record before anyone hears it.
+## Judge quick start (3 minutes)
+
+1. **Real PayPal checkout.** On the overview press **Add money**, then **Pay with PayPal**, and pay with the sandbox buyer above. Open **Record**: the top-up is labelled **PayPal sandbox**, with PayPal's fee and PayPal's capture ID.
+2. **An agent that buys, within Rose's rules.** Open **Ask Kin** and press **Reorder Rose's refill**. Claude raises the refill; Rose's own standing permission approves it, not Kin. The demo pharmacy charges Rose's saved card through PayPal, and Kin records the charge only after reading it back from PayPal. Then ask "Pay Amara now": Kin refuses, because no tool it holds pays.
+3. **The caregiver is paid through PayPal.** Take Rose's seat (the guide does it in one press) and approve Amara's week. The worker pays her with PayPal Payouts and records it only when PayPal reads the payout item `SUCCESS`.
+4. **Rose hears it.** As Rose, **Listen** says each confirmed payment in one sentence, in very large type, read aloud.
+5. **The record proves itself.** **Record → Check the record** recomputes the ledger's hash chain; **Family money studio** shows the same ledger in AG Studio.
+
+More to try: **Bills → Try a sample letter photo** (Claude reads a photographed bill and shows the words it read each field from), **Try the office line** (a scam call checked against the record), **Fairness**, **Shifts** (Bryntum Scheduler), and **Circle → Connected assistants** (Kin's own MCP server).
 
 ## What is live and what is simulated
 
-Nothing here moves real money: every PayPal call goes to the PayPal sandbox. In a demo circle the family's history is simulated and every such entry is labelled **Simulated** in the ledger, the CSV and the screens; a top-up a visitor makes goes through PayPal's real sandbox checkout and is labelled **PayPal sandbox**.
+No real money moves: every PayPal call goes to the PayPal sandbox. A demo circle's history is simulated and labelled **Simulated** everywhere; what a visitor does through PayPal is labelled **PayPal sandbox**.
 
-| Part | Status | What it does |
+| Part | In the hosted demo | Evidence |
 | --- | --- | --- |
-| Top-ups to the pool | **Live, PayPal sandbox**, in demo circles too | Orders v2 and the PayPal JavaScript SDK v6 ("Add money"). Recorded only after the worker reads the order back from PayPal; verified webhooks confirm it again. First run through the hosted app on 16 October 2026. |
-| Caregiver and settlement payouts | **PayPal sandbox in real circles**, simulated in demo circles | Payouts, recorded as paid only when the batch read back from PayPal shows the item `SUCCESS`; run end to end through Kin's code on 8 November 2026. A demo circle's payout is simulated and charges no fee, unless the worker is given `KIN_DEMO_SANDBOX_PAYEE_EMAIL`: it then pays an approved demo caregiver payout through the sandbox to Kin's own test account, never to an address a visitor typed. |
-| Requests to siblings by invoice | **PayPal sandbox in real circles**, simulated in demo circles unless configured | Invoicing v2: create, send, read back, cancel. Counted as paid only when PayPal reads the invoice paid and the capture completed. Run end to end on 8 November 2026 ($166.00 sent, paid and credited once; `packages/paypal/src/fixtures/invoice-sandbox-2026-11-08.json`). |
-| Monthly shares | **Wired, not yet run through Kin against the sandbox**; simulated in demo circles | A real circle's share is a PayPal Subscription (Catalog product and plan) the member approves at PayPal, with charges read back. The adapter is unit-tested against PayPal's documented shapes; a subscription has been created in the sandbox only by a script. |
-| Refunds of a top-up | **Built, not yet run against the sandbox** | A `PAYMENT.CAPTURE.REFUNDED` or `REVERSED` webhook is verified, the refund and the capture are read back, and the top-up is reversed in the ledger only when the reversal is exact (a full refund with its fee returned). A partial refund, or one where PayPal kept its fee, is held for a person (decision 97). |
-| Refills the parent approves | **Simulated** | Bought from a stand-in seller. A real circle cannot raise a refill yet. |
-| Claude on Amazon Bedrock | **Live** | Opus 4.6 through InvokeModel. See "The AI". |
-| Speech | **Live** | Amazon Transcribe and Polly: spoken approvals, letters read aloud, what Kin tells the parent. |
-| Phone lines (`apps/voice`) | **Hosted on App Runner**; a call through a real Twilio number is not yet verified | The family office line and Kin's call to the parent about a shift, on Twilio's Programmable Voice webhook contract, tested with signed simulated calls (`pnpm --filter @kin/voice run simulate-call`). The web app has a simulator for each. No model is in the call path. |
-| Sign-in | **Live** | Amazon Cognito (PKCE). Demo visitors need no account. |
-| Not built | | OAuth for Kin's MCP server (it takes delegation tokens a member grants), the PayPal Agent Toolkit and PayPal's MCP server, shipment tracking, disputes, creating a refund, Log in with PayPal, photographing a receipt. |
+| Top-ups (Orders v2, JavaScript SDK v6) | **PayPal sandbox** | Read back from PayPal before the ledger is written; verified webhooks confirm it. Run on the hosted app on 11 November 2026 with the buyer above. |
+| Caregiver pay (Payouts) | **PayPal sandbox**, to Kin's own sandbox test account | Recorded only when the item reads `SUCCESS`. Batch `F3JKKBGQ5NHJE` on 11 November 2026. Monthly settlements between siblings stay simulated in the demo. |
+| A refill under Rose's standing permission (Orders v2 with a vaulted card) | **PayPal sandbox**, charged by the demo pharmacy | Signed requests between Kin and the pharmacy; recorded only from PayPal's record. Order `2EA51846U8273642D`, capture `COMPLETED`, 12 November 2026. Delivery is simulated. |
+| Requests to siblings (Invoicing v2) | **PayPal sandbox**, sent to Kin's own sandbox test account | Counted as paid only when PayPal reads the invoice paid. Recorded run on 8 November 2026. |
+| Monthly shares (Subscriptions, Catalog, Plans) | Simulated in demo circles; PayPal sandbox in real circles | Run through Kin's adapter on 11 November 2026: subscription `I-CSP0NHWX4BFG` charged, suspended, resumed and cancelled. |
+| Refund read-back, Transaction Search | Real circles | Recorded against the sandbox on 11 November 2026 (`packages/paypal/src/fixtures/`). |
+| PayPal Agent Toolkit | **Live in Ask Kin**, read actions only | Reads an order, an invoice and disputes, with every ID taken from the circle's own record. |
+| Kin's MCP server (`/api/mcp`) | **Live** | Used from Claude Code and the official MCP TypeScript SDK on 11 November 2026: it read the record and PayPal's status of a real top-up, and approve and pay tools do not exist for it. |
+| Claude on Amazon Bedrock | **Live** | Opus 4.6. Ask Kin's evaluation set: 27 of 27 on 12 November 2026. |
+| Speech | **Live** | Amazon Transcribe and Polly. |
+| Phone lines (`apps/voice`) | Hosted; simulators in the app | A call through a real Twilio number is not yet verified. |
+| Not built | | Creating a refund, shipment tracking, writing to disputes, Log in with PayPal, PayPal's own MCP server, OAuth for Kin's MCP server. |
 
-## Judge quick start
-
-**The hosted demo, in about ten minutes, with no account.** Open https://mzdg4f3stk.us-east-1.awsapprunner.com and press **Try the demo**. You are Elena, the organizer, in your own isolated copy of the circle. The banner's **You are Elena** menu switches seats; **Start again** gives you a fresh copy.
-
-1. **PayPal for real (2 clicks).** On the overview press **Add money**, then **Pay with PayPal**: PayPal's sandbox checkout opens. Pay with the sandbox buyer below. Open **Record**: the top-up appears labelled **PayPal sandbox** with PayPal's fee, beside rows labelled **Simulated**.
-2. **Claude reads a letter.** Open **Bills** and press **Try a sample letter photo**: Claude reads the payee, amount and due date, each shown beside the words it was read from. Below it, the caregiver's preview turns "Monday and Tuesday, 4 hours each" into a bill.
-3. **Ask Kin, an agent with limits.** Open **Ask Kin** from the overview. Ask "Who owes whom this month?" and open **How Kin found this** to see the tools Claude chose. Then ask "Pay Amara now": it cannot, because no tool it holds pays. A demo visitor has ten questions.
-4. **Approvals and fairness.** **Approvals** shows what waits for whose yes; nobody approves a payment to themselves. **Fairness** shows each sibling's share, what they gave in money and care time, and the settlement the money core plans.
-5. **Rose's seat.** Switch to **Rose, Parent**. She lands on **Listen**: what Kin tells her, in very large type, read aloud. From there, her **Purse** and her **wishes** (`/dashboard/circle/wishes`).
-6. **Kin protects her.** **Bills → Try the office line** plays a scam call answered by Kin's fixed sentences and checked against the record. **Is it really you?** (`/dashboard/presence`) texts the real grandson before anything is sent.
-7. **Open Kin.** **Circle → Connected assistants** plays a live MCP session: an outside assistant reads the record, then tries to approve a payment and is refused. `/developers` documents the MCP server and the signed agency API (`/api/v1/openapi.json`).
-8. **The record proves itself.** **Record** is an AG Grid audit view with CSV export; **Check the record** recomputes the hash chain and downloads it as JSON for `kin-verify`.
-
-**PayPal sandbox buyer for the top-up.**
-
-<!-- owner: paste the judges' sandbox buyer email and password here -->
-
-A judge can also use any PayPal sandbox personal account of their own, from https://developer.paypal.com/dashboard/accounts.
-
-**Run it locally.** See "Getting started" below.
+![Kin's architecture: people, the web app and agent layer, the deterministic money core, the worker, Aurora, and PayPal, Claude on Bedrock, speech and Cognito](docs/images/architecture.svg)
 
 ## Screens
 
@@ -71,28 +62,38 @@ Every call is in `packages/paypal`, the only code that talks to PayPal, except t
 - **Transaction Search** (`/v1/reporting/transactions`) for the nightly reconciliation of each real Purse payment.
 - **Webhooks**: Kin subscribes to `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.REFUNDED`, `PAYMENT.CAPTURE.REVERSED`, the `BILLING.SUBSCRIPTION.*` events, `PAYMENT.SALE.COMPLETED`, `INVOICING.INVOICE.PAID` and `INVOICING.INVOICE.CANCELLED`, and verifies every delivery with `/v1/notifications/verify-webhook-signature` on the exact bytes before applying it. Registration is a script (`/v1/notifications/webhooks`). Payouts are confirmed by reading the batch, not by payout-item events.
 - **OAuth** (`/v1/oauth2/token`) for the app's access token.
-- **Vault** (`/v3/vault/setup-tokens`, `/v3/vault/payment-tokens`) is exercised only by a sandbox script; the demo pharmacy charges a saved wallet with `vault_id`.
+- **Vault** (`/v3/vault/setup-tokens`, `/v3/vault/payment-tokens`): Rose's saved sandbox test card, which the demo pharmacy (`apps/demo-merchant`, its own PayPal app) charges with an Orders v2 `vault_id` order and reads back.
+- **PayPal Agent Toolkit** (`@paypal/agent-toolkit` 1.11.0, its framework-free Bedrock entry) in `packages/paypal`: `orders.get`, `invoices.get`, `disputes.list` and `disputes.get` only, behind Kin's tool gateway.
 
-Not called anywhere: creating a refund (Kin only reads one back), Shipment tracking, Disputes, Log in with PayPal, the Agent Toolkit and PayPal's MCP server. The Agent Toolkit and the MCP server have no Payouts tool, and Kin's rule is that the model never holds a PayPal write; Kin exposes its own MCP server instead.
+Not called anywhere: creating a refund (Kin only reads one back), Shipment tracking, writing to disputes, Log in with PayPal and PayPal's MCP server. Kin's rule is that the model never holds a PayPal write, so only the Agent Toolkit's read actions are enabled; Kin exposes its own MCP server for members' assistants.
 
 ## The AI
 
 Claude Opus 4.6 on Amazon Bedrock (InvokeModel, through `@anthropic-ai/bedrock-sdk`), reached only through `packages/agent`. Claude reads and words; it never decides an amount, a payee or whether a payment happened.
 
 - **Reading.** A caregiver's description of visits becomes days and minutes, each with the caregiver's own words as evidence, and the server values every day. A letter, typed or photographed, becomes a payee, an amount and a due date for a person to review; every field is traced to the words it came from, and a photographed amount is kept only if it appears in the words Claude says it read. Extraction has no tools, and what a letter says is data, never instructions.
-- **Ask Kin** (`/dashboard/ask`) is an agent loop: Claude chooses among eleven tools, up to six calls a question. The gateway checks the person's role through the one authorization function, validates each argument against a schema, and bounds calls, time and result size. Nine tools read (the pool and the month's spending by category, bills, fairness, the claim check, proposals, the record, and a payout, top-up or subscription status read from PayPal); `propose_refill` and the parent's `propose_gift` raise proposals that wait for a yes, unless the parent's own standing permission already covers that refill. The trace shows each tool and what it did, and never claims a proposal that was not raised. The same tools reach a member's own assistant through Kin's MCP server at `/api/mcp`, under a scope that can never approve.
+- **Ask Kin** (`/dashboard/ask`) is an agent loop: Claude chooses among fourteen tools, up to six calls a question, within a 45-second deadline. The gateway checks the person's role through the one authorization function, validates each argument against a schema, and bounds calls, time and result size. Twelve tools read: the pool and the month's spending by category, bills, fairness, the claim check, proposals, the record, a payout, top-up or subscription status read from PayPal, and, through PayPal's Agent Toolkit, a top-up's PayPal order, an invoice and disputes, each found from an ID in the circle's own record and shown only when PayPal's answer names that circle again. `propose_refill` and the parent's `propose_gift` raise proposals that wait for a yes, unless the parent's own standing permission already covers that refill, in which case the card says plainly that her permission, not Kin, approved it. If Claude is unavailable, the suggested questions are still answered by plain code through the same gateway, labelled as such. The trace shows each tool and what it did, and never claims a proposal that was not raised. The same tools reach a member's own assistant through Kin's MCP server at `/api/mcp`, under a scope that can never approve.
 - **The number guard** compares every figure the model writes, in digits or in words, in seven languages, with the record, and falls back to fixed wording on a mismatch. The badge then says why ("Claude's wording named a figure the record does not hold").
-- **Evaluations against the real model**, with dated results in `packages/agent/evals/results/`: Ask Kin 15 of 15, visit reading 12 of 12 and document reading 8 of 8 (two of them photographs, one carrying a printed prompt injection) on 10 November 2026; shift wording 22 of 22, account reading 8 of 8, gifts 12 of 12, sealed offers 12 of 12 and wishes 14 of 14 from 8 to 10 November. They cost money, so CI does not run them.
+- **Evaluations against the real model**, with dated results in `packages/agent/evals/results/`: Ask Kin 27 of 27 on 12 November 2026 (including seven multi-step cases, prompt injection across two tool results, each role's refusals and the Agent Toolkit tools; `agent-2026-11-12.json`); earlier, visit reading 12 of 12 and document reading 8 of 8 (two of them photographs, one carrying a printed prompt injection) on 10 November 2026; shift wording 22 of 22, account reading 8 of 8, gifts 12 of 12, sealed offers 12 of 12 and wishes 14 of 14 from 8 to 10 November. They cost money, so CI does not run them.
 
 ### AI tools used
 
-- **Claude Opus 4.6 on Amazon Bedrock:** Ask Kin and the calendar assistant (tool use); reading visits, letters and photographs, scam-call accounts, sealed offers, wishes and gifts (structured output); wording spoken sentences, audit findings and shift questions.
+- **Claude Opus 4.6 on Amazon Bedrock:** Ask Kin, the calendar assistant and the family money studio's agent (tool use); reading visits, letters and photographs, scam-call accounts, sealed offers, wishes and gifts (structured output); wording spoken sentences, audit findings and shift questions.
 - **Amazon Transcribe and Amazon Polly:** speech to text and text to speech.
-- **Claude Code:** the coding assistant used to build Kin.
+- **PayPal Agent Toolkit:** read actions inside Ask Kin (see above).
+- **Claude Code:** the coding assistant used to build Kin, and, as an MCP client, the first outside assistant to read a circle through Kin's MCP server.
 
 ## How we use AG Grid
 
 AG Grid Community (v36) is the family's audit tool, not decoration. The **Record** page is one grid over the append-only ledger, with a custom theme (`components/data-grid/grid-theme.ts`) and custom cell renderers for the day, the entry and the amount: sort and floating filters on every column (a date filter by calendar day, an amount filter parsed to exact cents), a quick-filter search, a column chooser, a pinned totals row, grouping by person, category or month with subtotals, multi-row selection with a live selected total, and a CSV export of exactly the filtered and sorted view. Column and filter state is kept per person. The same grid, on the proof columns, is the **audit trail** (`/dashboard/record/audit/view`) with a line showing that debits equal credits, and the **statement** shows the year in a grid with its total pinned. All sums are integer cents from one pure function in `packages/domain`. The grid is translated into seven languages, runs right to left in Arabic and Hebrew, follows reduced motion, prints in full, and on a phone becomes stacked cards driven by the same grid state.
+
+## How we use AG Studio
+
+**Family money studio** (`/dashboard/record/studio`, from the Record) is the circle's ledger as an AG Studio dashboard (`ag-studio` 3.1.0): money in and out by month, caregiver pay, PayPal sandbox against simulated, PayPal fees, and the full ledger grid, in Kin's own theme, light and dark, and right to left in Arabic and Hebrew. Two custom widgets sit beside AG Studio's charts: a **fairness gap** (each sibling's given against agreed, and what settling up moves) and a **PayPal-verified** tile that counts only entries PayPal confirmed and lists their IDs. The server sends whole cents; every figure goes through Kin's one money formatter. A custom Kin agent works beside Studio's own agents through the Studio Agent Framework; every turn reaches Claude only through Kin's guarded route, read-only for an observer. If the trial licence lapses, the page shows Kin's own summary of the same data instead.
+
+## How we use Bryntum
+
+**Shifts** (`/dashboard/shifts`) is a Bryntum Scheduler (7.3.8): one row per person caring for Rose, each visit an event that carries its proof (the caregiver's own check-in and check-out, and the family's word). A paid visit is proven by those two keys before Kin pays it through PayPal Payouts. The calendar assistant beside it is Claude through Kin's gateway: it only answers and highlights, never books, moves or pays.
 
 ## Architecture
 
@@ -244,7 +245,7 @@ The infrastructure is AWS CDK in `infra/`, with these stacks: KinGuardrails, Kin
 
 - GitHub Actions `ci.yml` runs on every pull request and push to `main`: `pnpm check`, the key end-to-end journeys (`pnpm test:e2e:key`; `pnpm test:e2e` runs all of them), Docker builds of the web, migration, worker and voice images with a smoke request, and `cdk synth`.
 - `deploy.yml` runs after CI passes on `main`: it deploys the stacks, runs the database migration task, rolls out the web, worker and voice images, and smoke-tests the live app. GitHub reaches AWS through OpenID Connect, with no stored keys.
-- There is no staging environment: a merge to `main` redeploys the URL judges use. Hold merges during the judging window (1 to 15 December 2026).
+- There is no staging environment: a merge to `main` redeploys the URL judges use. Hold merges until the winners are announced on 21 December 2026: judging runs 1 to 15 December, and the organizers ask that nothing change after the submission deadline.
 
 To run the CDK by hand: `AWS_PROFILE=<profile> KIN_ALERT_EMAIL=<address> pnpm --filter @kin/infra run <synth|diff|deploy>`. See `AGENTS.md` section 3 for bootstrapping and for switching on email, PayPal, Claude and speech in AWS.
 
@@ -253,7 +254,7 @@ To run the CDK by hand: `AWS_PROFILE=<profile> KIN_ALERT_EMAIL=<address> pnpm --
 - `docs/project-description.md`: the product, the people it is for, and the full feature set it aims at
 - `docs/architecture.md`: services, data model, money flow, PayPal, AI, voice, security, testing, decisions and what is verified
 - `docs/tech-stack.md`: tool choices and their reasons
-- `docs/feature-proposals.md`: proposed features, not yet approved or built
+- `docs/feature-proposals.md`: feature designs and how much of each is built
 - `docs/submission/devpost-description.md`: the Devpost write-up
 
 ## License

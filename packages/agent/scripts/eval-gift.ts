@@ -9,6 +9,7 @@ import { readModelConfig } from "@kin/config";
 import { bedrockModel } from "../src/bedrock-model.ts";
 import { GIFT_PROMPT_VERSION } from "../src/gift-prompt.ts";
 import { readGift } from "../src/read-gift.ts";
+import { writeEvalResults } from "./eval-results.ts";
 
 type Case = { name: string; words: string; payeeName: string | null; relationship: string | null; amountText: string | null; memo: string | null; route: string };
 
@@ -17,14 +18,13 @@ const config = readModelConfig(process.env);
 if (!config.enabled) throw new Error("Set KIN_BEDROCK_REGION (and AWS credentials) to run the evaluation");
 const model = bedrockModel(config);
 
-let failed = 0;
+const results = [];
 for (const each of suite.cases) {
   const result = await readGift(model, each.words);
   const got = result.kind === "fields" ? result.fields : result.kind;
   const expected = { payeeName: each.payeeName, relationship: each.relationship, amountText: each.amountText, memo: each.memo, route: each.route };
   const passed = JSON.stringify(got) === JSON.stringify(expected);
-  if (!passed) failed += 1;
+  results.push({ name: each.name, words: each.words, passed, expected, got });
   console.log(`${passed ? "pass" : "FAIL"}  ${each.name}${passed ? "" : `: expected ${JSON.stringify(expected)}, got ${JSON.stringify(got)}`}`);
 }
-console.log(`${GIFT_PROMPT_VERSION} on ${config.model}: ${suite.cases.length - failed}/${suite.cases.length} passed`);
-process.exitCode = failed === 0 ? 0 : 1;
+process.exitCode = writeEvalResults("gift", { prompt: GIFT_PROMPT_VERSION, model: config.model, api: config.api, cases: results });

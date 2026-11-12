@@ -171,7 +171,7 @@ test.describe("every role of the demo", () => {
     await startDemo(page);
     await seatAs(page, "Daniel");
     await page.goto("/dashboard/approvals");
-    await expect(page.getByRole("button", { name: dashboard.common.approve })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: dashboard.common.approve, exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: dashboard.pause.button })).toHaveCount(0);
     await page.goto("/dashboard/record");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(dashboard.record.title);

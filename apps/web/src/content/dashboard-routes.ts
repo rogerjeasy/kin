@@ -31,6 +31,9 @@ export const wishesRoute = "/dashboard/circle/wishes";
 /** The packet for an elder-law attorney: a screen of the record, not a section of its own. Its `/export` is the download. */
 export const packetRoute = "/dashboard/record/packet";
 
+/** The family money studio: the record as an AG Studio dashboard. A screen of the record, not a section of its own. */
+export const studioRoute = "/dashboard/record/studio";
+
 /** The door tag: a printable card whose code opens a caregiver's own shifts. A screen of the shifts, not a section of its own. */
 export const shiftDoorRoute = "/dashboard/shifts/door";
 

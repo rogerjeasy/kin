@@ -11,8 +11,9 @@
       "label": "Fragen Sie zum Beispiel",
       "paid": "Wurde {caregiver} bezahlt?",
       "owes": "Wer schuldet wem diesen Monat etwas?",
-      "demand": "Ist eine Forderung über {amount} von Harbor Gas echt?",
-      "refill": "Das Rezept von {parent} nachbestellen"
+      "demand": "Ist eine Forderung über {amount} von {payee} echt?",
+      "refill": "Das Rezept von {parent} nachbestellen",
+      "paypalRecord": "Zeig mir PayPals eigenen Eintrag zur letzten Einzahlung"
     },
     "form": {
       "label": "Ihre Frage",
@@ -31,7 +32,8 @@
         "refused": "Claude hat die Formulierung abgelehnt, daher hat Kin seine feste Formulierung verwendet",
         "cut_off": "Claudes Antwort war zu lang, daher hat Kin seine feste Formulierung verwendet",
         "turns": "Claude brauchte mehr Schritte, als Kin erlaubt, daher hat Kin seine feste Formulierung verwendet",
-        "unavailable": "Claude hat mitten in der Antwort aufgehört, daher hat Kin seine feste Formulierung verwendet"
+        "unavailable": "Claude hat mitten in der Antwort aufgehört, daher hat Kin seine feste Formulierung verwendet",
+        "no_claude": "Beantwortet mit Kins fester Formulierung; Claude war nicht erreichbar"
       },
       "trace": "So hat Kin es gefunden",
       "traceEmpty": "Kin hat geantwortet, ohne das Kassenbuch zu lesen."
@@ -58,6 +60,9 @@
       "get_paypal_payout_status": "Die Auszahlungen bei PayPal geprüft",
       "get_paypal_topup_status": "Die Einzahlungen bei PayPal geprüft",
       "get_subscription_status": "Die Monatsanteile bei PayPal geprüft",
+      "get_paypal_order": "PayPals eigenen Eintrag zur Einzahlung gelesen (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "PayPals eigenen Eintrag zur Rechnung gelesen (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "Bei PayPal nach Konflikten zu den Einzahlungen gesucht (PayPal Agent Toolkit)",
       "propose_refill": "Eine Nachbestellung vorgeschlagen",
       "unknown": "Ein Werkzeug verlangt, das Kin nicht hat"
     },
@@ -110,13 +115,22 @@
       "topUp": "{member} hat am {day} {amount} eingezahlt.",
       "topUpSimulated": "{member} hat am {day} {amount} eingezahlt. Es war simuliert.",
       "topUpNone": "Das Kassenbuch enthält keine Einzahlungen.",
+      "paypalOrder": "Laut PayPals eigenem Eintrag zur Einzahlung von {member} über {amount} am {day} ist die Bestellung {status}.",
+      "paypalOrderSimulated": "Die Einzahlung von {member} über {amount} am {day} war simuliert, daher hat PayPal keinen Eintrag dazu.",
+      "paypalUnread": "PayPal konnte gerade nicht gelesen werden, daher zeigt Kin nur sein eigenes Kassenbuch.",
+      "paypalInvoice": "Die PayPal-Rechnung an {member} über {amount} ist {status}.",
+      "paypalInvoiceSimulated": "Die Rechnung an {member} über {amount} war simuliert, daher hat PayPal keinen Eintrag dazu.",
+      "paypalInvoiceNone": "Kin hat keine Rechnungen verschickt.",
+      "paypalDispute": "PayPal zeigt einen Konflikt zur Einzahlung von {member} über {amount}: {status}.",
+      "paypalDisputesNone": "PayPal zeigt keinen Konflikt zu den neuesten echten Einzahlungen des Kreises.",
+      "paypalDisputesSimulated": "Die Einzahlungen des Kreises waren simuliert, daher hat PayPal keine Konflikte dazu.",
       "share": "Der Monatsanteil von {member} beträgt {amount}.",
       "shareNone": "Es sind keine Monatsanteile eingerichtet.",
       "refillNone": "Die Familie hat keine Nachbestellungen eingerichtet.",
       "refillChoose": "Welche Nachbestellung? Die Familie erlaubt: {items}.",
       "refillWaiting": "Eine Nachbestellung von {item} wartet schon, oder der Kreis ist pausiert, daher hat Kin nichts vorgeschlagen.",
       "refillRefused": "Kin konnte {item} für {price} nicht vorschlagen. Die Regeln der Familie erlaubten es nicht.",
-      "refillCovered": "Kin hat {item} für {price} vorgeschlagen. Die dauerhafte Erlaubnis des Elternteils deckt es.",
+      "refillCovered": "Die dauerhafte Erlaubnis von {parent} hat {item} für {price} bei {seller} genehmigt. Niemand muss zustimmen, und die Bestellung wird aufgegeben. Kin hat es nicht genehmigt.",
       "refillProposed": "Kin hat {item} für {price} vorgeschlagen. Es wartet auf ein Ja.",
       "giftProposed": "Kin hat {amount} an {payee} aus deiner Geldbörse vorgelesen. Es wartet auf dein Ja.",
       "giftHeld": "Kin hat {amount} an {payee} vorgelesen. Wenn du Ja sagst, wartet Kin einen Tag und sagt deiner Familie Bescheid.",
@@ -134,6 +148,11 @@
       "text": "Besucher der Demo können Kin einige Fragen stellen, damit alle es ausprobieren können. In Ihrem eigenen Kreis beantwortet Kin so viele Fragen, wie Ihre Familie braucht.",
       "signUp": "Registrieren",
       "stay": "Die Demo weiter erkunden"
+    },
+    "orderedProposal": {
+      "title": "Genehmigt durch die dauerhafte Erlaubnis von {parent}",
+      "text": "{amount} bei {seller}, und die Bestellung wird aufgegeben. Kin hat es nicht genehmigt: Das hat die dauerhafte Erlaubnis von {parent} selbst getan.",
+      "link": "Bestellung in den Freigaben ansehen"
     }
   },
   "meta": {
@@ -1286,7 +1305,28 @@
         "restartNote": "Sie erhalten eine neue Kopie von Roses Kreis. Die jetzige wird archiviert, nicht gelöscht.",
         "viewAs": "Den Kreis sehen als",
         "seat": "Sie sind {name}, {role}",
-        "leave": "Demo verlassen"
+        "leave": "Demo verlassen",
+        "guide": {
+          "title": "In {count} Schritten ausprobieren",
+          "show": "Schritte zeigen",
+          "hide": "Schritte ausblenden",
+          "dismiss": "Anleitung ausblenden",
+          "reopen": "Anleitung zeigen",
+          "steps": {
+            "topUp": "Geld in den Topf einzahlen",
+            "ask": "Kin fragen: „{question}“",
+            "approve": "Als {parent} die Bezahlung von {caregiver} genehmigen",
+            "listen": "Als {parent} zuhören",
+            "verify": "Aufzeichnung prüfen"
+          },
+          "badges": {
+            "sandbox": "PayPal-Sandbox",
+            "claude": "Claude-Agent",
+            "spoken": "Laut vorgelesen",
+            "provable": "Nachprüfbar",
+            "simulated": "Simuliert"
+          }
+        }
       },
       "visitor": "Demo-Besuch",
       "presenceHold": {
@@ -1442,6 +1482,10 @@
       "comingUp": {
         "title": "Demnächst fällig",
         "link": "Alle Rechnungen"
+      },
+      "protects": {
+        "title": "Wie Kin {parent} schützt",
+        "text": "Prüfungen, Wünsche und Helfer rund ums Geld. Jedes öffnet seinen eigenen Bildschirm."
       }
     },
     "topUp": {
@@ -2407,6 +2451,10 @@
       "ordersTitle": "Bestellungen",
       "ordersEmpty": "Noch keine Nachbestellung vorgeschlagen.",
       "simulated": "Simuliert: Die Apotheke ist ein Platzhalter, und es fließt kein echtes Geld.",
+      "sandbox": "Die Apotheke ist ein Platzhalter. Ihre Abbuchungen laufen über die Sandbox von PayPal, mit Testgeld und ohne echtes Geld; die Lieferung ist simuliert.",
+      "paidSandbox": "PayPal-Sandbox",
+      "paidSimulated": "Simuliert",
+      "capture": "PayPal-Erfassung {id}",
       "trackLabel": "Wo die Bestellung ist",
       "states": {
         "awaiting": "Wartet auf ein Ja",
@@ -4302,6 +4350,106 @@
       },
       "beginHint": "Kin bittet Sie zuerst, sich erneut anzumelden, damit niemand an einem Telefon oder Computer, an dem Sie angemeldet geblieben sind, seine eigene App einrichten kann.",
       "startAgain": "Neu beginnen"
+    },
+    "studio": {
+      "title": "Geldstudio der Familie",
+      "lede": "Der Verlauf des Kreises als Übersicht, die Sie selbst gestalten: Geld herein und hinaus, jeder Beitrag im Vergleich zum vereinbarten Anteil, Pflegelohn, PayPal-Gebühren und was PayPal bestätigt hat. Es liest dieselben Einträge wie der Verlauf und ändert keinen davon.",
+      "link": "Geldstudio",
+      "eyebrow": "Erstellt mit AG Studio",
+      "readOnly": "Sie können ansehen, filtern und fragen. Mit Nur-Lese-Zugang lassen sich im Studio keine Bausteine hinzufügen oder verschieben.",
+      "tables": {
+        "ledger": "Hauptbuch",
+        "fairness": "Fairness"
+      },
+      "fields": {
+        "id": "Eintrags-ID",
+        "day": "Tag",
+        "month": "Monat",
+        "kind": "Art",
+        "person": "Wer oder was",
+        "category": "Kategorie",
+        "amount": "Betrag",
+        "moneyIn": "Geld herein",
+        "moneyOut": "Geld hinaus",
+        "fee": "PayPal-Gebühr",
+        "caregiverPay": "Pflegelohn",
+        "caregiver": "Pflegekraft",
+        "proof": "Sandbox oder simuliert",
+        "simulated": "Simuliert",
+        "paypalVerified": "Von PayPal bestätigt",
+        "paypalId": "PayPal-ID",
+        "member": "Mitglied",
+        "share": "Vereinbarter Anteil",
+        "shareIndex": "Farbe des Anteils",
+        "given": "Beigetragen",
+        "agreed": "Vereinbart",
+        "position": "Ausgleichsbetrag"
+      },
+      "widgets": {
+        "inOut": "Geld herein und hinaus, nach Monat",
+        "caregiverPay": "Pflegelohn, nach Monat",
+        "proof": "PayPal-Sandbox im Vergleich zu simuliert",
+        "fees": "PayPal-Gebühren, nach Monat",
+        "ledger": "Alle Einträge",
+        "group": "Kin",
+        "fairnessGap": {
+          "label": "Fairness-Lücke",
+          "title": "Jeder Beitrag im Vergleich zum vereinbarten Anteil",
+          "description": "Zeigt, was jedes Mitglied beigetragen hat, neben seinem vereinbarten Anteil, und was ein Ausgleich bewegen würde.",
+          "given": "Beigetragen {amount}",
+          "agreed": "vereinbart {amount}",
+          "owed": "Die Kasse schuldet {name} {amount}",
+          "owes": "{name} schuldet {amount}",
+          "even": "{name} ist ausgeglichen"
+        },
+        "verified": {
+          "label": "Von PayPal geprüft",
+          "title": "Von PayPal bestätigt",
+          "description": "Zählt die Einträge, hinter denen ein echtes Ereignis in der PayPal-Sandbox steht, mit den eigenen IDs von PayPal.",
+          "count": "Von PayPal bestätigte Einträge",
+          "none": "Noch keine. Jeder Eintrag in diesem Kreis ist simuliert und als simuliert gekennzeichnet.",
+          "more": "und {count} weitere"
+        }
+      },
+      "summary": {
+        "title": "Der Verlauf auf einen Blick",
+        "moneyIn": "Geld herein",
+        "moneyOut": "Geld hinaus",
+        "fees": "PayPal-Gebühren",
+        "caregiverPay": "Pflegelohn",
+        "sandbox": "Einträge aus der PayPal-Sandbox",
+        "simulated": "Simulierte Einträge",
+        "fairness": "Anteile im {month}",
+        "noFairness": "Es gilt keine Vereinbarung, also gibt es keine Anteile zum Vergleichen.",
+        "allTime": "Seit Beginn des Kreises"
+      },
+      "notes": {
+        "lapsed": "Die Lizenz des Studios ist abgelaufen. Kin zeigt deshalb seine eigene Zusammenfassung desselben Verlaufs.",
+        "narrow": "Auf einem kleinen Bildschirm zeigt Kin seine Zusammenfassung. Öffnen Sie das Studio auf einem größeren Bildschirm, um eigene Ansichten zu erstellen.",
+        "failed": "Das Studio ließ sich nicht öffnen. Kin zeigt deshalb seine eigene Zusammenfassung desselben Verlaufs.",
+        "loading": "Das Studio wird geöffnet…"
+      },
+      "assistant": {
+        "unavailable": "Der Assistent des Studios ist gerade nicht verfügbar. Die Übersicht funktioniert weiterhin.",
+        "cannot": "Das kann ich hier nicht tun. Ich kann nur den Verlauf lesen und ändern, was diese Übersicht zeigt.",
+        "limit": "Sie haben den Assistenten des Studios in dieser Stunde sehr oft gefragt. Bitte versuchen Sie es später noch einmal.",
+        "unchecked": "Ich habe die Übersicht geändert, konnte eine Zusammenfassung aber nicht mit dem Verlauf abgleichen. Deshalb fasse ich sie nicht in Worte.",
+        "failed": "Der Assistent konnte nicht antworten. Bitte versuchen Sie es noch einmal.",
+        "starters": {
+          "caregiverPay": {
+            "label": "Pflegelohn nach Monat",
+            "prompt": "Zeige den Pflegelohn nach Monat als Liniendiagramm."
+          },
+          "fairness": {
+            "label": "Wer liegt bei seinem Anteil zurück?",
+            "prompt": "Wer hat weniger als seinen vereinbarten Anteil beigetragen, und um wie viel?"
+          },
+          "fees": {
+            "label": "PayPal-Gebühren",
+            "prompt": "Füge ein Diagramm der PayPal-Gebühren nach Art des Eintrags hinzu."
+          }
+        }
+      }
     }
   },
   "aiProvenance": {

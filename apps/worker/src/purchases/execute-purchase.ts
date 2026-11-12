@@ -12,7 +12,7 @@ import {
 } from "@kin/db";
 import { DELIVERY_SCHEDULE_SECONDS, nextDeliveryState, type DeliveryState } from "@kin/domain";
 
-import { MerchantError, type Charge, type Merchant } from "./merchant.ts";
+import { ChargeNotConfirmedError, MerchantError, confirmsCharge, type Charge, type Merchant } from "./merchant.ts";
 
 export type PurchaseDeps = {
   /** Connected as `kin_service`. Every transaction names the one circle it acts for. */
@@ -39,7 +39,10 @@ const SOON_SECONDS = 30;
  *
  * Only a demo circle's refill is carried out. The seller says whether it
  * charged real sandbox money or nothing, and the ledger entry says the same:
- * simulated exactly when the seller charged nothing. A real circle's would charge a saved PayPal wallet,
+ * simulated exactly when the seller charged nothing. A sandbox charge is
+ * recorded only after PayPal's record of it is read back and matches; the
+ * source of truth is the pharmacy's own PayPal app, which made the order and
+ * is the only one that can read it. A real circle's would charge a saved PayPal wallet,
  * which Kin cannot yet set up; such a purchase is stopped and marked failed,
  * with nothing taken from the pool.
  */
@@ -71,10 +74,16 @@ export async function executePurchase(deps: PurchaseDeps, circleId: string, exec
       }
       throw error;
     }
-    // The seller says how it was paid. A real sandbox charge is recorded under PayPal's capture and never as simulated;
+    // A real sandbox charge counts only once PayPal's own record, read back through the seller, shows exactly it.
+    // Until then nothing is recorded: the transaction rolls back and the same key is asked about again later.
+    if (charge.kind === "paypal") {
+      const record = await deps.merchant.readPayment(charge.orderId);
+      if (!confirmsCharge(record, { orderId: charge.orderId, captureId: charge.captureId, key: job.idempotencyKey, cents: job.cents, currency: job.currency })) throw new ChargeNotConfirmedError();
+    }
+    // A real sandbox charge is recorded under PayPal's capture and never as simulated;
     // a charge the seller did not make is recorded as simulated, under a marker that cannot pass for a capture.
-    const paid = charge.kind === "paypal" ? { itemId: charge.captureId, simulated: false } : { itemId: `simulated-purchase-${job.executionId}`, simulated: true };
-    await confirmPurchase(tx, { ...job, state: "submitted", simulated: paid.simulated }, { itemId: paid.itemId, at: job.now });
+    const paid = charge.kind === "paypal" ? { itemId: charge.captureId, orderId: charge.orderId, simulated: false } : { itemId: `simulated-purchase-${job.executionId}`, orderId: null, simulated: true };
+    await confirmPurchase(tx, { ...job, state: "submitted", simulated: paid.simulated }, { itemId: paid.itemId, paypalOrderId: paid.orderId, at: job.now });
     return done("confirmed");
   });
 }

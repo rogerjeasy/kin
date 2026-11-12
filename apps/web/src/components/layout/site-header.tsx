@@ -1,5 +1,4 @@
 import { Logo } from "@/components/brand/logo";
-import { ButtonLink } from "@/components/shared/button-link";
 import { DemoButton } from "@/components/shared/demo-button";
 import { routes } from "@/content/site-routes";
 import type { Dictionary } from "@/i18n/dictionary";
@@ -17,7 +16,8 @@ type SiteHeaderProps = { locale: Locale; common: Dictionary["common"] };
 
 /**
  * Wide screens show everything. Below xl the links move into the menu, and on
- * a phone so do language, theme and the main button, so nothing is squeezed.
+ * a phone so do language, theme and the demo button, so nothing is squeezed.
+ * The demo is the main button: most visitors want to see Kin before they start.
  */
 export function SiteHeader({ locale, common }: SiteHeaderProps) {
   const { nav } = common;
@@ -33,10 +33,10 @@ export function SiteHeader({ locale, common }: SiteHeaderProps) {
           <NavLink href={localizedPath(locale, routes.signIn)} route={routes.signIn} className="hidden px-3 text-foreground xl:inline-flex">
             {nav.signIn}
           </NavLink>
-          <DemoButton locale={locale} label={nav.demo} size="sm" variant="ghost" className="hidden text-foreground lg:inline-flex" />
-          <ButtonLink href={localizedPath(locale, routes.start)} size="sm" className="hidden sm:inline-flex">
+          <NavLink href={localizedPath(locale, routes.start)} route={routes.start} className="hidden px-3 text-foreground lg:inline-flex">
             {nav.start}
-          </ButtonLink>
+          </NavLink>
+          <DemoButton locale={locale} label={nav.demo} size="sm" variant="default" className="hidden sm:inline-flex" />
           <MobileMenu locale={locale} common={common} className="xl:hidden" />
         </div>
       </Container>

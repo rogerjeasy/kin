@@ -11,7 +11,7 @@ export const CALLBACK_PATH = "/auth/callback";
  * `aws.cognito.signin.user.admin` lets an access token change its own person
  * in the user pool: attributes, settings, second factor. A session never
  * carries it. Only the one fresh sign-in that sets up an authenticator app
- * asks for it, and that token stays on the server (decision 104).
+ * asks for it, and that token stays on the server (decision 109).
  */
 export const USER_SELF_SERVICE_SCOPE = "aws.cognito.signin.user.admin";
 const SCOPES = "openid email profile";

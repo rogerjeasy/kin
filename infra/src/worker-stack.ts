@@ -9,7 +9,7 @@ import * as ssm from "aws-cdk-lib/aws-ssm";
 import type { Construct } from "constructs";
 import { fileURLToPath } from "node:url";
 
-import { DATABASE_SETTINGS, MIGRATION_TASK, PAYPAL_SETTINGS, TWILIO_SETTINGS } from "./database-settings.ts";
+import { DATABASE_SETTINGS, DEMO_MERCHANT_SETTINGS, MIGRATION_TASK, PAYPAL_SETTINGS, TWILIO_SETTINGS } from "./database-settings.ts";
 import { GMAIL_SECRET_ARN_PARAMETER } from "./gmail-secret-name.ts";
 import { SUBNETS } from "./network-stack.ts";
 
@@ -37,6 +37,8 @@ type WorkerStackProps = StackProps & {
    * are still joined at sign-in). Given only when a sender and the web app's https address exist (`invitationEmailSettings`).
    */
   readonly invitationEmails: { readonly senderEmail: string; readonly webUrl: string } | null;
+  /** The demo pharmacy's https address (KinDemoMerchant's, by cross-stack reference); `null` keeps the seller simulated in process. */
+  readonly demoMerchantUrl: string | null;
 };
 
 /**
@@ -110,6 +112,7 @@ export class WorkerStack extends Stack {
         ...(props.shiftCall === null ? {} : { KIN_TWILIO_CALLER_NUMBER: props.shiftCall.callerNumber, KIN_VOICE_PUBLIC_URL: props.shiftCall.publicUrl }),
         ...(props.presenceTexts === null ? {} : { KIN_TWILIO_SMS_FROM: props.presenceTexts.from, KIN_WEB_PUBLIC_URL: props.presenceTexts.webUrl }),
         ...(props.invitationEmails === null ? {} : { KIN_SENDER_EMAIL: props.invitationEmails.senderEmail, KIN_WEB_PUBLIC_URL: props.invitationEmails.webUrl }),
+        ...(props.demoMerchantUrl === null ? {} : { KIN_DEMO_MERCHANT_URL: props.demoMerchantUrl }),
       },
       secrets: {
         KIN_DATABASE_SERVICE_PASSWORD: ecs.Secret.fromSecretsManager(secret("ServicePassword", DATABASE_SETTINGS.serviceSecretArn)),
@@ -125,6 +128,8 @@ export class WorkerStack extends Stack {
         ...(props.shiftCall === null ? {} : { KIN_VOICE_STATE_KEY: ecs.Secret.fromSecretsManager(secret("VoiceStateKey", TWILIO_SETTINGS.stateKeySecretArn)) }),
         // The app password of the account that sends sign-in codes; the worker sends invitations from it and reads nothing else of the sign-in.
         ...(props.invitationEmails === null ? {} : { KIN_GMAIL_APP_PASSWORD: ecs.Secret.fromSecretsManager(secret("GmailAppPassword", GMAIL_SECRET_ARN_PARAMETER)) }),
+        // Every request to the demo pharmacy is signed with the secret it checks; nothing else of the pharmacy's.
+        ...(props.demoMerchantUrl === null ? {} : { KIN_DEMO_MERCHANT_SIGNING_SECRET: ecs.Secret.fromSecretsManager(secret("DemoMerchantSigningSecret", DEMO_MERCHANT_SETTINGS.signingSecretArn)) }),
       },
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: "worker",

@@ -1,5 +1,5 @@
 -- Invitations share Kin's Gmail sender with the sign-in codes, and a parent's
--- seat governs her money (docs/architecture.md section 12.3, decision 105).
+-- seat governs her money (docs/architecture.md section 12.3, decision 110).
 --
 -- 1. Caps that keep the sign-in codes flowing. Besides the twenty a circle may
 --    send each day, in a real circle one person may send ten a day across all

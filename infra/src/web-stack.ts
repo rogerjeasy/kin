@@ -38,6 +38,8 @@ export class WebStack extends Stack {
       file: "apps/web/Dockerfile",
       platform: ecrAssets.Platform.LINUX_AMD64,
       ignoreMode: IgnoreMode.DOCKER,
+      // Left out when unset, so the image (and its hash) is the same as before the studio had a key.
+      ...(config.agStudioLicense === null ? {} : { buildArgs: { NEXT_PUBLIC_AG_STUDIO_LICENSE: config.agStudioLicense } }),
     });
 
     const imageAccess = new iam.Role(this, "ImageAccess", {
@@ -126,6 +128,8 @@ export class WebStack extends Stack {
       secrets.push({ name: "KIN_PAYPAL_CLIENT_SECRET", value: paypalSecret });
       // The web only says how demo payouts are paid; the worker pays them.
       if (config.demoSandboxPayeeEmail !== null) environment.push({ name: "KIN_DEMO_SANDBOX_PAYEE_EMAIL", value: config.demoSandboxPayeeEmail });
+      // The web sends a demo circle's invoice requests, to this one sandbox account and no other.
+      if (config.demoInvoiceRecipientEmail !== null) environment.push({ name: "KIN_DEMO_INVOICE_RECIPIENT_EMAIL", value: config.demoInvoiceRecipientEmail });
     }
 
     // The email that tells a person an authenticator app was just set up on

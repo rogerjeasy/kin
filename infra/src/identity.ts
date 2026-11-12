@@ -106,7 +106,7 @@ export class Identity extends Construct {
           cognito.OAuthScope.PROFILE,
           // Allowed, never asked for by a session: only the fresh sign-in that
           // sets up an authenticator app requests it, and its token stays on
-          // the server (packages/auth `authorizeUrl`, decision 104).
+          // the server (packages/auth `authorizeUrl`, decision 109).
           cognito.OAuthScope.COGNITO_ADMIN,
         ],
         callbackUrls: config.webOrigins.map((origin) => `${origin}/auth/callback`),
@@ -115,7 +115,7 @@ export class Identity extends Construct {
       preventUserExistenceErrors: true,
       // The client may write only the two attributes a sign-up needs. Cognito
       // lets every client write a pool's required attributes, so these two
-      // cannot be made read-only; every other attribute is (decision 104).
+      // cannot be made read-only; every other attribute is (decision 109).
       writeAttributes: new cognito.ClientAttributes().withStandardAttributes({ email: true, fullname: true }),
       accessTokenValidity: Duration.minutes(60),
       idTokenValidity: Duration.minutes(60),

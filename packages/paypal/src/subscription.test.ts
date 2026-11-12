@@ -4,7 +4,8 @@ import { encodeInboxMessage, inboxDeduplicationId, inboxGroup, parseInboxMessage
 import { PayPalShapeError } from "./json.ts";
 import { paypalPool } from "./pool.ts";
 import type { PayPalRequest } from "./client.ts";
-import { isSubscriptionId, parseSubscription, parseSubscriptionCreated, parseSubscriptionPayments, planBody, shareStateOf, subscriptionBody } from "./subscription.ts";
+import { circleProductId, isSubscriptionId, parseSubscription, parseSubscriptionCreated, parseSubscriptionPayments, planBody, shareStateOf, subscriptionBody } from "./subscription.ts";
+import { readFixture, replayPool, type RecordedExchange } from "./testing/replay.ts";
 import { parseWebhookEnvelope } from "./webhook.ts";
 
 const reference = { circleId: "0b6f4c3e-8d1a-4f6e-9c2b-5a7d3e1f9a40", memberId: "7c2e9a14-3b5d-4e8f-a1c6-d9b0f2e4a738" };
@@ -79,14 +80,14 @@ describe("a subscription read back from PayPal", () => {
 });
 
 describe("the pool's subscription calls", () => {
-  it("makes the product, plan and subscription with request IDs that make a repeat harmless", async () => {
+  it("makes the circle's product under its own ID, the plan and the subscription, with request IDs", async () => {
     const sent: PayPalRequest[] = [];
     const pool = paypalPool(
       {
         send: async (request) => {
           sent.push(request);
           if (request.operation === "subscriptions.create") return { id: "I-BW452GLLEP1G", links: [{ rel: "approve", href: "https://www.sandbox.paypal.com/approve" }] };
-          return { id: request.operation === "products.create" ? "PROD-1" : "P-1" };
+          return { id: request.operation === "products.create" ? `KIN-${reference.circleId}` : "P-1" };
         },
       },
       "WH-ID",
@@ -98,6 +99,36 @@ describe("the pool's subscription calls", () => {
       ["plans.create", `kin-plan-${row}`],
       ["subscriptions.create", `kin-subscription-${row}`],
     ]);
+  });
+
+  describe("as the sandbox answered (recorded 11 November 2026)", () => {
+    const { create } = readFixture<{ create: RecordedExchange[] }>("subscription-sandbox-2026-11-11.json");
+    const circleId = "7e90af89-58bf-4e12-ad40-086a6edd46a9";
+    const share = { amount: { cents: 100, currency: "USD" }, reference: { circleId, memberId: "005e9d08-e14d-4560-bff8-a56b663e2467" }, description: "Kin sandbox check: monthly share", returnUrl: "https://kin.example.com/dashboard/shares" };
+    const key = "30bc5d7d-a265-45ca-baf2-0c45bdd08c34";
+
+    it("makes the circle's product under Kin's own ID, a plan and a subscription waiting for the payer", async () => {
+      const { pool, sent } = replayPool(create.slice(0, 3));
+      expect(await pool.createSubscription(share, key)).toEqual({ subscriptionId: "I-7S1R5BN7FY5J", approvalUrl: "https://www.sandbox.paypal.com/webapps/billing/subscriptions?ba_token=BA-3D292887RW598515Y" });
+      expect(sent.map((each) => each.body)).toEqual(create.slice(0, 3).map((each) => each.request));
+      expect(sent[0]?.body).toMatchObject({ id: circleProductId(circleId) });
+    });
+
+    it("finds the circle's product by its own ID when PayPal already holds it, and makes no second plan for the same share", async () => {
+      const { pool } = replayPool(create.slice(3, 6));
+      // PayPal's sandbox did not honour the subscription's request ID: a repeat made a second, unapproved subscription.
+      expect((await pool.createSubscription(share, key)).subscriptionId).toBe("I-1F6MUWG9GYRV");
+      expect(create[3]).toMatchObject({ httpStatus: 422, body: { details: [{ issue: "DUPLICATE_RESOURCE_IDENTIFIER" }] } });
+      expect(create[4]).toMatchObject({ httpStatus: 200, body: { id: "P-7X481161S62530903NL2PH7Q" } });
+    });
+
+    it("reads a subscription waiting for approval, which has no charges to list and cannot be suspended or resumed", async () => {
+      const { pool } = replayPool(create.slice(9));
+      expect(await pool.getSubscription("I-7S1R5BN7FY5J")).toMatchObject({ status: "APPROVAL_PENDING", reference: share.reference, subscriberPayerId: null, nextBillingAt: null });
+      await expect(pool.listSubscriptionPayments("I-7S1R5BN7FY5J", new Date("2026-11-10T00:00:00Z"), new Date("2026-11-12T00:00:00Z"))).rejects.toMatchObject({ status: 404, issue: "INVALID_RESOURCE_ID" });
+      await expect(pool.changeSubscription("I-7S1R5BN7FY5J", "suspend", "r", "q")).rejects.toMatchObject({ status: 404, issue: "INVALID_RESOURCE_ID" });
+      await expect(pool.changeSubscription("I-7S1R5BN7FY5J", "activate", "r", "q")).rejects.toMatchObject({ status: 422, issue: "SESSION_STATE_NOT_VALID" });
+    });
   });
 
   it("never puts anything but a subscription ID in a URL", async () => {

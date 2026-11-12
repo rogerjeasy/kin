@@ -5,7 +5,7 @@ import { DEMO_ENV } from "./demo-config.ts";
 
 /**
  * The key that seals the access token of an authenticator enrolment while the
- * person scans the code (decision 104). A dedicated `KIN_ENROLMENT_KEY` is
+ * person scans the code (decision 109). A dedicated `KIN_ENROLMENT_KEY` is
  * used when set. Without it, while the demo is on, a key is derived from the
  * demo session key under its own label, as the agency key is (decision 93),
  * so a deployment with only that secret can enrol. With neither, enrolment

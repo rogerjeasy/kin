@@ -30,3 +30,5 @@ test-results/
 
 # Next.js generated types
 next-env.d.ts
+
+docs/extension-of-features.md

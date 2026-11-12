@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ShieldCheckIcon } from "lucide-react";
 import Link from "next/link";
 import { sumCents } from "@kin/domain";
 
@@ -13,6 +12,7 @@ import { AgreementPrompt } from "@/components/dashboard/overview/agreement-promp
 import { AttentionPanel } from "@/components/dashboard/overview/attention-panel";
 import { ComingUpPanel } from "@/components/dashboard/overview/coming-up-panel";
 import { FairnessPanel } from "@/components/dashboard/overview/fairness-panel";
+import { ProtectionSection } from "@/components/dashboard/overview/protection-section";
 import { RoseHeardPanel } from "@/components/dashboard/overview/rose-heard-panel";
 import { SafetyPanel } from "@/components/dashboard/overview/safety-panel";
 import { SpendingPanel } from "@/components/dashboard/overview/spending-panel";
@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { agreementRoute, askRoute, connectionsRoute, dashboardRoutes, listenRoute, presenceRoute, purseRoute, quietSharesRoute, wishesRoute } from "@/content/dashboard-routes";
 import { WishesCard } from "@/components/dashboard/wishes/wishes-card";
 import { askKinSuggestions } from "@/content/circle/ask-kin-suggestions";
+import { TOP_UP_OPEN } from "@/content/demo-guide";
 import { memberFairness, periodSettlement } from "@/content/circle/fairness";
 import { circleFormatters } from "@/content/circle/format";
 import { partOfDay } from "@/content/circle/greeting";
@@ -61,7 +62,7 @@ export function generateMetadata({ params }: PageProps<"/[locale]/dashboard">): 
   return dashboardMetadata(params, "overview");
 }
 
-export default async function OverviewPage({ params }: PageProps<"/[locale]/dashboard">) {
+export default async function OverviewPage({ params, searchParams }: PageProps<"/[locale]/dashboard">) {
   const { locale, dictionary, viewer, circle } = await dashboardContext(params, "overview");
   const { overview, common, empty } = dictionary.dashboard;
   const format = circleFormatters(locale, circle);
@@ -99,7 +100,7 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
         lede={fill(overview.lede, slots)}
         actions={
           <>
-            <TopUpAction locale={locale} dictionary={dictionary} circle={circle} />
+            <TopUpAction locale={locale} dictionary={dictionary} circle={circle} open={(await searchParams)[TOP_UP_OPEN.name] === TOP_UP_OPEN.value} />
             <ButtonLink href={path(dashboardRoutes.approvals)} size="sm">
               {overview.actions.approvals}
             </ButtonLink>
@@ -150,6 +151,7 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
       {awaitsMe ? (
         <AgreementPrompt href={path(agreementRoute)} text={fill(dictionary.dashboard.agreement.attention, { version: format.count(awaitsMe.version) })} label={dictionary.dashboard.agreement.open} />
       ) : null}
+      {/* The money story first: what waits for a yes, and what Rose was told. */}
       <div className="grid gap-6 lg:grid-cols-3">
         {waiting.length > 0 ? (
           <AttentionPanel
@@ -160,46 +162,6 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
           />
         ) : (
           <EmptyPanel className="lg:col-span-2" title={overview.attention.title} text={empty.attention} />
-        )}
-        {check ? (
-          <SafetyPanel title={check.title} text={check.text} rule={overview.safety.rule} link={{ href: `${path(dashboardRoutes.bills)}#checks`, label: overview.safety.link }} />
-        ) : (
-          <EmptyPanel title={empty.safety.title} text={empty.safety.text} icon={ShieldCheckIcon} />
-        )}
-      </div>
-      {/* Kin's helpers, side by side: what it does for the family besides moving money. */}
-      <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
-        {purse?.purse ? <PurseCard screen={{ ...purse, purse: purse.purse }} copy={dictionary.dashboard.purse.card} format={format} href={path(purseRoute)} /> : null}
-        {may(circle, "presence.check") ? <PresenceCard copy={dictionary.dashboard.presence.link} href={path(presenceRoute)} /> : null}
-        {may(circle, "quiet_share.view") && quietAsk !== null ? <QuietShareCard copy={dictionary.dashboard.quietShares.card} ask={quietAsk} href={path(quietSharesRoute)} format={format} /> : null}
-        {may(circle, "wish.view") ? (
-          <WishesCard
-            title={fill(dictionary.dashboard.wishes.link.title, slots)}
-            text={dictionary.dashboard.wishes.link.text}
-            label={dictionary.dashboard.wishes.link.label}
-            href={path(wishesRoute)}
-            quote={circle.wishes.wishes.find((wish) => wish.state === "in_force")?.quote ?? null}
-          />
-        ) : null}
-        <ConnectionsCard copy={dictionary.openKin.card} boundary={dictionary.openKin.boundary} href={path(connectionsRoute)} />
-      </div>
-      <AskKinCard copy={dictionary.askKin} suggestions={askKinSuggestions(circle, dictionary.askKin.suggestions, format, names)} href={path(askRoute)} />
-      <div className="grid gap-6 lg:grid-cols-3">
-        {settlement && fairness.length > 0 ? (
-          <FairnessPanel
-            className="lg:col-span-2"
-            title={fill(overview.fairness.title, slots)}
-            description={overview.fairness.text}
-            link={{ href: path(dashboardRoutes.fairness), label: overview.fairness.link }}
-            rows={givenRows(dictionary, names, format, fairness, (id) => portraits.get(id) ?? null)}
-            totals={[
-              { label: dictionary.dashboard.fairness.members.given, value: format.money(settlement.fairness.totalContributedCents) },
-              { label: dictionary.dashboard.fairness.settlement.collections, value: format.money(sumCents(settlement.plan.collections.map((each) => each.cents))) },
-              { label: dictionary.dashboard.fairness.settlement.payouts, value: format.money(sumCents(settlement.plan.payouts.map((each) => each.cents))) },
-            ]}
-          />
-        ) : (
-          <EmptyPanel className="lg:col-span-2" title={fill(overview.fairness.title, slots)} text={empty.fairness} />
         )}
         {heard.length > 0 ? (
           <RoseHeardPanel
@@ -219,15 +181,21 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
         )}
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
-        {activity.length > 0 ? (
-          <ActivityPanel
+        {settlement && fairness.length > 0 ? (
+          <FairnessPanel
             className="lg:col-span-2"
-            title={overview.activity.title}
-            link={{ href: path(dashboardRoutes.record), label: overview.activity.link }}
-            items={activityItems(dictionary, names, format, activity)}
+            title={fill(overview.fairness.title, slots)}
+            description={overview.fairness.text}
+            link={{ href: path(dashboardRoutes.fairness), label: overview.fairness.link }}
+            rows={givenRows(dictionary, names, format, fairness, (id) => portraits.get(id) ?? null)}
+            totals={[
+              { label: dictionary.dashboard.fairness.members.given, value: format.money(settlement.fairness.totalContributedCents) },
+              { label: dictionary.dashboard.fairness.settlement.collections, value: format.money(sumCents(settlement.plan.collections.map((each) => each.cents))) },
+              { label: dictionary.dashboard.fairness.settlement.payouts, value: format.money(sumCents(settlement.plan.payouts.map((each) => each.cents))) },
+            ]}
           />
         ) : (
-          <EmptyPanel className="lg:col-span-2" title={overview.activity.title} text={empty.activity} />
+          <EmptyPanel className="lg:col-span-2" title={fill(overview.fairness.title, slots)} text={empty.fairness} />
         )}
         <div className="grid content-start gap-6">
           {spending.length > 0 ? (
@@ -257,6 +225,37 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/dash
           )}
         </div>
       </div>
+      {activity.length > 0 ? (
+        <ActivityPanel
+          title={overview.activity.title}
+          link={{ href: path(dashboardRoutes.record), label: overview.activity.link }}
+          items={activityItems(dictionary, names, format, activity)}
+        />
+      ) : (
+        <EmptyPanel title={overview.activity.title} text={empty.activity} />
+      )}
+      <AskKinCard copy={dictionary.askKin} suggestions={askKinSuggestions(circle, dictionary.askKin.suggestions, format, names)} href={path(askRoute)} />
+      {/* Kin's helpers, together below the money: what it does for the family besides moving it. */}
+      <ProtectionSection title={fill(overview.protects.title, slots)} text={overview.protects.text}>
+        {check ? (
+          <SafetyPanel title={check.title} text={check.text} rule={overview.safety.rule} link={{ href: `${path(dashboardRoutes.bills)}#checks`, label: overview.safety.link }} />
+        ) : (
+          <SafetyPanel title={empty.safety.title} text={empty.safety.text} />
+        )}
+        {may(circle, "presence.check") ? <PresenceCard copy={dictionary.dashboard.presence.link} href={path(presenceRoute)} /> : null}
+        {purse?.purse ? <PurseCard screen={{ ...purse, purse: purse.purse }} copy={dictionary.dashboard.purse.card} format={format} href={path(purseRoute)} /> : null}
+        {may(circle, "wish.view") ? (
+          <WishesCard
+            title={fill(dictionary.dashboard.wishes.link.title, slots)}
+            text={dictionary.dashboard.wishes.link.text}
+            label={dictionary.dashboard.wishes.link.label}
+            href={path(wishesRoute)}
+            quote={circle.wishes.wishes.find((wish) => wish.state === "in_force")?.quote ?? null}
+          />
+        ) : null}
+        {may(circle, "quiet_share.view") && quietAsk !== null ? <QuietShareCard copy={dictionary.dashboard.quietShares.card} ask={quietAsk} href={path(quietSharesRoute)} format={format} /> : null}
+        <ConnectionsCard copy={dictionary.openKin.card} boundary={dictionary.openKin.boundary} href={path(connectionsRoute)} tile />
+      </ProtectionSection>
     </>
   );
 }

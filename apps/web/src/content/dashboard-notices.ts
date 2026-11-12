@@ -37,9 +37,9 @@ export function isNotice(value: string | null): value is Notice {
   return value !== null && (NOTICES as readonly string[]).includes(value);
 }
 
-/** A circle screen's path with a notice to show on arrival. */
+/** A circle screen's path with a notice to show on arrival, keeping any query it already has. */
 export function withNotice(path: string, notice: Notice): string {
-  return `${path}?${new URLSearchParams({ notice }).toString()}`;
+  return `${path}${path.includes("?") ? "&" : "?"}${new URLSearchParams({ notice }).toString()}`;
 }
 
 /**

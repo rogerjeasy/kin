@@ -16,7 +16,7 @@ const PRESETS_CENTS = [2500, 5000, 10000];
  * The "Add money" action, for a member who shares the cost, where this
  * deployment has PayPal. The routes behind it check the role again.
  */
-export function TopUpAction({ locale, dictionary, circle }: { locale: Locale; dictionary: Dictionary; circle: CircleSnapshot }) {
+export function TopUpAction({ locale, dictionary, circle, open = false }: { locale: Locale; dictionary: Dictionary; circle: CircleSnapshot; open?: boolean }) {
   const services = topUpServices();
   const { currency } = circle.circle;
   const limits = TOP_UP_LIMITS[currency];
@@ -32,6 +32,7 @@ export function TopUpAction({ locale, dictionary, circle }: { locale: Locale; di
       currency={currency}
       presets={PRESETS_CENTS.map((cents) => ({ value: decimalAmount({ cents, currency }), label: format.money(cents) }))}
       limits={{ min: format.money(limits.minCents), max: format.money(limits.maxCents) }}
+      defaultOpen={open}
     />
   );
 }
