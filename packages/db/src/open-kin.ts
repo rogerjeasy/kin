@@ -21,8 +21,10 @@ import { agencyKeys, agencyVisitReports, delegationCalls, delegations, type Dele
  * `conflict`: an agency sent this visit's ID before with another body.
  * `too_many_reports`: a key reported more visits today than an agency ever needs.
  * `too_many_keys`: five live agency keys already.
+ * `invoice_conflict`: an agency sent this invoice number before with another body.
+ * `too_many_invoices`: a key sent more invoices today than an agency ever needs.
  */
-export type OpenKinReason = "refused" | "invalid" | "too_many" | "demo_only" | "conflict" | "too_many_reports" | "too_many_keys";
+export type OpenKinReason = "refused" | "invalid" | "too_many" | "demo_only" | "conflict" | "too_many_reports" | "too_many_keys" | "invoice_conflict" | "too_many_invoices";
 
 /** An Open Kin operation was refused. Retrying the same request cannot help. */
 export class OpenKinError extends Error {
@@ -50,9 +52,12 @@ const REASONS: Readonly<Record<string, OpenKinReason>> = {
   KA001: "conflict",
   KA002: "too_many_reports",
   KA003: "too_many_keys",
+  KA004: "invoice_conflict",
+  KA005: "too_many_invoices",
 };
 
-async function operation<T>(work: () => Promise<T>): Promise<T> {
+/** Runs one Open Kin operation, turning the database's coded refusals into an `OpenKinError`. */
+export async function openKinOperation<T>(work: () => Promise<T>): Promise<T> {
   try {
     return await work();
   } catch (error) {
@@ -80,7 +85,7 @@ export type GrantDelegation = {
 
 /** Grants a delegation for the person's own seat and returns its ID. Run as the person, inside `asPerson`. */
 export async function grantDelegation(tx: Transaction, input: GrantDelegation): Promise<string> {
-  const result = await operation(() =>
+  const result = await openKinOperation(() =>
     tx.execute<{ id: string }>(sql`select kin_private.grant_delegation(${input.circleId}::uuid, ${input.label}, ${input.scope}, ${input.tokenHash}, ${input.tokenHint},
       ${input.expiresAt.toISOString()}::timestamptz, ${input.console}) as id`),
   );
@@ -89,7 +94,7 @@ export async function grantDelegation(tx: Transaction, input: GrantDelegation): 
 
 /** Revokes a delegation: the person's own, or any for the organizer. Returns whether this call revoked it. */
 export async function revokeDelegation(tx: Transaction, input: { readonly circleId: string; readonly delegationId: string }): Promise<boolean> {
-  const result = await operation(() => tx.execute<{ revoked: boolean }>(sql`select kin_private.revoke_delegation(${input.circleId}::uuid, ${input.delegationId}::uuid) as revoked`));
+  const result = await openKinOperation(() => tx.execute<{ revoked: boolean }>(sql`select kin_private.revoke_delegation(${input.circleId}::uuid, ${input.delegationId}::uuid) as revoked`));
   return result.rows[0]?.revoked === true;
 }
 
@@ -194,7 +199,7 @@ export async function recordDelegationCalls(db: Database, tokenHash: string, cal
   if (calls.length === 0) return;
   await db.transaction(async (tx) => {
     for (const call of calls) {
-      await operation(() =>
+      await openKinOperation(() =>
         tx.execute(sql`select kin_private.record_delegation_call(${tokenHash}, ${call.tool}, ${call.outcome}, ${Math.min(call.durationMs, 600_000)}::integer,
           ${call.proposalId}::uuid, ${call.at.toISOString()}::timestamptz)`),
       );
@@ -204,12 +209,12 @@ export async function recordDelegationCalls(db: Database, tokenHash: string, cal
 
 /** The organizer creates an agency key from its public ID and its secret's SHA-256, and gets its row's ID. */
 export async function createAgencyKey(tx: Transaction, input: { readonly circleId: string; readonly label: string; readonly keyId: string; readonly secretHash: string }): Promise<string> {
-  const result = await operation(() => tx.execute<{ id: string }>(sql`select kin_private.create_agency_key(${input.circleId}::uuid, ${input.label}, ${input.keyId}, ${input.secretHash}) as id`));
+  const result = await openKinOperation(() => tx.execute<{ id: string }>(sql`select kin_private.create_agency_key(${input.circleId}::uuid, ${input.label}, ${input.keyId}, ${input.secretHash}) as id`));
   return requiredValue(result.rows[0]?.id, "agency key");
 }
 
 export async function revokeAgencyKey(tx: Transaction, input: { readonly circleId: string; readonly keyRowId: string }): Promise<boolean> {
-  const result = await operation(() => tx.execute<{ revoked: boolean }>(sql`select kin_private.revoke_agency_key(${input.circleId}::uuid, ${input.keyRowId}::uuid) as revoked`));
+  const result = await openKinOperation(() => tx.execute<{ revoked: boolean }>(sql`select kin_private.revoke_agency_key(${input.circleId}::uuid, ${input.keyRowId}::uuid) as revoked`));
   return result.rows[0]?.revoked === true;
 }
 
@@ -299,7 +304,7 @@ export async function receiveAgencyVisit(
     : null;
   const refusal = input.parsed.ok ? null : input.parsed.reason;
   return db.transaction(async (tx) => {
-    const result = await operation(() =>
+    const result = await openKinOperation(() =>
       tx.execute<{ received: unknown }>(sql`select kin_private.receive_agency_visit(${input.keyId}, ${input.secretHash}, ${input.rawBody}, ${report === null ? null : JSON.stringify(report)}::jsonb, ${refusal}) as received`),
     );
     const raw = result.rows[0]?.received;

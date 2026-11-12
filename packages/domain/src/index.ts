@@ -399,6 +399,19 @@ export type { MediationInput, MediationResult, Month, QuietPart, QuietPartMethod
 // Visits a home-care agency reports through Kin's API: evidence beside a shift, never a payment.
 export { VISIT_REPORT_SCHEMA, matchVisitReport, parseVisitReport } from "./visit-report.ts";
 export type { ReportableShift, VisitReport, VisitReportRefusal } from "./visit-report.ts";
+// Invoices an agency sends through the same signed API: a bill for a person to review, never a payment by itself.
+export {
+  AGENCY_INVOICE_LINE_SCHEMA,
+  AGENCY_INVOICE_PURPOSE,
+  AGENCY_INVOICE_SCHEMA,
+  AGENCY_INVOICE_STATUSES,
+  MAX_INVOICE_LINES,
+  MAX_INVOICE_PERIOD_DAYS,
+  checkInvoiceLine,
+  invoiceLinesTotal,
+  parseAgencyInvoice,
+} from "./agency-invoice.ts";
+export type { AgencyInvoice, AgencyInvoiceLine, AgencyInvoiceRefusal, AgencyInvoiceStatus, CheckableShift, CheckedInvoiceLine, InvoiceLineFlag, InvoicedVisit } from "./agency-invoice.ts";
 export { DELEGATION_SCOPES } from "./delegation-scope.ts";
 export type { DelegationScope } from "./delegation-scope.ts";
 export {
