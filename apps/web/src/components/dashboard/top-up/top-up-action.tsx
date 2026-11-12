@@ -10,7 +10,8 @@ import { PAYPAL_SDK_URL, topUpServices } from "@/server/paypal";
 import { TopUpSheet } from "./top-up-sheet";
 
 /** The quick amounts the sheet offers, in cents. */
-const PRESETS_CENTS = [2500, 5000, 10000];
+// The middle one is the default: $100 covers a week of Amara's care in the demo, which waits for money that has arrived.
+const PRESETS_CENTS = [5000, 10000, 20000];
 
 /**
  * The "Add money" action, for a member who shares the cost, where this

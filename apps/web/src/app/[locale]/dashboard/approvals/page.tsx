@@ -22,7 +22,7 @@ import { parentOf } from "@/content/circle/members";
 import { circleNames } from "@/content/circle/names";
 import { openPeriod } from "@/content/circle/period";
 import { waitingProposals } from "@/content/circle/proposal-view";
-import { refillViews } from "@/content/circle/refills";
+import { proposalsPaidInSandbox, refillViews } from "@/content/circle/refills";
 import { settlementBasis } from "@/content/circle/settlement-basis";
 import { monthTotals, recordEntries } from "@/content/circle/record";
 import { voteLine } from "@/content/circle/vote-words";
@@ -73,6 +73,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
   const answered = circle.proposals.filter((proposal) => DECIDED.some((state) => state === proposal.state)).toReversed();
   const decided = recordEntries(circle).filter((view) => view.entry.source.type === "approval");
   const refills = refillViews(circle);
+  const paidInSandbox = proposalsPaidInSandbox(refills.orders);
   // A demo payout PayPal's sandbox made shows PayPal's own record, not "simulated".
   const proofs = circle.circle.demo ? (await payoutProofsOf(viewer, circle.circle.id)).byProposal : new Map<string, never>();
 
@@ -157,7 +158,7 @@ export default async function ApprovalsPage({ params }: PageProps<"/[locale]/das
             title: proposalTitle(dictionary, names, proposal, slots.month),
             kind: common.proposalKinds[proposal.kind],
             amount: format.money(proposal.cents),
-            status: answeredStatus(approvals.answered, circle.circle.demo && proof === undefined, proposal.state as (typeof DECIDED)[number]),
+            status: answeredStatus(approvals.answered, circle.circle.demo && proof === undefined && !paidInSandbox.has(proposal.id), proposal.state as (typeof DECIDED)[number]),
             approved: SAID_YES.has(proposal.state),
             answers: proposal.votes
               .map((vote) => voteLine(approvals.slots, { name: names.member(vote.memberId), decision: vote.decision, method: vote.method, time: format.dateTime(vote.at) }))
