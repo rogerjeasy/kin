@@ -32,7 +32,7 @@ function queryOf(searchParams: Record<string, string | string[] | undefined>): s
 }
 
 /**
- * The OAuth consent screen (decision 111): an outside assistant asks to work
+ * The OAuth consent screen (decision 112): an outside assistant asks to work
  * with the circle as this member. The member sees who asks and where the
  * answer goes, chooses the scope and the lifetime, and says yes or no. Only a
  * person who signed in, in a real circle, in a seat that may connect an

@@ -11,7 +11,7 @@ const ROLES = ["kin_app", "kin_service", "kin_provisioner"];
 const roleArray = sql`string_to_array(${ROLES.join(",")}, ',')`;
 /**
  * Tables no person reads: only Kin's service touches them. A check-in link's hash is a credential, so no screen reads its table;
- * nor does any screen read an OAuth authorization code's (decision 111), which only kin_private.create_oauth_code and redeem_oauth_code reach.
+ * nor does any screen read an OAuth authorization code's (decision 112), which only kin_private.create_oauth_code and redeem_oauth_code reach.
  */
 const SERVICE_ONLY = ["outbox", "paypal_events", "shift_check_links", "family_codes", "oauth_codes"];
 

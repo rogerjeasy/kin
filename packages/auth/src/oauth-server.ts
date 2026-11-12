@@ -6,7 +6,7 @@ import { DELEGATION_LIFETIME_DAYS, DELEGATION_OAUTH_SCOPES, MAX_DELEGATION_LABEL
 
 /**
  * Kin as an OAuth 2.1 authorization server for its own MCP server
- * (docs/architecture.md section 13.4, decision 111), checked against the MCP
+ * (docs/architecture.md section 13.4, decision 112), checked against the MCP
  * authorization specification of 2026-07-28, RFC 6749/OAuth 2.1, RFC 7636
  * (PKCE, S256 only), RFC 7591 (dynamic registration), RFC 8414 (metadata),
  * RFC 8707 (resource indicators), RFC 9207 (`iss` in the response) and the

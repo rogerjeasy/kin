@@ -7,7 +7,7 @@ import { clientResolver, documentFetcher } from "./oauth-clients";
 import { embeddedIPv4, isPublicAddress } from "./public-address";
 
 /**
- * Fetching a stranger's client ID metadata document (decision 111): which
+ * Fetching a stranger's client ID metadata document (decision 112): which
  * addresses Kin may connect to, the one deadline over the whole fetch, the
  * size limit, and how many fetches run at once.
  */

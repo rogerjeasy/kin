@@ -47,7 +47,7 @@ export const delegations = pgTable(
     console: boolean("console").notNull().default(false),
     /** A sample the demo provisioner wrote, with no token anyone holds. The screen says so. */
     seeded: boolean("seeded").notNull().default(false),
-    /** The OAuth client the member authorized in the browser (decision 111); null for a token copied from the screen. */
+    /** The OAuth client the member authorized in the browser (decision 112); null for a token copied from the screen. */
     oauthClient: text("oauth_client"),
     expiresAt: at("expires_at").notNull(),
     revokedAt: at("revoked_at"),
@@ -78,7 +78,7 @@ export const delegations = pgTable(
 export const OAUTH_CODE_SECONDS = 60;
 
 /**
- * A single-use OAuth authorization code (decision 111): the member's yes on
+ * A single-use OAuth authorization code (decision 112): the member's yes on
  * the consent screen, bound to the client, its redirect URI, its PKCE
  * challenge, the resource, and the scope and lifetime the member chose. It
  * lives sixty seconds, is traded once for a delegation, and holds only the

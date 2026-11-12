@@ -6,7 +6,10 @@ import { Tag } from "@/components/shared/tag";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
 
+import type { InvoiceView, RefusedInvoiceView } from "@/content/open-kin/invoice-views";
+
 import { AgencyKeyForm } from "./agency-key-form";
+import { InvoiceList } from "./invoice-list";
 import { ReportList, type ReportView } from "./report-list";
 import { RevokeButton } from "./revoke-button";
 
@@ -22,10 +25,13 @@ type Props = {
   /** A caregiver's name from the circle, for the example request. */
   caregiver: string;
   shiftsHref: string;
+  invoices: readonly InvoiceView[];
+  refusedInvoices: readonly RefusedInvoiceView[];
+  billsHref: string;
 };
 
 /** The agencies connected to the circle, and the visits they reported as evidence beside the calendar. */
-export function AgencyPanel({ copy, keys, reports, canManage, origin, caregiver, shiftsHref }: Props) {
+export function AgencyPanel({ copy, keys, reports, canManage, origin, caregiver, shiftsHref, invoices, refusedInvoices, billsHref }: Props) {
   const { agency } = copy;
   return (
     <Panel title={agency.title} description={agency.lede}>
@@ -59,6 +65,8 @@ export function AgencyPanel({ copy, keys, reports, canManage, origin, caregiver,
         <div className="grid min-w-0 content-start gap-4">
           <h3 className="font-semibold">{agency.reports}</h3>
           <ReportList reports={reports} copy={agency} sampleLabel={copy.list.sample} shiftsHref={shiftsHref} />
+          <h3 className="font-semibold">{agency.invoices}</h3>
+          <InvoiceList invoices={invoices} refused={refusedInvoices} copy={agency} sampleLabel={copy.list.sample} billsHref={billsHref} />
         </div>
       </div>
     </Panel>

@@ -14,9 +14,11 @@ import {
   asPerson,
   grantDelegation,
   readAgencyKeys,
+  readAgencyInvoices,
   readAgencyReports,
   readDelegations,
   revokeDelegation,
+  type AgencyInvoiceRecord,
   type AgencyKeyRecord,
   type AgencyReportRecord,
   type CircleSnapshot,
@@ -100,7 +102,12 @@ export async function manageConnection(context: ConnectionsContext, input: unkno
   }
 }
 
-export type ConnectionsScreen = { readonly delegations: readonly DelegationRecord[]; readonly agencyKeys: readonly AgencyKeyRecord[]; readonly reports: readonly AgencyReportRecord[] };
+export type ConnectionsScreen = {
+  readonly delegations: readonly DelegationRecord[];
+  readonly agencyKeys: readonly AgencyKeyRecord[];
+  readonly reports: readonly AgencyReportRecord[];
+  readonly invoices: readonly AgencyInvoiceRecord[];
+};
 
 /** What the screen shows, read as the person: row-level security decides which rows. */
 export function connectionsScreen(context: Pick<ConnectionsContext, "db" | "userId" | "circle">): Promise<ConnectionsScreen> {
@@ -109,5 +116,12 @@ export function connectionsScreen(context: Pick<ConnectionsContext, "db" | "user
     delegations: await readDelegations(tx, circleId),
     agencyKeys: await readAgencyKeys(tx, circleId),
     reports: await readAgencyReports(tx, circleId),
+    invoices: await readAgencyInvoices(tx, circleId),
   }));
+}
+
+/** The agencies' invoices and keys for the Bills screen, read as the person: row-level security decides which rows. */
+export function invoiceScreen(context: Pick<ConnectionsContext, "db" | "userId" | "circle">): Promise<Pick<ConnectionsScreen, "agencyKeys" | "invoices">> {
+  const circleId = context.circle.circle.id;
+  return asPerson(context.db, context.userId, async (tx) => ({ agencyKeys: await readAgencyKeys(tx, circleId), invoices: await readAgencyInvoices(tx, circleId) }));
 }

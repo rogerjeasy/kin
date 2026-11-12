@@ -10,7 +10,7 @@ import { testDatabases } from "../testing/databases.ts";
 import { REFUSED, errorCode } from "../testing/sql.ts";
 
 /**
- * OAuth for Kin's MCP server (decision 111), at the database: a member's yes
+ * OAuth for Kin's MCP server (decision 112), at the database: a member's yes
  * is a sixty-second code for their own seat, traded once, by the holder of
  * the PKCE verifier, the client ID and the redirect URI, for a delegation
  * that is exactly like one granted on the screen. No role reads a code.
@@ -57,7 +57,7 @@ function trade(held: { code: string; verifier: string }, change: Partial<RedeemI
   return redeemAuthorizationCode(db.app, input).then((result) => ({ result, token }));
 }
 
-describe("an authorization code (decision 111)", () => {
+describe("an authorization code (decision 112)", () => {
   it("is traded once for a delegation for the member's own seat, labelled with the client's name, that the screen lists and resolves like any other", async () => {
     const { circle, marcus, elena } = await realCircleWithSeats();
     const held = await consent(marcus, circle.circleId, { scope: "propose", days: 7 });

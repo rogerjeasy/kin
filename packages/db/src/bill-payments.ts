@@ -7,7 +7,7 @@ import type { Transaction } from "./connection.ts";
 import { bills, circles, members, payees } from "./schema/index.ts";
 
 export type BillPaymentReason =
-  | "refused" | "invalid" | "not_waiting" | "above_ceiling" | "paused" | "no_agreement" | "payment_in_progress" | "payee_fixed" | "key_reused";
+  | "refused" | "invalid" | "not_waiting" | "above_ceiling" | "paused" | "no_agreement" | "payment_in_progress" | "payee_fixed" | "key_reused" | "above_invoice";
 
 /** The database refused a bill's review or its record of payment. Retrying the same request cannot help. */
 export class BillPaymentError extends Error {
@@ -22,7 +22,7 @@ export class BillPaymentError extends Error {
 
 const REASONS: Readonly<Record<string, BillPaymentReason>> = {
   "42501": "refused", "23514": "invalid", "22P02": "invalid", "22007": "invalid", "22008": "invalid", "23505": "not_waiting",
-  KB004: "key_reused", KB005: "not_waiting", KB006: "above_ceiling", KB007: "paused", KB008: "no_agreement", KB009: "payment_in_progress", KB017: "payee_fixed",
+  KB004: "key_reused", KB005: "not_waiting", KB006: "above_ceiling", KB007: "paused", KB008: "no_agreement", KB009: "payment_in_progress", KB017: "payee_fixed", KB018: "above_invoice",
 };
 
 async function operation<T>(work: () => Promise<T>): Promise<T> {
@@ -73,6 +73,17 @@ export async function recordBillPaidOutside(tx: Transaction, input: { readonly c
     const id = result.rows[0]?.id;
     if (!id) throw new Error("The payment record returned no ID");
     return id;
+  });
+}
+
+/**
+ * Declines an agency's invoice still waiting for review, as the person: the
+ * family does not owe it. Returns whether this call declined it.
+ */
+export async function declineAgencyInvoice(tx: Transaction, input: { readonly circleId: string; readonly billId: string }): Promise<boolean> {
+  return operation(async () => {
+    const result = await tx.execute<{ declined: boolean }>(sql`select kin_private.decline_agency_invoice(${input.circleId}::uuid, ${input.billId}::uuid) as declined`);
+    return result.rows[0]?.declined === true;
   });
 }
 

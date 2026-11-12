@@ -7,9 +7,9 @@ import type { Database, Transaction } from "./connection.ts";
 
 /**
  * OAuth 2.1 for Kin's MCP server (docs/architecture.md section 13.4,
- * decision 111). The member's yes on the consent screen becomes a short,
+ * decision 112). The member's yes on the consent screen becomes a short,
  * single-use code; the client trades it once for a delegation. Both are
- * operations in `kin_private` (migration 0069): the database keeps only
+ * operations in `kin_private` (migration 0071): the database keeps only
  * hashes and decides every refusal.
  */
 
@@ -32,7 +32,7 @@ export class OAuthConsentError extends Error {
   }
 }
 
-// SQLSTATE codes are listed in migration 0069_oauth-access.sql.
+// SQLSTATE codes are listed in migration 0071_oauth-access.sql.
 const REASONS: Readonly<Record<string, OAuthConsentRefusal>> = {
   "42501": "refused",
   KO001: "demo_only",

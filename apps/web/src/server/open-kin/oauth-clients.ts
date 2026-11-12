@@ -7,7 +7,7 @@ import type { LookupFunction } from "node:net";
 import { isPublicAddress } from "./public-address";
 
 /**
- * Who an OAuth client is (decision 111). A client Kin registered carries its
+ * Who an OAuth client is (decision 112). A client Kin registered carries its
  * name and redirect URIs in its signed ID. A client that names itself by an
  * https URL (a client ID metadata document, which the MCP specification
  * prefers) is read from that URL, carefully: Kin fetches a stranger's

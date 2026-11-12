@@ -99,7 +99,7 @@ export async function handleMcpHttp(request: McpHttpRequest, options: McpHttpOpt
 
 /**
  * The OAuth 2.0 Protected Resource Metadata document (RFC 9728) for the MCP
- * endpoint. Its authorization server is Kin itself (decision 111): a client
+ * endpoint. Its authorization server is Kin itself (decision 112): a client
  * discovers it here, registers, and sends the member to Kin's consent screen;
  * the token it gets back is a delegation, exactly like one copied from the
  * Connected assistants screen. The scopes are the delegation's.

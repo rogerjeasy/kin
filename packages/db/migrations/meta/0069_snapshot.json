@@ -1,6 +1,6 @@
 {
-  "id": "77c85386-51ae-4d10-a4ef-0d3685fc33db",
-  "prevId": "3459ebe0-1dd9-4787-ac18-392d00d6a37d",
+  "id": "bc3b73b6-8e47-4c56-b60b-91d48784e992",
+  "prevId": "b125f2b3-ed6e-414a-b3c7-235bc51a383c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -10312,12 +10312,6 @@
           "notNull": true,
           "default": false
         },
-        "oauth_client": {
-          "name": "oauth_client",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "expires_at": {
           "name": "expires_at",
           "type": "timestamp with time zone",
@@ -10480,16 +10474,12 @@
         "delegations_uses": {
           "name": "delegations_uses",
           "value": "\"delegations\".\"uses\" >= 0"
-        },
-        "delegations_oauth_client": {
-          "name": "delegations_oauth_client",
-          "value": "\"delegations\".\"oauth_client\" is null or length(\"delegations\".\"oauth_client\") between 1 and 2048"
         }
       },
       "isRLSEnabled": false
     },
-    "public.oauth_codes": {
-      "name": "oauth_codes",
+    "public.agency_invoice_lines": {
+      "name": "agency_invoice_lines",
       "schema": "",
       "columns": {
         "id": {
@@ -10504,104 +10494,40 @@
           "primaryKey": false,
           "notNull": true
         },
-        "member_id": {
-          "name": "member_id",
+        "invoice_id": {
+          "name": "invoice_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "code_hash": {
-          "name": "code_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "client_id": {
-          "name": "client_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "client_name": {
-          "name": "client_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "redirect_uri": {
-          "name": "redirect_uri",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "code_challenge": {
-          "name": "code_challenge",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "scope": {
-          "name": "scope",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "days": {
-          "name": "days",
+        "position": {
+          "name": "position",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "resource": {
-          "name": "resource",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "used_at": {
-          "name": "used_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "delegation_id": {
-          "name": "delegation_id",
+        "visit_report_id": {
+          "name": "visit_report_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "minutes": {
+          "name": "minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {
-        "oauth_codes_code": {
-          "name": "oauth_codes_code",
-          "columns": [
-            {
-              "expression": "code_hash",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        },
-        "oauth_codes_member_idx": {
-          "name": "oauth_codes_member_idx",
+        "agency_invoice_lines_visit_idx": {
+          "name": "agency_invoice_lines_visit_idx",
           "columns": [
             {
               "expression": "circle_id",
@@ -10610,13 +10536,7 @@
               "nulls": "last"
             },
             {
-              "expression": "member_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
+              "expression": "visit_report_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -10629,9 +10549,359 @@
         }
       },
       "foreignKeys": {
-        "oauth_codes_circle_fk": {
-          "name": "oauth_codes_circle_fk",
-          "tableFrom": "oauth_codes",
+        "agency_invoice_lines_invoice_fk": {
+          "name": "agency_invoice_lines_invoice_fk",
+          "tableFrom": "agency_invoice_lines",
+          "columnsFrom": [
+            "circle_id",
+            "invoice_id"
+          ],
+          "tableTo": "agency_invoices",
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "agency_invoice_lines_visit_fk": {
+          "name": "agency_invoice_lines_visit_fk",
+          "tableFrom": "agency_invoice_lines",
+          "columnsFrom": [
+            "circle_id",
+            "visit_report_id"
+          ],
+          "tableTo": "agency_visit_reports",
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agency_invoice_lines_position": {
+          "name": "agency_invoice_lines_position",
+          "columns": [
+            "invoice_id",
+            "position"
+          ],
+          "nullsNotDistinct": false
+        },
+        "agency_invoice_lines_visit_once": {
+          "name": "agency_invoice_lines_visit_once",
+          "columns": [
+            "invoice_id",
+            "visit_report_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "agency_invoice_lines_position_range": {
+          "name": "agency_invoice_lines_position_range",
+          "value": "\"agency_invoice_lines\".\"position\" between 1 and 100"
+        },
+        "agency_invoice_lines_minutes": {
+          "name": "agency_invoice_lines_minutes",
+          "value": "\"agency_invoice_lines\".\"minutes\" between 1 and 1440"
+        },
+        "agency_invoice_lines_amount": {
+          "name": "agency_invoice_lines_amount",
+          "value": "\"agency_invoice_lines\".\"amount_cents\" > 0 and \"agency_invoice_lines\".\"amount_cents\" <= 9007199254740991"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.agency_invoiced_visits": {
+      "name": "agency_invoiced_visits",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visit_report_id": {
+          "name": "visit_report_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invoice_id": {
+          "name": "invoice_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "released_at": {
+          "name": "released_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "agency_invoiced_visits_live": {
+          "name": "agency_invoiced_visits_live",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "visit_report_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"agency_invoiced_visits\".\"released_at\" is null",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "agency_invoiced_visits_visit_fk": {
+          "name": "agency_invoiced_visits_visit_fk",
+          "tableFrom": "agency_invoiced_visits",
+          "columnsFrom": [
+            "circle_id",
+            "visit_report_id"
+          ],
+          "tableTo": "agency_visit_reports",
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "agency_invoiced_visits_invoice_fk": {
+          "name": "agency_invoiced_visits_invoice_fk",
+          "tableFrom": "agency_invoiced_visits",
+          "columnsFrom": [
+            "circle_id",
+            "invoice_id"
+          ],
+          "tableTo": "agency_invoices",
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agency_invoiced_visits_once": {
+          "name": "agency_invoiced_visits_once",
+          "columns": [
+            "invoice_id",
+            "visit_report_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agency_invoices": {
+      "name": "agency_invoices",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "circle_id": {
+          "name": "circle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "agency_key_id": {
+          "name": "agency_key_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_body": {
+          "name": "raw_body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body_sha256": {
+          "name": "body_sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refusal": {
+          "name": "refusal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invoice_number": {
+          "name": "invoice_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "period_start": {
+          "name": "period_start",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "period_end": {
+          "name": "period_end",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_cents": {
+          "name": "total_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "due_on": {
+          "name": "due_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paypal_email": {
+          "name": "paypal_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bill_id": {
+          "name": "bill_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seeded": {
+          "name": "seeded",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "agency_invoices_number": {
+          "name": "agency_invoices_number",
+          "columns": [
+            {
+              "expression": "agency_key_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "invoice_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"agency_invoices\".\"invoice_number\" is not null",
+          "concurrently": false
+        },
+        "agency_invoices_one_per_bill": {
+          "name": "agency_invoices_one_per_bill",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "bill_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"agency_invoices\".\"bill_id\" is not null",
+          "concurrently": false
+        },
+        "agency_invoices_received_idx": {
+          "name": "agency_invoices_received_idx",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "received_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "agency_invoices_circle_fk": {
+          "name": "agency_invoices_circle_fk",
+          "tableFrom": "agency_invoices",
           "columnsFrom": [
             "circle_id"
           ],
@@ -10642,14 +10912,14 @@
           "onUpdate": "no action",
           "onDelete": "no action"
         },
-        "oauth_codes_member_fk": {
-          "name": "oauth_codes_member_fk",
-          "tableFrom": "oauth_codes",
+        "agency_invoices_key_fk": {
+          "name": "agency_invoices_key_fk",
+          "tableFrom": "agency_invoices",
           "columnsFrom": [
             "circle_id",
-            "member_id"
+            "agency_key_id"
           ],
-          "tableTo": "members",
+          "tableTo": "agency_keys",
           "columnsTo": [
             "circle_id",
             "id"
@@ -10657,14 +10927,14 @@
           "onUpdate": "no action",
           "onDelete": "no action"
         },
-        "oauth_codes_delegation_fk": {
-          "name": "oauth_codes_delegation_fk",
-          "tableFrom": "oauth_codes",
+        "agency_invoices_bill_fk": {
+          "name": "agency_invoices_bill_fk",
+          "tableFrom": "agency_invoices",
           "columnsFrom": [
             "circle_id",
-            "delegation_id"
+            "bill_id"
           ],
-          "tableTo": "delegations",
+          "tableTo": "bills",
           "columnsTo": [
             "circle_id",
             "id"
@@ -10674,48 +10944,57 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "agency_invoices_circle_row": {
+          "name": "agency_invoices_circle_row",
+          "columns": [
+            "circle_id",
+            "id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
       "policies": {},
       "checkConstraints": {
-        "oauth_codes_hash": {
-          "name": "oauth_codes_hash",
-          "value": "\"oauth_codes\".\"code_hash\" ~ '^[0-9a-f]{64}$'"
+        "agency_invoices_body": {
+          "name": "agency_invoices_body",
+          "value": "length(\"agency_invoices\".\"raw_body\") between 1 and 65536"
         },
-        "oauth_codes_challenge": {
-          "name": "oauth_codes_challenge",
-          "value": "\"oauth_codes\".\"code_challenge\" ~ '^[A-Za-z0-9_-]{43}$'"
+        "agency_invoices_sha": {
+          "name": "agency_invoices_sha",
+          "value": "\"agency_invoices\".\"body_sha256\" ~ '^[0-9a-f]{64}$'"
         },
-        "oauth_codes_scope": {
-          "name": "oauth_codes_scope",
-          "value": "scope in ('read', 'propose')"
+        "agency_invoices_state": {
+          "name": "agency_invoices_state",
+          "value": "state in ('accepted', 'refused')"
         },
-        "oauth_codes_days": {
-          "name": "oauth_codes_days",
-          "value": "\"oauth_codes\".\"days\" in (1, 7, 30, 90)"
+        "agency_invoices_refusal": {
+          "name": "agency_invoices_refusal",
+          "value": "refusal is null or refusal in ('shape', 'total', 'currency', 'duplicate_line', 'period', 'unknown_visit', 'visit_invoiced', 'circle_currency')"
         },
-        "oauth_codes_client": {
-          "name": "oauth_codes_client",
-          "value": "length(\"oauth_codes\".\"client_id\") between 1 and 2048"
+        "agency_invoices_accepted": {
+          "name": "agency_invoices_accepted",
+          "value": "(\"agency_invoices\".\"state\" = 'accepted') = (\"agency_invoices\".\"refusal\" is null)\n        and (\"agency_invoices\".\"state\" = 'refused' or (\"agency_invoices\".\"invoice_number\" is not null and \"agency_invoices\".\"period_start\" is not null and \"agency_invoices\".\"period_end\" is not null and \"agency_invoices\".\"total_cents\" is not null and \"agency_invoices\".\"currency\" is not null and \"agency_invoices\".\"due_on\" is not null and \"agency_invoices\".\"bill_id\" is not null))\n        and (\"agency_invoices\".\"state\" = 'accepted' or (\"agency_invoices\".\"invoice_number\" is null and \"agency_invoices\".\"bill_id\" is null and \"agency_invoices\".\"paypal_email\" is null))"
         },
-        "oauth_codes_client_name": {
-          "name": "oauth_codes_client_name",
-          "value": "length(btrim(\"oauth_codes\".\"client_name\")) between 1 and 60 and \"oauth_codes\".\"client_name\" !~ '[<>{}\\n\\r]'"
+        "agency_invoices_number_shape": {
+          "name": "agency_invoices_number_shape",
+          "value": "\"agency_invoices\".\"invoice_number\" is null or \"agency_invoices\".\"invoice_number\" ~ '^[A-Za-z0-9][A-Za-z0-9._/-]{0,39}$'"
         },
-        "oauth_codes_redirect": {
-          "name": "oauth_codes_redirect",
-          "value": "length(\"oauth_codes\".\"redirect_uri\") between 1 and 512"
+        "agency_invoices_total": {
+          "name": "agency_invoices_total",
+          "value": "\"agency_invoices\".\"total_cents\" is null or (\"agency_invoices\".\"total_cents\" > 0 and \"agency_invoices\".\"total_cents\" <= 9007199254740991)"
         },
-        "oauth_codes_resource": {
-          "name": "oauth_codes_resource",
-          "value": "length(\"oauth_codes\".\"resource\") between 1 and 512"
+        "agency_invoices_currency": {
+          "name": "agency_invoices_currency",
+          "value": "\"agency_invoices\".\"currency\" is null or \"agency_invoices\".\"currency\" ~ '^[A-Z]{3}$'"
         },
-        "oauth_codes_expiry": {
-          "name": "oauth_codes_expiry",
-          "value": "expires_at > created_at and expires_at <= created_at + interval '60 seconds'"
+        "agency_invoices_period": {
+          "name": "agency_invoices_period",
+          "value": "\"agency_invoices\".\"period_end\" is null or (\"agency_invoices\".\"period_end\" >= \"agency_invoices\".\"period_start\" and \"agency_invoices\".\"period_end\" - \"agency_invoices\".\"period_start\" <= 92)"
         },
-        "oauth_codes_used": {
-          "name": "oauth_codes_used",
-          "value": "\"oauth_codes\".\"delegation_id\" is null or \"oauth_codes\".\"used_at\" is not null"
+        "agency_invoices_email": {
+          "name": "agency_invoices_email",
+          "value": "\"agency_invoices\".\"paypal_email\" is null or (length(\"agency_invoices\".\"paypal_email\") <= 127 and \"agency_invoices\".\"paypal_email\" = lower(\"agency_invoices\".\"paypal_email\") and \"agency_invoices\".\"paypal_email\" !~ '[[:space:]<>{}]')"
         }
       },
       "isRLSEnabled": false

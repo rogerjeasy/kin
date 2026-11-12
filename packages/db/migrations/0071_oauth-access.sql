@@ -1,5 +1,5 @@
 -- OAuth 2.1 for Kin's MCP server (docs/architecture.md section 13.4,
--- decision 111). Kin is its own authorization server, and the access token
+-- decision 112). Kin is its own authorization server, and the access token
 -- it issues IS a delegation: the same row, the same hash, the same scope, the
 -- same five-a-member limit, the same revocation and the same screen.
 --

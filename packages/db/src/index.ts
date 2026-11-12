@@ -9,7 +9,7 @@ export type { LineCallInput, LineRecord, OfficeCallInput, OfficeCallRecord, Tran
 export { LetterError, addLetter, recordClaimCheck } from "./letters.ts";
 export type { ClaimCheckInput, LetterInput, LetterReason, LetterRecorded } from "./letters.ts";
 export { RECEIPT_TOPIC, creditReceipt, decideReceipt, submitReceipt } from "./receipts.ts";
-export { BillPaymentError, recordBillPaidOutside, reviewBill } from "./bill-payments.ts";
+export { BillPaymentError, declineAgencyInvoice, recordBillPaidOutside, reviewBill } from "./bill-payments.ts";
 export type { BillPaymentReason, BillReviewInput, BillReviewed } from "./bill-payments.ts";
 export type { CreditOutcome } from "./receipts.ts";
 export { NothingToSettleError, SettlementExistsError, proposeSettlement, setOwnSettlementReceiver } from "./settlement-proposals.ts";
@@ -199,6 +199,11 @@ export { DELEGATION_CALL_OUTCOMES, OAUTH_CODE_SECONDS } from "./schema/open-kin.
 export { OAuthConsentError, createAuthorizationCode, redeemAuthorizationCode } from "./oauth.ts";
 export type { AuthorizationCodeInput, OAuthConsentRefusal, RedeemInput, Redeemed } from "./oauth.ts";
 export type { DelegationCallOutcome } from "./schema/open-kin.ts";
+// Agency invoices through the same signed API: a bill for a person to review, never a payment by itself.
+export { AGENCY_INVOICES_SHOWN, agencyInvoiceStatus, readAgencyInvoices, receiveAgencyInvoice } from "./agency-invoices.ts";
+export type { AgencyInvoiceRecord, InvoiceLineRecord, InvoiceStatusRecord, ReceivedInvoice } from "./agency-invoices.ts";
+export { AGENCY_INVOICE_REFUSALS } from "./schema/agency-invoices.ts";
+export type { AgencyInvoiceStoredRefusal } from "./schema/agency-invoices.ts";
 export type { AgencyKeyRecord, AgencyReportRecord, DelegationCallInput, DelegationCallRecord, DelegationRecord, GrantDelegation, OpenKinReason, ReceivedVisit, ResolvedDelegation } from "./open-kin.ts";
 export {
   StoredWishError,

@@ -10,7 +10,7 @@ import { maybeScreenshot } from "./support/screenshot";
 import { viewports } from "./support/viewports";
 
 /**
- * OAuth 2.1 with PKCE for Kin's MCP server (decision 111), end to end: an
+ * OAuth 2.1 with PKCE for Kin's MCP server (decision 112), end to end: an
  * outside client registers, sends the signed-in organizer to Kin's consent
  * screen, trades the code for a delegation token and lists its tools; and
  * every way to cheat that flow is refused. Runs after the real-circle tests,

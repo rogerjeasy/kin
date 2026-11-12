@@ -50,7 +50,7 @@ export default defineConfig({
       dependencies: ["public", "signed-in"],
       use: { ...devices["Desktop Chrome"], storageState: SIGNED_IN_STATE },
     },
-    // An MCP client authorized through OAuth (decision 111) needs the person's
+    // An MCP client authorized through OAuth (decision 112) needs the person's
     // own circle, so it runs once the real-circle tests have started it.
     {
       name: "oauth",

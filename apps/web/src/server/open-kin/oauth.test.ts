@@ -5,7 +5,7 @@ import { clientResolver } from "./oauth-clients";
 import { isPublicAddress } from "./public-address";
 
 /**
- * Kin's authorization server (decision 111), the parts that need no database:
+ * Kin's authorization server (decision 112), the parts that need no database:
  * registration, who a client is (a signed registration or a client ID
  * metadata document), and where a refusal may be sent.
  */

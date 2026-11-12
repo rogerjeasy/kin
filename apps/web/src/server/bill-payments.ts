@@ -1,5 +1,5 @@
 import { authorize } from "@kin/auth";
-import { BillPaymentError, asPerson, recordBillPaidOutside, reviewBill, type BillPaymentReason, type CircleSnapshot, type Database } from "@kin/db";
+import { BillPaymentError, asPerson, declineAgencyInvoice, recordBillPaidOutside, reviewBill, type BillPaymentReason, type CircleSnapshot, type Database } from "@kin/db";
 import { BillReviewError, InvalidDecimalError, centsFromDecimal, checkBillReview, type BillRoute } from "@kin/domain";
 
 import { typedAmount } from "@/lib/typed-amount";
@@ -9,16 +9,17 @@ export type BillPaymentFailure = BillPaymentReason | BillReviewError["reason"] |
 export type BillPaymentResult =
   | { readonly ok: true; readonly route: BillRoute; readonly proposalId: string | null }
   | { readonly ok: true; readonly id: string }
+  | { readonly ok: true; readonly declined: boolean }
   | { readonly ok: false; readonly reason: BillPaymentFailure };
 
-const OPERATIONS = ["review", "paid_outside"] as const;
+const OPERATIONS = ["review", "paid_outside", "decline_invoice"] as const;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
  * The one request boundary for a bill read from a letter: a member who shares
  * the cost confirms it and says how it is paid, or records paying it outside
- * Kin. Nothing typed in the browser is trusted: the amount is read digit by
+ * Kin, or declines an agency's invoice it does not owe. Nothing typed in the browser is trusted: the amount is read digit by
  * digit, the review is checked by the money core, and the database checks
  * everything again, the plan of approvals included.
  */
@@ -28,6 +29,7 @@ export async function runBillPayment(context: BillPaymentContext, input: unknown
   if (row === null || operation === undefined) return refusal("invalid");
   if (!authorize({ role: context.circle.viewer.role, status: "active" }, "bill.review").allowed) return refusal("refused");
   try {
+    if (operation === "decline_invoice") return await declineInvoice(context, row);
     return operation === "review" ? await review(context, row) : await paidOutside(context, row);
   } catch (error) {
     if (error instanceof BillReviewError) return refusal(error.reason);
@@ -51,6 +53,13 @@ async function paidOutside(context: BillPaymentContext, row: Record<string, unkn
   const { billId, id: receiptId, spentOn } = row as { billId: string; id: string; spentOn: string };
   const id = await asPerson(context.db, context.userId, (tx) => recordBillPaidOutside(tx, { circleId: context.circle.circle.id, billId, receiptId, spentOn }));
   return { ok: true, id };
+}
+
+async function declineInvoice(context: BillPaymentContext, row: Record<string, unknown>): Promise<BillPaymentResult> {
+  if (!keys(row, ["operation", "billId"]) || typeof row.billId !== "string" || !UUID.test(row.billId)) return refusal("invalid");
+  const billId = row.billId;
+  const declined = await asPerson(context.db, context.userId, (tx) => declineAgencyInvoice(tx, { circleId: context.circle.circle.id, billId }));
+  return { ok: true, declined };
 }
 
 function record(value: unknown): Record<string, unknown> | null {

@@ -9,7 +9,7 @@ import { IDENTITY_PROVIDER } from "./identity-provider.ts";
 import { E2E_APP_ORIGIN } from "./ports.ts";
 
 /**
- * An MCP client as the OAuth tests play it (decision 111): it registers,
+ * An MCP client as the OAuth tests play it (decision 112): it registers,
  * draws a PKCE pair, sends the person to Kin's authorization endpoint, catches
  * the code at its loopback redirect URI and trades it. Nothing here is Kin's
  * own code: it speaks to Kin only over HTTP, as a real client does.

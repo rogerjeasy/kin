@@ -37,7 +37,7 @@ import { clientResolver, type ClientResolver, type OAuthClient } from "./oauth-c
 
 /**
  * Kin as the OAuth 2.1 authorization server of its own MCP server
- * (docs/architecture.md section 13.4, decision 111). A client discovers Kin
+ * (docs/architecture.md section 13.4, decision 112). A client discovers Kin
  * from the MCP endpoint's 401, registers (or names itself by a client ID
  * metadata document), and sends the member to Kin's consent screen. Their yes
  * is a sixty-second code; the client trades it, with its PKCE verifier, for

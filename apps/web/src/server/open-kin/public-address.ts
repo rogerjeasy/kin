@@ -2,7 +2,7 @@ import { BlockList, isIP } from "node:net";
 
 /**
  * Whether Kin may connect to an address on a stranger's say-so (a client ID
- * metadata document's host, decision 111): never this machine, a private or
+ * metadata document's host, decision 112): never this machine, a private or
  * shared network, link-local (the cloud's metadata service), documentation,
  * multicast or reserved space, and never an IPv6 address that only wraps one
  * of those IPv4 addresses (mapped, compatible, NAT64, 6to4, Teredo).
