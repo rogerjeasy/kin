@@ -1584,6 +1584,10 @@
         "shift": {
           "title": "Pago del turno de {name}",
           "text": "Un turno de cuidados comprobado con dos llaves: el registro de entrada y salida de la persona cuidadora y la palabra de la familia de que la visita ocurrió."
+        },
+        "letter_bill": {
+          "title": "Factura de {name}",
+          "text": "Leída de una carta y revisada por la familia. Se paga con PayPal del fondo solo después de cada sí que pide el acuerdo."
         }
       },
       "raisedBy": "Lo propuso {name}, {date}",
@@ -1607,7 +1611,8 @@
           "mandate": "por permiso permanente"
         },
         "open": "Esperando a {names}",
-        "parentCall": "Kin se lo preguntará a {parent} en la próxima llamada."
+        "parentCall": "Kin se lo preguntará a {parent} en la próxima llamada.",
+        "independent": "Otra persona que comparte los gastos"
       },
       "notes": {
         "newPayee": "Un destinatario nuevo. Se avisó a todo el círculo.",
@@ -1617,7 +1622,9 @@
         "noReceiver": "{name} aún no ha añadido una dirección de PayPal. El pago la espera.",
         "settlementBasis": "Calculado para {month} el {day}, con el registro tal como estaba entonces.",
         "settlementMoved": "El reparto ha cambiado desde entonces: ahora se le deben {amount} a {name}.",
-        "fairnessLink": "Ver el reparto de hoy"
+        "fairnessLink": "Ver el reparto de hoy",
+        "billReceiver": "Pagada con PayPal a {address}, la dirección que la familia introdujo para {name}",
+        "raiserNotAlone": "{name} confirmó adónde va este dinero, así que otra persona también debe decir que sí."
       },
       "answered": {
         "title": "Decidido",
@@ -2590,9 +2597,54 @@
         "states": {
           "needs_review": "A la espera de revisión",
           "extracted": "Leyéndose",
-          "duplicate": "Ya está en la lista"
+          "duplicate": "Ya está en la lista",
+          "ready": "Para pagar fuera de Kin",
+          "proposed": "Esperando el sí de la familia",
+          "paid": "Pagada"
         },
-        "due": "Vence el {day}"
+        "due": "Vence el {day}",
+        "review": {
+          "open": "Revisar esta factura",
+          "text": "Compare lo que Kin leyó con la carta. No se paga nada hasta que la familia dice que sí.",
+          "name": "De quién es",
+          "amount": "Importe",
+          "due": "Fecha de vencimiento",
+          "how": "¿Cómo se paga?",
+          "paypal": "Con PayPal, del fondo familiar",
+          "paypalHint": "Solo si la empresa acepta PayPal. La familia aprueba adónde va el dinero y todos reciben aviso de un nuevo beneficiario.",
+          "email": "El correo de PayPal de la empresa",
+          "outside": "Fuera de Kin",
+          "outsideHint": "La mayoría de los servicios no aceptan PayPal. Alguien la paga por su cuenta y lo registra aquí; el sí de otro miembro se lo abona.",
+          "submit": "Confirmar la factura",
+          "submitting": "Confirmando…",
+          "cancel": "Ahora no"
+        },
+        "outside": {
+          "due": "Pagar fuera de Kin antes del {day}",
+          "noDue": "Pagar fuera de Kin",
+          "paidOn": "Día en que la pagó",
+          "record": "He pagado esta factura",
+          "recording": "Registrando…",
+          "waiting": "{name} registró el pago. Espera el sí de otro miembro en la página Equidad."
+        },
+        "proposedText": "Espera en la página Aprobaciones cada sí que pide el acuerdo.",
+        "approvalsLink": "Abrir aprobaciones",
+        "errors": {
+          "refused": "Su rol no puede hacer esto.",
+          "invalid": "Algo de la solicitud no era válido.",
+          "not_waiting": "Esta factura ya no espera eso.",
+          "above_ceiling": "El importe supera el pago único más alto del acuerdo.",
+          "paused": "El círculo está en pausa. Inténtelo de nuevo cuando termine la pausa.",
+          "no_agreement": "El círculo necesita un acuerdo familiar vigente antes de pagar una factura.",
+          "payment_in_progress": "Un pago a este beneficiario está pendiente o en curso, así que su dirección de PayPal no puede cambiar ahora.",
+          "payee_fixed": "La familia ya aprobó a este beneficiario: su nombre y su dirección de PayPal se quedan como están.",
+          "key_reused": "Ese registro ya se usó para otra cosa. Recargue e inténtelo de nuevo.",
+          "name": "Escriba de quién es la factura, en 80 caracteres o menos.",
+          "amount": "Escriba el importe como en la carta, por ejemplo 61.00.",
+          "due": "Elija una fecha real.",
+          "receiver": "Escriba un correo de PayPal o elija Fuera de Kin.",
+          "unavailable": "No se pudo contactar con Kin. Inténtelo de nuevo."
+        }
       }
     },
     "mandates": {

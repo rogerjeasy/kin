@@ -1,4 +1,4 @@
-import type { ApprovalTerms } from "@kin/domain";
+import { LETTER_BILL_PURPOSE, type ApprovalTerms } from "@kin/domain";
 import type { ProposalRecord } from "@kin/db";
 
 import type { SlotItem } from "@/components/dashboard/approvals/approval-slots";
@@ -39,12 +39,13 @@ function slotTitle(dictionary: Dictionary, context: CardContext, slot: SlotView)
   const { planLabels } = dictionary.dashboard.common;
   const { terms, format, parent } = context;
   if (terms === null) {
-    return { parent_decides: fill(planLabels.parent, { parent }), organizer: planLabels.organizer, second_approval: planLabels.organizerAndSecond }[slot.reason];
+    return { parent_decides: fill(planLabels.parent, { parent }), organizer: planLabels.organizer, second_approval: planLabels.organizerAndSecond, independent: slots.independent }[slot.reason];
   }
   return {
     parent_decides: fill(slots.parent_decides, { amount: format.money(terms.parentDecidesAboveCents), parent }),
     organizer: slots.organizer,
     second_approval: fill(slots.second_approval, { amount: format.money(terms.secondApprovalAboveCents) }),
+    independent: slots.independent,
   }[slot.reason];
 }
 
@@ -70,6 +71,7 @@ function notesFor(dictionary: Dictionary, context: CardContext, view: ProposalVi
     view.decision === "paused" ? dictionary.dashboard.common.planLabels.paused : null,
     plan.announceToCircle ? notes.newPayee : null,
     plan.payeeMemberId ? fill(notes.payeeIsMember, { name: names.member(plan.payeeMemberId) }) : null,
+    plan.raiserMemberId ? fill(notes.raiserNotAlone, { name: names.member(plan.raiserMemberId) }) : null,
     poolCents !== null && proposal.cents > poolCents ? fill(notes.abovePool, { pool: format.money(poolCents), parent: context.parent }) : null,
     destination(dictionary, context, view),
     ...settlementNotes(dictionary, context, view),
@@ -97,8 +99,14 @@ function fairnessLink(dictionary: Dictionary, context: CardContext, view: Propos
 function destination(dictionary: Dictionary, context: CardContext, view: ProposalView): string | null {
   const { notes } = dictionary.dashboard.approvals;
   const { proposal } = view;
-  if (proposal.kind !== "caregiver_payout" || !("payeeId" in proposal.to)) return null;
+  if (!("payeeId" in proposal.to)) return null;
   const name = context.names.payee(proposal.to.payeeId);
+  // A bill read from a letter goes to the address the family entered for the company when they reviewed it.
+  if (proposal.kind === "bill_payment" && proposal.purpose === LETTER_BILL_PURPOSE) {
+    const receiver = context.receiverOf(proposal.to.payeeId);
+    return receiver === null ? null : fill(notes.billReceiver, { address: receiver, name });
+  }
+  if (proposal.kind !== "caregiver_payout") return null;
   const demo = demoPayeeNote(dictionary.sandboxPayout, context.demoPayee ?? null);
   if (demo !== null) return fill(demo, { name });
   const receiver = context.receiverOf(proposal.to.payeeId);

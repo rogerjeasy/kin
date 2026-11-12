@@ -6,7 +6,7 @@ import { CaregiverBills } from "@/components/dashboard/caregiver-billing/caregiv
 import { ChecksPanel } from "@/components/dashboard/bills/checks-panel";
 import { LettersSection } from "@/components/dashboard/letters/letters-section";
 import { OfficeLineLink } from "@/components/dashboard/office-line/office-line-link";
-import { officeLineRoute } from "@/content/dashboard-routes";
+import { dashboardRoutes, officeLineRoute } from "@/content/dashboard-routes";
 import { localizedPath } from "@/i18n/routing";
 import { PayeeCell } from "@/components/dashboard/bills/payee-cell";
 import { SandboxPayoutProof } from "@/components/dashboard/payouts/sandbox-payout-proof";
@@ -120,7 +120,7 @@ export default async function BillsPage({ params }: PageProps<"/[locale]/dashboa
       <PageHeader title={bills.title} lede={bills.lede} />
       <CaregiverBills circle={circle} viewer={viewer} locale={locale} canDescribe={structuredModel() !== null} speech={speechServices() === null ? null : dictionary.dashboard.speech} copy={dictionary.dashboard.caregiverBilling} ai={dictionary.aiProvenance} demoNote={demoPayeeNote(dictionary.sandboxPayout, demoPayeeOf(circle))} sandbox={{ paid: new Set(byProposal.keys()), tag: dictionary.sandboxPayout.tag }} />
       {may(circle, "safety.view") ? (
-        <LettersSection circle={circle} locale={locale} copy={dictionary.dashboard.letters} ai={dictionary.aiProvenance} speech={speechServices() === null ? null : dictionary.dashboard.speech} canReadPhotos={structuredModel() !== null} offerSample={circle.circle.demo} mayAct={may(circle, "letter.read")} />
+        <LettersSection circle={circle} locale={locale} copy={dictionary.dashboard.letters} ai={dictionary.aiProvenance} speech={speechServices() === null ? null : dictionary.dashboard.speech} canReadPhotos={structuredModel() !== null} offerSample={circle.circle.demo} mayAct={may(circle, "letter.read")} mayReview={may(circle, "bill.review")} approvalsHref={localizedPath(locale, dashboardRoutes.approvals)} />
       ) : null}
       {circle.circle.demo && may(circle, "letter.read") && structuredModel() !== null ? <VisitPreview locale={locale} copy={dictionary.aiProvenance} billing={dictionary.dashboard.caregiverBilling} /> : null}
       {may(circle, "safety.view") ? <OfficeLineLink href={localizedPath(locale, officeLineRoute)} title={dictionary.dashboard.officeLine.title} text={dictionary.dashboard.officeLine.linkText} label={dictionary.dashboard.officeLine.link} /> : null}

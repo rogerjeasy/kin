@@ -1584,6 +1584,10 @@
         "shift": {
           "title": "Shift pay for {name}",
           "text": "A care shift proven by two keys: the caregiver’s own check-in and check-out, and the family’s word that the visit happened."
+        },
+        "letter_bill": {
+          "title": "{name} bill",
+          "text": "Read from a letter and checked by the family. It is paid by PayPal from the pool only after every yes the agreement asks for."
         }
       },
       "raisedBy": "Raised by {name}, {date}",
@@ -1607,7 +1611,8 @@
           "mandate": "by standing permission"
         },
         "open": "Waiting for {names}",
-        "parentCall": "Kin will ask {parent} on the next call."
+        "parentCall": "Kin will ask {parent} on the next call.",
+        "independent": "Someone else who shares the cost"
       },
       "notes": {
         "newPayee": "A new payee. Everyone in the circle was told.",
@@ -1617,7 +1622,9 @@
         "noReceiver": "{name} has not added a PayPal address yet. The payment waits for one.",
         "settlementBasis": "Worked out for {month} on {day}, from the record as it stood then.",
         "settlementMoved": "Fairness has moved since: {name} is now owed {amount}.",
-        "fairnessLink": "See today’s fairness"
+        "fairnessLink": "See today’s fairness",
+        "billReceiver": "Paid by PayPal to {address}, the address the family entered for {name}",
+        "raiserNotAlone": "{name} confirmed where this money goes, so someone else must say yes too."
       },
       "answered": {
         "title": "Answered",
@@ -2590,9 +2597,54 @@
         "states": {
           "needs_review": "Waiting for review",
           "extracted": "Being read",
-          "duplicate": "Already on the list"
+          "duplicate": "Already on the list",
+          "ready": "To pay outside Kin",
+          "proposed": "Waiting for the family’s yes",
+          "paid": "Paid"
         },
-        "due": "Due {day}"
+        "due": "Due {day}",
+        "review": {
+          "open": "Review this bill",
+          "text": "Check what Kin read against the letter. Nothing is paid until the family says yes.",
+          "name": "Who it is from",
+          "amount": "Amount",
+          "due": "Due date",
+          "how": "How is it paid?",
+          "paypal": "By PayPal, from the family pool",
+          "paypalHint": "Only if the company takes PayPal. The family approves where the money goes, and everyone is told about a new payee.",
+          "email": "The company’s PayPal email",
+          "outside": "Outside Kin",
+          "outsideHint": "Most utilities take no PayPal. Someone pays it themselves and records it here; another member’s yes credits them.",
+          "submit": "Confirm the bill",
+          "submitting": "Confirming…",
+          "cancel": "Not now"
+        },
+        "outside": {
+          "due": "Pay outside Kin by {day}",
+          "noDue": "Pay outside Kin",
+          "paidOn": "Day you paid it",
+          "record": "I paid this bill",
+          "recording": "Recording…",
+          "waiting": "{name} recorded paying it. It waits for another member’s yes on the Fairness page."
+        },
+        "proposedText": "Waits on the Approvals page for every yes the agreement asks for.",
+        "approvalsLink": "Open approvals",
+        "errors": {
+          "refused": "Your role cannot do this.",
+          "invalid": "Something in the request was not valid.",
+          "not_waiting": "This bill is no longer waiting for that.",
+          "above_ceiling": "The amount is above the agreement’s largest single payment.",
+          "paused": "The circle is paused. Try again once the pause lifts.",
+          "no_agreement": "The circle needs a family agreement in force before a bill can be paid.",
+          "payment_in_progress": "A payment to this payee is waiting or under way, so its PayPal address cannot change now.",
+          "payee_fixed": "The family already approved this payee: its name and PayPal address stay as they are.",
+          "key_reused": "That record was already used for something else. Reload and try again.",
+          "name": "Write who the bill is from, in 80 characters or fewer.",
+          "amount": "Write the amount as on the letter, such as 61.00.",
+          "due": "Choose a real date.",
+          "receiver": "Write a PayPal email address, or choose Outside Kin.",
+          "unavailable": "Kin could not be reached. Try again."
+        }
       }
     },
     "mandates": {

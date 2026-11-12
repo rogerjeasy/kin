@@ -29,6 +29,8 @@ const NEVER_DELEGATED: readonly CircleAction[] = [
   "care_agreement.propose",
   "receipt.decide",
   "caregiver_bill.review",
+  // It sets where a payee's money goes.
+  "bill.review",
   "settlement.propose",
   "invoice.request",
   "payout_target.set",
