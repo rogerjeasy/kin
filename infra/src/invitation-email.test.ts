@@ -22,11 +22,14 @@ const config: InfraConfig = {
   speech: false,
   claude: false,
   demoSandboxPayeeEmail: null,
+  demoInvoiceRecipientEmail: null,
   voice: false,
   voicePublicUrl: null,
   twilioCallerNumber: null,
   twilioSmsFrom: null,
   presenceLineNumbers: null,
+  demoMerchant: false,
+  agStudioLicense: null,
 };
 
 const cdkJson = JSON.parse(readFileSync(new URL("../cdk.json", import.meta.url), "utf8")) as { context: Record<string, unknown> };

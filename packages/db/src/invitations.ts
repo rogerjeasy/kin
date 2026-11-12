@@ -12,8 +12,8 @@ import { auditLog, circles, invitations, members } from "./schema/index.ts";
  * invitation to a real circle is emailed by Kin's worker with a link whose
  * token only the outbox message carries; the database keeps its SHA-256. The
  * link shows who invited whom and nothing else: joining needs a sign-in with
- * the verified address. SQLSTATE codes are listed in 0064_invitation-email.sql
- * and 0066_invitation-caps-and-seat.sql.
+ * the verified address. SQLSTATE codes are listed in 0066_invitation-email.sql
+ * and 0067_invitation-caps-and-seat.sql.
  */
 
 /** The outbox topic of an invitation's email (written by kin_private.invite_member). */

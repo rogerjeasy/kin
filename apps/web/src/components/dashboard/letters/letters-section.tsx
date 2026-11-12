@@ -19,10 +19,13 @@ type Props = {
   offerSample: boolean;
   /** Whether this role may hold up letters and check demands; others only read the record of checks. */
   mayAct: boolean;
+  /** Whether this role may confirm a bill read from a letter and say how it is paid. */
+  mayReview: boolean;
+  approvalsHref: string;
 };
 
 /** Holding up a letter and checking a demand for money, with the circle's record of checks beside them. */
-export function LettersSection({ circle, locale, copy, ai, speech, canReadPhotos, offerSample, mayAct }: Props) {
+export function LettersSection({ circle, locale, copy, ai, speech, canReadPhotos, offerSample, mayAct, mayReview, approvalsHref }: Props) {
   return (
     <section aria-labelledby="letters-heading" className="min-w-0 space-y-4">
       <header className="min-w-0 max-w-3xl">
@@ -36,7 +39,7 @@ export function LettersSection({ circle, locale, copy, ai, speech, canReadPhotos
         </div>
       ) : null}
       <div className="grid gap-6 xl:grid-cols-2">
-        <LetterBills circle={circle} locale={locale} copy={copy} ai={ai} />
+        <LetterBills circle={circle} locale={locale} copy={copy} ai={ai} mayReview={mayReview} approvalsHref={approvalsHref} />
         <RecentChecks circle={circle} locale={locale} copy={copy} speech={speech} />
       </div>
     </section>

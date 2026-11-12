@@ -1,8 +1,9 @@
-import { decideApprovals, type ApprovalDecision, type ApprovalSlot, type PendingPlan } from "@kin/domain";
+import { INDEPENDENT_APPROVER_ROLES, decideApprovals, interestedMembers, type ApprovalDecision, type ApprovalSlot, type PendingPlan } from "@kin/domain";
 import type { CircleSnapshot, ProposalRecord, VoteRecord } from "@kin/db";
 
 export type SlotView = {
-  readonly reason: ApprovalSlot["reason"];
+  /** The plan's place, or `independent`: the yes still owed by someone other than the member paid or the one who raised it. */
+  readonly reason: ApprovalSlot["reason"] | "independent";
   /** The yes that fills this place, or `null` while it is open. */
   readonly filledBy: VoteRecord | null;
   /** Who could still fill it, by member ID. Empty once it is filled. */
@@ -42,7 +43,7 @@ function matchVotes(circle: CircleSnapshot, plan: PendingPlan, votes: readonly V
   const used = new Set<string>();
   const active = circle.members.filter((member) => member.status === "active");
 
-  return plan.slots.map((slot) => {
+  const slots: SlotView[] = plan.slots.map((slot) => {
     const filledBy = yeses.find((each) => !used.has(each.memberId) && slot.roles.includes(each.role)) ?? null;
     if (filledBy) {
       used.add(filledBy.memberId);
@@ -54,6 +55,13 @@ function matchVotes(circle: CircleSnapshot, plan: PendingPlan, votes: readonly V
       .map((member) => member.id);
     return { reason: slot.reason, filledBy: null, waitingFor };
   });
+  // Every place is filled, but only by those whose yes alone cannot complete it: one more is owed, by anyone else who shares the cost.
+  const interested = interestedMembers(plan);
+  const owed = interested.length > 0 && slots.every((slot) => slot.filledBy !== null) && !yeses.some((each) => !interested.includes(each.memberId));
+  if (!owed) return slots;
+  const roles: readonly string[] = INDEPENDENT_APPROVER_ROLES;
+  const waitingFor = active.filter((member) => roles.includes(member.role) && !voted.has(member.id) && !interested.includes(member.id)).map((member) => member.id);
+  return [...slots, { reason: "independent", filledBy: null, waitingFor }];
 }
 
 /**

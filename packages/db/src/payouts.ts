@@ -1,11 +1,11 @@
-import { HELP_PURPOSE, SHIFT_PURPOSE, billApproved, calendarDay, canPayOut, isPaused, payoutConfirmed, settlementPaidOut, wishHoldFor, type ExecutionState, type SpendKind } from "@kin/domain";
+import { HELP_PURPOSE, SHIFT_PURPOSE, billApproved, calendarDay, canPayOut, formatMoney, isPaused, speakableName, payoutConfirmed, settlementPaidOut, wishHoldFor, type ExecutionState, type SpendKind } from "@kin/domain";
 import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
 import type { Database, Transaction } from "./connection.ts";
 import { readAccountIds, readLedger, writeEntries } from "./ledger-store.ts";
 import { laterOf, outgoingMoneyHeldByPresence } from "./presence.ts";
-import { auditLog, bills, circles, executions, ledgerEntries, outbox, payees, presenceChecks, proposals, settlements, trustedVoices } from "./schema/index.ts";
+import { auditLog, bills, circles, executions, ledgerEntries, members, narrations, outbox, payees, presenceChecks, proposals, settlements, trustedVoices } from "./schema/index.ts";
 import { markShiftPaid } from "./shifts.ts";
 import type { PayoutWallet } from "./values.ts";
 import { readWishEffects } from "./wishes.ts";
@@ -13,8 +13,8 @@ import { readWishEffects } from "./wishes.ts";
 /** The outbox topic that asks the worker to pay an approved caregiver or settlement payout. */
 export const PAYOUT_TOPIC = "payout.execute";
 
-/** The proposal kinds the worker pays out: a caregiver's bill, or a member's share of a settlement. */
-export type PayoutKind = "caregiver_payout" | "member_payout";
+/** The proposal kinds the worker pays out: a caregiver's bill, a member's share of a settlement, or a bill read from a letter. */
+export type PayoutKind = "caregiver_payout" | "member_payout" | "bill_payment";
 
 /** One approved payout, as the worker needs it. Read inside the circle's service scope. */
 export type PayoutJob = {
@@ -111,8 +111,8 @@ export async function readPayoutJob(tx: Transaction, executionId: string, realNo
     .for("update", { of: executions });
   if (!row) return null;
   const { kind } = row;
-  if (kind !== "caregiver_payout" && kind !== "member_payout") return null;
-  if (kind === "caregiver_payout" ? row.payeeId === null || row.category === null : row.memberId === null) return null;
+  if (kind !== "caregiver_payout" && kind !== "member_payout" && kind !== "bill_payment") return null;
+  if (kind === "member_payout" ? row.memberId === null : row.payeeId === null || row.category === null) return null;
   // A member's address is the one they gave for settlements, a payee row of its own category.
   const memberReceiver = kind === "member_payout" && row.memberId !== null ? await settlementReceiver(tx, row.circleId, row.memberId) : null;
   const now = row.clockAt ?? realNow;
@@ -152,7 +152,7 @@ export type BeginOutcome = "ready" | "paused" | "no_receiver" | "waiting_for_fun
 
 /** How the parent's wishes sort a payout: a caregiver's pay, help for a family member, or a member's settlement. */
 export function payoutSpendKind(job: Pick<PayoutJob, "kind" | "purpose">): SpendKind {
-  if (job.kind === "member_payout") return "member_payout";
+  if (job.kind === "member_payout" || job.kind === "bill_payment") return job.kind;
   return job.purpose === HELP_PURPOSE ? "help_payout" : "caregiver_payout";
 }
 
@@ -188,7 +188,7 @@ export async function beginPayout(tx: Transaction, job: PayoutJob, feeReserveCen
   if (!canPayOut(ledger, { cents: job.cents, feeCents: feeReserveCents, alreadyOwed: owed, reservedCents })) return "waiting_for_funds";
   if (!settlement && job.payeeId !== null && !owed) {
     const entry = billApproved(
-      { ...header(job, `approval`, job.proposalId), description: job.purpose === SHIFT_PURPOSE ? "Care shift approved by the family" : job.purpose === HELP_PURPOSE ? "Help for a family member approved by the family" : "Caregiver bill approved by the family" },
+      { ...header(job, `approval`, job.proposalId), description: approvedDescription(job) },
       { payeeId: job.payeeId, category: job.category, cents: job.cents },
     );
     await writeEntries(tx, [entry], await readAccountIds(tx, job.circleId));
@@ -255,6 +255,8 @@ export async function confirmPayout(tx: Transaction, job: PayoutJob, paid: { rea
   await tx.update(proposals).set({ state: "settled" }).where(and(eq(proposals.id, job.proposalId), eq(proposals.state, "executing")));
   if (job.billId !== null) await tx.update(bills).set({ state: "paid" }).where(and(eq(bills.id, job.billId), eq(bills.state, "proposed")));
   if (job.settlementId !== null) await closeSettlementIfDone(tx, job.circleId, job.settlementId);
+  // Kin tells the parent that a bill of hers was paid, in words held to the entry.
+  if (job.kind === "bill_payment") await tellParentBillPaid(tx, job, paid);
   // A care shift has no bill: its payout is what moves it from priced to paid.
   if (job.kind === "caregiver_payout" && job.purpose === SHIFT_PURPOSE) await markShiftPaid(tx, { circleId: job.circleId, proposalId: job.proposalId });
   await audit(tx, job, "payout.confirmed", { itemId: paid.itemId, simulated: job.simulated });
@@ -272,9 +274,53 @@ function paidEntry(job: PayoutJob, paid: { readonly itemId: string; readonly fee
   }
   if (job.payeeId === null) throw new Error(`Payout ${job.executionId} has no one to pay`);
   return payoutConfirmed(
-    { ...entryHeader, description: job.purpose === HELP_PURPOSE ? (job.simulated ? "Family member helped (simulated)" : "Family member helped through PayPal") : job.simulated ? "Caregiver paid (simulated)" : "Caregiver paid through PayPal" },
+    { ...entryHeader, description: paidDescription(job) },
     { payeeId: job.payeeId, cents: job.cents, feeCents: paid.feeCents },
   );
+}
+
+function approvedDescription(job: PayoutJob): string {
+  if (job.kind === "bill_payment") return "Bill approved by the family";
+  return job.purpose === SHIFT_PURPOSE ? "Care shift approved by the family" : job.purpose === HELP_PURPOSE ? "Help for a family member approved by the family" : "Caregiver bill approved by the family";
+}
+
+function paidDescription(job: PayoutJob): string {
+  const what = job.kind === "bill_payment" ? "Bill paid" : job.purpose === HELP_PURPOSE ? "Family member helped" : "Caregiver paid";
+  return job.simulated ? `${what} (simulated)` : `${what} through PayPal`;
+}
+
+/** The narration topic for a bill of the parent's paid from the pool; the app words it in each language. */
+export const BILL_PAID_TOPIC = "billPaid";
+
+/**
+ * Queues what Kin tells the parent about a bill of hers paid from the pool: the topic, the amount and the
+ * entry it came from, so the number guard can hold the sentence to the ledger. It is queued, not delivered,
+ * until she has heard it. Once for each entry.
+ */
+async function tellParentBillPaid(tx: Transaction, job: PayoutJob, paid: { readonly itemId: string; readonly at: Date }): Promise<void> {
+  if (job.payeeId === null) return;
+  const [entry] = await tx
+    .select({ id: ledgerEntries.id })
+    .from(ledgerEntries)
+    .where(and(eq(ledgerEntries.circleId, job.circleId), eq(ledgerEntries.sourceType, "paypal_event"), eq(ledgerEntries.sourceId, paid.itemId)));
+  const [parent] = await tx.select({ id: members.id }).from(members).where(and(eq(members.circleId, job.circleId), eq(members.role, "parent"), eq(members.status, "active")));
+  const [payee] = await tx.select({ name: payees.name }).from(payees).where(and(eq(payees.circleId, job.circleId), eq(payees.id, job.payeeId)));
+  if (!entry || !parent || !payee) return;
+  const [told] = await tx.select({ id: narrations.id }).from(narrations).where(and(eq(narrations.circleId, job.circleId), eq(narrations.entryId, entry.id), eq(narrations.memberId, parent.id)));
+  if (told) return;
+  const amount = formatMoney({ cents: job.cents, currency: job.currency }, "en-US");
+  // The name came from a letter or was typed: only a name Kin may speak is spoken, and otherwise none.
+  const name = speakableName(payee.name);
+  await tx.insert(narrations).values({
+    id: randomUUID(),
+    circleId: job.circleId,
+    memberId: parent.id,
+    topic: BILL_PAID_TOPIC,
+    cents: job.cents,
+    entryId: entry.id,
+    spokenText: name === null ? `Your bill of ${amount} was paid from the family pool.` : `Your ${name} bill of ${amount} was paid from the family pool.`,
+    saidOn: calendarDay(paid.at, job.timezone).occurredOn,
+  });
 }
 
 // A settlement is done once none of its payouts is still waiting or under way.

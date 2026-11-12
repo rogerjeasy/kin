@@ -8,6 +8,7 @@ import { greetingFor } from "./support/greeting";
 import { IDENTITY_PROVIDER } from "./support/identity-provider";
 import { invitationLinkFor } from "./support/invitation-link";
 import { E2E_APP_ORIGIN } from "./support/ports";
+import { queuedPayoutOf, seedLetterBill } from "./support/letter-bill";
 import { seedRealProposal } from "./support/real-proposal";
 import { totpCode } from "./support/totp";
 import { laptop, viewports } from "./support/viewports";
@@ -286,5 +287,74 @@ test.describe("a yes to real money", () => {
     const response = await request.post("/auth/step-up", { form: { proposal: "00000000-0000-4000-8000-000000000000", locale: "en" }, headers: { origin: "https://evil.example" }, maxRedirects: 0 });
     expect(response.status()).toBe(403);
   });
+});
+
+// After the yes to real money: the circle has an agreement in force, so a reviewed bill can be planned.
+test.describe("a bill read from a letter", () => {
+  test.use({ viewport: { width: laptop.width, height: laptop.height } });
+  const { letters, approvals, notices, common } = dashboard;
+  const copy = letters.bills;
+  const bill = (page: import("@playwright/test").Page, name: string) => page.getByRole("listitem", { name });
+
+  test("is reviewed with the company's PayPal address, and the reviewer's own fresh yes never pays it alone", async ({ page }) => {
+    const billId = await seedLetterBill("Lakeside Water", 6_100, "2026-12-30");
+    await page.goto("/dashboard/bills");
+    const water = bill(page, "Lakeside Water");
+    await expect(water).toContainText(copy.states.needs_review);
+    await water.getByRole("button", { name: copy.review.open }).click();
+    const form = water.getByRole("form", { name: copy.review.open });
+    await expect(form.getByLabel(copy.review.amount)).toHaveValue("61.00");
+    await form.getByLabel(copy.review.amount).fill("61.50");
+    await form.getByLabel(copy.review.email).fill("Billing@Lakeside.Example");
+    await form.getByRole("button", { name: copy.review.submit }).click();
+    await expect(water).toContainText(copy.states.proposed);
+    await expect(water).toContainText("$61.50");
+
+    await page.goto("/dashboard/approvals");
+    const card = page.getByRole("article", { name: "Lakeside Water bill" });
+    await expect(card).toContainText(approvals.notes.newPayee);
+    await expect(card).toContainText(/Paid by PayPal to b\S*@lakeside\.example, the address the family entered for Lakeside Water/);
+    await expect(card).toContainText(fill(approvals.notes.raiserNotAlone, { name: IDENTITY_PROVIDER.person.name }));
+    await expect(card).toContainText(approvals.freshCheckNote);
+    await card.getByRole("button", { name: common.approve }).click();
+    await expect(page).toHaveURL("/dashboard/approvals?notice=answered");
+    await expect(page.getByRole("status").filter({ hasText: notices.answered })).toBeVisible();
+
+    // The person reviewed it and is the circle's only member who shares the cost: their yes is recorded, and it waits for another.
+    const waiting = page.getByRole("article", { name: "Lakeside Water bill" });
+    await expect(waiting).toContainText(approvals.slots.independent);
+    await expect(waiting.getByRole("button", { name: common.approve })).toHaveCount(0);
+    expect(await queuedPayoutOf(billId)).toBeNull();
+  });
+
+  test("without a PayPal address is kept to pay outside Kin, and the member records paying it", async ({ page }) => {
+    await seedLetterBill("Northfield Gas", 4_200, "2026-12-28");
+    await page.goto("/dashboard/bills");
+    const gas = bill(page, "Northfield Gas");
+    await gas.getByRole("button", { name: copy.review.open }).click();
+    const form = gas.getByRole("form", { name: copy.review.open });
+    await form.getByRole("radio", { name: new RegExp(copy.review.outside) }).check();
+    await expect(form.getByLabel(copy.review.email)).toHaveCount(0);
+    await form.getByRole("button", { name: copy.review.submit }).click();
+    await expect(gas).toContainText(copy.states.ready);
+    await expect(gas).toContainText(fill(copy.outside.due, { day: "Dec 28" }));
+
+    await gas.getByRole("button", { name: copy.outside.record }).click();
+    await expect(gas).toContainText(fill(copy.outside.waiting, { name: IDENTITY_PROVIDER.person.name }));
+    await expect(gas.getByRole("button", { name: copy.outside.record })).toHaveCount(0);
+  });
+
+  for (const viewport of viewports) {
+    test(`fits at ${viewport.width}×${viewport.height} (${viewport.name}) with a bill's review open`, async ({ page }) => {
+      const name = `Riverside Council ${viewport.width}`;
+      await seedLetterBill(name, 12_345_678, "2026-12-31");
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto("/dashboard/bills");
+      const item = bill(page, name);
+      await item.getByRole("button", { name: copy.review.open }).click();
+      await expect(item.getByRole("form", { name: copy.review.open })).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+    });
+  }
 });
 

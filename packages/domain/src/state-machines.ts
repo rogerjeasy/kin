@@ -24,7 +24,8 @@ export const BILL_TRANSITIONS = {
   received: ["extracted", "ready", "rejected"],
   extracted: ["needs_review", "ready", "duplicate"],
   needs_review: ["ready", "rejected"],
-  ready: ["proposed"],
+  // A bill the family pays outside Kin is paid once a member's receipt for it is credited.
+  ready: ["proposed", "paid"],
   proposed: ["paid", "ready"],
   paid: [],
   rejected: [],

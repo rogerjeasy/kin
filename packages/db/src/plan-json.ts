@@ -77,10 +77,13 @@ export function parseApprovalPlan(value: unknown): ApprovalPlan {
       const payee = value.payeeMemberId;
       if (payee !== null && typeof payee !== "string") throw new StoredPlanError("payeeMemberId is neither text nor null");
       if (typeof value.announceToCircle !== "boolean") throw new StoredPlanError("announceToCircle is not true or false");
+      const raiser = value.raiserMemberId;
+      if (raiser !== undefined && typeof raiser !== "string") throw new StoredPlanError("raiserMemberId is not text");
       return {
         outcome: "needs_approval",
         slots: value.slots.map(slot),
         payeeMemberId: payee,
+        ...(raiser === undefined ? {} : { raiserMemberId: raiser }),
         announceToCircle: value.announceToCircle,
         expiresAt: date(value, "expiresAt"),
       };

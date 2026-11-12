@@ -1,5 +1,5 @@
 {
-  "id": "2e0068f0-b537-4726-ba7e-fb3f9ef7474a",
+  "id": "89e82538-d36d-4bd1-8bab-de6bc3d38a61",
   "prevId": "37ba9974-58ee-4ee6-8cf8-a8034943b6f4",
   "version": "7",
   "dialect": "postgresql",
@@ -166,32 +166,9 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "link_token_hash": {
-          "name": "link_token_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
-      "indexes": {
-        "invitations_link_token": {
-          "name": "invitations_link_token",
-          "columns": [
-            {
-              "expression": "link_token_hash",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"invitations\".\"link_token_hash\" is not null",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "invitations_circle_fk": {
           "name": "invitations_circle_fk",
@@ -229,10 +206,6 @@
         "invitations_email_shape": {
           "name": "invitations_email_shape",
           "value": "\"invitations\".\"email\" ~ '^[^@\\s]+@[^@\\s]+$'"
-        },
-        "invitations_link_hash": {
-          "name": "invitations_link_hash",
-          "value": "\"invitations\".\"link_token_hash\" is null or \"invitations\".\"link_token_hash\" ~ '^[0-9a-f]{64}$'"
         }
       },
       "isRLSEnabled": false
@@ -2649,6 +2622,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "bill_id": {
+          "name": "bill_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -2658,6 +2637,28 @@
         }
       },
       "indexes": {
+        "receipts_one_per_bill": {
+          "name": "receipts_one_per_bill",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "bill_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"receipts\".\"bill_id\" is not null and \"receipts\".\"state\" <> 'rejected'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "receipts_state_idx": {
           "name": "receipts_state_idx",
           "columns": [
@@ -2716,6 +2717,21 @@
           "columnsFrom": [
             "circle_id",
             "decided_by"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "receipts_bill_fk": {
+          "name": "receipts_bill_fk",
+          "tableFrom": "receipts",
+          "tableTo": "bills",
+          "columnsFrom": [
+            "circle_id",
+            "bill_id"
           ],
           "columnsTo": [
             "circle_id",

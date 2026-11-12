@@ -62,9 +62,8 @@ export function decideApprovals(tally: ApprovalTally): ApprovalDecision {
 
   const approvers = distinctApprovers(counted);
   const filled = canFill(plan.slots, approvers);
-  const independent =
-    plan.payeeMemberId === null ||
-    approvers.some((approver) => approver.memberId !== plan.payeeMemberId);
+  const interested = interestedMembers(plan);
+  const independent = interested.length === 0 || approvers.some((approver) => !interested.includes(approver.memberId));
   if (!filled || !independent) return "pending";
   return wish === null || wishApprovalMet(wish, counted.filter((vote) => vote.decision === "approve").map((vote) => vote.memberId), plan.payeeMemberId) ? "approved" : "pending";
 }
@@ -82,13 +81,20 @@ function assertOneRoleEach(votes: readonly ApprovalVote[]): void {
 
 function canDecide(plan: PendingPlan, vote: ApprovalVote): boolean {
   if (plan.slots.some((slot) => slot.roles.includes(vote.role))) return true;
-  // When the payee is a member, someone else must say yes, so any member who
-  // could give that independent yes also has a say.
-  return (
-    plan.payeeMemberId !== null &&
-    vote.memberId !== plan.payeeMemberId &&
-    includesRole(INDEPENDENT_APPROVER_ROLES, vote.role)
-  );
+  // When the payee is a member, or the member who raised it said where the
+  // money goes, someone else must say yes, so any member who could give that
+  // independent yes also has a say.
+  const interested = interestedMembers(plan);
+  return interested.length > 0 && !interested.includes(vote.memberId) && includesRole(INDEPENDENT_APPROVER_ROLES, vote.role);
+}
+
+/**
+ * The members whose yes alone can never complete a plan: the member being
+ * paid (section 7.5, rule 7) and the member who raised a payment and said
+ * where it goes. The same principle, so one rule holds both.
+ */
+export function interestedMembers(plan: PendingPlan): string[] {
+  return [plan.payeeMemberId, plan.raiserMemberId ?? null].filter((memberId): memberId is string => memberId !== null);
 }
 
 function includesRole(roles: readonly CircleRole[], role: CircleRole): boolean {

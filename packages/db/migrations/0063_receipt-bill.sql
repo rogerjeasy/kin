@@ -1,0 +1,3 @@
+ALTER TABLE "receipts" ADD COLUMN "bill_id" uuid;--> statement-breakpoint
+ALTER TABLE "receipts" ADD CONSTRAINT "receipts_bill_fk" FOREIGN KEY ("circle_id","bill_id") REFERENCES "public"."bills"("circle_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "receipts_one_per_bill" ON "receipts" USING btree ("circle_id","bill_id") WHERE "receipts"."bill_id" is not null and "receipts"."state" <> 'rejected';

@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { operation, requiredId } from "./caregiver-billing.ts";
 import type { Transaction } from "./connection.ts";
 import { readAccountIds, writeEntries } from "./ledger-store.ts";
-import { auditLog, circles, ledgerEntries, receipts } from "./schema/index.ts";
+import { auditLog, bills, circles, ledgerEntries, receipts } from "./schema/index.ts";
 
 /** The outbox topic that asks the worker to credit an approved receipt. */
 export const RECEIPT_TOPIC = "receipt.credit";
@@ -47,6 +47,7 @@ export async function creditReceipt(tx: Transaction, circleId: string, receiptId
       cents: receipts.cents,
       description: receipts.description,
       state: receipts.state,
+      billId: receipts.billId,
       currency: circles.currency,
       demo: circles.demo,
       clockAt: circles.clockAt,
@@ -79,6 +80,8 @@ export async function creditReceipt(tx: Transaction, circleId: string, receiptId
   const entryId = written?.id ?? entry.id;
   if (!written) await writeEntries(tx, [entry], await readAccountIds(tx, circleId));
   await tx.update(receipts).set({ state: "credited", entryId }).where(and(eq(receipts.circleId, circleId), eq(receipts.id, row.id), eq(receipts.state, "approved")));
+  // A bill a member paid outside Kin is paid once their receipt for it is credited.
+  if (row.billId !== null) await tx.update(bills).set({ state: "paid" }).where(and(eq(bills.circleId, circleId), eq(bills.id, row.billId), eq(bills.state, "ready")));
   await tx.insert(auditLog).values({ id: randomUUID(), circleId, actor: "service", action: "receipt.credited", subjectType: "receipt", subjectId: row.id, details: { entryId, simulated: row.demo }, origin: "worker" });
   return "credited";
 }

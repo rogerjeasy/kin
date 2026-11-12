@@ -9,6 +9,8 @@ export type { LineCallInput, LineRecord, OfficeCallInput, OfficeCallRecord, Tran
 export { LetterError, addLetter, recordClaimCheck } from "./letters.ts";
 export type { ClaimCheckInput, LetterInput, LetterReason, LetterRecorded } from "./letters.ts";
 export { RECEIPT_TOPIC, creditReceipt, decideReceipt, submitReceipt } from "./receipts.ts";
+export { BillPaymentError, recordBillPaidOutside, reviewBill } from "./bill-payments.ts";
+export type { BillPaymentReason, BillReviewInput, BillReviewed } from "./bill-payments.ts";
 export type { CreditOutcome } from "./receipts.ts";
 export { NothingToSettleError, SettlementExistsError, proposeSettlement, setOwnSettlementReceiver } from "./settlement-proposals.ts";
 export { MandateError, grantMandate, newMandateId, setMandateStatus } from "./mandates.ts";

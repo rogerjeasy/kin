@@ -47,6 +47,8 @@ describe("what a member may do in a circle", () => {
       expect(authorize(active(role), "caregiver_bill.submit").allowed).toBe(role === "caregiver");
       expect(authorize(active(role), "caregiver_rate.manage").allowed).toBe(role === "organizer");
       expect(authorize(active(role), "caregiver_bill.review").allowed).toBe(role === "organizer" || role === "contributor");
+      // A bill read from a letter is confirmed and its way of payment chosen by the cost-sharers: never the parent, a caregiver or an observer.
+      expect(authorize(active(role), "bill.review").allowed).toBe(role === "organizer" || role === "contributor");
       expect(authorize(active(role), "caregiver_receiver.set").allowed).toBe(role === "caregiver");
       // Holding up a letter and checking a demand: the people who see the circle's money and may act on it, never a caregiver or an observer.
       expect(authorize(active(role), "letter.read").allowed).toBe(role === "organizer" || role === "contributor" || role === "parent");

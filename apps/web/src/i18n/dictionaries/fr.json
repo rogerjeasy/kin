@@ -1585,6 +1585,10 @@
         "shift": {
           "title": "Paiement de la visite pour {name}",
           "text": "Une visite de soins prouvée par deux clés : le pointage d’arrivée et de départ de l’aide, et la parole de la famille, qui atteste que la visite a bien eu lieu."
+        },
+        "letter_bill": {
+          "title": "Facture {name}",
+          "text": "Lue dans un courrier et vérifiée par la famille. Elle est payée par PayPal depuis la cagnotte seulement après chaque oui que l’accord demande."
         }
       },
       "raisedBy": "Proposé par {name} le {date}",
@@ -1608,7 +1612,8 @@
           "mandate": "par autorisation permanente"
         },
         "open": "En attente : {names}",
-        "parentCall": "Kin posera la question à {parent} lors du prochain appel."
+        "parentCall": "Kin posera la question à {parent} lors du prochain appel.",
+        "independent": "Une autre personne qui partage les frais"
       },
       "notes": {
         "newPayee": "Un nouveau bénéficiaire. Tout le cercle a été prévenu.",
@@ -1618,7 +1623,9 @@
         "noReceiver": "{name} n’a pas encore ajouté d’adresse PayPal. Le paiement l’attend.",
         "settlementBasis": "Calculé pour {month} le {day}, d’après le registre tel qu’il était alors.",
         "settlementMoved": "L’équité a bougé depuis : il est maintenant dû {amount} à {name}.",
-        "fairnessLink": "Voir l’équité d’aujourd’hui"
+        "fairnessLink": "Voir l’équité d’aujourd’hui",
+        "billReceiver": "Payée par PayPal à {address}, l’adresse saisie par la famille pour {name}",
+        "raiserNotAlone": "{name} a confirmé où va cet argent : une autre personne doit donc dire oui aussi."
       },
       "answered": {
         "title": "Décidé",
@@ -2602,9 +2609,54 @@
         "states": {
           "needs_review": "En attente d’examen",
           "extracted": "En cours de lecture",
-          "duplicate": "Déjà dans la liste"
+          "duplicate": "Déjà dans la liste",
+          "ready": "À payer hors de Kin",
+          "proposed": "En attente du oui de la famille",
+          "paid": "Payée"
         },
-        "due": "Échéance : {day}"
+        "due": "Échéance : {day}",
+        "review": {
+          "open": "Examiner cette facture",
+          "text": "Comparez ce que Kin a lu avec le courrier. Rien n’est payé tant que la famille n’a pas dit oui.",
+          "name": "Expéditeur",
+          "amount": "Montant",
+          "due": "Date d’échéance",
+          "how": "Comment est-elle payée ?",
+          "paypal": "Par PayPal, depuis la cagnotte familiale",
+          "paypalHint": "Seulement si l’entreprise accepte PayPal. La famille approuve la destination de l’argent, et tout le monde est prévenu d’un nouveau bénéficiaire.",
+          "email": "L’adresse e-mail PayPal de l’entreprise",
+          "outside": "Hors de Kin",
+          "outsideHint": "La plupart des fournisseurs n’acceptent pas PayPal. Quelqu’un la paie lui-même et l’enregistre ici ; le oui d’un autre membre le rembourse.",
+          "submit": "Confirmer la facture",
+          "submitting": "Confirmation…",
+          "cancel": "Pas maintenant"
+        },
+        "outside": {
+          "due": "À payer hors de Kin avant le {day}",
+          "noDue": "À payer hors de Kin",
+          "paidOn": "Jour du paiement",
+          "record": "J’ai payé cette facture",
+          "recording": "Enregistrement…",
+          "waiting": "{name} a enregistré le paiement. Il attend le oui d’un autre membre sur la page Équité."
+        },
+        "proposedText": "Attend sur la page Approbations chaque oui que l’accord demande.",
+        "approvalsLink": "Ouvrir les approbations",
+        "errors": {
+          "refused": "Votre rôle ne permet pas de faire cela.",
+          "invalid": "Un élément de la demande n’était pas valide.",
+          "not_waiting": "Cette facture n’attend plus cela.",
+          "above_ceiling": "Le montant dépasse le plus gros paiement unique prévu par l’accord.",
+          "paused": "Le cercle est en pause. Réessayez quand la pause sera levée.",
+          "no_agreement": "Le cercle doit avoir un accord familial en vigueur avant qu’une facture puisse être payée.",
+          "payment_in_progress": "Un paiement à ce bénéficiaire est en attente ou en cours : son adresse PayPal ne peut pas changer maintenant.",
+          "payee_fixed": "La famille a déjà approuvé ce bénéficiaire : son nom et son adresse PayPal restent tels quels.",
+          "key_reused": "Cet enregistrement a déjà servi à autre chose. Rechargez la page et réessayez.",
+          "name": "Indiquez l’expéditeur de la facture, en 80 caractères au plus.",
+          "amount": "Indiquez le montant comme sur le courrier, par exemple 61.00.",
+          "due": "Choisissez une date réelle.",
+          "receiver": "Indiquez une adresse e-mail PayPal, ou choisissez Hors de Kin.",
+          "unavailable": "Kin est injoignable. Réessayez."
+        }
       }
     },
     "mandates": {

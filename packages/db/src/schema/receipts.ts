@@ -1,10 +1,11 @@
 import { sql } from "drizzle-orm";
-import { check, date, foreignKey, index, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
+import { check, date, foreignKey, index, pgTable, text, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 import { MAX_RECEIPT_CENTS, MAX_RECEIPT_DESCRIPTION, RECEIPT_CATEGORIES } from "@kin/domain";
 
 import { at, cents, circleId, createdAt, id } from "./columns.ts";
 import { circles, members } from "./circles.ts";
+import { bills } from "./payees.ts";
 import { receiptState } from "./enums.ts";
 
 /**
@@ -34,13 +35,18 @@ export const receipts = pgTable(
      * entry it has just written.
      */
     entryId: uuid("entry_id"),
+    /** The bill read from a letter that this receipt says a member paid outside Kin; crediting it marks the bill paid. */
+    billId: uuid("bill_id"),
     createdAt: createdAt(),
   },
   (t) => [
     foreignKey({ name: "receipts_circle_fk", columns: [t.circleId], foreignColumns: [circles.id] }),
     foreignKey({ name: "receipts_member_fk", columns: [t.circleId, t.memberId], foreignColumns: [members.circleId, members.id] }),
     foreignKey({ name: "receipts_decided_by_fk", columns: [t.circleId, t.decidedBy], foreignColumns: [members.circleId, members.id] }),
+    foreignKey({ name: "receipts_bill_fk", columns: [t.circleId, t.billId], foreignColumns: [bills.circleId, bills.id] }),
     unique("receipts_circle_row").on(t.circleId, t.id),
+    // A bill is paid outside Kin once: one receipt for it waits or stands at a time.
+    uniqueIndex("receipts_one_per_bill").on(t.circleId, t.billId).where(sql`${t.billId} is not null and ${t.state} <> 'rejected'`),
     index("receipts_state_idx").on(t.circleId, t.state),
     check("receipts_cents_range", sql.raw(`cents > 0 and cents <= ${MAX_RECEIPT_CENTS}`)),
     check("receipts_category", sql.raw(`category in (${RECEIPT_CATEGORIES.map((category) => `'${category}'`).join(", ")})`)),

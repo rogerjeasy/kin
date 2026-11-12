@@ -295,6 +295,8 @@ export type ReceiptRecord = {
   readonly state: ReceiptState;
   readonly decidedBy: string | null;
   readonly entryId: string | null;
+  /** The bill read from a letter it says the member paid outside Kin, when it is one. */
+  readonly billId: string | null;
 };
 
 export type ClaimCheckRecord = {

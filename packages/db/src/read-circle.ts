@@ -171,6 +171,7 @@ async function readReceipts(tx: Transaction, circleId: string): Promise<ReceiptR
     state: row.state,
     decidedBy: row.decidedBy,
     entryId: row.entryId,
+    billId: row.billId,
   }));
 }
 

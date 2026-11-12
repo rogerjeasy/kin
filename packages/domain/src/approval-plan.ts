@@ -74,6 +74,12 @@ export type ApprovalPlan =
       readonly slots: readonly ApprovalSlot[];
       /** The member being paid, who may not be the only one to say yes. */
       readonly payeeMemberId: string | null;
+      /**
+       * The member who raised it and said where the money goes, when that is a person's own act: a bill read from a
+       * letter, whose reviewer entered the payee's PayPal address. Like the member being paid, their yes alone cannot
+       * complete it. Absent from every other plan, so their stored shape is unchanged.
+       */
+      readonly raiserMemberId?: string;
       /** A new payee is announced to the whole circle. */
       readonly announceToCircle: boolean;
       readonly expiresAt: Date;

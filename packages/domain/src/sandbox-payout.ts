@@ -16,7 +16,7 @@ export const SANDBOX_PAYOUTS_PER_CIRCLE = 1;
 export type SandboxPayoutFacts = {
   /** Whether a Kin sandbox address is configured at all. */
   readonly configured: boolean;
-  readonly kind: "caregiver_payout" | "member_payout";
+  readonly kind: "caregiver_payout" | "member_payout" | "bill_payment";
   /** The proposal reads approved, and at least one member's recorded answer was yes. */
   readonly approved: boolean;
   readonly cents: number;

@@ -1,6 +1,6 @@
 {
-  "id": "21da6ca8-5fd2-459a-86f3-11f2a5f797cd",
-  "prevId": "113c6c72-7820-4ebd-b954-e447a4b109dd",
+  "id": "0f087b25-37c5-436e-9638-b5c0233705de",
+  "prevId": "72db6cd5-fd16-4d35-8dbe-3bd983cf3071",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -2674,6 +2674,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "bill_id": {
+          "name": "bill_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -2683,6 +2689,28 @@
         }
       },
       "indexes": {
+        "receipts_one_per_bill": {
+          "name": "receipts_one_per_bill",
+          "columns": [
+            {
+              "expression": "circle_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "bill_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"receipts\".\"bill_id\" is not null and \"receipts\".\"state\" <> 'rejected'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "receipts_state_idx": {
           "name": "receipts_state_idx",
           "columns": [
@@ -2741,6 +2769,21 @@
           "columnsFrom": [
             "circle_id",
             "decided_by"
+          ],
+          "columnsTo": [
+            "circle_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "receipts_bill_fk": {
+          "name": "receipts_bill_fk",
+          "tableFrom": "receipts",
+          "tableTo": "bills",
+          "columnsFrom": [
+            "circle_id",
+            "bill_id"
           ],
           "columnsTo": [
             "circle_id",
