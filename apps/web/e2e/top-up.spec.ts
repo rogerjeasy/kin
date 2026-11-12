@@ -46,7 +46,7 @@ for (const viewport of viewports) {
       await startDemo(page);
       const sheet = await openSheet(page);
       await expect(sheet.getByText(copy.sandbox)).toBeVisible();
-      await expect(sheet.getByLabel(copy.amount, { exact: true })).toHaveValue("50.00");
+      await expect(sheet.getByLabel(copy.amount, { exact: true })).toHaveValue("100.00");
       await expectNoHorizontalOverflow(page);
     });
   });
@@ -60,11 +60,11 @@ test.describe("adding money", () => {
     const { orders } = await standInRoutes(page);
     await startDemo(page);
     const sheet = await openSheet(page);
-    await sheet.getByRole("button", { name: "$25.00" }).click();
-    await expect(sheet.getByRole("button", { name: "$25.00" })).toHaveAttribute("aria-pressed", "true");
+    await sheet.getByRole("button", { name: "$50.00" }).click();
+    await expect(sheet.getByRole("button", { name: "$50.00" })).toHaveAttribute("aria-pressed", "true");
     await sheet.getByRole("button", { name: "Pay with PayPal" }).click();
-    await expect(sheet.getByText(fill(copy.confirmed, { amount: "$25.00" }))).toBeVisible({ timeout: 15_000 });
-    expect(orders.map((body) => JSON.parse(body))).toEqual([{ amount: "25.00", locale: "en" }]);
+    await expect(sheet.getByText(fill(copy.confirmed, { amount: "$50.00" }))).toBeVisible({ timeout: 15_000 });
+    expect(orders.map((body) => JSON.parse(body))).toEqual([{ amount: "50.00", locale: "en" }]);
   });
 
   test("says nothing was charged when the payer closes PayPal, and lets them try again", async ({ page }) => {

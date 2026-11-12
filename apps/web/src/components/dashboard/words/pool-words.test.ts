@@ -15,6 +15,8 @@ describe("the pool card's words", () => {
     expect(poolNote(pool, { kind: "paypal", sandboxInCents: 0 }, format)).toBe("Confirmed by PayPal");
     expect(poolNote(pool, { kind: "simulated", sandboxInCents: 0 }, format)).toBe("Simulated money, in the demo");
     expect(poolNote(pool, { kind: "mixed", sandboxInCents: 5000 }, format)).toBe("Simulated history, with $50.00 of real PayPal sandbox top-ups");
+    // A real refill charge is money out, not a top-up: no "$0.00 of real PayPal sandbox top-ups" (seen live on 12 November 2026).
+    expect(poolNote(pool, { kind: "mixed", sandboxInCents: 0 }, format)).toBe(pool.simulated);
   });
 
   it("say which figure the pool is: her Purse included, and what bills can draw on", async () => {

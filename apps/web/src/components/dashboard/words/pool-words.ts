@@ -8,7 +8,8 @@ type Stats = Dictionary["dashboard"]["overview"]["stats"];
 /** Where the pool's money came from: PayPal's record, the demo's simulation, or both. */
 export function poolNote(copy: Stats["pool"], provenance: PoolProvenance, format: Formatters): string {
   if (provenance.kind === "paypal") return copy.note;
-  if (provenance.kind === "simulated") return copy.simulated;
+  // Real sandbox money only went out (a refill the pharmacy charged): no top-up to name, so the pool is still simulated money.
+  if (provenance.kind === "simulated" || provenance.sandboxInCents === 0) return copy.simulated;
   return fill(copy.mixed, { amount: format.money(provenance.sandboxInCents) });
 }
 
