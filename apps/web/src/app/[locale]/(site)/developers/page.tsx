@@ -13,6 +13,12 @@ import { fill } from "@/i18n/template";
 import { authConfig } from "@/server/auth/config";
 import { MCP_PATH } from "@/server/open-kin/mcp";
 
+/** The SDKs APIMatic generates from the OpenAPI document (pnpm --filter @kin/web run sdk:generate), in the public repository. */
+const SDK_LINKS = {
+  typescript: "https://github.com/rogerjeasy/kin/tree/main/sdks/typescript",
+  python: "https://github.com/rogerjeasy/kin/tree/main/sdks/python",
+} as const;
+
 // The commands name this deployment's own address, read when the page is served, never at build time.
 export const dynamic = "force-dynamic";
 
@@ -77,14 +83,27 @@ export default async function DevelopersPage({ params }: PageProps<"/[locale]/de
         <a href="/api/v1/openapi.json" className="inline-flex min-h-11 items-center font-medium">
           <span className="border-b border-current pb-0.5">{copy.openapi.link}</span>
         </a>
-      </ContentSection>
-      <ContentSection id="next" tone="muted" eyebrow={copy.next.eyebrow} title={copy.next.title}>
-        <div className="grid max-w-3xl gap-3">
-          {copy.next.items.map((item) => (
-            <StatusNote key={item} title={copy.next.eyebrow} text={item} />
+        <p className="mt-6 max-w-3xl text-pretty text-muted-foreground">{copy.openapi.sdks}</p>
+        <div className="mt-2 flex flex-wrap gap-x-6">
+          {[
+            { href: SDK_LINKS.typescript, label: copy.openapi.typescript },
+            { href: SDK_LINKS.python, label: copy.openapi.python },
+          ].map((link) => (
+            <a key={link.href} href={link.href} className="inline-flex min-h-11 items-center font-medium">
+              <span className="border-b border-current pb-0.5">{link.label}</span>
+            </a>
           ))}
         </div>
       </ContentSection>
+      {copy.next.items.length > 0 ? (
+        <ContentSection id="next" tone="muted" eyebrow={copy.next.eyebrow} title={copy.next.title}>
+          <div className="grid max-w-3xl gap-3">
+            {copy.next.items.map((item) => (
+              <StatusNote key={item} title={copy.next.eyebrow} text={item} />
+            ))}
+          </div>
+        </ContentSection>
+      ) : null}
       <ClosingBand locale={locale} title={dictionary.home.closing.title} nav={dictionary.common.nav} />
     </>
   );

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "vendor": "node scripts/vendor-bryntum.ts",
+    "sdk:generate": "node --env-file-if-exists=../../.env scripts/generate-sdks.ts",
     "predev": "pnpm run vendor",
     "dev": "next dev",
     "prebuild": "pnpm run vendor",
