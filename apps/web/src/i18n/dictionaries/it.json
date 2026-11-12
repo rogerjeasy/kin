@@ -11,8 +11,9 @@
       "label": "Provi a chiedere",
       "paid": "{caregiver} è stata pagata?",
       "owes": "Chi deve cosa a chi questo mese?",
-      "demand": "Una richiesta di {amount} da Harbor Gas è vera?",
-      "refill": "Riordina la ricetta di {parent}"
+      "demand": "Una richiesta di {amount} da {payee} è vera?",
+      "refill": "Riordina la ricetta di {parent}",
+      "paypalRecord": "Mostrami il registro di PayPal sull'ultimo versamento"
     },
     "form": {
       "label": "La sua domanda",
@@ -31,7 +32,8 @@
         "refused": "Claude ha rifiutato di formulare la risposta, quindi Kin ha usato la sua formulazione fissa",
         "cut_off": "La risposta di Claude era troppo lunga, quindi Kin ha usato la sua formulazione fissa",
         "turns": "Claude aveva bisogno di più passaggi di quanti Kin ne consenta, quindi Kin ha usato la sua formulazione fissa",
-        "unavailable": "Claude si è fermato a metà risposta, quindi Kin ha usato la sua formulazione fissa"
+        "unavailable": "Claude si è fermato a metà risposta, quindi Kin ha usato la sua formulazione fissa",
+        "no_claude": "Risposta con la formulazione fissa di Kin; Claude non era disponibile"
       },
       "trace": "Come Kin l'ha trovato",
       "traceEmpty": "Kin ha risposto senza leggere il registro."
@@ -58,6 +60,9 @@
       "get_paypal_payout_status": "Ha controllato i pagamenti con PayPal",
       "get_paypal_topup_status": "Ha controllato i versamenti con PayPal",
       "get_subscription_status": "Ha controllato le quote mensili con PayPal",
+      "get_paypal_order": "Ha letto il registro di PayPal sul versamento (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "Ha letto il registro di PayPal sulla fattura (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "Ha cercato su PayPal contestazioni sui versamenti (PayPal Agent Toolkit)",
       "propose_refill": "Ha proposto un rinnovo",
       "unknown": "Ha chiesto uno strumento che Kin non ha"
     },
@@ -110,6 +115,15 @@
       "topUp": "{member} ha versato {amount} il {day}.",
       "topUpSimulated": "{member} ha versato {amount} il {day}. Era simulato.",
       "topUpNone": "Il registro non contiene versamenti.",
+      "paypalOrder": "Secondo il registro di PayPal, il versamento di {amount} di {member} del {day}: l'ordine è {status}.",
+      "paypalOrderSimulated": "Il versamento di {amount} di {member} del {day} era simulato, quindi PayPal non ne ha traccia.",
+      "paypalUnread": "Al momento PayPal non è leggibile, quindi Kin mostra solo il proprio registro.",
+      "paypalInvoice": "La fattura PayPal di {amount} inviata a {member} è {status}.",
+      "paypalInvoiceSimulated": "La fattura di {amount} inviata a {member} era simulata, quindi PayPal non ne ha traccia.",
+      "paypalInvoiceNone": "Kin non ha inviato fatture.",
+      "paypalDispute": "PayPal indica una contestazione sul versamento di {amount} di {member}: {status}.",
+      "paypalDisputesNone": "PayPal non indica contestazioni sugli ultimi versamenti reali del gruppo.",
+      "paypalDisputesSimulated": "I versamenti del gruppo erano simulati, quindi PayPal non ha contestazioni su di essi.",
       "share": "La quota mensile di {member} è di {amount}.",
       "shareNone": "Non ci sono quote mensili impostate.",
       "refillNone": "La famiglia non ha impostato rinnovi.",
@@ -2395,6 +2409,10 @@
       "ordersTitle": "Ordini",
       "ordersEmpty": "Nessun rinnovo è stato ancora proposto.",
       "simulated": "Simulato: la farmacia è una controfigura e non si muove denaro reale.",
+      "sandbox": "La farmacia è una controfigura. I suoi addebiti passano dalla sandbox di PayPal, con denaro di prova e nessun denaro reale; la consegna è simulata.",
+      "paidSandbox": "Sandbox PayPal",
+      "paidSimulated": "Simulato",
+      "capture": "Acquisizione PayPal {id}",
       "trackLabel": "Dov’è l’ordine",
       "states": {
         "awaiting": "In attesa di un sì",

@@ -178,6 +178,10 @@ async function parentLevel(tx: Transaction, circleId: string): Promise<ParentLev
 export async function readPurchaseRecords(tx: Transaction, circleId: string, now: Date, timezone: string): Promise<{ purchaseRules: PurchaseRuleRecord[]; purchases: PurchaseRecord[] }> {
   const rules = await tx.select().from(purchaseRules).where(eq(purchaseRules.circleId, circleId)).orderBy(purchaseRules.createdAt, purchaseRules.id);
   const rows = await tx.select().from(purchases).where(eq(purchases.circleId, circleId)).orderBy(purchases.createdAt, purchases.id);
+  // What paid for each, from Kin's own execution record: PayPal's capture, or a simulated one's marker.
+  const paidBy = new Map(
+    (await tx.select({ proposalId: executions.proposalId, itemId: executions.paypalItemId }).from(executions).where(and(eq(executions.circleId, circleId), eq(executions.state, "confirmed")))).map((each) => [each.proposalId, each.itemId]),
+  );
   // One query at a time: a transaction is one connection, and pg will refuse queries sent over it at once.
   const purchaseRuleRecords: PurchaseRuleRecord[] = [];
   for (const rule of rules) {
@@ -204,6 +208,7 @@ export async function readPurchaseRecords(tx: Transaction, circleId: string, now
       merchantOrder: row.merchantOrder,
       orderedAt: row.orderedAt,
       deliveredAt: row.deliveredAt,
+      paidItemId: paidBy.get(row.proposalId) ?? null,
     })),
   };
 }
@@ -332,7 +337,7 @@ export async function recordOrderPlaced(tx: Transaction, job: PurchaseJob, order
  * as bought. The capture goes to the ledger once, by its own ID, and the
  * proposal settles.
  */
-export async function confirmPurchase(tx: Transaction, job: PurchaseJob, paid: { readonly itemId: string; readonly at: Date }): Promise<void> {
+export async function confirmPurchase(tx: Transaction, job: PurchaseJob, paid: { readonly itemId: string; readonly at: Date; readonly paypalOrderId?: string | null }): Promise<void> {
   if (!(await entryExists(tx, job.circleId, "paypal_event", paid.itemId))) {
     const entry = purchaseCaptured(
       { ...header(job, "paypal_event", paid.itemId, paid.at), description: job.simulated ? `${job.item} bought (simulated)` : `${job.item} bought through PayPal` },
@@ -342,7 +347,8 @@ export async function confirmPurchase(tx: Transaction, job: PurchaseJob, paid: {
   }
   await moveExecution(tx, job, "submitted", "confirmed", { paypalItemId: paid.itemId, confirmedAt: paid.at });
   await tx.update(proposals).set({ state: "settled" }).where(and(eq(proposals.id, job.proposalId), eq(proposals.state, "executing")));
-  await audit(tx, job, "purchase.confirmed", { itemId: paid.itemId, simulated: job.simulated, mandateId: job.mandate?.id ?? null });
+  // PayPal's order, beside its capture, so the trail names both IDs PayPal gave the charge.
+  await audit(tx, job, "purchase.confirmed", { itemId: paid.itemId, paypalOrderId: paid.paypalOrderId ?? null, simulated: job.simulated, mandateId: job.mandate?.id ?? null });
 }
 
 /** The refill will not be bought. Nothing left the pool, so the ledger is untouched. */

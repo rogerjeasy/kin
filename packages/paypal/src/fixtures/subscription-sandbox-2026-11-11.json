@@ -1,0 +1,1603 @@
+{
+  "recordedOn": "2026-11-11",
+  "environment": "PayPal sandbox, Catalog Products v1 and Subscriptions v1, through Kin's adapter",
+  "create": [
+    {
+      "method": "POST",
+      "path": "/v1/catalogs/products",
+      "requestId": "kin-product-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+      "request": {
+        "id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "description": "A family's shared care fund, managed with Kin",
+        "type": "SERVICE"
+      },
+      "httpStatus": 201,
+      "body": {
+        "id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "description": "A family's shared care fund, managed with Kin",
+        "create_time": "2026-11-11T23:02:22Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/catalogs/products/KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/catalogs/products/KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+            "rel": "edit",
+            "method": "PATCH"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/plans",
+      "requestId": "kin-plan-30bc5d7d-a265-45ca-baf2-0c45bdd08c34",
+      "request": {
+        "product_id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "status": "ACTIVE",
+        "billing_cycles": [
+          {
+            "frequency": {
+              "interval_unit": "MONTH",
+              "interval_count": 1
+            },
+            "tenure_type": "REGULAR",
+            "sequence": 1,
+            "total_cycles": 0,
+            "pricing_scheme": {
+              "fixed_price": {
+                "value": "1.00",
+                "currency_code": "USD"
+              }
+            }
+          }
+        ],
+        "payment_preferences": {
+          "auto_bill_outstanding": true,
+          "payment_failure_threshold": 3
+        }
+      },
+      "httpStatus": 201,
+      "body": {
+        "id": "P-7X481161S62530903NL2PH7Q",
+        "product_id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "status": "ACTIVE",
+        "usage_type": "LICENSED",
+        "create_time": "2026-11-11T23:02:22Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-7X481161S62530903NL2PH7Q",
+            "rel": "self",
+            "method": "GET",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-7X481161S62530903NL2PH7Q",
+            "rel": "edit",
+            "method": "PATCH",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-7X481161S62530903NL2PH7Q/deactivate",
+            "rel": "self",
+            "method": "POST",
+            "encType": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions",
+      "requestId": "kin-subscription-30bc5d7d-a265-45ca-baf2-0c45bdd08c34",
+      "request": {
+        "plan_id": "P-7X481161S62530903NL2PH7Q",
+        "custom_id": "kin1:7e90af89-58bf-4e12-ad40-086a6edd46a9:005e9d08-e14d-4560-bff8-a56b663e2467",
+        "application_context": {
+          "brand_name": "Kin",
+          "shipping_preference": "NO_SHIPPING",
+          "user_action": "SUBSCRIBE_NOW",
+          "return_url": "https://kin.example.com/dashboard/shares",
+          "cancel_url": "https://kin.example.com/dashboard/shares"
+        }
+      },
+      "httpStatus": 201,
+      "body": {
+        "status": "APPROVAL_PENDING",
+        "id": "I-7S1R5BN7FY5J",
+        "create_time": "2026-11-11T23:02:23Z",
+        "links": [
+          {
+            "href": "https://www.sandbox.paypal.com/webapps/billing/subscriptions?ba_token=BA-3D292887RW598515Y",
+            "rel": "approve",
+            "method": "GET"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-7S1R5BN7FY5J",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-7S1R5BN7FY5J",
+            "rel": "self",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/catalogs/products",
+      "requestId": "kin-product-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+      "request": {
+        "id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "description": "A family's shared care fund, managed with Kin",
+        "type": "SERVICE"
+      },
+      "httpStatus": 422,
+      "body": {
+        "name": "UNPROCESSABLE_ENTITY",
+        "message": "The requested action could not be performed, semantically incorrect, or failed business validation.",
+        "debug_id": "DEBUGID",
+        "details": [
+          {
+            "field": "/id",
+            "value": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+            "location": "body",
+            "issue": "DUPLICATE_RESOURCE_IDENTIFIER",
+            "description": "Identifier must be unique"
+          }
+        ],
+        "links": [
+          {
+            "href": "https://developer.paypal.com/docs/api/v1/billing/subscriptions#UNPROCESSABLE_ENTITY",
+            "rel": "information_link",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/plans",
+      "requestId": "kin-plan-30bc5d7d-a265-45ca-baf2-0c45bdd08c34",
+      "request": {
+        "product_id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "status": "ACTIVE",
+        "billing_cycles": [
+          {
+            "frequency": {
+              "interval_unit": "MONTH",
+              "interval_count": 1
+            },
+            "tenure_type": "REGULAR",
+            "sequence": 1,
+            "total_cycles": 0,
+            "pricing_scheme": {
+              "fixed_price": {
+                "value": "1.00",
+                "currency_code": "USD"
+              }
+            }
+          }
+        ],
+        "payment_preferences": {
+          "auto_bill_outstanding": true,
+          "payment_failure_threshold": 3
+        }
+      },
+      "httpStatus": 200,
+      "body": {
+        "id": "P-7X481161S62530903NL2PH7Q",
+        "product_id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "status": "ACTIVE",
+        "usage_type": "LICENSED",
+        "create_time": "2026-11-11T23:02:22Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-7X481161S62530903NL2PH7Q",
+            "rel": "self",
+            "method": "GET",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-7X481161S62530903NL2PH7Q",
+            "rel": "edit",
+            "method": "PATCH",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-7X481161S62530903NL2PH7Q/deactivate",
+            "rel": "self",
+            "method": "POST",
+            "encType": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions",
+      "requestId": "kin-subscription-30bc5d7d-a265-45ca-baf2-0c45bdd08c34",
+      "request": {
+        "plan_id": "P-7X481161S62530903NL2PH7Q",
+        "custom_id": "kin1:7e90af89-58bf-4e12-ad40-086a6edd46a9:005e9d08-e14d-4560-bff8-a56b663e2467",
+        "application_context": {
+          "brand_name": "Kin",
+          "shipping_preference": "NO_SHIPPING",
+          "user_action": "SUBSCRIBE_NOW",
+          "return_url": "https://kin.example.com/dashboard/shares",
+          "cancel_url": "https://kin.example.com/dashboard/shares"
+        }
+      },
+      "httpStatus": 201,
+      "body": {
+        "status": "APPROVAL_PENDING",
+        "id": "I-1F6MUWG9GYRV",
+        "create_time": "2026-11-11T23:02:24Z",
+        "links": [
+          {
+            "href": "https://www.sandbox.paypal.com/webapps/billing/subscriptions?ba_token=BA-2F096236JW759232B",
+            "rel": "approve",
+            "method": "GET"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-1F6MUWG9GYRV",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-1F6MUWG9GYRV",
+            "rel": "self",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/catalogs/products",
+      "requestId": "kin-product-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+      "request": {
+        "id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "description": "A family's shared care fund, managed with Kin",
+        "type": "SERVICE"
+      },
+      "httpStatus": 422,
+      "body": {
+        "name": "UNPROCESSABLE_ENTITY",
+        "message": "The requested action could not be performed, semantically incorrect, or failed business validation.",
+        "debug_id": "DEBUGID",
+        "details": [
+          {
+            "field": "/id",
+            "value": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+            "location": "body",
+            "issue": "DUPLICATE_RESOURCE_IDENTIFIER",
+            "description": "Identifier must be unique"
+          }
+        ],
+        "links": [
+          {
+            "href": "https://developer.paypal.com/docs/api/v1/billing/subscriptions#UNPROCESSABLE_ENTITY",
+            "rel": "information_link",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/plans",
+      "requestId": "kin-plan-91c34899-020c-4db2-a29e-c2a37a125a25",
+      "request": {
+        "product_id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "status": "ACTIVE",
+        "billing_cycles": [
+          {
+            "frequency": {
+              "interval_unit": "MONTH",
+              "interval_count": 1
+            },
+            "tenure_type": "REGULAR",
+            "sequence": 1,
+            "total_cycles": 0,
+            "pricing_scheme": {
+              "fixed_price": {
+                "value": "1.00",
+                "currency_code": "USD"
+              }
+            }
+          }
+        ],
+        "payment_preferences": {
+          "auto_bill_outstanding": true,
+          "payment_failure_threshold": 3
+        }
+      },
+      "httpStatus": 201,
+      "body": {
+        "id": "P-7SX86618A5817374ENL2PIAQ",
+        "product_id": "KIN-7e90af89-58bf-4e12-ad40-086a6edd46a9",
+        "name": "Kin sandbox check: monthly share",
+        "status": "ACTIVE",
+        "usage_type": "LICENSED",
+        "create_time": "2026-11-11T23:02:26Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-7SX86618A5817374ENL2PIAQ",
+            "rel": "self",
+            "method": "GET",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-7SX86618A5817374ENL2PIAQ",
+            "rel": "edit",
+            "method": "PATCH",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-7SX86618A5817374ENL2PIAQ/deactivate",
+            "rel": "self",
+            "method": "POST",
+            "encType": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions",
+      "requestId": "kin-subscription-91c34899-020c-4db2-a29e-c2a37a125a25",
+      "request": {
+        "plan_id": "P-7SX86618A5817374ENL2PIAQ",
+        "custom_id": "kin1:7e90af89-58bf-4e12-ad40-086a6edd46a9:005e9d08-e14d-4560-bff8-a56b663e2467",
+        "application_context": {
+          "brand_name": "Kin",
+          "shipping_preference": "NO_SHIPPING",
+          "user_action": "SUBSCRIBE_NOW",
+          "return_url": "https://kin.example.com/dashboard/shares",
+          "cancel_url": "https://kin.example.com/dashboard/shares"
+        }
+      },
+      "httpStatus": 201,
+      "body": {
+        "status": "APPROVAL_PENDING",
+        "id": "I-KVFVK050DJH9",
+        "create_time": "2026-11-11T23:02:26Z",
+        "links": [
+          {
+            "href": "https://www.sandbox.paypal.com/webapps/billing/subscriptions?ba_token=BA-2LS57322B6514982B",
+            "rel": "approve",
+            "method": "GET"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-KVFVK050DJH9",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-KVFVK050DJH9",
+            "rel": "self",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-7S1R5BN7FY5J",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "APPROVAL_PENDING",
+        "id": "I-7S1R5BN7FY5J",
+        "plan_id": "P-7X481161S62530903NL2PH7Q",
+        "start_time": "2026-11-11T23:02:23Z",
+        "quantity": "1",
+        "create_time": "2026-11-11T23:02:23Z",
+        "custom_id": "kin1:7e90af89-58bf-4e12-ad40-086a6edd46a9:005e9d08-e14d-4560-bff8-a56b663e2467",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-7S1R5BN7FY5J",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-7S1R5BN7FY5J",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://www.sandbox.paypal.com/webapps/billing/subscriptions?ba_token=BA-3D292887RW598515Y",
+            "rel": "approve",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-7S1R5BN7FY5J/transactions?start_time=2026-11-10T23%3A02%3A27.652Z&end_time=2026-11-11T23%3A02%3A27.652Z",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 404,
+      "body": {
+        "name": "RESOURCE_NOT_FOUND",
+        "message": "The specified resource does not exist.",
+        "debug_id": "DEBUGID",
+        "details": [
+          {
+            "issue": "INVALID_RESOURCE_ID",
+            "description": "Requested resource ID was not found."
+          }
+        ],
+        "links": [
+          {
+            "href": "https://developer.paypal.com/docs/api/v1/billing/subscriptions#RESOURCE_NOT_FOUND",
+            "rel": "information_link",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-7S1R5BN7FY5J/suspend",
+      "requestId": null,
+      "request": {
+        "reason": "Kin sandbox check"
+      },
+      "httpStatus": 404,
+      "body": {
+        "name": "RESOURCE_NOT_FOUND",
+        "message": "The specified resource does not exist.",
+        "debug_id": "DEBUGID",
+        "details": [
+          {
+            "issue": "INVALID_RESOURCE_ID",
+            "description": "Requested resource ID was not found."
+          }
+        ],
+        "links": [
+          {
+            "href": "https://developer.paypal.com/docs/api/v1/billing/subscriptions#RESOURCE_NOT_FOUND",
+            "rel": "information_link",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-7S1R5BN7FY5J/activate",
+      "requestId": null,
+      "request": {
+        "reason": "Kin sandbox check"
+      },
+      "httpStatus": 422,
+      "body": {
+        "name": "UNPROCESSABLE_ENTITY",
+        "message": "The requested action could not be performed, semantically incorrect, or failed business validation.",
+        "debug_id": "DEBUGID",
+        "details": [
+          {
+            "issue": "SESSION_STATE_NOT_VALID",
+            "description": "Buyer has not agreed to subscription"
+          }
+        ],
+        "links": [
+          {
+            "href": "https://developer.paypal.com/docs/api/v1/billing/subscriptions#UNPROCESSABLE_ENTITY",
+            "rel": "information_link",
+            "method": "GET"
+          }
+        ]
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "ACTIVE",
+        "status_update_time": "2026-11-11T22:58:34Z",
+        "id": "I-CSP0NHWX4BFG",
+        "plan_id": "P-48608289KM3446115NL2PFVY",
+        "start_time": "2026-11-11T22:57:28Z",
+        "quantity": "1",
+        "shipping_amount": {
+          "currency_code": "USD",
+          "value": "0.0"
+        },
+        "subscriber": {
+          "email_address": "someone@personal.example.com",
+          "payer_id": "PLACEHOLDER",
+          "name": {
+            "given_name": "Placeholder",
+            "surname": "Placeholder"
+          },
+          "tenant": "PAYPAL"
+        },
+        "billing_info": {
+          "outstanding_balance": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "current_cycle_sequence": 1,
+          "cycle_executions": [
+            {
+              "tenure_type": "REGULAR",
+              "sequence": 1,
+              "cycles_completed": 1,
+              "cycles_remaining": 0,
+              "current_pricing_scheme_version": 1,
+              "total_cycles": 0
+            }
+          ],
+          "last_payment": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.0"
+            },
+            "time": "2026-11-11T22:58:34Z"
+          },
+          "next_billing_time": "2026-12-11T10:00:00Z",
+          "failed_payments_count": 0
+        },
+        "create_time": "2026-11-11T22:58:33Z",
+        "update_time": "2026-11-11T22:58:34Z",
+        "custom_id": "kin1:a94b08b4-d45f-442a-8bc6-0f9b149b0692:5a651b4f-3c89-4458-b473-3414e9669826",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/cancel",
+            "rel": "cancel",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/suspend",
+            "rel": "suspend",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/capture",
+            "rel": "capture",
+            "method": "POST"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG/transactions?start_time=2026-11-10T22%3A58%3A57.039Z&end_time=2026-11-11T22%3A59%3A57.039Z",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "transactions": [
+          {
+            "id": "28129717MV883724F",
+            "amount_with_breakdown": {
+              "gross_amount": {
+                "currency_code": "USD",
+                "value": "1.00"
+              },
+              "fee_amount": {
+                "currency_code": "USD",
+                "value": "0.52"
+              },
+              "net_amount": {
+                "currency_code": "USD",
+                "value": "0.48"
+              }
+            },
+            "payer_name": {
+              "given_name": "Placeholder",
+              "surname": "Placeholder"
+            },
+            "payer_email": "someone@personal.example.com",
+            "time": "2026-11-11T22:58:34.000Z",
+            "status": "COMPLETED"
+          }
+        ],
+        "links": [
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/transactions?start_time=2026-11-10T22%3A58%3A57.039Z&end_time=2026-11-11T22%3A59%3A57.039Z",
+            "rel": "SELF",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG/suspend",
+      "requestId": "7edaecd5-3fc2-42c4-993b-1b3107685553",
+      "request": {
+        "reason": "Kin sandbox check"
+      },
+      "httpStatus": 204,
+      "body": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "SUSPENDED",
+        "status_change_note": "Kin sandbox check",
+        "status_update_time": "2026-11-11T22:59:02Z",
+        "id": "I-CSP0NHWX4BFG",
+        "plan_id": "P-48608289KM3446115NL2PFVY",
+        "start_time": "2026-11-11T22:57:28Z",
+        "quantity": "1",
+        "shipping_amount": {
+          "currency_code": "USD",
+          "value": "0.0"
+        },
+        "subscriber": {
+          "email_address": "someone@personal.example.com",
+          "payer_id": "PLACEHOLDER",
+          "name": {
+            "given_name": "Placeholder",
+            "surname": "Placeholder"
+          },
+          "tenant": "PAYPAL"
+        },
+        "billing_info": {
+          "outstanding_balance": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "current_cycle_sequence": 1,
+          "cycle_executions": [
+            {
+              "tenure_type": "REGULAR",
+              "sequence": 1,
+              "cycles_completed": 1,
+              "cycles_remaining": 0,
+              "current_pricing_scheme_version": 1,
+              "total_cycles": 0
+            }
+          ],
+          "last_payment": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.0"
+            },
+            "time": "2026-11-11T22:58:34Z"
+          },
+          "failed_payments_count": 0
+        },
+        "create_time": "2026-11-11T22:58:33Z",
+        "update_time": "2026-11-11T22:59:02Z",
+        "custom_id": "kin1:a94b08b4-d45f-442a-8bc6-0f9b149b0692:5a651b4f-3c89-4458-b473-3414e9669826",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/cancel",
+            "rel": "cancel",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/activate",
+            "rel": "activate",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/capture",
+            "rel": "capture",
+            "method": "POST"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG/suspend",
+      "requestId": "c7e6f065-3cfc-4291-935e-9d520b0b37c0",
+      "request": {
+        "reason": "Kin sandbox check"
+      },
+      "httpStatus": 422,
+      "body": {
+        "name": "UNPROCESSABLE_ENTITY",
+        "message": "The requested action could not be performed, semantically incorrect, or failed business validation.",
+        "debug_id": "DEBUGID",
+        "details": [
+          {
+            "issue": "SUBSCRIPTION_STATUS_INVALID",
+            "description": "Invalid subscription status for suspend action; subscription status should be active."
+          }
+        ],
+        "links": [
+          {
+            "href": "https://developer.paypal.com/docs/api/v1/billing/subscriptions#UNPROCESSABLE_ENTITY",
+            "rel": "information_link",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "SUSPENDED",
+        "status_change_note": "Kin sandbox check",
+        "status_update_time": "2026-11-11T22:59:02Z",
+        "id": "I-CSP0NHWX4BFG",
+        "plan_id": "P-48608289KM3446115NL2PFVY",
+        "start_time": "2026-11-11T22:57:28Z",
+        "quantity": "1",
+        "shipping_amount": {
+          "currency_code": "USD",
+          "value": "0.0"
+        },
+        "subscriber": {
+          "email_address": "someone@personal.example.com",
+          "payer_id": "PLACEHOLDER",
+          "name": {
+            "given_name": "Placeholder",
+            "surname": "Placeholder"
+          },
+          "tenant": "PAYPAL"
+        },
+        "billing_info": {
+          "outstanding_balance": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "current_cycle_sequence": 1,
+          "cycle_executions": [
+            {
+              "tenure_type": "REGULAR",
+              "sequence": 1,
+              "cycles_completed": 1,
+              "cycles_remaining": 0,
+              "current_pricing_scheme_version": 1,
+              "total_cycles": 0
+            }
+          ],
+          "last_payment": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.0"
+            },
+            "time": "2026-11-11T22:58:34Z"
+          },
+          "failed_payments_count": 0
+        },
+        "create_time": "2026-11-11T22:58:33Z",
+        "update_time": "2026-11-11T22:59:02Z",
+        "custom_id": "kin1:a94b08b4-d45f-442a-8bc6-0f9b149b0692:5a651b4f-3c89-4458-b473-3414e9669826",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/cancel",
+            "rel": "cancel",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/activate",
+            "rel": "activate",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/capture",
+            "rel": "capture",
+            "method": "POST"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG/activate",
+      "requestId": "a721bcfb-da79-4b3e-b051-4bcbe649726b",
+      "request": {
+        "reason": "Kin sandbox check"
+      },
+      "httpStatus": 204,
+      "body": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "ACTIVE",
+        "status_change_note": "Kin sandbox check",
+        "status_update_time": "2026-11-11T22:59:09Z",
+        "id": "I-CSP0NHWX4BFG",
+        "plan_id": "P-48608289KM3446115NL2PFVY",
+        "start_time": "2026-11-11T22:57:28Z",
+        "quantity": "1",
+        "shipping_amount": {
+          "currency_code": "USD",
+          "value": "0.0"
+        },
+        "subscriber": {
+          "email_address": "someone@personal.example.com",
+          "payer_id": "PLACEHOLDER",
+          "name": {
+            "given_name": "Placeholder",
+            "surname": "Placeholder"
+          },
+          "tenant": "PAYPAL"
+        },
+        "billing_info": {
+          "outstanding_balance": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "current_cycle_sequence": 1,
+          "cycle_executions": [
+            {
+              "tenure_type": "REGULAR",
+              "sequence": 1,
+              "cycles_completed": 1,
+              "cycles_remaining": 0,
+              "current_pricing_scheme_version": 1,
+              "total_cycles": 0
+            }
+          ],
+          "last_payment": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.0"
+            },
+            "time": "2026-11-11T22:58:34Z"
+          },
+          "next_billing_time": "2026-12-11T10:00:00Z",
+          "failed_payments_count": 0
+        },
+        "create_time": "2026-11-11T22:58:33Z",
+        "update_time": "2026-11-11T22:59:09Z",
+        "custom_id": "kin1:a94b08b4-d45f-442a-8bc6-0f9b149b0692:5a651b4f-3c89-4458-b473-3414e9669826",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/cancel",
+            "rel": "cancel",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/suspend",
+            "rel": "suspend",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/capture",
+            "rel": "capture",
+            "method": "POST"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG/activate",
+      "requestId": "3caf65a0-2dde-4316-89ad-3fbd2b853a05",
+      "request": {
+        "reason": "Kin sandbox check"
+      },
+      "httpStatus": 422,
+      "body": {
+        "name": "UNPROCESSABLE_ENTITY",
+        "message": "The requested action could not be performed, semantically incorrect, or failed business validation.",
+        "debug_id": "DEBUGID",
+        "details": [
+          {
+            "issue": "SUBSCRIPTION_STATUS_INVALID",
+            "description": "Invalid subscription status for activate action; subscription status should be suspended."
+          }
+        ],
+        "links": [
+          {
+            "href": "https://developer.paypal.com/docs/api/v1/billing/subscriptions#UNPROCESSABLE_ENTITY",
+            "rel": "information_link",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "ACTIVE",
+        "status_change_note": "Kin sandbox check",
+        "status_update_time": "2026-11-11T22:59:09Z",
+        "id": "I-CSP0NHWX4BFG",
+        "plan_id": "P-48608289KM3446115NL2PFVY",
+        "start_time": "2026-11-11T22:57:28Z",
+        "quantity": "1",
+        "shipping_amount": {
+          "currency_code": "USD",
+          "value": "0.0"
+        },
+        "subscriber": {
+          "email_address": "someone@personal.example.com",
+          "payer_id": "PLACEHOLDER",
+          "name": {
+            "given_name": "Placeholder",
+            "surname": "Placeholder"
+          },
+          "tenant": "PAYPAL"
+        },
+        "billing_info": {
+          "outstanding_balance": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "current_cycle_sequence": 1,
+          "cycle_executions": [
+            {
+              "tenure_type": "REGULAR",
+              "sequence": 1,
+              "cycles_completed": 1,
+              "cycles_remaining": 0,
+              "current_pricing_scheme_version": 1,
+              "total_cycles": 0
+            }
+          ],
+          "last_payment": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.0"
+            },
+            "time": "2026-11-11T22:58:34Z"
+          },
+          "next_billing_time": "2026-12-11T10:00:00Z",
+          "failed_payments_count": 0
+        },
+        "create_time": "2026-11-11T22:58:33Z",
+        "update_time": "2026-11-11T22:59:09Z",
+        "custom_id": "kin1:a94b08b4-d45f-442a-8bc6-0f9b149b0692:5a651b4f-3c89-4458-b473-3414e9669826",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/cancel",
+            "rel": "cancel",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/suspend",
+            "rel": "suspend",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG/capture",
+            "rel": "capture",
+            "method": "POST"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG/cancel",
+      "requestId": "cf043305-aba6-4749-84fe-397a5acc2c8b",
+      "request": {
+        "reason": "Kin sandbox check"
+      },
+      "httpStatus": 204,
+      "body": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "CANCELLED",
+        "status_change_note": "Kin sandbox check",
+        "status_update_time": "2026-11-11T22:59:15Z",
+        "id": "I-CSP0NHWX4BFG",
+        "plan_id": "P-48608289KM3446115NL2PFVY",
+        "start_time": "2026-11-11T22:57:28Z",
+        "quantity": "1",
+        "shipping_amount": {
+          "currency_code": "USD",
+          "value": "0.0"
+        },
+        "subscriber": {
+          "email_address": "someone@personal.example.com",
+          "payer_id": "PLACEHOLDER",
+          "name": {
+            "given_name": "Placeholder",
+            "surname": "Placeholder"
+          },
+          "tenant": "PAYPAL"
+        },
+        "billing_info": {
+          "outstanding_balance": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "current_cycle_sequence": 1,
+          "cycle_executions": [
+            {
+              "tenure_type": "REGULAR",
+              "sequence": 1,
+              "cycles_completed": 1,
+              "cycles_remaining": 0,
+              "current_pricing_scheme_version": 1,
+              "total_cycles": 0
+            }
+          ],
+          "last_payment": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.0"
+            },
+            "time": "2026-11-11T22:58:34Z"
+          },
+          "failed_payments_count": 0
+        },
+        "create_time": "2026-11-11T22:58:33Z",
+        "update_time": "2026-11-11T22:59:15Z",
+        "custom_id": "kin1:a94b08b4-d45f-442a-8bc6-0f9b149b0692:5a651b4f-3c89-4458-b473-3414e9669826",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "self",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG/activate",
+      "requestId": "9d437e74-26b6-4c71-a1a7-eb1647512ad7",
+      "request": {
+        "reason": "Kin sandbox check"
+      },
+      "httpStatus": 422,
+      "body": {
+        "name": "UNPROCESSABLE_ENTITY",
+        "message": "The requested action could not be performed, semantically incorrect, or failed business validation.",
+        "debug_id": "DEBUGID",
+        "details": [
+          {
+            "issue": "SUBSCRIPTION_STATUS_INVALID",
+            "description": "Invalid subscription status for activate action; subscription status should be suspended."
+          }
+        ],
+        "links": [
+          {
+            "href": "https://developer.paypal.com/docs/api/v1/billing/subscriptions#UNPROCESSABLE_ENTITY",
+            "rel": "information_link",
+            "method": "GET"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "CANCELLED",
+        "status_change_note": "Kin sandbox check",
+        "status_update_time": "2026-11-11T22:59:15Z",
+        "id": "I-CSP0NHWX4BFG",
+        "plan_id": "P-48608289KM3446115NL2PFVY",
+        "start_time": "2026-11-11T22:57:28Z",
+        "quantity": "1",
+        "shipping_amount": {
+          "currency_code": "USD",
+          "value": "0.0"
+        },
+        "subscriber": {
+          "email_address": "someone@personal.example.com",
+          "payer_id": "PLACEHOLDER",
+          "name": {
+            "given_name": "Placeholder",
+            "surname": "Placeholder"
+          },
+          "tenant": "PAYPAL"
+        },
+        "billing_info": {
+          "outstanding_balance": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "current_cycle_sequence": 1,
+          "cycle_executions": [
+            {
+              "tenure_type": "REGULAR",
+              "sequence": 1,
+              "cycles_completed": 1,
+              "cycles_remaining": 0,
+              "current_pricing_scheme_version": 1,
+              "total_cycles": 0
+            }
+          ],
+          "last_payment": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.0"
+            },
+            "time": "2026-11-11T22:58:34Z"
+          },
+          "failed_payments_count": 0
+        },
+        "create_time": "2026-11-11T22:58:33Z",
+        "update_time": "2026-11-11T22:59:15Z",
+        "custom_id": "kin1:a94b08b4-d45f-442a-8bc6-0f9b149b0692:5a651b4f-3c89-4458-b473-3414e9669826",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CSP0NHWX4BFG",
+            "rel": "self",
+            "method": "GET"
+          }
+        ]
+      }
+    }
+  ],
+  "revise": [
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CUXNGCY1VJKR",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "ACTIVE",
+        "status_update_time": "2026-11-11T23:07:52Z",
+        "id": "I-CUXNGCY1VJKR",
+        "plan_id": "P-229450167E6731234NL2PKEA",
+        "start_time": "2026-11-11T23:06:57Z",
+        "quantity": "1",
+        "shipping_amount": {
+          "currency_code": "USD",
+          "value": "0.0"
+        },
+        "subscriber": {
+          "email_address": "someone@personal.example.com",
+          "payer_id": "PLACEHOLDER",
+          "name": {
+            "given_name": "Placeholder",
+            "surname": "Placeholder"
+          },
+          "tenant": "PAYPAL"
+        },
+        "billing_info": {
+          "outstanding_balance": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "current_cycle_sequence": 1,
+          "cycle_executions": [
+            {
+              "tenure_type": "REGULAR",
+              "sequence": 1,
+              "cycles_completed": 1,
+              "cycles_remaining": 0,
+              "current_pricing_scheme_version": 1,
+              "total_cycles": 0
+            }
+          ],
+          "last_payment": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.0"
+            },
+            "time": "2026-11-11T23:07:52Z"
+          },
+          "next_billing_time": "2026-12-11T10:00:00Z",
+          "failed_payments_count": 0
+        },
+        "create_time": "2026-11-11T23:07:51Z",
+        "update_time": "2026-11-11T23:07:52Z",
+        "custom_id": "kin1:2e9f4001-652d-4466-8c6d-bd1884971119:2b3d5de9-75a4-425a-abf2-de05d73becac",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR/cancel",
+            "rel": "cancel",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR/suspend",
+            "rel": "suspend",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR/capture",
+            "rel": "capture",
+            "method": "POST"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/plans/P-229450167E6731234NL2PKEA",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "id": "P-229450167E6731234NL2PKEA",
+        "product_id": "KIN-2e9f4001-652d-4466-8c6d-bd1884971119",
+        "name": "Kin sandbox check: monthly share",
+        "status": "ACTIVE",
+        "usage_type": "LICENSED",
+        "billing_cycles": [
+          {
+            "pricing_scheme": {
+              "version": 1,
+              "fixed_price": {
+                "currency_code": "USD",
+                "value": "1.0"
+              },
+              "create_time": "2026-11-11T23:06:56Z",
+              "update_time": "2026-11-11T23:06:56Z"
+            },
+            "frequency": {
+              "interval_unit": "MONTH",
+              "interval_count": 1
+            },
+            "tenure_type": "REGULAR",
+            "sequence": 1,
+            "total_cycles": 0
+          }
+        ],
+        "payment_preferences": {
+          "service_type": "PREPAID",
+          "auto_bill_outstanding": true,
+          "setup_fee": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "setup_fee_failure_action": "CANCEL",
+          "payment_failure_threshold": 3
+        },
+        "quantity_supported": false,
+        "create_time": "2026-11-11T23:06:56Z",
+        "update_time": "2026-11-11T23:06:56Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-229450167E6731234NL2PKEA",
+            "rel": "self",
+            "method": "GET",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-229450167E6731234NL2PKEA",
+            "rel": "edit",
+            "method": "PATCH",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-229450167E6731234NL2PKEA/deactivate",
+            "rel": "self",
+            "method": "POST",
+            "encType": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/plans",
+      "requestId": "kin-plan-I-CUXNGCY1VJKR-USD-200",
+      "request": {
+        "product_id": "KIN-2e9f4001-652d-4466-8c6d-bd1884971119",
+        "name": "Kin sandbox check: monthly share",
+        "status": "ACTIVE",
+        "billing_cycles": [
+          {
+            "frequency": {
+              "interval_unit": "MONTH",
+              "interval_count": 1
+            },
+            "tenure_type": "REGULAR",
+            "sequence": 1,
+            "total_cycles": 0,
+            "pricing_scheme": {
+              "fixed_price": {
+                "value": "2.00",
+                "currency_code": "USD"
+              }
+            }
+          }
+        ],
+        "payment_preferences": {
+          "auto_bill_outstanding": true,
+          "payment_failure_threshold": 3
+        }
+      },
+      "httpStatus": 201,
+      "body": {
+        "id": "P-5HL13463MH0673805NL2PKVA",
+        "product_id": "KIN-2e9f4001-652d-4466-8c6d-bd1884971119",
+        "name": "Kin sandbox check: monthly share",
+        "status": "ACTIVE",
+        "usage_type": "LICENSED",
+        "create_time": "2026-11-11T23:08:04Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-5HL13463MH0673805NL2PKVA",
+            "rel": "self",
+            "method": "GET",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-5HL13463MH0673805NL2PKVA",
+            "rel": "edit",
+            "method": "PATCH",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/plans/P-5HL13463MH0673805NL2PKVA/deactivate",
+            "rel": "self",
+            "method": "POST",
+            "encType": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-CUXNGCY1VJKR/revise",
+      "requestId": null,
+      "request": {
+        "plan_id": "P-5HL13463MH0673805NL2PKVA",
+        "application_context": {
+          "brand_name": "Kin",
+          "shipping_preference": "NO_SHIPPING",
+          "return_url": "https://kin.example.com/dashboard/shares",
+          "cancel_url": "https://kin.example.com/dashboard/shares"
+        }
+      },
+      "httpStatus": 200,
+      "body": {
+        "plan_id": "P-5HL13463MH0673805NL2PKVA",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://www.sandbox.paypal.com/webapps/billing/subscriptions/update?ba_token=BA-5J3310331N293425F",
+            "rel": "approve",
+            "method": "GET"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR/cancel",
+            "rel": "cancel",
+            "method": "POST"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR/suspend",
+            "rel": "suspend",
+            "method": "POST"
+          },
+          {
+            "href": "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR/capture",
+            "rel": "capture",
+            "method": "POST"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/billing/subscriptions/I-CUXNGCY1VJKR",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "status": "ACTIVE",
+        "status_update_time": "2026-11-11T23:07:52Z",
+        "id": "I-CUXNGCY1VJKR",
+        "plan_id": "P-229450167E6731234NL2PKEA",
+        "start_time": "2026-11-11T23:06:57Z",
+        "quantity": "1",
+        "shipping_amount": {
+          "currency_code": "USD",
+          "value": "0.0"
+        },
+        "subscriber": {
+          "email_address": "someone@personal.example.com",
+          "payer_id": "PLACEHOLDER",
+          "name": {
+            "given_name": "Placeholder",
+            "surname": "Placeholder"
+          },
+          "tenant": "PAYPAL"
+        },
+        "billing_info": {
+          "outstanding_balance": {
+            "currency_code": "USD",
+            "value": "0.0"
+          },
+          "current_cycle_sequence": 1,
+          "cycle_executions": [
+            {
+              "tenure_type": "REGULAR",
+              "sequence": 1,
+              "cycles_completed": 1,
+              "cycles_remaining": 0,
+              "current_pricing_scheme_version": 1,
+              "total_cycles": 0
+            }
+          ],
+          "last_payment": {
+            "amount": {
+              "currency_code": "USD",
+              "value": "1.0"
+            },
+            "time": "2026-11-11T23:07:52Z"
+          },
+          "next_billing_time": "2026-12-11T10:00:00Z",
+          "failed_payments_count": 0
+        },
+        "create_time": "2026-11-11T23:07:51Z",
+        "update_time": "2026-11-11T23:07:52Z",
+        "custom_id": "kin1:2e9f4001-652d-4466-8c6d-bd1884971119:2b3d5de9-75a4-425a-abf2-de05d73becac",
+        "plan_overridden": false,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR/cancel",
+            "rel": "cancel",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR",
+            "rel": "edit",
+            "method": "PATCH"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR",
+            "rel": "self",
+            "method": "GET"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR/suspend",
+            "rel": "suspend",
+            "method": "POST"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/billing/subscriptions/I-CUXNGCY1VJKR/capture",
+            "rel": "capture",
+            "method": "POST"
+          }
+        ]
+      }
+    }
+  ],
+  "activateWhileRevisionPending": [
+    {
+      "method": "POST",
+      "path": "/v1/billing/subscriptions/I-CUXNGCY1VJKR/activate",
+      "requestId": null,
+      "request": {
+        "reason": "Kin sandbox check"
+      },
+      "httpStatus": 422,
+      "body": {
+        "name": "UNPROCESSABLE_ENTITY",
+        "message": "The requested action could not be performed, semantically incorrect, or failed business validation.",
+        "debug_id": "DEBUGID",
+        "details": [
+          {
+            "issue": "SESSION_STATE_NOT_VALID",
+            "description": "Buyer has not agreed to subscription"
+          }
+        ],
+        "links": [
+          {
+            "href": "https://developer.paypal.com/docs/api/v1/billing/subscriptions#UNPROCESSABLE_ENTITY",
+            "rel": "information_link",
+            "method": "GET"
+          }
+        ]
+      }
+    }
+  ]
+}

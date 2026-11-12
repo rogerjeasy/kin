@@ -24,15 +24,15 @@ import { asRecord, optionalRecord, optionalText, PayPalShapeError, recordList, r
  * - The payout item `GET /v1/payments/payouts-item/{id}` carries the
  *   `transaction_id` of the payout (https://developer.paypal.com/docs/api/payments.payouts-batch/v1/schema.json).
  *
- * NOT verified here, and the code does not depend on it for safety:
- * - The sign of `transaction_amount`. The schema does not state a convention.
- *   Kin reads the sign PayPal sends (a leading minus means money left the
- *   searched account, as in PayPal's own account statements), so
- *   `leftThePool` is only as good as that reading. Run it against a sandbox
- *   payout before relying on it.
- * - Transaction Search must be switched on for the app (Features, "Transaction
- *   search", in the PayPal developer dashboard) with the reporting scope; an
- *   app without it is refused with a 403 and the PayPalError says so.
+ * Checked against the sandbox on 11 November 2026 (a 5.00 payout through
+ * Kin's adapter, fixtures/transaction-search-sandbox-2026-11-11.json):
+ * - The sign of `transaction_amount`, which the schema does not state: the
+ *   payout read `-5.00`, so a leading minus means money left the searched
+ *   account, and its fee read `-0.25` (Kin keeps the fee as a positive amount).
+ *   Its event code was `T0001`, not the `T0400` the documented shape assumed.
+ * - The pool's sandbox app has Transaction Search switched on. An app without
+ *   it (Features, "Transaction search", in the PayPal developer dashboard) is
+ *   refused with a 403 and the PayPalError says so.
  */
 
 export type TransactionRecord = {

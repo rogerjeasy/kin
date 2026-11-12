@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { createPayPalClient, type Fetch } from "./client.ts";
 import { PayPalShapeError } from "./json.ts";
 import { PayPalError } from "./paypal-error.ts";
+import { readFixture, replayPool, type RecordedExchange } from "./testing/replay.ts";
 import { leftThePool, maskEmail, parsePayoutItemTransactionId, parseTransactionSearch, searchTransaction, type TransactionRecord } from "./transaction-search.ts";
 
 // Derived from PayPal's documentation, not recorded: see fixtures/README.md.
@@ -144,5 +145,29 @@ describe("searching for one transaction", () => {
     const { client } = clientAnswering({ status: 403, body: { name: "NOT_AUTHORIZED" } });
     await expect(searchTransaction(client, { transactionId: TRANSACTION_ID, around })).rejects.toMatchObject({ outcome: "rejected", status: 403 });
     await expect(searchTransaction(client, { transactionId: TRANSACTION_ID, around })).rejects.toBeInstanceOf(PayPalError);
+  });
+});
+
+describe("a payout found in Transaction Search, as the sandbox answered (recorded 11 November 2026)", () => {
+  // The demo caregiver payout of 5.00 the worker paid through the sandbox, looked up by its payout item four hours later.
+  const { exchanges } = readFixture<{ exchanges: RecordedExchange[] }>("transaction-search-sandbox-2026-11-11.json");
+
+  it("reads the payout out of the pool as a negative amount, the fee as a positive one, and the counterparty masked", async () => {
+    const { pool, sent } = replayPool(exchanges);
+    const found = await pool.getPayoutTransaction("DA9N36VBMB3UN", new Date("2026-11-11T23:00:00Z"));
+    expect(found).toEqual({
+      transactionId: "0X8758998N995083U",
+      status: "S",
+      eventCode: "T0001",
+      amountCents: -500,
+      currency: "USD",
+      initiatedAt: "2026-11-11T18:59:08Z",
+      // PayPal sent the fee as -0.25.
+      feeCents: 25,
+      counterpartyEmailMasked: "s***@personal.example.com",
+      counterpartyAccountId: "PLACEHOLDER",
+    });
+    expect(found !== null && leftThePool(found)).toBe(true);
+    expect(sent[1]?.path).toContain("transaction_id=0X8758998N995083U");
   });
 });

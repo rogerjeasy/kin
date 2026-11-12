@@ -71,9 +71,20 @@ export function isSubscriptionId(id: string): boolean {
   return SUBSCRIPTION_ID.test(id);
 }
 
+/**
+ * The ID Kin gives the one Catalog product a circle's subscriptions are plans
+ * of. PayPal takes a caller's own product ID (6 to 50 characters) and refuses a
+ * second product with it for good (422 `DUPLICATE_RESOURCE_IDENTIFIER`, seen in
+ * the sandbox on 11 November 2026), so the circle's product is made once, with
+ * no ID to store and no 72-hour request-ID window to outlive.
+ */
+export function circleProductId(circleId: string): string {
+  return `KIN-${circleId}`;
+}
+
 /** The one Catalog product a circle's subscriptions are plans of. */
-export function productBody(name: string): string {
-  return JSON.stringify({ name: name.slice(0, 127), description: "A family's shared care fund, managed with Kin", type: "SERVICE" });
+export function productBody(productId: string, name: string): string {
+  return JSON.stringify({ id: productId, name: name.slice(0, 127), description: "A family's shared care fund, managed with Kin", type: "SERVICE" });
 }
 
 /** A plan that charges `amount` every month with no end date, and retries a failed charge three times. */
@@ -111,16 +122,34 @@ export function subscriptionBody(planId: string, subscription: NewSubscription):
 }
 
 /**
- * A revision of a live subscription to a new monthly amount: the plan's one
- * regular cycle priced again (Subscriptions v1 `revise`, a plan override). A
- * new price needs the payer's consent, so PayPal answers with a page they
- * approve it on; the old amount runs until they do.
+ * A revision of a live subscription onto another plan (Subscriptions v1
+ * `revise`): the plan Kin made for the new monthly amount. A new price needs
+ * the payer's consent, so PayPal answers with a page they approve it on; the
+ * old amount runs until they do. The sandbox refused both other shapes on 11
+ * November 2026: a price override with no `plan_id` (400
+ * `MISSING_REQUIRED_PARAMETER`), and one on the subscription's own plan (422
+ * `OVERRIDES_ON_SAME_PLAN_NOT_ALLOWED`).
  */
-export function reviseBody(amount: Money, returnUrl: string): string {
+export function reviseBody(planId: string, returnUrl: string): string {
   return JSON.stringify({
-    plan: { billing_cycles: [{ sequence: 1, total_cycles: 0, pricing_scheme: { fixed_price: { value: decimalAmount(amount), currency_code: amount.currency } } }] },
+    plan_id: planId,
     application_context: { brand_name: "Kin", shipping_preference: "NO_SHIPPING", return_url: returnUrl, cancel_url: returnUrl },
   });
+}
+
+const PLAN_ID = /^P-[A-Z0-9]{6,34}$/;
+
+/** A plan as Kin reads it back: the product it belongs to and its name, so a new price can be a sibling plan. */
+export function parsePlan(value: unknown): { readonly productId: string; readonly name: string } {
+  const record = asRecord(value, "plan");
+  return { productId: requiredText(record, "product_id"), name: requiredText(record, "name") };
+}
+
+/** The plan ID a subscription runs on, checked to PayPal's alphabet since it goes into a URL path. */
+export function parseSubscriptionPlanId(value: unknown): string {
+  const planId = requiredText(asRecord(value, "subscription"), "plan_id");
+  if (!PLAN_ID.test(planId)) throw new PayPalShapeError("plan id");
+  return planId;
 }
 
 /** What PayPal answers a revision with: whether the plan is now overridden, and the page the payer approves it on. */

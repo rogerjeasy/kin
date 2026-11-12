@@ -11,8 +11,9 @@
       "label": "Try asking",
       "paid": "Has {caregiver} been paid?",
       "owes": "Who owes whom this month?",
-      "demand": "Is a {amount} demand from Harbor Gas real?",
-      "refill": "Reorder {parent}'s refill"
+      "demand": "Is a {amount} demand from {payee} real?",
+      "refill": "Reorder {parent}'s refill",
+      "paypalRecord": "Show me PayPal's own record of the last top-up"
     },
     "form": {
       "label": "Your question",
@@ -31,7 +32,8 @@
         "refused": "Claude declined to word this, so Kin used its fixed wording",
         "cut_off": "Claude's answer ran too long, so Kin used its fixed wording",
         "turns": "Claude needed more steps than Kin allows, so Kin used its fixed wording",
-        "unavailable": "Claude stopped answering partway, so Kin used its fixed wording"
+        "unavailable": "Claude stopped answering partway, so Kin used its fixed wording",
+        "no_claude": "Answered by Kin's fixed wording; Claude was unavailable"
       },
       "trace": "How Kin found this",
       "traceEmpty": "Kin answered without reading the record."
@@ -58,6 +60,9 @@
       "get_paypal_payout_status": "Checked the payouts with PayPal",
       "get_paypal_topup_status": "Checked the top-ups with PayPal",
       "get_subscription_status": "Checked the monthly shares with PayPal",
+      "get_paypal_order": "Read PayPal's own record of the top-up (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "Read PayPal's own record of the invoice (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "Checked PayPal for disputes on the top-ups (PayPal Agent Toolkit)",
       "propose_refill": "Proposed a refill",
       "unknown": "Asked for a tool Kin does not have"
     },
@@ -110,6 +115,15 @@
       "topUp": "{member} topped up {amount} on {day}.",
       "topUpSimulated": "{member} topped up {amount} on {day}. It was simulated.",
       "topUpNone": "The record holds no top-ups.",
+      "paypalOrder": "PayPal's own record of {member}'s top-up of {amount} on {day}: the order is {status}.",
+      "paypalOrderSimulated": "{member}'s top-up of {amount} on {day} was simulated, so PayPal holds no record of it.",
+      "paypalUnread": "PayPal could not be read just now, so Kin shows only its own record.",
+      "paypalInvoice": "PayPal's invoice to {member} for {amount} is {status}.",
+      "paypalInvoiceSimulated": "The invoice to {member} for {amount} was simulated, so PayPal holds no record of it.",
+      "paypalInvoiceNone": "Kin has sent no invoices.",
+      "paypalDispute": "PayPal shows a dispute on {member}'s top-up of {amount}: {status}.",
+      "paypalDisputesNone": "PayPal shows no dispute on the circle's newest real top-ups.",
+      "paypalDisputesSimulated": "The circle's top-ups were simulated, so PayPal holds no disputes for them.",
       "share": "{member}'s monthly share is {amount}.",
       "shareNone": "No monthly shares are set up.",
       "refillNone": "The family has set up no refills.",
@@ -2395,6 +2409,10 @@
       "ordersTitle": "Orders",
       "ordersEmpty": "No refill has been proposed yet.",
       "simulated": "Simulated: the pharmacy is a stand-in and no real money moves.",
+      "sandbox": "The pharmacy is a stand-in. Its charges go through PayPal’s sandbox, with test money and no real money; delivery is simulated.",
+      "paidSandbox": "PayPal sandbox",
+      "paidSimulated": "Simulated",
+      "capture": "PayPal capture {id}",
       "trackLabel": "Where the order is",
       "states": {
         "awaiting": "Waiting for a yes",

@@ -1,3 +1,4 @@
+import { agentToolkit } from "@/server/agent-toolkit";
 import { paypalReader } from "@/server/ask-kin/world";
 import { authConfig } from "@/server/auth/config";
 import { databases } from "@/server/database";
@@ -12,7 +13,7 @@ import { topUpServices } from "@/server/paypal";
  */
 function serve(request: Request): Promise<Response> {
   const services = topUpServices();
-  return serveMcp(request, { db: databases().app, origin: authConfig().webOrigin, paypal: services === null ? null : paypalReader(services.pool) });
+  return serveMcp(request, { db: databases().app, origin: authConfig().webOrigin, paypal: services === null ? null : paypalReader(services.pool, agentToolkit()) });
 }
 
 export const POST = serve;

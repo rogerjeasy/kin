@@ -11,8 +11,9 @@
       "label": "Pruebe a preguntar",
       "paid": "¿Se le ha pagado a {caregiver}?",
       "owes": "¿Quién le debe a quién este mes?",
-      "demand": "¿Es real un cobro de {amount} de Harbor Gas?",
-      "refill": "Volver a pedir la receta de {parent}"
+      "demand": "¿Es real un cobro de {amount} de {payee}?",
+      "refill": "Volver a pedir la receta de {parent}",
+      "paypalRecord": "Muéstrame el registro de PayPal de la última aportación"
     },
     "form": {
       "label": "Su pregunta",
@@ -31,7 +32,8 @@
         "refused": "Claude no quiso redactar esta respuesta, así que Kin usó su redacción fija",
         "cut_off": "La respuesta de Claude era demasiado larga, así que Kin usó su redacción fija",
         "turns": "Claude necesitaba más pasos de los que Kin permite, así que Kin usó su redacción fija",
-        "unavailable": "Claude dejó de responder a mitad, así que Kin usó su redacción fija"
+        "unavailable": "Claude dejó de responder a mitad, así que Kin usó su redacción fija",
+        "no_claude": "Respondido con la redacción fija de Kin; Claude no estaba disponible"
       },
       "trace": "Cómo lo encontró Kin",
       "traceEmpty": "Kin respondió sin leer el registro."
@@ -58,6 +60,9 @@
       "get_paypal_payout_status": "Comprobó los pagos con PayPal",
       "get_paypal_topup_status": "Comprobó las aportaciones con PayPal",
       "get_subscription_status": "Comprobó las cuotas mensuales con PayPal",
+      "get_paypal_order": "Leyó el registro de PayPal sobre la aportación (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "Leyó el registro de PayPal sobre la factura (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "Buscó en PayPal disputas sobre las aportaciones (PayPal Agent Toolkit)",
       "propose_refill": "Propuso una reposición",
       "unknown": "Pidió una herramienta que Kin no tiene"
     },
@@ -110,6 +115,15 @@
       "topUp": "{member} aportó {amount} el {day}.",
       "topUpSimulated": "{member} aportó {amount} el {day}. Fue simulado.",
       "topUpNone": "El registro no tiene aportaciones.",
+      "paypalOrder": "Según el registro de PayPal, la aportación de {amount} de {member} del {day}: el pedido está {status}.",
+      "paypalOrderSimulated": "La aportación de {amount} de {member} del {day} fue simulada, así que PayPal no tiene registro de ella.",
+      "paypalUnread": "Ahora no se pudo leer PayPal, así que Kin muestra solo su propio registro.",
+      "paypalInvoice": "La factura de PayPal a {member} por {amount} está {status}.",
+      "paypalInvoiceSimulated": "La factura a {member} por {amount} fue simulada, así que PayPal no tiene registro de ella.",
+      "paypalInvoiceNone": "Kin no ha enviado facturas.",
+      "paypalDispute": "PayPal muestra una disputa sobre la aportación de {amount} de {member}: {status}.",
+      "paypalDisputesNone": "PayPal no muestra disputas sobre las aportaciones reales más recientes del círculo.",
+      "paypalDisputesSimulated": "Las aportaciones del círculo fueron simuladas, así que PayPal no tiene disputas sobre ellas.",
       "share": "La cuota mensual de {member} es de {amount}.",
       "shareNone": "No hay cuotas mensuales configuradas.",
       "refillNone": "La familia no ha configurado reposiciones.",
@@ -2395,6 +2409,10 @@
       "ordersTitle": "Pedidos",
       "ordersEmpty": "Todavía no se ha propuesto ninguna reposición.",
       "simulated": "Simulado: la farmacia es un sustituto y no se mueve dinero real.",
+      "sandbox": "La farmacia es un sustituto. Sus cobros pasan por la sandbox de PayPal, con dinero de prueba y sin dinero real; la entrega es simulada.",
+      "paidSandbox": "Sandbox de PayPal",
+      "paidSimulated": "Simulado",
+      "capture": "Captura de PayPal {id}",
       "trackLabel": "Dónde está el pedido",
       "states": {
         "awaiting": "Esperando un sí",

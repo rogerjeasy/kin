@@ -1,36 +1,18 @@
-# Kin: five features for the grand prize
+# Kin: feature designs
 
-Feature proposals. PayPal AI Hackathon 2026. Draft 1, 13 October 2026.
+Feature designs that extend Kin. Draft 2, 11 November 2026 (first written 13 October 2026).
 
-These five features extend Kin as described in `project-description.md` and `architecture.md`. None changes Kin's direction. Each deepens one of the two ideas that make Kin new (fairness as a payout, payment events as speech) or the rule behind both (the AI proposes, people approve, the record decides). Each was chosen against the judging criteria as published on Devpost and against the five category prizes.
+**What is built now.** Parts of all five are built; each section's status note says which parts. (1) Spoken mandates: the mandate tables, checker, refill approval and family screen (`architecture.md` decision 64). (2) The office line: the call logic, the screen at `/dashboard/office-line` and the Twilio webhook service `apps/voice`, hosted on App Runner (decisions 68 and 85). (3) The auditor: `packages/verify` with `kin-verify`, the kept chain heads and the auditor panel at `/dashboard/record/verify` (decision 66). (4) The simulator: `simulateScenario` in `packages/domain` and the screen at `/dashboard/circle/agreement/simulate` (decision 65). (5) Cross-border circles: only a member's agreed share shown in their own currency at a fixed rate labelled simulated (`packages/domain/src/currency-conversion.ts`, on the Fairness page). Everything a section lists as not built is still a design, and `AGENTS.md` section 1 applies: build it only from an approved spec.
 
----
+These five features extend Kin as described in `project-description.md` and `architecture.md`. None changes Kin's direction. Each deepens one of the two ideas that make Kin new (fairness as a payout, payment events as speech) or the rule behind both (the AI proposes, people approve, the record decides).
 
-## 0. What the judges score
-
-Quoted from the Devpost page on 13 October 2026.
-
-| Criterion | Devpost wording |
-|---|---|
-| **Technological Implementation** | How thoroughly and skillfully does the project use PayPal Developer Platform and AI tool(s)? Does the project reflect genuine effort and a working, non-trivial implementation? |
-| **Design** | Does the project deliver a complete, coherent product experience, not just a technical proof of concept? |
-| **Potential Impact** | Does the project make a credible, specific case for solving a real problem for a real audience, and does the solution actually address that problem based on what's demonstrated? |
-| **Innovation/Idea** | How creative and novel is the concept and does the project differ from existing concepts? |
-| **Presentation** | Does the video clearly demonstrate the project working end-to-end? Does the pitch communicate what problem is solved, who it's for, and why it matters? Is the overall presentation easy to follow? |
-
-The Official Rules break ties on the first criterion, so Technological Implementation decides close calls (see `../IDEAS.md`, section 1).
-
-Prizes: 1st $12,000, 2nd $8,000, 3rd $5,000. Category prizes of $5,000 each: Most Creative, Most Impactful, Best Demo Delivery, Best Use of PayPal + AI, Best Use of Agentic Commerce. A project can take one grand prize or one category prize, plus one sponsor prize.
-
-**What the five features do together.** Kin already has breadth: nine PayPal capabilities, five personas, a voice channel. What wins first place is depth that can be demonstrated and verified: a signature agentic-commerce mechanism nobody else has (1), an unforgettable scene (2), engineering rigor a judge can run (3), a visible deterministic core (4), and an audience that spans the world (5).
-
-| # | Feature | One line | Criteria it lifts most | Category prize | Effort |
-|---|---|---|---|---|---|
-| 1 | Spoken mandates | The parent's voice becomes a bounded standing permission the agent buys under | Innovation, Technological | Best Use of Agentic Commerce | ~4 days |
-| 2 | The family office line | Kin takes the scam call so the parent never has to | Impact, Innovation, Presentation | Most Creative, Most Impactful | ~3 days |
-| 3 | The independent auditor | A tamper-evident ledger, an offline verifier, and a second AI that checks the first | Technological, Impact | Best Use of PayPal + AI | ~4 days |
-| 4 | The rehearsable agreement | Policy as code, a what-if simulator, a dry-run month | Design, Innovation | Best Demo Delivery | ~3 days |
-| 5 | Cross-border circles | One fair pool for a family in three currencies | Impact, Technological | Most Impactful | ~3 days |
+| # | Feature | One line | Status | Estimated effort when designed |
+|---|---|---|---|---|
+| 1 | Spoken mandates | The parent's voice becomes a bounded standing permission the agent buys under | Partly built (decision 64) | ~4 days |
+| 2 | The family office line | Kin takes the scam call so the parent never has to | Partly built and hosted (decisions 68, 85) | ~3 days |
+| 3 | The independent auditor | A tamper-evident ledger, an offline verifier, and a second AI that checks the first | Partly built (decision 66) | ~4 days |
+| 4 | The rehearsable agreement | Policy as code, a what-if simulator, a dry-run month | Simulator built (decision 65) | ~3 days |
+| 5 | Cross-border circles | One fair pool for a family in three currencies | Display only, simulated rates | ~3 days |
 
 ---
 
@@ -42,12 +24,12 @@ Prizes: 1st $12,000, 2nd $8,000, 3rd $5,000. Category prizes of $5,000 each: Mos
 
 Rose grants Kin a bounded standing permission by voice, once: "You may order my blood pressure medication every month, up to fifty dollars, from the pharmacy." Kin compiles it, reads it back, records her confirmation, and from then on the purchasing agent acts within it without calling her each time. Anything outside it still needs a live yes.
 
-### Why it wins
+### Why it matters
 
-- Agentic commerce as PayPal, Google and OpenAI now define it runs on mandates. Google's AP2 protocol, which PayPal co-launched in September 2025, has an intent mandate, a cart mandate and a payment mandate. PayPal's ACP integration issues a delegated token bound to an allowance: merchant, maximum amount, currency, expiry. Kin brings that structure to the one buyer those protocols forget: a person who cannot read a screen. That is a novel concept with an obvious lineage, which is what the Innovation criterion rewards.
+- Agentic commerce as PayPal, Google and OpenAI now define it runs on mandates. Google's AP2 protocol, which PayPal co-launched in September 2025, has an intent mandate, a cart mandate and a payment mandate. PayPal's ACP integration issues a delegated token bound to an allowance: merchant, maximum amount, currency, expiry. Kin brings that structure to the one buyer those protocols forget: a person who cannot read a screen.
 - It is the deepest possible form of "the agent proposes, people approve". The approval moves from per-purchase to per-mandate without weakening, because the check that a cart fits a mandate is plain code.
 - It fixes a real product flaw. Calling an 81-year-old for every refill trains her to say yes to everything. Mandates make the agent useful and keep her in charge.
-- It produces a verifiable chain from spoken words to a PayPal capture, which is Technological Implementation a judge can follow line by line.
+- It produces a verifiable chain from spoken words to a PayPal capture that anyone reviewing the record can follow line by line.
 
 ### How it works
 
@@ -88,11 +70,10 @@ Day 1: Rose grants the mandate by voice. Day 9: the refill is bought silently an
 
 The family registers a phone number for Rose's money matters. Rose gives it to anyone who asks her for money ("call my family's office"), or taps one button to hand a live caller to Kin. Kin's receptionist takes the demand, checks it against the real record in seconds, answers the caller from a fixed set of replies, never pays, never discloses, and sends the family a transcript and verdict before the call ends.
 
-### Why it wins
+### Why it matters
 
 - The present claim check works after the call, once Rose remembers to ask. Scams work through pressure in the moment. Putting Kin between the caller and the parent turns a feature into a protection.
-- The verdict comes from PayPal's record, not from a model's judgment. PayPal's data as the ground truth for a safety decision is the clearest possible answer to "Best Use of PayPal + AI".
-- It is the most memorable thirty seconds Kin can put in a video, and a scene no other entry will have.
+- The verdict comes from PayPal's record, not from a model's judgment: PayPal's data is the ground truth for a safety decision.
 - It extends an existing feature (the claim check) over an existing channel (Twilio voice).
 
 ### How it works
@@ -123,13 +104,13 @@ Rose's phone rings. "Your gas is being cut off today unless you pay 300 dollars.
 
 ### Built so far
 
-The call logic is plain code: `packages/domain/src/office-line.ts` (intake, `checkClaim` verdict, pressure rules, the closed set of sentences) behind the `CallLine` interface of `packages/telephony`, with a scripted fake line. The dashboard's "try the office line" screen (`/dashboard/office-line`) plays a written caller through the same `takeCall`, records an `office_calls` row (circle-scoped, row-level security) with its claim check, and alerts the family. The phone line is built to Twilio's webhook contract (`apps/voice`, `packages/telephony`; architecture decision 68): signed requests, `<Say>` and `<Gather>` TwiML, the same `takeCall` conducted a turn at a time, the call recorded as a real call with its claim check and the family's alert, and `pnpm --filter @kin/voice run simulate-call` plays a signed call without a Twilio account. It has not been run against Twilio itself: the account, the number, the secrets and the hosting stack are the owner's to add (`apps/voice/README.md`). Not built: transfer or conference from the parent's app, Claude extraction and phrasing (replies are fixed per language, so nothing is left for a model to disclose), and the thirty-call evaluation set.
+The call logic is plain code: `packages/domain/src/office-line.ts` (intake, `checkClaim` verdict, pressure rules, the closed set of sentences) behind the `CallLine` interface of `packages/telephony`, with a scripted fake line. The dashboard's "try the office line" screen (`/dashboard/office-line`) plays a written caller through the same `takeCall`, records an `office_calls` row (circle-scoped, row-level security) with its claim check, and alerts the family. The phone line is built to Twilio's webhook contract (`apps/voice`, `packages/telephony`; architecture decision 68): signed requests, `<Say>` and `<Gather>` TwiML, the same `takeCall` conducted a turn at a time, the call recorded as a real call with its claim check and the family's alert, and `pnpm --filter @kin/voice run simulate-call` plays a signed call without a Twilio account. The service is hosted on App Runner as `KinVoice` (decision 85); a call through a real Twilio number is not yet verified (`apps/voice/README.md`). Not built: transfer or conference from the parent's app, Claude extraction and phrasing (replies are fixed per language, so nothing is left for a model to disclose), and the thirty-call evaluation set.
 
 ### Guardrails and risks
 
 - The receptionist can be lied to and it changes nothing: no write tools, scripted outputs, no data in replies.
 - Recording consent: announce it, and keep transcript text rather than audio by default, consistent with the existing policy.
-- Risk: a live demo depends on telephony. Keep the recorded call as the fallback already planned.
+- Risk: a live demonstration depends on telephony. Keep a recorded call as the fallback.
 
 ---
 
@@ -139,12 +120,12 @@ The call logic is plain code: `packages/domain/src/office-line.ts` (intake, `che
 
 Two layers. The ledger becomes tamper-evident, and the monthly audit export carries enough to be verified by anyone, offline, with a small open-source verifier shipped in the repository. On top, an independent auditor agent with read-only access and no shared context with the family agent reviews each month, reconciles it against PayPal, and writes findings in plain language. The observer (the family lawyer) can run it on demand or connect their own agent through the Kin MCP server.
 
-### Why it wins
+### Why it matters
 
-- "Its record stands up to scrutiny" is one of Kin's five differentiators. Today it is a design claim. This makes it a property a judge can test by running one command.
-- Technological Implementation is the tiebreaker. A hash-chained, signed, reproducible ledger reconciled against PayPal is exactly the "working, non-trivial implementation" the criterion names.
-- Impact: court-supervised guardians and conservators must file periodic accountings, and professional fiduciaries and elder-law attorneys are Kin's professional plan. Elder financial abuse is most often committed by someone close; an auditor that does not care who asks is protection from the inside.
-- Best Use of PayPal + AI: the auditor's ground truth is PayPal's transaction history.
+- "Its record stands up to scrutiny" is one of Kin's five differentiators. Without this it is a design claim. This makes it a property anyone can test by running one command.
+- A hash-chained, signed, reproducible ledger reconciled against PayPal is what an accountant, a lawyer or a court can rely on without trusting Kin.
+- Court-supervised guardians and conservators must file periodic accountings, and professional fiduciaries and elder-law attorneys are Kin's professional plan. Elder financial abuse is most often committed by someone close; an auditor that does not care who asks is protection from the inside.
+- The auditor's ground truth is PayPal's transaction history.
 
 ### How it works
 
@@ -168,7 +149,7 @@ Two layers. The ledger becomes tamper-evident, and the monthly audit export carr
 
 ### The demo moment
 
-The video's last beat. Elena opens the audit export, and `kin-verify october.zip` prints: chain intact across every entry, all approval signatures valid, settlement reproduced exactly, zero differences against PayPal. Then the auditor's single finding appears: "Amara billed four hours on a day with no scheduled visit. Approved by Elena. Receipt attached. Recommend confirming with Amara."
+Elena opens the audit export, and `kin-verify october.zip` prints: chain intact across every entry, all approval signatures valid, settlement reproduced exactly, zero differences against PayPal. Then the auditor's single finding appears: "Amara billed four hours on a day with no scheduled visit. Approved by Elena. Receipt attached. Recommend confirming with Amara."
 
 ### What to build
 
@@ -192,15 +173,17 @@ The video's last beat. Elena opens the audit export, and `kin-verify october.zip
 
 ## 4. The rehearsable agreement: policy as code, a what-if simulator, a dry-run month
 
+> **Status: the simulator is built** (decision 65 in `architecture.md` section 21). Built: `simulateScenario` in `packages/domain`, which rehearses a share change, a member stepping back, other approval amounts and a large bill by calling the real `settlePeriod` and `planApprovals` on a copy of the circle's state, and the read-only screen at `/dashboard/circle/agreement/simulate`. Not built: the compiled policy schema with stored versions, the agent tool `simulate_scenario`, voice phrasing, the dry-run settlement view, the diff view and the forecast job.
+
 ### What it is
 
 The family agreement is already drafted in plain language. Now it compiles into a versioned, executable policy, and anyone can rehearse the future against it. "What if the stairlift repair costs 900 dollars?" "What if Ana's share drops to 10 percent and her hours count at 20 dollars?" Kin runs the real approval engine and the real fairness calculator on a copy of today's state and answers exactly: who must approve, who pays what, what settlement follows, what Rose would be asked. Changes to the agreement appear as a diff, explained in words, and take effect only when every member accepts. The parent hears the change.
 
-### Why it wins
+### Why it matters
 
 - Fairness as a payout is Kin's first new primitive, and the simulator is how a family comes to trust it: same inputs, same answer, before any money moves. Conflicts come from surprises; this removes them.
-- It is the most visible proof that the money core is deterministic and the AI only drafts. The Design criterion asks for a complete, coherent product, and a family money product without a what-if is incomplete.
-- Innovation: expense tools show balances. None lets a family rehearse a decision through the actual rules engine.
+- It is the most visible proof that the money core is deterministic and the AI only drafts. A family money product without a what-if is incomplete.
+- Expense tools show balances. None lets a family rehearse a decision through the actual rules engine.
 - It deepens agentic commerce. The agent uses the simulator itself before proposing, for example choosing Pay Later for the stairlift because a one-off top-up would exceed Ana's affordable share.
 
 ### How it works
@@ -229,22 +212,23 @@ Elena: "What if the stairlift repair is 900 dollars?" Kin: "The pool holds 610. 
 ### Guardrails and risks
 
 - Simulations are labelled and never create proposals by themselves.
-- Risk: scope creep in the UI. Keep three scenario types for the demo: a large bill, a share change, a month close.
+- Risk: scope creep in the UI. Start with three scenario types: a large bill, a share change, a month close.
 
 ---
 
 ## 5. Cross-border circles: a family in three currencies, one fair pool
 
+> **Status: display only.** Built: `convertMoney` and a fixed rate table in `packages/domain/src/currency-conversion.ts` (integer rates, stamped, labelled simulated), and the Fairness page showing a member who gives in another currency (Marcus, in euros, in the demo) their agreed share in that currency, marked "simulated rate". Not built: conversion taken from PayPal's record, conversion-cost ledger lines, per-currency subscription plans, invoices and payouts, and narration per currency. Sandbox multi-currency behavior is unverified (`architecture.md` section 23).
+
 ### What it is
 
 Marcus lives abroad and pays his share in euros. The pool is in dollars. A caregiver may be paid in a third currency. Kin keeps each amount in its own currency, records the conversion PayPal actually applied, treats conversion cost like fees (a shared cost of the circle), computes fairness in the pool currency, and speaks to each person in their own currency and language.
 
-### Why it wins
+### Why it matters
 
-- Impact multiplies. Families spread across countries are Kin's stated wider audience and the roadmap's next step. The diaspora caring for a parent at home is one of the largest money flows in the world. The World Bank put remittances to low- and middle-income countries at roughly $685 billion in 2024; confirm the figure before citing it.
-- Cross-border is PayPal's home ground. Showing it done correctly, with integer cents, conversion taken from PayPal's record and never from a model or a rate guess, is Technological Implementation the PayPal judges will recognize.
+- Families spread across countries are Kin's stated wider audience and the roadmap's next step. The diaspora caring for a parent at home is one of the largest money flows in the world. The World Bank put remittances to low- and middle-income countries at roughly $685 billion in 2024; confirm the figure before citing it.
+- Cross-border is PayPal's home ground. Doing it correctly means integer cents and conversion taken from PayPal's record, never from a model or a rate guess.
 - It stresses the money core in the right way while keeping the same primitive: fairness as a payout, now across borders.
-- It gives the video an international family, which most entries will not have.
 
 ### How it works
 
@@ -277,22 +261,19 @@ Marcus's euro subscription payment lands. The ledger shows the conversion line. 
 
 ## 6. Two smaller additions worth carrying
 
-- **A production path for the pool account.** PayPal Partner Referrals onboarding, so Kin acts on a family's account as a platform with granted permissions and never holds credentials. It answers the architecture's largest open question (section 22.2). It is technical rather than demo-visible, so put it in the README under "what we would do next", with a working sandbox onboarding link if time allows.
-- **A live impact panel.** The seven metrics from section 13, computed from the record and shown in the family's view. Half a day, and it answers the Potential Impact criterion's last clause directly.
+- **A production path for the pool account.** PayPal Partner Referrals onboarding, so Kin acts on a family's account as a platform with granted permissions and never holds credentials. It answers the architecture's largest open question (section 22.2). It is infrastructure rather than a visible feature, and is listed as next work.
+- **A live impact panel.** The seven metrics from section 13 of the product description, computed from the record and shown in the family's view, so impact is measured rather than claimed. About half a day.
 
 ---
 
-## 7. Build order and the video
+## 7. Build order
 
-Order: 1 (mandates), 2 (office line), 3 (auditor and verifier), 4 (simulator), 5 (cross-border). The reason is prize leverage per day, and 3 and 4 reuse domain code. Total about 17 days on top of the essential spine named in section 22.3 of the architecture. If time runs short, cut 5 first, then the forecast part of 4. Never cut 1 to 3.
-
-Video: keep the eight moments in section 14 of the product description. Replace moment 4 with the mandate grant, the silent refill and the exceedance call. Make moment 6 the office-line call. End moment 8 with `kin-verify` passing. Three beats no other entry will have.
+Order as designed: 1 (mandates), 2 (office line), 3 (auditor and verifier), 4 (simulator), 5 (cross-border). 3 and 4 reuse domain code. Total about 17 days on top of the essential spine named in section 22.3 of the architecture. If time runs short, cut 5 first, then the forecast part of 4.
 
 ---
 
 ## 8. Sources checked on 13 October 2026
 
-- The Devpost page: judging criteria and prize list, quoted in section 0.
 - Google's AP2 announcement (16 September 2025) and protocol summaries: intent, cart and payment mandates as signed credentials; PayPal among the launch partners.
 - PayPal developer docs: the Agent Ready overview, and the ACP integration page describing the delegated token's allowance fields (`merchant_id`, `max_amount`, `currency`, `expires_at`).
 - PayPal tech blog, 16 September 2026: WebMCP support through the JavaScript SDK for Store Sync merchants. "The buyer remains in charge of approving the transaction."

@@ -15,7 +15,8 @@
     "smoke": "node scripts/smoke-test-web.ts",
     "migrate": "node scripts/run-migrations.ts",
     "paypal:store": "node --env-file=../.env scripts/store-paypal-secret.ts",
-    "twilio:store": "node --env-file=../.env scripts/store-twilio-credentials.ts"
+    "twilio:store": "node --env-file=../.env scripts/store-twilio-credentials.ts",
+    "merchant:store": "node --env-file=../.env scripts/store-merchant-secrets.ts"
   },
   "dependencies": {
     "@kin/auth": "workspace:*",

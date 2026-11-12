@@ -42,6 +42,23 @@ export const TWILIO_SETTINGS = {
 } as const;
 
 /**
+ * Where KinData leaves the demo pharmacy's secrets (only with `kin:demoMerchant`), for KinDemoMerchant and KinWorker to
+ * read by name. The pharmacy's PayPal app and Rose's saved payment method are slots a person fills
+ * (`pnpm --filter @kin/infra run merchant:store`); the signing secret is generated and never leaves Secrets Manager, so the
+ * worker that signs and the pharmacy that checks read the same value.
+ */
+export const DEMO_MERCHANT_SETTINGS = {
+  clientIdSecretName: "kin/demo-merchant/paypal-client-id",
+  clientIdSecretArn: "kin-demo-merchant-paypal-client-id-arn",
+  clientSecretSecretName: "kin/demo-merchant/paypal-client-secret",
+  clientSecretSecretArn: "kin-demo-merchant-paypal-client-secret-arn",
+  vaultIdSecretName: "kin/demo-merchant/vault-id",
+  vaultIdSecretArn: "kin-demo-merchant-vault-id-arn",
+  signingSecretName: "kin/demo-merchant/signing-secret",
+  signingSecretArn: "kin-demo-merchant-signing-secret-arn",
+} as const;
+
+/**
  * App Runner allows one VPC connector for a given network and security group, so the phone service
  * shares the web app's: KinWeb publishes it here and KinVoice reads it, and so deploys after it.
  */

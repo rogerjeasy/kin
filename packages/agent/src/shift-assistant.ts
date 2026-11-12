@@ -1,6 +1,6 @@
 import type { CircleRole } from "@kin/domain";
 
-import { answerPassesGuard } from "./ask-kin/ask-kin.ts";
+import { answerPassesGuard } from "./ask-kin/answer-guard.ts";
 import { SHIFT_LANGUAGE_NAMES, type ShiftLanguage } from "./shift-templates.ts";
 
 /**

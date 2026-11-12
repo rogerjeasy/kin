@@ -13,12 +13,13 @@ import {
 import { endMandates, personQuery, seatPerson, serviceRows, snapshotFor, testDatabases, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
 import { DELIVERY_SCHEDULE_SECONDS, accountBalance, calendarDay, purchaseCaptured } from "@kin/domain";
 import { randomUUID } from "node:crypto";
+import { MERCHANT_SIGNATURE_HEADER, verifyMerchantSignature } from "@kin/auth";
 import { describe, expect, it } from "vitest";
 
 import type { InboxLog } from "../paypal-inbox/run-inbox.ts";
 
 import { executePurchase, followDelivery, type PurchaseDeps } from "./execute-purchase.ts";
-import { MerchantError, httpMerchant, simulatedMerchant, type Merchant } from "./merchant.ts";
+import { ChargeNotConfirmedError, MerchantError, confirmsCharge, httpMerchant, simulatedMerchant, type Merchant, type PaymentReadBack } from "./merchant.ts";
 import { runDeliveryBatch, runPurchaseBatch } from "./run-purchases.ts";
 
 const db = testDatabases();
@@ -27,6 +28,23 @@ const silent: InboxLog = () => {};
 const REAL_START = new Date("2026-11-07T10:00:00Z");
 
 type Refill = { circle: VisitorCircle; ruleId: string; proposalId: string };
+
+const SANDBOX_CHARGE = { kind: "paypal", orderId: "8MC585209K746392H", captureId: "5O190127TN364715T" } as const;
+const PAYPAL_RECORD = { orderId: SANDBOX_CHARGE.orderId, status: "COMPLETED", customId: "kin-purchase-1", capture: { id: SANDBOX_CHARGE.captureId, status: "COMPLETED", value: "64.00", currency: "USD" } };
+
+/** A seller that charged the sandbox, and whose read-back of PayPal's record says what `record` makes of the order's key. */
+const sandboxSeller = (record: (key: string) => PaymentReadBack | null): Merchant => {
+  let key = "";
+  return {
+    ...simulatedMerchant,
+    placeOrder: async (order) => {
+      key = order.key;
+      return { ref: `order-${order.key}`, charge: SANDBOX_CHARGE };
+    },
+    readPayment: async (orderId) => (orderId === SANDBOX_CHARGE.orderId ? record(key) : null),
+  };
+};
+const recordFor = (key: string): PaymentReadBack => ({ ...PAYPAL_RECORD, customId: key });
 
 const deps = (merchant: Merchant = simulatedMerchant, at: Date = REAL_START): PurchaseDeps => ({ db: db.service, merchant, now: () => at });
 const row = async (circleId: string, query: string, id: string) => (await serviceRows(db, circleId, query, [id]))[0];
@@ -137,19 +155,41 @@ describe("an approved refill", () => {
     expect(await row(refill.circle.circleId, "select state, merchant_order from purchases where proposal_id = $1", refill.proposalId)).toEqual({ state: "ordered", merchant_order: `simulated-order-kin-purchase-${refill.proposalId}` });
   });
 
-  it("is recorded under PayPal's capture and not as simulated when the seller really charged the sandbox", async () => {
+  it("is recorded under PayPal's capture, not as simulated, once PayPal's record read back shows the charge", async () => {
     const refill = await approvedRefill();
-    const charged: Merchant = { ...simulatedMerchant, placeOrder: async ({ key }) => ({ ref: `order-${key}`, charge: { kind: "paypal", captureId: "5O190127TN364715T" } }) };
-    expect(await executePurchase(deps(charged), refill.circle.circleId, refill.executionId)).toEqual({ next: "done", result: "confirmed" });
+    expect(await executePurchase(deps(sandboxSeller(recordFor)), refill.circle.circleId, refill.executionId)).toEqual({ next: "done", result: "confirmed" });
     // Carried out by hand, so its queued messages are marked sent to leave the shared outbox to the runner tests.
     await serviceRows(db, refill.circle.circleId, "update outbox set sent_at = now() where circle_id = $1", [refill.circle.circleId]);
 
-    const captured = (await ledgerOf(refill.circle.circleId)).entries.filter((entry) => entry.kind === "purchase_captured" && entry.source.id === "5O190127TN364715T");
-    expect(captured.map((entry) => entry.simulated)).toEqual([false]);
+    const captured = (await ledgerOf(refill.circle.circleId)).entries.filter((entry) => entry.kind === "purchase_captured" && entry.source.id === SANDBOX_CHARGE.captureId);
+    expect(captured.map((entry) => [entry.simulated, entry.source.type])).toEqual([[false, "paypal_event"]]);
     expect(captured.map((entry) => entry.description)).toEqual(["Monthly prescription refill (30 days) bought through PayPal"]);
-    expect(await row(refill.circle.circleId, "select paypal_item_id from executions where id = $1", refill.executionId)).toEqual({ paypal_item_id: "5O190127TN364715T" });
+    expect(await row(refill.circle.circleId, "select paypal_item_id from executions where id = $1", refill.executionId)).toEqual({ paypal_item_id: SANDBOX_CHARGE.captureId });
     const confirmed = await serviceRows(db, refill.circle.circleId, "select details from audit_log where circle_id = $1 and action = 'purchase.confirmed'", [refill.circle.circleId]);
-    expect(confirmed.at(-1)?.details).toMatchObject({ itemId: "5O190127TN364715T", simulated: false });
+    expect(confirmed.at(-1)?.details).toMatchObject({ itemId: SANDBOX_CHARGE.captureId, paypalOrderId: SANDBOX_CHARGE.orderId, simulated: false });
+  });
+
+  it("records nothing while PayPal's record does not show exactly the charge, and records it once it does", async () => {
+    const refill = await approvedRefill();
+    const before = await ledgerOf(refill.circle.circleId);
+    for (const wrong of [
+      () => null,
+      (key: string) => ({ ...recordFor(key), customId: "kin-purchase-someone-else" }),
+      (key: string) => ({ ...recordFor(key), capture: { ...PAYPAL_RECORD.capture, value: "6.40" } }),
+      (key: string) => ({ ...recordFor(key), capture: { ...PAYPAL_RECORD.capture, status: "PENDING" } }),
+    ]) {
+      await expect(executePurchase(deps(sandboxSeller(wrong)), refill.circle.circleId, refill.executionId)).rejects.toBeInstanceOf(ChargeNotConfirmedError);
+    }
+    const unreachable: Merchant = { ...sandboxSeller(recordFor), readPayment: async () => { throw new MerchantError(true); } };
+    await expect(executePurchase(deps(unreachable), refill.circle.circleId, refill.executionId)).rejects.toBeInstanceOf(MerchantError);
+    // Uncertain means stop: nothing in the ledger, the execution still waits, and no order was recorded as placed.
+    expect((await ledgerOf(refill.circle.circleId)).entries.length).toBe(before.entries.length);
+    expect(await row(refill.circle.circleId, "select state from executions where id = $1", refill.executionId)).toEqual({ state: "created" });
+    expect(await row(refill.circle.circleId, "select state, merchant_order from purchases where proposal_id = $1", refill.proposalId)).toEqual({ state: "awaiting", merchant_order: null });
+
+    expect(await executePurchase(deps(sandboxSeller(recordFor)), refill.circle.circleId, refill.executionId)).toEqual({ next: "done", result: "confirmed" });
+    await serviceRows(db, refill.circle.circleId, "update outbox set sent_at = now() where circle_id = $1", [refill.circle.circleId]);
+    expect((await ledgerOf(refill.circle.circleId)).entries.filter((entry) => entry.source.id === SANDBOX_CHARGE.captureId).length).toBe(1);
   });
 
   it("is recorded as simulated, under a marker that is no capture's ID, when the seller charged nothing", async () => {
@@ -260,6 +300,25 @@ describe("what a person may read and write of purchases", () => {
 
 describe("the demo pharmacy over HTTP", () => {
   const order = { key: "k", item: "Refill", cents: 6400, currency: "USD" };
+  const SECRET = "the worker and the pharmacy share this secret";
+  const endpoint = { url: "http://pharmacy.test", signingSecret: SECRET };
+  const at = () => REAL_START;
+  const over = (send: typeof fetch) => httpMerchant(endpoint, { send, now: at });
+
+  it("signs every request over its time, method, path and body, as the pharmacy checks it", async () => {
+    const seen: { url: string; init: RequestInit }[] = [];
+    const merchant = over(async (url, init) => {
+      seen.push({ url: String(url), init: init ?? {} });
+      return new Response(JSON.stringify({ ref: "order-1", charge: { kind: "simulated" }, state: "ordered" }), { status: 201 });
+    });
+    await merchant.placeOrder(order);
+    await merchant.progressOf({ ref: "order-1", placedAt: REAL_START, now: REAL_START });
+    const [post, get] = seen;
+    const header = (init: RequestInit | undefined) => (init?.headers as Record<string, string>)[MERCHANT_SIGNATURE_HEADER] ?? null;
+    expect(verifyMerchantSignature({ secret: SECRET, header: header(post?.init), method: "POST", path: "/orders", rawBody: String(post?.init.body), now: REAL_START })).toEqual({ ok: true });
+    expect(verifyMerchantSignature({ secret: SECRET, header: header(get?.init), method: "GET", path: "/orders/order-1", rawBody: "", now: REAL_START })).toEqual({ ok: true });
+    expect(get?.init.method).toBe("GET");
+  });
 
   it("places an order by key and reads its progress, trusting nothing it cannot parse", async () => {
     const replies: Response[] = [
@@ -269,7 +328,7 @@ describe("the demo pharmacy over HTTP", () => {
       new Response("oops", { status: 503 }),
       new Response(JSON.stringify({ ref: "bad ref!", charge: { kind: "simulated" } }), { status: 201 }),
     ];
-    const merchant = httpMerchant("http://pharmacy.test", async () => replies.shift() ?? new Response(null, { status: 500 }));
+    const merchant = over(async () => replies.shift() ?? new Response(null, { status: 500 }));
     expect(await merchant.placeOrder(order)).toEqual({ ref: "order-1", charge: { kind: "simulated" } });
     expect(await merchant.progressOf({ ref: "order-1", placedAt: REAL_START, now: REAL_START })).toBe("shipped");
     await expect(merchant.progressOf({ ref: "order-1", placedAt: REAL_START, now: REAL_START })).rejects.toMatchObject({ retryable: true });
@@ -277,9 +336,15 @@ describe("the demo pharmacy over HTTP", () => {
     await expect(merchant.placeOrder(order)).rejects.toMatchObject({ retryable: true });
   });
 
+  it("asks again, never giving up the purchase, when the pharmacy is busy or does not accept Kin's signature", async () => {
+    for (const status of [401, 429]) {
+      await expect(over(async () => new Response(JSON.stringify({ error: "x" }), { status })).placeOrder(order)).rejects.toMatchObject({ retryable: true });
+    }
+  });
+
   it("sends the standing permission the order is bought under, so the seller can check it itself", async () => {
     const sent: unknown[] = [];
-    const merchant = httpMerchant("http://pharmacy.test", async (_url, init) => {
+    const merchant = over(async (_url, init) => {
       sent.push(JSON.parse(String(init?.body)));
       return new Response(JSON.stringify({ ref: "order-1", charge: { kind: "simulated" } }), { status: 201 });
     });
@@ -289,14 +354,14 @@ describe("the demo pharmacy over HTTP", () => {
   });
 
   it("says a seller's refusal of the standing permission is final", async () => {
-    const merchant = httpMerchant("http://pharmacy.test", async () => new Response(JSON.stringify({ error: "above_mandate" }), { status: 403 }));
+    const merchant = over(async () => new Response(JSON.stringify({ error: "above_mandate" }), { status: 403 }));
     await expect(merchant.placeOrder({ ...order, mandate: { id: "mandate-1", allowanceCents: 5000 } })).rejects.toMatchObject({ retryable: false });
   });
 
-  it("returns the seller's own account of the charge: PayPal's capture, or that nothing was charged", async () => {
+  it("returns the seller's own account of the charge: PayPal's order and capture, or that nothing was charged", async () => {
     const reply = (charge: unknown) => async () => new Response(JSON.stringify({ ref: "order-1", charge }), { status: 201 });
-    expect(await httpMerchant("http://pharmacy.test", reply({ kind: "paypal", captureId: "5O190127TN364715T" })).placeOrder(order)).toEqual({ ref: "order-1", charge: { kind: "paypal", captureId: "5O190127TN364715T" } });
-    expect(await httpMerchant("http://pharmacy.test", reply({ kind: "simulated" })).placeOrder(order)).toEqual({ ref: "order-1", charge: { kind: "simulated" } });
+    expect(await over(reply(SANDBOX_CHARGE)).placeOrder(order)).toEqual({ ref: "order-1", charge: SANDBOX_CHARGE });
+    expect(await over(reply({ kind: "simulated" })).placeOrder(order)).toEqual({ ref: "order-1", charge: { kind: "simulated" } });
   });
 
   it("will not read an account of the charge that could let a simulated one pass for real, or the reverse", async () => {
@@ -305,15 +370,58 @@ describe("the demo pharmacy over HTTP", () => {
       undefined,
       "paypal",
       { kind: "paypal" },
-      { kind: "paypal", captureId: "" },
-      { kind: "paypal", captureId: "simulated-capture-k" },
-      { kind: "paypal", captureId: "Simulated-Purchase-1" },
-      { kind: "paypal", captureId: "has spaces" },
+      { kind: "paypal", captureId: "5O190127TN364715T" },
+      { ...SANDBOX_CHARGE, captureId: "" },
+      { ...SANDBOX_CHARGE, captureId: "simulated-capture-k" },
+      { ...SANDBOX_CHARGE, captureId: "Simulated-Purchase-1" },
+      { ...SANDBOX_CHARGE, captureId: "has spaces" },
+      { ...SANDBOX_CHARGE, orderId: "lowercase-order" },
       { kind: "simulated", captureId: "5O190127TN364715T" },
+      { kind: "simulated", orderId: "8MC585209K746392H" },
       { kind: "other" },
-      { kind: "paypal", captureId: "5O190127TN364715T", extra: true },
+      { ...SANDBOX_CHARGE, extra: true },
     ]) {
-      await expect(httpMerchant("http://pharmacy.test", reply(charge)).placeOrder(order)).rejects.toMatchObject({ retryable: true });
+      await expect(over(reply(charge)).placeOrder(order)).rejects.toMatchObject({ retryable: true });
+    }
+  });
+
+  it("reads PayPal's record of a payment back through the pharmacy, and nothing it cannot parse", async () => {
+    const replies = [
+      new Response(JSON.stringify({ source: "paypal_sandbox", payment: PAYPAL_RECORD }), { status: 200 }),
+      new Response(JSON.stringify({ error: "unknown_payment" }), { status: 404 }),
+      new Response(JSON.stringify({ source: "simulated", payment: PAYPAL_RECORD }), { status: 200 }),
+      new Response(JSON.stringify({ source: "paypal_sandbox", payment: { ...PAYPAL_RECORD, capture: { id: 1 } } }), { status: 200 }),
+    ];
+    const asked: string[] = [];
+    const merchant = over(async (url) => { asked.push(new URL(String(url)).pathname); return replies.shift() ?? new Response(null, { status: 500 }); });
+    expect(await merchant.readPayment(PAYPAL_RECORD.orderId)).toEqual(PAYPAL_RECORD);
+    expect(await merchant.readPayment(PAYPAL_RECORD.orderId)).toBeNull();
+    await expect(merchant.readPayment(PAYPAL_RECORD.orderId)).rejects.toMatchObject({ retryable: true });
+    await expect(merchant.readPayment(PAYPAL_RECORD.orderId)).rejects.toMatchObject({ retryable: true });
+    expect(await merchant.readPayment("../orders/x")).toBeNull();
+    expect(asked).toEqual(Array.from({ length: 4 }, () => `/payments/${PAYPAL_RECORD.orderId}`));
+  });
+});
+
+describe("PayPal's record of a charge", () => {
+  const asked = { orderId: PAYPAL_RECORD.orderId, captureId: PAYPAL_RECORD.capture.id, key: PAYPAL_RECORD.customId, cents: 6400, currency: "USD" };
+
+  it("confirms it only when the order, the purchase's key, the capture, its status and the exact amount all agree", () => {
+    expect(confirmsCharge(PAYPAL_RECORD, asked)).toBe(true);
+    for (const record of [
+      null,
+      { ...PAYPAL_RECORD, capture: null },
+      { ...PAYPAL_RECORD, orderId: "OTHERORDER123" },
+      { ...PAYPAL_RECORD, status: "APPROVED" },
+      { ...PAYPAL_RECORD, customId: "kin-purchase-another" },
+      { ...PAYPAL_RECORD, customId: null },
+      { ...PAYPAL_RECORD, capture: { ...PAYPAL_RECORD.capture, id: "OTHERCAPTURE" } },
+      { ...PAYPAL_RECORD, capture: { ...PAYPAL_RECORD.capture, status: "PENDING" } },
+      { ...PAYPAL_RECORD, capture: { ...PAYPAL_RECORD.capture, value: "63.99" } },
+      { ...PAYPAL_RECORD, capture: { ...PAYPAL_RECORD.capture, value: "64" } },
+      { ...PAYPAL_RECORD, capture: { ...PAYPAL_RECORD.capture, currency: "EUR" } },
+    ]) {
+      expect(confirmsCharge(record, asked), JSON.stringify(record)).toBe(false);
     }
   });
 });
