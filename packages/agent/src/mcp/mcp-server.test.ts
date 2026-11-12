@@ -131,9 +131,10 @@ describe("Kin's MCP server over Streamable HTTP", () => {
     expect(resultOf((await mcp.send(...modern(2, "ping"))).json)).toMatchObject({ resultType: "complete" });
   });
 
-  it("publishes protected resource metadata that names the delegation's scopes", () => {
-    expect(protectedResourceMetadata({ resource: `${ORIGIN}/api/mcp`, documentation: `${ORIGIN}/developers` })).toEqual({
+  it("publishes protected resource metadata that names Kin as the authorization server and the delegation's scopes", () => {
+    expect(protectedResourceMetadata({ resource: `${ORIGIN}/api/mcp`, documentation: `${ORIGIN}/developers`, authorizationServer: ORIGIN })).toEqual({
       resource: `${ORIGIN}/api/mcp`,
+      authorization_servers: [ORIGIN],
       resource_name: "Kin",
       bearer_methods_supported: ["header"],
       scopes_supported: ["kin:read", "kin:propose"],

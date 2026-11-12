@@ -33,7 +33,7 @@ export default defineConfig({
   use: { baseURL, trace: "retain-on-failure", reducedMotion: "reduce" },
   projects: [
     // Public pages, and every test of signing in, start signed out.
-    { name: "public", testIgnore: [/dashboard\.spec\.ts/, /real-circle\.spec\.ts/, /\.setup\.ts/], use: { ...devices["Desktop Chrome"] } },
+    { name: "public", testIgnore: [/dashboard\.spec\.ts/, /real-circle\.spec\.ts/, /oauth\.spec\.ts/, /\.setup\.ts/], use: { ...devices["Desktop Chrome"] } },
     { name: "sign-in", testMatch: /\.setup\.ts/, use: { ...devices["Desktop Chrome"] } },
     {
       name: "signed-in",
@@ -48,6 +48,14 @@ export default defineConfig({
       name: "real-circle",
       testMatch: /real-circle\.spec\.ts/,
       dependencies: ["public", "signed-in"],
+      use: { ...devices["Desktop Chrome"], storageState: SIGNED_IN_STATE },
+    },
+    // An MCP client authorized through OAuth (decision 112) needs the person's
+    // own circle, so it runs once the real-circle tests have started it.
+    {
+      name: "oauth",
+      testMatch: /oauth\.spec\.ts/,
+      dependencies: ["real-circle"],
       use: { ...devices["Desktop Chrome"], storageState: SIGNED_IN_STATE },
     },
   ],

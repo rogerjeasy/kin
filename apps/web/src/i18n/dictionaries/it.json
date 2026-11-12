@@ -4823,7 +4823,8 @@
         "timeout": "Nessuna risposta in tempo",
         "too_large": "Troppo grande da restituire"
       },
-      "proposed": "Ha avanzato una proposta. Attende nella schermata delle approvazioni."
+      "proposed": "Ha avanzato una proposta. Attende nella schermata delle approvazioni.",
+      "oauth": "Accesso dall'app"
     },
     "grant": {
       "title": "Colleghi il suo assistente",
@@ -4923,20 +4924,62 @@
         "visit_invoiced": "Una fattura per una visita già su un’altra fattura, rifiutata.",
         "circle_currency": "Una fattura non nella valuta della cerchia, rifiutata."
       }
+    },
+    "oauth": {
+      "meta": {
+        "title": "Collega un assistente",
+        "description": "Un assistente esterno chiede di lavorare con la tua cerchia a nome tuo."
+      },
+      "title": "Collegare {client}?",
+      "lede": "Un assistente esterno a Kin chiede di lavorare con la tua cerchia a nome tuo. Può leggere e, se lo consenti, proporre. Non può mai approvare, pagare o spostare denaro.",
+      "who": "Chi lo chiede",
+      "selfNamed": "Questo è il nome che l'app si è data. Controlla dove Kin invierà la tua risposta.",
+      "name": "Si presenta come",
+      "unnamed": "Nessun nome indicato",
+      "sendsTo": "Kin invia la tua risposta a",
+      "publishedBy": "Descritta su",
+      "circle": "Cerchia",
+      "seat": "Il tuo posto",
+      "localWarning": "Questo indirizzo è sul tuo computer. Rispondi sì solo se hai appena iniziato a collegare un'app su questo computer.",
+      "choose": "Cosa consenti",
+      "never": "Qualunque cosa tu scelga, agisce solo a nome tuo, entro ciò che il tuo posto consente, e ogni pagamento lo approva comunque una persona in Kin.",
+      "revokeLater": "Puoi revocarlo in qualsiasi momento nella schermata Assistenti collegati. La chiamata successiva viene allora rifiutata.",
+      "allow": "Collega",
+      "allowing": "Collegamento in corso",
+      "deny": "Non collegare",
+      "denying": "Avviso all'app",
+      "errors": {
+        "invalid": "Questa richiesta non è più valida. Ricomincia il collegamento dalla tua app.",
+        "refused": "Il tuo posto non consente di collegare un assistente.",
+        "demo_only": "La demo non può collegare un assistente esterno. Accedi alla tua cerchia per collegarne uno.",
+        "too_many": "Hai già cinque assistenti attivi. Revocane prima uno nella schermata Assistenti collegati.",
+        "too_many_codes": "Troppi tentativi in pochi minuti. Attendi un po', poi ricomincia dalla tua app.",
+        "visitor": "Accedi con il tuo account per collegare un assistente.",
+        "unavailable": "Kin non è riuscito a rispondere ora. Riprova."
+      },
+      "visitor": {
+        "title": "Accedi per collegare un assistente",
+        "text": "La demo non può collegare un assistente esterno alla cerchia di nessuno. Accedi con il tuo account e Kin ti riporterà qui.",
+        "signIn": "Accedi"
+      },
+      "invalid": {
+        "title": "Kin non può sottoporti questa richiesta",
+        "text": "Il link è incompleto, è scaduto o indica un'app che Kin non conosce. Ricomincia il collegamento dalla tua app."
+      }
     }
   },
   "developers": {
     "hero": {
       "eyebrow": "Per sviluppatori",
       "title": "Lavori con il cerchio di una famiglia. Non approvi mai.",
-      "lede": "L’assistente di IA di un familiare si collega al server MCP di Kin con un token che il familiare concede. Il software di un’agenzia di assistenza domiciliare segnala le visite tramite un’API firmata. Entrambi leggono e propongono; una persona in Kin approva."
+      "lede": "L'assistente IA di un familiare si collega al server MCP di Kin accedendo tramite OAuth, o con un token che il familiare concede. Il software di un'agenzia di assistenza domiciliare segnala le visite tramite un'API firmata. Entrambi leggono e propongono; una persona approva in Kin."
     },
     "mcp": {
       "eyebrow": "Server MCP",
       "title": "Collegare un assistente",
-      "lede": "HTTP in streaming, un messaggio JSON-RPC per richiesta, senza sessione. Versioni del protocollo {versions}. Il familiare crea il token nella schermata Assistenti collegati.",
+      "lede": "HTTP in streaming, un messaggio JSON-RPC per richiesta, nessuna sessione. Versioni del protocollo {versions}. Un client accede tramite OAuth 2.1, oppure il familiare crea un token nella schermata Assistenti collegati.",
       "endpoint": "Endpoint",
-      "claudeCode": "Claude Code",
+      "claudeCode": "Claude Code, con un token",
       "config": "Impostazioni del client MCP (.mcp.json)",
       "curl": "Qualsiasi client HTTP",
       "tools": "Gli strumenti",
@@ -4944,6 +4987,12 @@
       "kinds": {
         "read": "Legge",
         "propose": "Propone"
+      },
+      "oauth": {
+        "title": "Accedi dal tuo client",
+        "lede": "Aggiungi l'indirizzo di Kin senza token. Il tuo client trova Kin dal 401, si registra e apre Kin nel tuo browser; accedi, scegli cosa può fare e per quanto tempo, e rispondi sì. Kin è il proprio server di autorizzazione OAuth 2.1: PKCE con S256, documenti di metadati dell'ID client o registrazione dinamica, l'indicatore di risorsa e nessun token di aggiornamento.",
+        "command": "Claude Code, con accesso",
+        "metadata": "Metadati del server di autorizzazione"
       }
     },
     "boundary": {
@@ -4981,9 +5030,7 @@
     "next": {
       "eyebrow": "Prossimamente",
       "title": "Non ancora realizzato",
-      "items": [
-        "Accesso tramite OAuth 2.1 con PKCE, per autorizzare un client senza copiare un token."
-      ]
+      "items": []
     }
   }
 }

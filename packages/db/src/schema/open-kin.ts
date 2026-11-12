@@ -47,6 +47,8 @@ export const delegations = pgTable(
     console: boolean("console").notNull().default(false),
     /** A sample the demo provisioner wrote, with no token anyone holds. The screen says so. */
     seeded: boolean("seeded").notNull().default(false),
+    /** The OAuth client the member authorized in the browser (decision 112); null for a token copied from the screen. */
+    oauthClient: text("oauth_client"),
     expiresAt: at("expires_at").notNull(),
     revokedAt: at("revoked_at"),
     revokedBy: uuid("revoked_by"),
@@ -68,6 +70,57 @@ export const delegations = pgTable(
     check("delegations_expiry", sql`${t.expiresAt} > ${t.createdAt}`),
     check("delegations_revoked", sql`(${t.revokedAt} is null) = (${t.revokedBy} is null)`),
     check("delegations_uses", sql`${t.uses} >= 0`),
+    check("delegations_oauth_client", sql`${t.oauthClient} is null or length(${t.oauthClient}) between 1 and 2048`),
+  ],
+);
+
+/** How long an authorization code lives between the consent screen and the client's trade for a token. */
+export const OAUTH_CODE_SECONDS = 60;
+
+/**
+ * A single-use OAuth authorization code (decision 112): the member's yes on
+ * the consent screen, bound to the client, its redirect URI, its PKCE
+ * challenge, the resource, and the scope and lifetime the member chose. It
+ * lives sixty seconds, is traded once for a delegation, and holds only the
+ * code's SHA-256. A code presented a second time revokes what it was traded for.
+ */
+export const oauthCodes = pgTable(
+  "oauth_codes",
+  {
+    id: id(),
+    circleId: circleId(),
+    /** The member who said yes, and as whom the delegation reads. */
+    memberId: uuid("member_id").notNull(),
+    codeHash: text("code_hash").notNull(),
+    clientId: text("client_id").notNull(),
+    /** The name the client gave itself, as the member saw it; it becomes the delegation's label. */
+    clientName: text("client_name").notNull(),
+    redirectUri: text("redirect_uri").notNull(),
+    codeChallenge: text("code_challenge").notNull(),
+    scope: text("scope", { enum: DELEGATION_SCOPES }).notNull(),
+    days: integer("days").notNull(),
+    resource: text("resource").notNull(),
+    createdAt: createdAt(),
+    expiresAt: at("expires_at").notNull(),
+    usedAt: at("used_at"),
+    delegationId: uuid("delegation_id"),
+  },
+  (t) => [
+    foreignKey({ name: "oauth_codes_circle_fk", columns: [t.circleId], foreignColumns: [circles.id] }),
+    foreignKey({ name: "oauth_codes_member_fk", columns: [t.circleId, t.memberId], foreignColumns: [members.circleId, members.id] }),
+    foreignKey({ name: "oauth_codes_delegation_fk", columns: [t.circleId, t.delegationId], foreignColumns: [delegations.circleId, delegations.id] }),
+    uniqueIndex("oauth_codes_code").on(t.codeHash),
+    index("oauth_codes_member_idx").on(t.circleId, t.memberId, t.createdAt),
+    check("oauth_codes_hash", sql`${t.codeHash} ~ '^[0-9a-f]{64}$'`),
+    check("oauth_codes_challenge", sql`${t.codeChallenge} ~ '^[A-Za-z0-9_-]{43}$'`),
+    check("oauth_codes_scope", sql.raw(`scope in (${quoted(DELEGATION_SCOPES)})`)),
+    check("oauth_codes_days", sql`${t.days} in (1, 7, 30, 90)`),
+    check("oauth_codes_client", sql`length(${t.clientId}) between 1 and 2048`),
+    check("oauth_codes_client_name", sql`length(btrim(${t.clientName})) between 1 and 60 and ${t.clientName} !~ '[<>{}\\n\\r]'`),
+    check("oauth_codes_redirect", sql`length(${t.redirectUri}) between 1 and 512`),
+    check("oauth_codes_resource", sql`length(${t.resource}) between 1 and 512`),
+    check("oauth_codes_expiry", sql.raw(`expires_at > created_at and expires_at <= created_at + interval '${OAUTH_CODE_SECONDS} seconds'`)),
+    check("oauth_codes_used", sql`${t.delegationId} is null or ${t.usedAt} is not null`),
   ],
 );
 

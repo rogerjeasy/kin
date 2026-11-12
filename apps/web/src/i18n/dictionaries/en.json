@@ -4823,7 +4823,8 @@
         "timeout": "No answer in time",
         "too_large": "Too large to hand back"
       },
-      "proposed": "Raised a proposal. It waits on the approvals screen."
+      "proposed": "Raised a proposal. It waits on the approvals screen.",
+      "oauth": "Signed in from the app"
     },
     "grant": {
       "title": "Connect your assistant",
@@ -4923,20 +4924,62 @@
         "visit_invoiced": "An invoice for a visit already on another invoice, refused.",
         "circle_currency": "An invoice not in the circle's currency, refused."
       }
+    },
+    "oauth": {
+      "meta": {
+        "title": "Connect an assistant",
+        "description": "An outside assistant asks to work with your circle as you."
+      },
+      "title": "Connect {client}?",
+      "lede": "An assistant outside Kin asks to work with your circle as you. It can read and, if you allow it, propose. It can never approve, pay or move money.",
+      "who": "Who is asking",
+      "selfNamed": "The name is the one the app gave itself. Check where Kin will send your answer.",
+      "name": "Calls itself",
+      "unnamed": "No name given",
+      "sendsTo": "Kin sends your answer to",
+      "publishedBy": "Described at",
+      "circle": "Circle",
+      "seat": "Your seat",
+      "localWarning": "This address is on your own computer. Say yes only if you just started connecting an app on this computer.",
+      "choose": "What you allow",
+      "never": "Whatever you choose, it works only as you, within what your seat allows, and a person still approves every payment in Kin.",
+      "revokeLater": "You can revoke it on the Connected assistants screen at any time. The next call is then refused.",
+      "allow": "Connect",
+      "allowing": "Connecting",
+      "deny": "Do not connect",
+      "denying": "Telling the app",
+      "errors": {
+        "invalid": "This request is no longer valid. Start connecting again from your app.",
+        "refused": "Your seat cannot connect an assistant.",
+        "demo_only": "The demo cannot connect an outside assistant. Sign in to your own circle to connect one.",
+        "too_many": "You already have five live assistants. Revoke one on the Connected assistants screen first.",
+        "too_many_codes": "Too many tries in a few minutes. Wait a little, then start again from your app.",
+        "visitor": "Sign in with your own account to connect an assistant.",
+        "unavailable": "Kin could not answer just now. Try again."
+      },
+      "visitor": {
+        "title": "Sign in to connect an assistant",
+        "text": "The demo cannot connect an outside assistant to anyone's circle. Sign in with your own account, and Kin brings you back here.",
+        "signIn": "Sign in"
+      },
+      "invalid": {
+        "title": "Kin cannot ask about this request",
+        "text": "The link is incomplete, has expired or names an app Kin does not know. Start connecting again from your app."
+      }
     }
   },
   "developers": {
     "hero": {
       "eyebrow": "For developers",
       "title": "Work with a family's circle. Never approve.",
-      "lede": "A family member's own AI assistant connects to Kin's MCP server with a token the member grants. A home-care agency's software reports visits through a signed API. Both read and propose; a person in Kin approves."
+      "lede": "A family member's own AI assistant connects to Kin's MCP server by signing in through OAuth, or with a token the member grants. A home-care agency's software reports visits through a signed API. Both read and propose; a person in Kin approves."
     },
     "mcp": {
       "eyebrow": "MCP server",
       "title": "Connect an assistant",
-      "lede": "Streamable HTTP, one JSON-RPC message per request, no session. Protocol versions {versions}. The member creates the token on the Connected assistants screen.",
+      "lede": "Streamable HTTP, one JSON-RPC message per request, no session. Protocol versions {versions}. A client signs in through OAuth 2.1, or the member creates a token on the Connected assistants screen.",
       "endpoint": "Endpoint",
-      "claudeCode": "Claude Code",
+      "claudeCode": "Claude Code, with a token",
       "config": "MCP client settings (.mcp.json)",
       "curl": "Any HTTP client",
       "tools": "The tools",
@@ -4944,6 +4987,12 @@
       "kinds": {
         "read": "Reads",
         "propose": "Proposes"
+      },
+      "oauth": {
+        "title": "Sign in from your client",
+        "lede": "Add Kin's address with no token. Your client finds Kin from the 401, registers, and opens Kin in your browser; you sign in, choose what it may do and for how long, and say yes. Kin is its own OAuth 2.1 authorization server: PKCE with S256, client ID metadata documents or dynamic registration, the resource indicator, and no refresh token.",
+        "command": "Claude Code, signing in",
+        "metadata": "Authorization server metadata"
       }
     },
     "boundary": {
@@ -4981,9 +5030,7 @@
     "next": {
       "eyebrow": "Next",
       "title": "Not built yet",
-      "items": [
-        "Signing in through OAuth 2.1 with PKCE, so a client is authorized without copying a token."
-      ]
+      "items": []
     }
   }
 }

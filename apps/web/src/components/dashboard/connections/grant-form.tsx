@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import { fill } from "@/i18n/template";
 
+import { ScopeChoice } from "./scope-choice";
 import { TokenReveal } from "./token-reveal";
 
 type Props = { copy: Dictionary["openKin"]["grant"]; tokenCopy: Dictionary["openKin"]["token"]; lifetimes: readonly number[] };
@@ -54,20 +55,7 @@ export function GrantForm({ copy, tokenCopy, lifetimes }: Props) {
       <Field id={`${id}-label`} label={copy.label} hint={copy.labelHint}>
         <input id={`${id}-label`} aria-describedby={`${id}-label-hint`} required maxLength={60} autoComplete="off" dir="auto" value={label} disabled={pending} onChange={(event) => setLabel(event.target.value)} className={inputClass} />
       </Field>
-      <fieldset className="grid min-w-0 gap-2">
-        <legend className="font-medium">{copy.scope}</legend>
-        <div className="grid min-w-0 gap-2 sm:grid-cols-2">
-          {(["read", "propose"] as const).map((each) => (
-            <label key={each} className="flex min-h-11 min-w-0 cursor-pointer items-start gap-3 rounded-2xl border bg-background/70 p-3 has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring">
-              <input type="radio" name={`${id}-scope`} value={each} checked={scope === each} disabled={pending} onChange={() => setScope(each)} className="mt-1 size-4 shrink-0 accent-primary" />
-              <span className="min-w-0">
-                <span className="block font-semibold">{copy.scopes[each].title}</span>
-                <span className="block text-sm text-pretty text-muted-foreground">{copy.scopes[each].text}</span>
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <ScopeChoice name={`${id}-scope`} legend={copy.scope} scopes={copy.scopes} value={scope} disabled={pending} onChange={setScope} />
       <Field id={`${id}-days`} label={copy.lifetime}>
         <select id={`${id}-days`} value={days} disabled={pending} onChange={(event) => setDays(Number(event.target.value))} className={inputClass}>
           {lifetimes.map((each) => (

@@ -41,6 +41,35 @@ export {
 } from "./delegation.ts";
 export type { DelegatedDecision, DelegationScope } from "./delegation.ts";
 export {
+  MAX_REDIRECT_URI,
+  MAX_REDIRECT_URIS,
+  OAUTH_SCOPES,
+  authorizationResponse,
+  cleanClientName,
+  clientLabel,
+  clientOfRequest,
+  clientRegistrationKey,
+  grantedScope,
+  hashAuthorizationCode,
+  isAuthorizationCode,
+  isCodeChallenge,
+  isCodeVerifier,
+  isConsentLifetime,
+  isRegisteredClientId,
+  newAuthorizationCode,
+  parseAuthorizationRequest,
+  parseClientIdUrl,
+  parseClientMetadata,
+  parseRedirectUri,
+  parseTokenRequest,
+  readClientRegistration,
+  redirectUriAllowed,
+  requestedScope,
+  resourceMatches,
+  signClientRegistration,
+} from "./oauth-server.ts";
+export type { AuthorizationRequest, ClientMetadata, ClientRegistration, OAuthError, OAuthFailure, ParamReader, TokenRequest } from "./oauth-server.ts";
+export {
   AGENCY_KEY_HEADER,
   AGENCY_SIGNATURE_HEADER,
   AGENCY_SIGNATURE_WINDOW_SECONDS,

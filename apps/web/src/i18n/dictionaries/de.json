@@ -4823,7 +4823,8 @@
         "timeout": "Keine Antwort rechtzeitig",
         "too_large": "Zu groß zum Zurückgeben"
       },
-      "proposed": "Hat einen Vorschlag gemacht. Er wartet auf dem Freigaben-Bildschirm."
+      "proposed": "Hat einen Vorschlag gemacht. Er wartet auf dem Freigaben-Bildschirm.",
+      "oauth": "Aus der App angemeldet"
     },
     "grant": {
       "title": "Ihren Assistenten verbinden",
@@ -4923,20 +4924,62 @@
         "visit_invoiced": "Eine Rechnung für einen Besuch, der schon auf einer anderen Rechnung steht, abgelehnt.",
         "circle_currency": "Eine Rechnung nicht in der Währung des Kreises, abgelehnt."
       }
+    },
+    "oauth": {
+      "meta": {
+        "title": "Einen Assistenten verbinden",
+        "description": "Ein externer Assistent möchte in Ihrem Namen mit Ihrem Kreis arbeiten."
+      },
+      "title": "{client} verbinden?",
+      "lede": "Ein Assistent außerhalb von Kin möchte in Ihrem Namen mit Ihrem Kreis arbeiten. Er kann lesen und, wenn Sie es erlauben, vorschlagen. Er kann niemals genehmigen, bezahlen oder Geld bewegen.",
+      "who": "Wer fragt",
+      "selfNamed": "Diesen Namen hat sich die App selbst gegeben. Prüfen Sie, wohin Kin Ihre Antwort schickt.",
+      "name": "Nennt sich",
+      "unnamed": "Kein Name angegeben",
+      "sendsTo": "Kin schickt Ihre Antwort an",
+      "publishedBy": "Beschrieben unter",
+      "circle": "Kreis",
+      "seat": "Ihr Platz",
+      "localWarning": "Diese Adresse liegt auf Ihrem eigenen Computer. Sagen Sie nur Ja, wenn Sie gerade auf diesem Computer eine App verbinden.",
+      "choose": "Was Sie erlauben",
+      "never": "Was Sie auch wählen: Er handelt nur in Ihrem Namen, im Rahmen Ihres Platzes, und jede Zahlung genehmigt weiterhin ein Mensch in Kin.",
+      "revokeLater": "Sie können ihn jederzeit auf dem Bildschirm Verbundene Assistenten widerrufen. Der nächste Aufruf wird dann abgelehnt.",
+      "allow": "Verbinden",
+      "allowing": "Wird verbunden",
+      "deny": "Nicht verbinden",
+      "denying": "Die App wird informiert",
+      "errors": {
+        "invalid": "Diese Anfrage ist nicht mehr gültig. Starten Sie die Verbindung erneut in Ihrer App.",
+        "refused": "Mit Ihrem Platz können Sie keinen Assistenten verbinden.",
+        "demo_only": "Die Demo kann keinen externen Assistenten verbinden. Melden Sie sich in Ihrem eigenen Kreis an, um einen zu verbinden.",
+        "too_many": "Sie haben bereits fünf aktive Assistenten. Widerrufen Sie zuerst einen auf dem Bildschirm Verbundene Assistenten.",
+        "too_many_codes": "Zu viele Versuche in wenigen Minuten. Warten Sie kurz und starten Sie dann erneut in Ihrer App.",
+        "visitor": "Melden Sie sich mit Ihrem eigenen Konto an, um einen Assistenten zu verbinden.",
+        "unavailable": "Kin konnte gerade nicht antworten. Versuchen Sie es erneut."
+      },
+      "visitor": {
+        "title": "Anmelden, um einen Assistenten zu verbinden",
+        "text": "Die Demo kann keinen externen Assistenten mit irgendjemandes Kreis verbinden. Melden Sie sich mit Ihrem eigenen Konto an, und Kin bringt Sie hierher zurück.",
+        "signIn": "Anmelden"
+      },
+      "invalid": {
+        "title": "Kin kann Ihnen diese Anfrage nicht vorlegen",
+        "text": "Der Link ist unvollständig, abgelaufen oder nennt eine App, die Kin nicht kennt. Starten Sie die Verbindung erneut in Ihrer App."
+      }
     }
   },
   "developers": {
     "hero": {
       "eyebrow": "Für Entwickler",
       "title": "Arbeiten Sie mit dem Kreis einer Familie. Genehmigen Sie nie.",
-      "lede": "Der eigene KI-Assistent eines Familienmitglieds verbindet sich mit Kins MCP-Server über einen Token, den das Mitglied erteilt. Die Software einer Pflegeagentur meldet Besuche über eine signierte API. Beide lesen und schlagen vor; ein Mensch in Kin genehmigt."
+      "lede": "Der eigene KI-Assistent eines Familienmitglieds verbindet sich mit dem MCP-Server von Kin, indem er sich über OAuth anmeldet oder ein Token nutzt, das das Mitglied gewährt. Die Software eines Pflegedienstes meldet Besuche über eine signierte API. Beide lesen und schlagen vor; ein Mensch in Kin genehmigt."
     },
     "mcp": {
       "eyebrow": "MCP-Server",
       "title": "Einen Assistenten verbinden",
-      "lede": "Streamable HTTP, eine JSON-RPC-Nachricht pro Anfrage, keine Sitzung. Protokollversionen {versions}. Das Mitglied erstellt den Token auf dem Bildschirm Verbundene Assistenten.",
+      "lede": "Streamable HTTP, eine JSON-RPC-Nachricht pro Anfrage, keine Sitzung. Protokollversionen {versions}. Ein Client meldet sich über OAuth 2.1 an, oder das Mitglied erstellt ein Token auf dem Bildschirm Verbundene Assistenten.",
       "endpoint": "Endpunkt",
-      "claudeCode": "Claude Code",
+      "claudeCode": "Claude Code, mit einem Token",
       "config": "Einstellungen des MCP-Clients (.mcp.json)",
       "curl": "Jeder HTTP-Client",
       "tools": "Die Werkzeuge",
@@ -4944,6 +4987,12 @@
       "kinds": {
         "read": "Liest",
         "propose": "Schlägt vor"
+      },
+      "oauth": {
+        "title": "Aus Ihrem Client anmelden",
+        "lede": "Fügen Sie die Adresse von Kin ohne Token hinzu. Ihr Client findet Kin über die 401-Antwort, registriert sich und öffnet Kin in Ihrem Browser; Sie melden sich an, wählen, was er darf und wie lange, und sagen Ja. Kin ist sein eigener OAuth-2.1-Autorisierungsserver: PKCE mit S256, Client-ID-Metadatendokumente oder dynamische Registrierung, der Ressourcenindikator und kein Refresh-Token.",
+        "command": "Claude Code, mit Anmeldung",
+        "metadata": "Metadaten des Autorisierungsservers"
       }
     },
     "boundary": {
@@ -4981,9 +5030,7 @@
     "next": {
       "eyebrow": "Als Nächstes",
       "title": "Noch nicht gebaut",
-      "items": [
-        "Anmeldung über OAuth 2.1 mit PKCE, damit ein Client ohne Kopieren eines Tokens autorisiert wird."
-      ]
+      "items": []
     }
   }
 }

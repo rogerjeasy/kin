@@ -195,7 +195,9 @@ export {
   revokeAgencyKey,
   revokeDelegation,
 } from "./open-kin.ts";
-export { DELEGATION_CALL_OUTCOMES } from "./schema/open-kin.ts";
+export { DELEGATION_CALL_OUTCOMES, OAUTH_CODE_SECONDS } from "./schema/open-kin.ts";
+export { OAuthConsentError, createAuthorizationCode, redeemAuthorizationCode } from "./oauth.ts";
+export type { AuthorizationCodeInput, OAuthConsentRefusal, RedeemInput, Redeemed } from "./oauth.ts";
 export type { DelegationCallOutcome } from "./schema/open-kin.ts";
 // Agency invoices through the same signed API: a bill for a person to review, never a payment by itself.
 export { AGENCY_INVOICES_SHOWN, agencyInvoiceStatus, readAgencyInvoices, receiveAgencyInvoice } from "./agency-invoices.ts";
