@@ -32,3 +32,6 @@ test-results/
 next-env.d.ts
 
 docs/extension-of-features.md
+
+# Devpost submission material: kept locally, never committed
+docs/submission/

@@ -255,7 +255,6 @@ To run the CDK by hand: `AWS_PROFILE=<profile> KIN_ALERT_EMAIL=<address> pnpm --
 - `docs/architecture.md`: services, data model, money flow, PayPal, AI, voice, security, testing, decisions and what is verified
 - `docs/tech-stack.md`: tool choices and their reasons
 - `docs/feature-proposals.md`: feature designs and how much of each is built
-- `docs/submission/devpost-description.md`: the Devpost write-up
 
 ## License
 
