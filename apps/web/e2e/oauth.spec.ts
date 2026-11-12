@@ -159,7 +159,7 @@ test("a code traded by another client, to another redirect URI or with no verifi
   const second = await consentYes(page, clientId, pair);
   expect(await trade(page.request, form(clientId, second.code, pair, { redirect_uri: "http://127.0.0.1:45555/elsewhere" }))).toMatchObject({ status: 400, body: { error: "invalid_grant" } });
   const third = await consentYes(page, clientId, pair);
-  const { code_verifier: _dropped, ...noVerifier } = form(clientId, third.code, pair);
+  const noVerifier = Object.fromEntries(Object.entries(form(clientId, third.code, pair)).filter(([name]) => name !== "code_verifier"));
   expect(await trade(page.request, noVerifier)).toMatchObject({ status: 400, body: { error: "invalid_grant" } });
   expect((await trade(page.request, form("kin_cli_forged.client", third.code, pair))).status).toBe(401);
 });
@@ -187,7 +187,8 @@ test("a request with an unregistered redirect URI is never redirected, and one w
   const unknown = await page.request.get(authorizeUrl("kin_cli_forged.client", pkce()), { maxRedirects: 0 });
   expect(unknown.status()).toBe(400);
 
-  for (const change of [{ code_challenge: null }, { code_challenge_method: "plain" }, { code_challenge_method: null }]) {
+  const downgrades: Record<string, string | null>[] = [{ code_challenge: null }, { code_challenge_method: "plain" }, { code_challenge_method: null }];
+  for (const change of downgrades) {
     const downgraded = await page.request.get(authorizeUrl(clientId, pkce(), change), { maxRedirects: 0 });
     expect(downgraded.status()).toBe(303);
     const location = new URL(downgraded.headers()["location"] ?? "");
