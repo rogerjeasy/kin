@@ -112,7 +112,7 @@ export type * from "./circle-snapshot.ts";
 export { acceptMyInvitations, createCircle, createDemoVisitor, leaveDemoCircle, membershipsOf, recordSignIn, takeDemoSeat } from "./people.ts";
 export type { Membership, NewCircle, SignedInPerson } from "./people.ts";
 export { ProposalClosedError, answerProposal, pauseCircle, resumeCircle } from "./operations.ts";
-export { INVITATION_EMAIL_TOPIC, InvitationError, inviteMember, readInvitationEmailFacts, readInvitationLink, recordInvitationEmailed } from "./invitations.ts";
+export { INVITATION_EMAIL_TOPIC, InvitationError, invitationEmailsSentToday, inviteMember, readInvitationEmailFacts, readInvitationLink, recordInvitationEmailed } from "./invitations.ts";
 export type { InvitationEmailFacts, InvitationLink, InvitationLinkState, InvitationReason, NewInvitation } from "./invitations.ts";
 export type { Seat } from "./operations.ts";
 export { demoTime } from "./demo/demo-time.ts";

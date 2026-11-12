@@ -1921,7 +1921,9 @@
         "email": "Adresse e-mail",
         "role": "Rôle",
         "submit": "Enregistrer l’invitation",
-        "cancel": "Annuler"
+        "cancel": "Annuler",
+        "takeSeat": "C’est {parent}, qui prend sa place dans le cercle",
+        "takeSeatHint": "Kin installe la personne à la place de {parent}, avec le rôle que la famille lui a donné. Seule la personne invitée peut la prendre."
       },
       "invitations": {
         "title": "Invitations",
@@ -1978,6 +1980,10 @@
       "inviteLimit": "Ce cercle a envoyé vingt invitations aujourd’hui. Réessayez demain.",
       "alreadyInvited": "Une invitation attend déjà cette adresse.",
       "alreadyMember": "Cette adresse appartient déjà à quelqu’un du cercle.",
+      "inviteLimitYou": "Vous avez envoyé dix invitations aujourd’hui. Réessayez demain.",
+      "inviteLimitToday": "Kin a envoyé aujourd’hui toutes les invitations possibles. Réessayez demain.",
+      "seatUnavailable": "Cette place dans le cercle n’est plus libre, ou quelqu’un d’autre y est déjà invité. Rechargez la page et choisissez à nouveau.",
+      "chooseParentSeat": "Ce cercle a déjà une place pour le parent. Cochez la case pour indiquer que la personne la prend.",
       "roleChanged": "Vous voyez maintenant le cercle depuis une autre place.",
       "restarted": "Vous avez une nouvelle copie du cercle de Rose.",
       "circleCreated": "Votre cercle est prêt. Invitez votre famille depuis l’écran Cercle.",

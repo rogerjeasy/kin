@@ -19,6 +19,16 @@ export function parentLevelOf(circle: CircleSnapshot): ParentLevel {
   return parentOf(circle)?.parentLevel ?? "represented";
 }
 
+/**
+ * The parent seat an organizer made when starting a real circle, while nobody
+ * signed in holds it: a parent's invitation must say whether she takes it.
+ * The database decides; this only offers the choice.
+ */
+export function unclaimedParentSeat(circle: CircleSnapshot): MemberRecord | null {
+  if (circle.circle.demo) return null;
+  return circle.members.find((member) => member.role === "parent" && member.status === "active" && !member.claimed) ?? null;
+}
+
 /** The active members, in the order they joined. */
 export function activeMembers(circle: CircleSnapshot): MemberRecord[] {
   return circle.members.filter((member) => member.status === "active");

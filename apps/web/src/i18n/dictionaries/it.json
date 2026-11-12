@@ -1921,7 +1921,9 @@
         "email": "Indirizzo email",
         "role": "Ruolo",
         "submit": "Registra l’invito",
-        "cancel": "Annulla"
+        "cancel": "Annulla",
+        "takeSeat": "È {parent}, che prende il suo posto nella cerchia",
+        "takeSeatHint": "Kin mette la persona al posto di {parent}, con la voce che la famiglia le ha dato. Solo la persona invitata può prenderlo."
       },
       "invitations": {
         "title": "Inviti",
@@ -1978,6 +1980,10 @@
       "inviteLimit": "Questa cerchia ha inviato venti inviti oggi. Riprova domani.",
       "alreadyInvited": "Per quell’indirizzo c’è già un invito in attesa.",
       "alreadyMember": "Quell’indirizzo appartiene già a qualcuno della cerchia.",
+      "inviteLimitYou": "Hai inviato dieci inviti oggi. Riprova domani.",
+      "inviteLimitToday": "Kin ha inviato oggi tutti gli inviti possibili. Riprova domani.",
+      "seatUnavailable": "Quel posto nella cerchia non è più libero, o qualcun altro è già invitato a prenderlo. Ricarica la pagina e scegli di nuovo.",
+      "chooseParentSeat": "Questa cerchia ha già un posto per il genitore. Spunta la casella per dire che la persona lo prende.",
       "roleChanged": "Ora vedi la cerchia da un altro posto.",
       "restarted": "Hai una nuova copia della cerchia di Rose.",
       "circleCreated": "La tua cerchia è pronta. Invita la famiglia dalla schermata Cerchia.",

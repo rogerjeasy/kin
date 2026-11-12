@@ -1,4 +1,4 @@
-import { INVITATION_EMAIL_TOPIC, asPerson, claimOutbox, createCircle, inviteMember, membershipsOf, newCheckToken, recordSignIn } from "@kin/db";
+import { INVITATION_EMAIL_TOPIC, asPerson, invitationEmailsSentToday, claimOutbox, createCircle, inviteMember, membershipsOf, newCheckToken, recordSignIn } from "@kin/db";
 import { adminRun, serviceRows, testDatabases } from "@kin/db/testing";
 import { EmailDeliveryError, type EmailMessage, type EmailSender } from "@kin/notify";
 import { randomUUID } from "node:crypto";
@@ -56,7 +56,7 @@ describe("emailing an invitation", () => {
     const { circleId, invitationId, token } = await invited(email);
     const sender = fakeEmail();
     const { lines, log } = recordingLog();
-    expect(await runInvitationBatch({ db: db.service, email: sender, webUrl: WEB }, log)).toBe(1);
+    expect(await runInvitationBatch({ db: db.service, email: sender, webUrl: WEB, perDay: 200 }, log)).toBe(1);
     expect(sender.sent).toHaveLength(1);
     expect(sender.sent[0]?.to).toBe(email);
     expect(sender.sent[0]?.subject).toBe("Priya Shah vous invite dans le cercle de Meera sur Kin");
@@ -66,7 +66,7 @@ describe("emailing an invitation", () => {
     // The log names the circle and a masked address, never the address or the token.
     expect(JSON.stringify(lines)).not.toContain(email);
     expect(JSON.stringify(lines)).not.toContain(token);
-    expect(await runInvitationBatch({ db: db.service, email: sender, webUrl: WEB }, log)).toBe(0);
+    expect(await runInvitationBatch({ db: db.service, email: sender, webUrl: WEB, perDay: 200 }, log)).toBe(0);
   });
 
   it("drops an invitation that was accepted or ran out before the email went", async () => {
@@ -74,20 +74,36 @@ describe("emailing an invitation", () => {
     const { circleId, invitationId } = await invited(`late-${randomUUID()}@example.com`);
     await adminRun(db, "update invitations set status = 'expired' where id = $1", [invitationId]);
     const sender = fakeEmail();
-    expect(await runInvitationBatch({ db: db.service, email: sender, webUrl: WEB }, () => {})).toBe(1);
+    expect(await runInvitationBatch({ db: db.service, email: sender, webUrl: WEB, perDay: 200 }, () => {})).toBe(1);
     expect(sender.sent).toEqual([]);
     expect(await queued(circleId)).toEqual([{ has: false, sent: true, attempts: 1 }]);
+  });
+
+  it("holds an invitation back, neither sent nor dropped, once the day's invitation emails reach the ceiling", async () => {
+    await drain();
+    const { circleId } = await invited(`held-${randomUUID()}@example.com`);
+    const sentToday = await invitationEmailsSentToday(db.service);
+    const sender = fakeEmail();
+    const { lines, log } = recordingLog();
+    expect(await runInvitationBatch({ db: db.service, email: sender, webUrl: WEB, perDay: sentToday }, log)).toBe(1);
+    expect(sender.sent).toEqual([]);
+    expect(await queued(circleId)).toEqual([{ has: true, sent: false, attempts: 1 }]);
+    expect(lines.map((line) => line["message"])).toContain("invitation.email_deferred");
+    // Under the ceiling, the same invitation goes out once its wait is over.
+    await adminRun(db, "update outbox set available_at = now() where circle_id = $1 and topic = 'invitation.email'", [circleId]);
+    expect(await runInvitationBatch({ db: db.service, email: sender, webUrl: WEB, perDay: sentToday + 1 }, () => {})).toBe(1);
+    expect(sender.sent).toHaveLength(1);
   });
 
   it("tries again later when Gmail could not take it, and lets go of one Gmail refused for good", async () => {
     await drain();
     const first = await invited(`retry-${randomUUID()}@example.com`);
-    await runInvitationBatch({ db: db.service, email: fakeEmail(new EmailDeliveryError("busy", true)), webUrl: WEB }, () => {});
+    await runInvitationBatch({ db: db.service, email: fakeEmail(new EmailDeliveryError("busy", true)), webUrl: WEB, perDay: 200 }, () => {});
     expect(await queued(first.circleId)).toEqual([{ has: true, sent: false, attempts: 1 }]);
 
     await drain();
     const second = await invited(`refused-${randomUUID()}@example.com`);
-    await runInvitationBatch({ db: db.service, email: fakeEmail(new EmailDeliveryError("refused", false)), webUrl: WEB }, () => {});
+    await runInvitationBatch({ db: db.service, email: fakeEmail(new EmailDeliveryError("refused", false)), webUrl: WEB, perDay: 200 }, () => {});
     expect(await queued(second.circleId)).toEqual([{ has: false, sent: true, attempts: 1 }]);
   });
 });

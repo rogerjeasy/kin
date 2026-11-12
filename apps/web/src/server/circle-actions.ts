@@ -38,9 +38,14 @@ const INVITE_NOTICES: Readonly<Record<InvitationReason, Notice>> = {
   refused: "refused",
   invalid: "invalidInvite",
   too_many: "inviteLimit",
+  too_many_by_you: "inviteLimitYou",
+  too_many_today: "inviteLimitToday",
   already_invited: "alreadyInvited",
   already_member: "alreadyMember",
+  seat_unavailable: "seatUnavailable",
+  choose_seat: "chooseParentSeat",
 };
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 /** The only currency whose PayPal payout fee Kin has checked (packages/paypal). */
 const CIRCLE_CURRENCY = "USD";
 
@@ -124,7 +129,11 @@ export async function inviteAction(form: FormData): Promise<void> {
   if (email === null || !EMAIL.test(email) || role === null) back(locale, "circle", "invalidInvite");
   const expiresAt = new Date(Date.now() + INVITATION_DAYS * 24 * HOUR_MS);
   // In a real circle the database queues the email with this token; the link it carries only shows the invitation.
-  const invitation = { email, role: role satisfies CircleRole, expiresAt, locale, token: newCheckToken() };
+  // The seat a parent takes, if the organizer chose one. Only its shape is checked here: the database decides whether it may be offered.
+  const seatField = form.get("seat");
+  const seatMemberId = typeof seatField === "string" && UUID.test(seatField) ? seatField : null;
+  if (seatField !== null && seatMemberId === null) back(locale, "circle", "invalidInvite");
+  const invitation = { email, role: role satisfies CircleRole, expiresAt, locale, token: newCheckToken(), seatMemberId };
   try {
     await asPerson(databases().app, viewer.userId, (tx) => inviteMember(tx, seat, invitation));
   } catch (error) {

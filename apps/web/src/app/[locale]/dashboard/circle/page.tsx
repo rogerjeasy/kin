@@ -14,7 +14,7 @@ import { EmptyPanel } from "@/components/dashboard/ui/empty-panel";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { Panel } from "@/components/dashboard/ui/panel";
 import { circleFormatters } from "@/content/circle/format";
-import { activeMembers, parentNameOf, parentOf } from "@/content/circle/members";
+import { activeMembers, parentNameOf, parentOf, unclaimedParentSeat } from "@/content/circle/members";
 import { circleNames } from "@/content/circle/names";
 import { demoPayeeNote } from "@/content/circle/payout-proof";
 import { circleSlots } from "@/content/circle/words";
@@ -39,6 +39,7 @@ export default async function CirclePage({ params, searchParams }: PageProps<"/[
   const names = circleNames(circle, dictionary);
   const { agreement } = circle;
   const parent = parentOf(circle);
+  const parentSeat = unclaimedParentSeat(circle);
   const { terms } = copy.agreement;
   const careRate = agreement?.care?.rateCentsPerHour;
   const slots = circleSlots(circle, format);
@@ -71,7 +72,13 @@ export default async function CirclePage({ params, searchParams }: PageProps<"/[
           title={copy.members.title}
           aside={
             may(circle, "member.invite") ? (
-              <InviteSheet locale={locale} trigger={copy.members.invite} copy={copy.invite} roles={CIRCLE_ROLES.map((role) => ({ value: role, label: common.roles[role] }))} />
+              <InviteSheet
+                locale={locale}
+                trigger={copy.members.invite}
+                copy={copy.invite}
+                roles={CIRCLE_ROLES.map((role) => ({ value: role, label: common.roles[role] }))}
+                parentSeat={parentSeat ? { id: parentSeat.id, name: parentSeat.displayName } : null}
+              />
             ) : null
           }
           flush

@@ -1921,7 +1921,9 @@
         "email": "Email address",
         "role": "Role",
         "submit": "Record the invitation",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "takeSeat": "This is {parent}, taking the place already in the circle",
+        "takeSeatHint": "Kin seats them where {parent} already is, with the say the family gave that place. Only the person this invitation is for can take it."
       },
       "invitations": {
         "title": "Invitations",
@@ -1978,6 +1980,10 @@
       "inviteLimit": "This circle has sent twenty invitations today. Try again tomorrow.",
       "alreadyInvited": "That address already has an invitation waiting.",
       "alreadyMember": "That address already belongs to someone in this circle.",
+      "inviteLimitYou": "You have sent ten invitations today. Try again tomorrow.",
+      "inviteLimitToday": "Kin has sent all the invitations it can today. Try again tomorrow.",
+      "seatUnavailable": "That place in the circle is no longer free, or someone else is already invited to it. Reload the page and choose again.",
+      "chooseParentSeat": "This circle already has a place for the parent. Tick the box to say they take it.",
       "roleChanged": "You now see the circle from a new seat.",
       "restarted": "You have a fresh copy of Rose’s circle.",
       "circleCreated": "Your circle is ready. Invite your family from the Circle screen.",

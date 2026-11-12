@@ -112,10 +112,17 @@ export const invitations = pgTable(
      * link only shows who invited whom; joining still needs the verified address.
      */
     linkTokenHash: text("link_token_hash"),
+    /**
+     * For a parent's invitation, the parent seat the organizer chose for her to
+     * take: an unclaimed parent member of the same circle. Accepting binds only it.
+     */
+    seatMemberId: uuid("seat_member_id"),
   },
   (t) => [
     foreignKey({ name: "invitations_circle_fk", columns: [t.circleId], foreignColumns: [circles.id] }),
     foreignKey({ name: "invitations_inviter_fk", columns: [t.circleId, t.invitedBy], foreignColumns: [members.circleId, members.id] }),
+    foreignKey({ name: "invitations_seat_fk", columns: [t.circleId, t.seatMemberId], foreignColumns: [members.circleId, members.id] }),
+    check("invitations_seat_for_parent", sql`${t.seatMemberId} is null or ${t.role} = 'parent'`),
     check("invitations_email_shape", sql`${t.email} ~ '^[^@\\s]+@[^@\\s]+$'`),
     check("invitations_link_hash", sql`${t.linkTokenHash} is null or ${t.linkTokenHash} ~ '^[0-9a-f]{64}$'`),
     uniqueIndex("invitations_link_token").on(t.linkTokenHash).where(sql`${t.linkTokenHash} is not null`),

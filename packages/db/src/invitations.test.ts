@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { CircleRole } from "@kin/domain";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import { claimOutbox } from "./payouts.ts";
@@ -28,8 +28,14 @@ async function realCircle(parentName = "Meera"): Promise<RealCircle> {
   return { organizer, circleId, seat: { circleId, memberId: own.memberId, role: "organizer" } };
 }
 
-const invite = (circle: RealCircle, email: string, role: CircleRole, token = newCheckToken()) =>
-  asPerson(db.app, circle.organizer, (tx) => inviteMember(tx, circle.seat, { email, role, expiresAt: new Date(Date.now() + 14 * DAY_MS), locale: "fr", token }));
+const invite = (circle: RealCircle, email: string, role: CircleRole, token = newCheckToken(), seatMemberId: string | null = null) =>
+  asPerson(db.app, circle.organizer, (tx) => inviteMember(tx, circle.seat, { email, role, expiresAt: new Date(Date.now() + 14 * DAY_MS), locale: "fr", token, seatMemberId }));
+/** Invites the parent to the seat the organizer made for her when starting the circle. */
+const inviteToPlaceholder = async (circle: RealCircle, email: string) => {
+  const [placeholder] = await parentsOf(circle.circleId);
+  if (!placeholder) throw new Error("The circle has no parent seat");
+  return invite(circle, email, "parent", newCheckToken(), placeholder.id);
+};
 
 const reasonOf = async (work: Promise<unknown>): Promise<string> => {
   try {
@@ -87,16 +93,53 @@ describe("an invitation to a real circle", () => {
     expect(await reasonOf(invite(circle, email, "observer"))).toBe("already_member");
   });
 
-  it("sends at most twenty a day from one circle, by any path", async () => {
+  it("lets one person send at most ten a day, across all their circles, by any path", async () => {
     const circle = await realCircle();
-    for (let index = 0; index < 20; index += 1) await invite(circle, address(), "observer");
-    expect(await reasonOf(invite(circle, address(), "observer"))).toBe("too_many");
+    for (let index = 0; index < 6; index += 1) await invite(circle, address(), "observer");
+    // The same organizer's second circle shares the ten.
+    const secondId = await asPerson(db.app, circle.organizer, (tx) => createCircle(tx, { name: "Dad's circle", timezone: "UTC", currency: "USD", parentName: "Arjun", parentLevel: "decides", relationship: null }));
+    const seats = await asPerson(db.app, circle.organizer, (tx) => membershipsOf(tx, circle.organizer));
+    const secondSeat = seats.find((each) => each.circleId === secondId);
+    if (!secondSeat) throw new Error("No seat in the second circle");
+    const second: RealCircle = { organizer: circle.organizer, circleId: secondId, seat: { circleId: secondId, memberId: secondSeat.memberId, role: "organizer" } };
+    for (let index = 0; index < 4; index += 1) await invite(second, address(), "observer");
+    expect(await reasonOf(invite(second, address(), "observer"))).toBe("too_many_by_you");
     const direct = asPerson(db.app, circle.organizer, (tx) =>
       tx.insert(invitations).values({ id: randomUUID(), circleId: circle.circleId, email: address(), role: "observer", invitedBy: circle.seat.memberId, expiresAt: new Date(Date.now() + DAY_MS) }),
     );
-    expect(await errorCode(direct)).toBe("KI001");
-    // Another circle has its own twenty.
+    expect(await errorCode(direct)).toBe("KI004");
+    // Another person has their own ten.
     expect(await reasonOf(invite(await realCircle(), address(), "observer"))).toBe("no error");
+  });
+
+  it("sends at most twenty a day from one circle, whoever its organizers are", async () => {
+    const circle = await realCircle();
+    const coEmail = address();
+    await invite(circle, coEmail, "organizer");
+    const co = await signedIn(db.app, "Ravi Shah", coEmail);
+    await asPerson(db.app, co, (tx) => acceptMyInvitations(tx));
+    const [coSeat] = await asPerson(db.app, co, (tx) => membershipsOf(tx, co));
+    if (!coSeat) throw new Error("The second organizer has no seat");
+    const coCircle: RealCircle = { organizer: co, circleId: circle.circleId, seat: { circleId: circle.circleId, memberId: coSeat.memberId, role: "organizer" } };
+    for (let index = 0; index < 9; index += 1) await invite(circle, address(), "observer");
+    for (let index = 0; index < 10; index += 1) await invite(coCircle, address(), "observer");
+    expect(await reasonOf(invite(coCircle, address(), "observer"))).toBe("too_many");
+  });
+
+  it("lets Kin as a whole send at most two hundred a day, so Gmail keeps room for sign-in codes", async () => {
+    const circle = await realCircle();
+    const other = await realCircle();
+    // Two hundred real invitations already today, written and the check tried in one transaction that is rolled back, so no other test sees them.
+    const attempt = db.admin.transaction(async (tx) => {
+      await tx.execute(sql`set local session_replication_role = replica`);
+      await tx.execute(sql`insert into invitations (id, circle_id, email, role, invited_by, expires_at)
+        select gen_random_uuid(), ${circle.circleId}::uuid, 'bulk-' || n || '@example.com', 'observer', ${circle.seat.memberId}::uuid, now() + interval '1 day'
+        from generate_series(1, 200) as n`);
+      await tx.execute(sql`set local session_replication_role = origin`);
+      await tx.execute(sql`select set_config('kin.user_id', ${other.organizer}, true)`);
+      await tx.execute(sql`select kin_private.invite_member(${other.circleId}::uuid, ${address()}, 'observer'::circle_role, now() + interval '1 day', 'en', ${newCheckToken()})`);
+    });
+    expect(await errorCode(attempt)).toBe("KI005");
   });
 
   it("refuses a malformed token, language or address, and an expiry past thirty days", async () => {
@@ -110,7 +153,7 @@ describe("an invitation to a real circle", () => {
   it("gives the worker what the email needs, as the service for that circle only", async () => {
     const circle = await realCircle("Meera Shah");
     const email = address();
-    const id = await invite(circle, email, "parent");
+    const id = await inviteToPlaceholder(circle, email);
     const facts = await asService(db.service, circle.circleId, (tx) => readInvitationEmailFacts(tx, circle.circleId, id));
     expect(facts).toMatchObject({ email, role: "parent", open: true, inviterName: "Priya Shah", parentName: "Meera Shah" });
     const other = await realCircle();
@@ -143,11 +186,11 @@ describe("an invitation in a demo circle", () => {
 });
 
 describe("accepting a parent's invitation", () => {
-  it("binds the seat the organizer made for her, keeping the family's name and her say", async () => {
+  it("binds the seat the organizer chose for her, keeping the family's name and her say", async () => {
     const circle = await realCircle();
     const [placeholder] = await parentsOf(circle.circleId);
     const email = address();
-    await invite(circle, email, "parent");
+    await inviteToPlaceholder(circle, email);
     const meera = await signedIn(db.app, "Meera S.", email);
     expect(await asPerson(db.app, meera, (tx) => acceptMyInvitations(tx))).toBe(1);
     expect(await parentsOf(circle.circleId)).toEqual([{ id: placeholder?.id, userId: meera, name: "Meera", level: "informed" }]);
@@ -167,17 +210,54 @@ describe("accepting a parent's invitation", () => {
   it("binds only the inviting circle's placeholder, never another circle's", async () => {
     const [mine, theirs] = [await realCircle(), await realCircle()];
     const email = address();
-    await invite(mine, email, "parent");
+    await inviteToPlaceholder(mine, email);
     const meera = await signedIn(db.app, "Meera", email);
     await asPerson(db.app, meera, (tx) => acceptMyInvitations(tx));
     expect((await parentsOf(theirs.circleId)).map((parent) => parent.userId)).toEqual([null]);
     expect((await parentsOf(mine.circleId)).map((parent) => parent.userId)).toEqual([meera]);
   });
 
+  it("asks the organizer to say whether a parent takes the unclaimed seat, and refuses a seat that is not one", async () => {
+    const circle = await realCircle();
+    expect(await reasonOf(invite(circle, address(), "parent"))).toBe("choose_seat");
+    const [organizerSeat] = await asPerson(db.app, circle.organizer, (tx) => membershipsOf(tx, circle.organizer));
+    // The organizer's own seat is not a parent's; a seat in another circle is not this circle's; a made-up seat is nobody's.
+    for (const seat of [organizerSeat?.memberId ?? "", (await parentsOf((await realCircle()).circleId))[0]?.id ?? "", randomUUID()]) {
+      expect(await reasonOf(invite(circle, address(), "parent", newCheckToken(), seat))).toBe("seat_unavailable");
+    }
+    // A seat is only for a parent's invitation.
+    const [placeholder] = await parentsOf(circle.circleId);
+    expect(await reasonOf(invite(circle, address(), "contributor", newCheckToken(), placeholder?.id ?? ""))).toBe("seat_unavailable");
+  });
+
+  it("offers a seat to one waiting invitation at a time, and never once it is claimed", async () => {
+    const circle = await realCircle();
+    const [first, second] = [address(), address()];
+    await inviteToPlaceholder(circle, first);
+    expect(await reasonOf(inviteToPlaceholder(circle, second))).toBe("seat_unavailable");
+    const meera = await signedIn(db.app, "Meera", first);
+    await asPerson(db.app, meera, (tx) => acceptMyInvitations(tx));
+    expect(await reasonOf(inviteToPlaceholder(circle, second))).toBe("seat_unavailable");
+  });
+
+  it("seats nobody when the named seat was claimed before they accepted, and leaves the invitation waiting", async () => {
+    const circle = await realCircle();
+    const [placeholder] = await parentsOf(circle.circleId);
+    const email = address();
+    const id = await inviteToPlaceholder(circle, email);
+    const someoneElse = await signedIn(db.app, "Someone Else");
+    await asService(db.service, circle.circleId, (tx) => tx.update(members).set({ userId: someoneElse }).where(eq(members.id, placeholder?.id ?? "")));
+    const meera = await signedIn(db.app, "Meera", email);
+    expect(await asPerson(db.app, meera, (tx) => acceptMyInvitations(tx))).toBe(0);
+    expect(await asPerson(db.app, meera, (tx) => membershipsOf(tx, meera))).toEqual([]);
+    const [row] = await asService(db.service, circle.circleId, (tx) => tx.select({ status: invitations.status }).from(invitations).where(eq(invitations.id, id)));
+    expect(row?.status).toBe("pending");
+  });
+
   it("adds a new parent seat when the placeholder is already someone's", async () => {
     const circle = await realCircle();
     const [first, second] = [address(), address()];
-    await invite(circle, first, "parent");
+    await inviteToPlaceholder(circle, first);
     const meera = await signedIn(db.app, "Meera", first);
     await asPerson(db.app, meera, (tx) => acceptMyInvitations(tx));
     await invite(circle, second, "parent");

@@ -18,7 +18,7 @@ export { BEDROCK_DEFAULT_MODEL, BEDROCK_INVOKE_DEFAULT_MODEL, MODEL_ENV, readMod
 export type { ModelConfig } from "./model-config.ts";
 export { SANDBOX_PAYOUTS_PER_DAY_DEFAULT, SANDBOX_PAYOUT_ENV, readSandboxPayoutConfig } from "./sandbox-payout-config.ts";
 export type { SandboxPayoutConfig } from "./sandbox-payout-config.ts";
-export { INVITATION_EMAIL_ENV, readInvitationEmailConfig } from "./invitation-email-config.ts";
+export { INVITATION_EMAILS_PER_DAY_DEFAULT, INVITATION_EMAILS_PER_DAY_ENV, INVITATION_EMAIL_ENV, readInvitationEmailConfig } from "./invitation-email-config.ts";
 export type { InvitationEmailConfig } from "./invitation-email-config.ts";
 export { PRESENCE_TEXT_ENV, readPresenceTextConfig } from "./presence-text-config.ts";
 export type { PresenceTextConfig } from "./presence-text-config.ts";

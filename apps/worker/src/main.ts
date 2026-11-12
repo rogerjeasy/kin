@@ -192,7 +192,7 @@ async function presenceTextLoop(config: Extract<typeof presenceTexts, { enabled:
 
 // Invitations to a real circle, emailed from Kin's Gmail account with the link to the invitation's page.
 async function invitationLoop(config: Extract<typeof invitationEmails, { enabled: true }>): Promise<void> {
-  const invitations = { db: deps.db, email: createGmailSender({ address: config.sender, appPassword: config.appPassword }), webUrl: config.webUrl };
+  const invitations = { db: deps.db, email: createGmailSender({ address: config.sender, appPassword: config.appPassword }), webUrl: config.webUrl, perDay: config.perDay };
   while (running) {
     try {
       if ((await runInvitationBatch(invitations, log)) === 0) await pause(INVITATION_POLL_MS);

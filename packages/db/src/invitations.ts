@@ -12,13 +12,28 @@ import { auditLog, circles, invitations, members } from "./schema/index.ts";
  * invitation to a real circle is emailed by Kin's worker with a link whose
  * token only the outbox message carries; the database keeps its SHA-256. The
  * link shows who invited whom and nothing else: joining needs a sign-in with
- * the verified address. SQLSTATE codes are listed in 0064_invitation-email.sql.
+ * the verified address. SQLSTATE codes are listed in 0064_invitation-email.sql
+ * and 0066_invitation-caps-and-seat.sql.
  */
 
 /** The outbox topic of an invitation's email (written by kin_private.invite_member). */
 export const INVITATION_EMAIL_TOPIC = "invitation.email";
 
-export type InvitationReason = "refused" | "invalid" | "too_many" | "already_invited" | "already_member";
+export type InvitationReason =
+  | "refused"
+  | "invalid"
+  /** The circle sent twenty today. */
+  | "too_many"
+  /** The organizer sent ten today, across their circles. */
+  | "too_many_by_you"
+  /** Kin sent two hundred today: Gmail's allowance is kept for sign-in codes. */
+  | "too_many_today"
+  | "already_invited"
+  | "already_member"
+  /** The parent seat named is not an unclaimed parent of this circle, or another invitation is waiting for it. */
+  | "seat_unavailable"
+  /** A parent's invitation while the circle has an unclaimed parent seat must say whether she takes it. */
+  | "choose_seat";
 
 export class InvitationError extends Error {
   readonly retryable = false;
@@ -38,6 +53,10 @@ const REASONS: Readonly<Record<string, InvitationReason>> = {
   KI001: "too_many",
   KI002: "already_invited",
   KI003: "already_member",
+  KI004: "too_many_by_you",
+  KI005: "too_many_today",
+  KI006: "seat_unavailable",
+  KI008: "choose_seat",
 };
 
 async function operation<T>(work: () => Promise<T>): Promise<T> {
@@ -58,18 +77,21 @@ export type NewInvitation = {
   readonly locale: string;
   /** A fresh token (`newCheckToken`). The email's link carries it; the database keeps only its hash, and none in a demo circle. */
   readonly token: string;
+  /** For a parent's invitation, the unclaimed parent seat she takes. The database checks it is one. */
+  readonly seatMemberId?: string | null;
 };
 
 /**
  * Records an organizer's invitation and, in a real circle, queues its email.
- * At most twenty a day for a circle, one waiting per address, and never to a
- * member. Run as the person, inside `asPerson`.
+ * At most twenty a day for a circle, ten a day for one person and two hundred
+ * a day for Kin; one waiting per address, and never to a member. Run as the
+ * person, inside `asPerson`.
  */
 export async function inviteMember(tx: Transaction, seat: Seat, invitation: NewInvitation): Promise<string> {
   return operation(async () => {
     const result = await tx.execute<{ id: string }>(
       sql`select kin_private.invite_member(${seat.circleId}::uuid, ${invitation.email}, ${invitation.role}::circle_role,
-            ${invitation.expiresAt.toISOString()}::timestamptz, ${invitation.locale}, ${invitation.token}) as id`,
+            ${invitation.expiresAt.toISOString()}::timestamptz, ${invitation.locale}, ${invitation.token}, ${invitation.seatMemberId ?? null}::uuid) as id`,
     );
     const id = result.rows[0]?.id;
     if (!id) throw new Error("The database recorded no invitation");
@@ -139,6 +161,12 @@ export async function readInvitationEmailFacts(tx: Transaction, circleId: string
   if (row === undefined) return null;
   const open = row.status === "pending" && !row.demo && row.circleStatus === "active" && row.expiresAt.getTime() > Date.now();
   return { email: row.email, role: row.role, expiresAt: row.expiresAt, open, inviterName: row.inviterName, parentName: row.parentName ?? "" };
+}
+
+/** How many invitation emails went out in the last day, across circles. As Kin's service. */
+export async function invitationEmailsSentToday(db: Database): Promise<number> {
+  const result = await db.execute<{ sent: number }>(sql`select kin_private.invitation_emails_sent_today() as sent`);
+  return Number(result.rows[0]?.sent ?? 0);
 }
 
 /** The email went out: written down in the circle's audit, with no address. As the service for the invitation's circle. */

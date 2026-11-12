@@ -1921,7 +1921,9 @@
         "email": "Correo electrónico",
         "role": "Rol",
         "submit": "Registrar la invitación",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "takeSeat": "Es {parent}, que ocupa su lugar en el círculo",
+        "takeSeatHint": "Kin sienta a la persona en el lugar de {parent}, con la voz que la familia le dio. Solo la persona invitada puede ocuparlo."
       },
       "invitations": {
         "title": "Invitaciones",
@@ -1978,6 +1980,10 @@
       "inviteLimit": "Este círculo ya envió veinte invitaciones hoy. Inténtalo mañana.",
       "alreadyInvited": "Esa dirección ya tiene una invitación pendiente.",
       "alreadyMember": "Esa dirección ya pertenece a alguien del círculo.",
+      "inviteLimitYou": "Hoy ya enviaste diez invitaciones. Inténtalo mañana.",
+      "inviteLimitToday": "Kin ya envió hoy todas las invitaciones que puede. Inténtalo mañana.",
+      "seatUnavailable": "Ese lugar en el círculo ya no está libre, o alguien más ya está invitado a ocuparlo. Recarga la página y elige de nuevo.",
+      "chooseParentSeat": "Este círculo ya tiene un lugar para el padre o la madre. Marca la casilla para indicar que la persona lo ocupa.",
       "roleChanged": "Ahora ves el círculo desde otro lugar.",
       "restarted": "Tienes una copia nueva del círculo de Rose.",
       "circleCreated": "Tu círculo está listo. Invita a tu familia desde la pantalla Círculo.",

@@ -78,6 +78,26 @@ test.describe("a person's own circle", () => {
     await expect(page.getByRole("status").filter({ hasText: dashboard.notices.alreadyInvited })).toBeVisible();
   });
 
+  test("invites the parent to her own place only when the organizer says so", async ({ page }) => {
+    const invite = dashboard.circle.invite;
+    const takeSeat = fill(invite.takeSeat, { parent: "Meera" });
+    const openForm = async () => {
+      await page.goto("/dashboard/circle");
+      await page.getByRole("main").getByRole("button", { name: dashboard.circle.members.invite }).click();
+      await page.getByLabel(invite.email).fill("meera@example.com");
+      await page.getByLabel(invite.role).selectOption("parent");
+    };
+    await openForm();
+    await expect(page.getByRole("checkbox", { name: takeSeat })).toBeVisible();
+    await page.getByRole("button", { name: invite.submit }).click();
+    await expect(page.getByRole("status").filter({ hasText: dashboard.notices.chooseParentSeat })).toBeVisible();
+    await openForm();
+    await page.getByRole("checkbox", { name: takeSeat }).check();
+    await page.getByRole("button", { name: invite.submit }).click();
+    await expect(page.getByRole("status").filter({ hasText: dashboard.notices.invited })).toBeVisible();
+    await expect(page.getByRole("region", { name: dashboard.circle.invitations.title })).toContainText("meera@example.com");
+  });
+
   test("emails a link that shows the invitation to someone not signed in, and grants nothing", async ({ browser }) => {
     const join = english.joinLink;
     const link = await invitationLinkFor("ravi@example.com");

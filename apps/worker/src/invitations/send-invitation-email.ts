@@ -3,6 +3,7 @@ import {
   asService,
   claimOutbox,
   finishMessage,
+  invitationEmailsSentToday,
   readInvitationEmailFacts,
   recordInvitationEmailed,
   retryMessageLater,
@@ -21,6 +22,11 @@ export type InvitationEmailDeps = {
   readonly email: EmailSender;
   /** The web app's https address with no trailing slash, where the email's link leads. */
   readonly webUrl: string;
+  /**
+   * The most invitation emails sent in any 24 hours, across circles. The Gmail
+   * account also sends the sign-in codes, so past this the rest wait.
+   */
+  readonly perDay: number;
 };
 
 const BATCH = 5;
@@ -29,6 +35,8 @@ const LEASE_SECONDS = 60;
 /** Gmail that could not take the email is asked again this much later, a few times, and then let go. */
 const RETRY_SECONDS = 120;
 const MAX_TRIES = 4;
+/** An invitation held back by the daily ceiling is looked at again this much later: still sent, a little later. */
+const DEFER_SECONDS = 30 * 60;
 const TOKEN = /^[A-Za-z0-9_-]{43}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -54,6 +62,12 @@ export async function handleInvitationEmail(deps: InvitationEmailDeps, log: Inbo
   if (invitationId === null || token === null || facts === null || !facts.open || !isInvitationRole(facts.role)) {
     log({ level: "info", message: "invitation.email_dropped", circleId });
     await letGo(deps, message);
+    return;
+  }
+  // Gmail's daily allowance is shared with the sign-in codes: past the ceiling an invitation waits, it is neither sent nor dropped.
+  if ((await invitationEmailsSentToday(deps.db)) >= deps.perDay) {
+    log({ level: "info", message: "invitation.email_deferred", circleId });
+    await asService(deps.db, circleId, (tx) => retryMessageLater(tx, message.id, DEFER_SECONDS));
     return;
   }
   let email: EmailMessage;

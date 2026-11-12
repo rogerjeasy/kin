@@ -1921,7 +1921,9 @@
         "email": "E-Mail-Adresse",
         "role": "Rolle",
         "submit": "Einladung festhalten",
-        "cancel": "Abbrechen"
+        "cancel": "Abbrechen",
+        "takeSeat": "Das ist {parent} und übernimmt den Platz im Kreis",
+        "takeSeatHint": "Kin setzt die Person auf den Platz von {parent}, mit dem Mitspracherecht, das die Familie diesem Platz gab. Nur die eingeladene Person kann ihn übernehmen."
       },
       "invitations": {
         "title": "Einladungen",
@@ -1978,6 +1980,10 @@
       "inviteLimit": "Dieser Kreis hat heute zwanzig Einladungen verschickt. Versuchen Sie es morgen wieder.",
       "alreadyInvited": "Für diese Adresse wartet bereits eine Einladung.",
       "alreadyMember": "Diese Adresse gehört bereits zu jemandem in diesem Kreis.",
+      "inviteLimitYou": "Sie haben heute zehn Einladungen verschickt. Versuchen Sie es morgen wieder.",
+      "inviteLimitToday": "Kin hat heute alle möglichen Einladungen verschickt. Versuchen Sie es morgen wieder.",
+      "seatUnavailable": "Dieser Platz im Kreis ist nicht mehr frei, oder jemand anderes ist schon dazu eingeladen. Laden Sie die Seite neu und wählen Sie erneut.",
+      "chooseParentSeat": "Dieser Kreis hat schon einen Platz für den Elternteil. Setzen Sie das Häkchen, wenn die Person ihn übernimmt.",
       "roleChanged": "Sie sehen den Kreis jetzt von einem anderen Platz aus.",
       "restarted": "Sie haben eine neue Kopie von Roses Kreis.",
       "circleCreated": "Ihr Kreis ist bereit. Laden Sie Ihre Familie über die Seite Kreis ein.",

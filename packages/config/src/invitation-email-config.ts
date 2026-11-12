@@ -12,6 +12,17 @@ export const INVITATION_EMAIL_ENV = {
   webUrl: "KIN_WEB_PUBLIC_URL",
 } as const;
 
+/**
+ * How many invitation emails Kin sends in a day, across every circle. The Gmail
+ * account also sends the sign-in codes and takes about five hundred messages a
+ * day, so invitations stop well short of that and the codes always get through.
+ * Optional: unset is the default.
+ */
+export const INVITATION_EMAILS_PER_DAY_ENV = "KIN_INVITATION_EMAILS_PER_DAY";
+export const INVITATION_EMAILS_PER_DAY_DEFAULT = 200;
+/** Above this the codes would have too little room left. */
+const MAX_INVITATION_EMAILS_PER_DAY = 300;
+
 export type InvitationEmailConfig =
   | { readonly enabled: false; readonly missing: readonly string[] }
   | {
@@ -20,6 +31,8 @@ export type InvitationEmailConfig =
       readonly appPassword: string;
       /** The web app's https address with no trailing slash. */
       readonly webUrl: string;
+      /** The most invitation emails sent in any 24 hours; past it the rest wait. */
+      readonly perDay: number;
     };
 
 type Env = Readonly<Record<string, string | undefined>>;
@@ -40,5 +53,10 @@ export function readInvitationEmailConfig(env: Env): InvitationEmailConfig {
   if (appPassword.replace(/\s/g, "").length < MIN_APP_PASSWORD_CHARS) throw new ConfigError(`${INVITATION_EMAIL_ENV.appPassword} is too short to be a Google app password`);
   // The link is emailed: https only, no path or credentials.
   if (!/^https:\/\/[^\s/?#@]+$/.test(webUrl)) throw new ConfigError(`${INVITATION_EMAIL_ENV.webUrl} must be the https address of the web app, with no path`);
-  return { enabled: true, sender, appPassword, webUrl };
+  const rawPerDay = value(INVITATION_EMAILS_PER_DAY_ENV);
+  const perDay = rawPerDay === "" ? INVITATION_EMAILS_PER_DAY_DEFAULT : Number(rawPerDay);
+  if (!/^[0-9]+$/.test(rawPerDay === "" ? "0" : rawPerDay) || !Number.isSafeInteger(perDay) || perDay < 1 || perDay > MAX_INVITATION_EMAILS_PER_DAY) {
+    throw new ConfigError(`${INVITATION_EMAILS_PER_DAY_ENV} must be a whole number from 1 to ${MAX_INVITATION_EMAILS_PER_DAY}`);
+  }
+  return { enabled: true, sender, appPassword, webUrl, perDay };
 }

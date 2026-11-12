@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ConfigError } from "./config-error.ts";
-import { INVITATION_EMAIL_ENV, readInvitationEmailConfig } from "./invitation-email-config.ts";
+import { INVITATION_EMAILS_PER_DAY_DEFAULT, INVITATION_EMAIL_ENV, readInvitationEmailConfig } from "./invitation-email-config.ts";
 
 const ENV = {
   KIN_SENDER_EMAIL: "kin.family@example.com",
@@ -11,7 +11,15 @@ const ENV = {
 
 describe("the settings of the invitation email", () => {
   it("are on when all three are set, with the address stripped of its trailing slash", () => {
-    expect(readInvitationEmailConfig(ENV)).toEqual({ enabled: true, sender: ENV.KIN_SENDER_EMAIL, appPassword: ENV.KIN_GMAIL_APP_PASSWORD, webUrl: "https://kin.example.com" });
+    expect(readInvitationEmailConfig(ENV)).toEqual({ enabled: true, sender: ENV.KIN_SENDER_EMAIL, appPassword: ENV.KIN_GMAIL_APP_PASSWORD, webUrl: "https://kin.example.com", perDay: INVITATION_EMAILS_PER_DAY_DEFAULT });
+  });
+
+  it("send at most two hundred a day unless told fewer or a few more, never enough to starve the sign-in codes", () => {
+    expect(INVITATION_EMAILS_PER_DAY_DEFAULT).toBe(200);
+    expect(readInvitationEmailConfig({ ...ENV, KIN_INVITATION_EMAILS_PER_DAY: "50" })).toMatchObject({ perDay: 50 });
+    for (const perDay of ["0", "-1", "1.5", "301", "500", "lots"]) {
+      expect(() => readInvitationEmailConfig({ ...ENV, KIN_INVITATION_EMAILS_PER_DAY: perDay })).toThrow(ConfigError);
+    }
   });
 
   it("are off, naming only the settings that are missing and never a value, when any is not set", () => {

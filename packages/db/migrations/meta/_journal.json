@@ -456,6 +456,20 @@
       "when": 1794423710871,
       "tag": "0064_invitation-email",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1794442933116,
+      "tag": "0065_invitation-seat",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1794442934673,
+      "tag": "0066_invitation-caps-and-seat",
+      "breakpoints": true
     }
   ]
 }

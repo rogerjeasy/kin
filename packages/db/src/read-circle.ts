@@ -71,6 +71,7 @@ export async function readCircle(tx: Transaction, query: { circleId: string; use
     currency: row.currency,
     status: row.status,
     joinedAt: row.joinedAt,
+    claimed: row.userId !== null,
   }));
   const roleOf = (memberId: string): CircleRole => {
     const member = roster.find((each) => each.id === memberId);

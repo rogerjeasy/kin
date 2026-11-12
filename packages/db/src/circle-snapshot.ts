@@ -189,6 +189,8 @@ export type MemberRecord = {
   readonly currency: string | null;
   readonly status: MemberStatus;
   readonly joinedAt: Date;
+  /** Someone signed in holds this seat. The parent seat an organizer made is unclaimed until she accepts an invitation to it. */
+  readonly claimed: boolean;
 };
 
 export type AgreementRecord = Agreement & {
