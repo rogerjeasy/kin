@@ -95,6 +95,11 @@ AG Grid Community (v36) is the family's audit tool, not decoration. The **Record
 
 **Shifts** (`/dashboard/shifts`) is a Bryntum Scheduler (7.3.8): one row per person caring for Rose, each visit an event that carries its proof (the caregiver's own check-in and check-out, and the family's word). A paid visit is proven by those two keys before Kin pays it through PayPal Payouts. The calendar assistant beside it is Claude through Kin's gateway: it only answers and highlights, never books, moves or pays.
 
+
+## How we use APIMatic
+
+Kin's agency API (visit reports and invoices, signed with HMAC) is published as an OpenAPI 3.1 document built from the same schemas the server checks (`/api/v1/openapi.json`). APIMatic generates a **TypeScript SDK and a Python SDK** from that document, in `sdks/typescript` and `sdks/python`: `AgencyController` (`reportVisit`, `submitInvoice`, `getInvoiceStatus`) and `MCPController`. `pnpm --filter @kin/web run sdk:generate` regenerates both from the live document with APIMatic's CLI (`APIMATIC_AUTH_KEY` in the root `.env`). Both SDKs reported a signed visit to the hosted app on 12 November 2026; `sdks/README.md` shows how to sign a request with each.
+
 ## Architecture
 
 The diagram above is the summary. `docs/architecture.md` has the detailed diagrams: the [system context](docs/architecture.md#3-system-context), the [services and stores](docs/architecture.md#4-services-and-stores), the [money core and its state machines](docs/architecture.md#7-the-money-core), the [PayPal integration](docs/architecture.md#8-paypal-integration) and the [AWS layout](docs/architecture.md#141-layout). Section 21 is the decision record and section 23 says how certain each part is.
