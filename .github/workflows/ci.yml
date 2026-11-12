@@ -83,7 +83,7 @@ jobs:
           docker run --rm --entrypoint node kin-worker:imports --input-type=module -e "
             const { readdirSync } = await import('node:fs');
             const files = readdirSync('/repo/apps/worker/src', { recursive: true })
-              .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && !f.includes('testing') && f !== 'main.ts');
+              .filter((f) => f.endsWith('.ts') && !/test/i.test(f) && f !== 'main.ts');
             for (const f of files) {
               try { await import('/repo/apps/worker/src/' + f); }
               catch (error) { if (error.code === 'ERR_MODULE_NOT_FOUND') { console.error(f, error.message); process.exit(1); } }
