@@ -1,7 +1,10 @@
 import { clientRegistrationKey, isRegisteredClientId, parseClientIdUrl, parseClientMetadata, readClientRegistration } from "@kin/auth";
+import type { ClientRequest, IncomingMessage, RequestOptions } from "node:http";
 import { lookup } from "node:dns/promises";
 import { request as httpsRequest } from "node:https";
-import { BlockList, isIP, type LookupFunction } from "node:net";
+import type { LookupFunction } from "node:net";
+
+import { isPublicAddress } from "./public-address";
 
 /**
  * Who an OAuth client is (decision 111). A client Kin registered carries its
@@ -9,8 +12,9 @@ import { BlockList, isIP, type LookupFunction } from "node:net";
  * https URL (a client ID metadata document, which the MCP specification
  * prefers) is read from that URL, carefully: Kin fetches a stranger's
  * address, so only a public host, only https on the usual port, no
- * redirects, five seconds and five kilobytes at most, and the address the
- * check approved is the one connected to.
+ * redirects, five seconds in all (the name lookup included) and five
+ * kilobytes at most, the address the check approved is the one connected
+ * to, one fetch at a time per client and a few at a time per server.
  */
 
 export type OAuthClient = {
@@ -27,70 +31,41 @@ export type FetchDocument = (url: URL) => Promise<unknown>;
 export type ClientResolver = (clientId: string) => Promise<OAuthClient | null>;
 
 const MAX_DOCUMENT_BYTES = 5_120;
-const FETCH_TIMEOUT_MS = 5_000;
+const DEADLINE_MS = 5_000;
 const CACHE_MS = 10 * 60_000;
 const CACHE_ENTRIES = 200;
-
-/** Addresses no metadata document may live at: this machine, private networks, link-local (the cloud's metadata service) and anything not routable. */
-const PRIVATE = new BlockList();
-for (const [network, prefix] of [
-  ["0.0.0.0", 8],
-  ["10.0.0.0", 8],
-  ["100.64.0.0", 10],
-  ["127.0.0.0", 8],
-  ["169.254.0.0", 16],
-  ["172.16.0.0", 12],
-  ["192.0.0.0", 24],
-  ["192.0.2.0", 24],
-  ["192.168.0.0", 16],
-  ["198.18.0.0", 15],
-  ["198.51.100.0", 24],
-  ["203.0.113.0", 24],
-  ["224.0.0.0", 4],
-  ["240.0.0.0", 4],
-] as const) {
-  PRIVATE.addSubnet(network, prefix, "ipv4");
-}
-for (const [network, prefix] of [
-  ["::", 128],
-  ["::1", 128],
-  // No rule for IPv4-mapped addresses (::ffff:0:0/96): BlockList checks them against the IPv4 rules above, and such a rule would match every IPv4 address.
-  ["64:ff9b::", 96],
-  ["100::", 64],
-  ["2001:db8::", 32],
-  ["fc00::", 7],
-  ["fe80::", 10],
-  ["ff00::", 8],
-] as const) {
-  PRIVATE.addSubnet(network, prefix, "ipv6");
-}
-
-/** Whether an address is one a stranger's document may be fetched from. */
-export function isPublicAddress(address: string): boolean {
-  const family = isIP(address);
-  if (family === 0) return false;
-  return !PRIVATE.check(address, family === 4 ? "ipv4" : "ipv6");
-}
+/** At most this many documents are being fetched at once by this server; beyond it a client is, for now, unknown. */
+const MAX_CONCURRENT_FETCHES = 8;
 
 class DocumentError extends Error {}
 
-/** Resolves the host once, refuses it if any address is not public, and returns a lookup that connects to the checked address only. */
-async function pinnedLookup(host: string): Promise<LookupFunction> {
-  const addresses = await lookup(host, { all: true, verbatim: true });
-  if (addresses.length === 0 || !addresses.every((each) => isPublicAddress(each.address))) throw new DocumentError("not a public host");
-  const [chosen] = addresses;
-  if (chosen === undefined) throw new DocumentError("no address");
-  return (_hostname, options, callback) => {
+type Resolved = { readonly address: string; readonly family: number };
+
+export type FetcherOptions = {
+  /** Resolves a host name. The real one asks DNS. */
+  readonly resolve?: (host: string) => Promise<readonly Resolved[]>;
+  /** Whether an address may be connected to. The real one allows public addresses only. */
+  readonly allowed?: (address: string) => boolean;
+  /** Sends the request. The real one is https. */
+  readonly send?: (url: URL, options: RequestOptions, onResponse: (response: IncomingMessage) => void) => ClientRequest;
+  /** The whole fetch's deadline, the name lookup included. */
+  readonly deadlineMs?: number;
+};
+
+const resolveWithDns = (host: string) => lookup(host, { all: true, verbatim: true });
+
+/** A lookup that answers with the address already checked, so the connection goes where the check approved (no DNS rebinding). */
+const pinned =
+  (chosen: Resolved): LookupFunction =>
+  (_hostname, options, callback) => {
     if (typeof options === "object" && options.all) callback(null, [{ address: chosen.address, family: chosen.family }]);
     else callback(null, chosen.address, chosen.family);
   };
-}
 
-/** Fetches a client ID metadata document from a public host, or throws. */
-export const fetchClientDocument: FetchDocument = async (url) => {
-  const lookupPinned = await pinnedLookup(url.hostname);
-  const body = await new Promise<string>((resolve, reject) => {
-    const outgoing = httpsRequest(url, { method: "GET", lookup: lookupPinned, headers: { accept: "application/json" }, timeout: FETCH_TIMEOUT_MS }, (response) => {
+/** Reads the body of one 200 answer, no further than the size limit. */
+function readBody(url: URL, lookupPinned: LookupFunction, send: NonNullable<FetcherOptions["send"]>, signal: AbortSignal): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const outgoing = send(url, { method: "GET", lookup: lookupPinned, headers: { accept: "application/json" }, signal }, (response) => {
       if (response.statusCode !== 200) {
         response.resume();
         reject(new DocumentError(`status ${String(response.statusCode)}`));
@@ -102,6 +77,7 @@ export const fetchClientDocument: FetchDocument = async (url) => {
         size += chunk.length;
         if (size > MAX_DOCUMENT_BYTES) {
           outgoing.destroy(new DocumentError("too large"));
+          reject(new DocumentError("too large"));
           return;
         }
         chunks.push(chunk);
@@ -109,12 +85,47 @@ export const fetchClientDocument: FetchDocument = async (url) => {
       response.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
       response.on("error", reject);
     });
-    outgoing.on("timeout", () => outgoing.destroy(new DocumentError("timeout")));
     outgoing.on("error", reject);
     outgoing.end();
   });
-  return JSON.parse(body) as unknown;
-};
+}
+
+/**
+ * A fetcher of client ID metadata documents. One deadline covers the whole
+ * fetch: a host that answers its name slowly, or drips its body a byte at a
+ * time, is cut off when it passes, not each time it goes quiet.
+ */
+export function documentFetcher(options: FetcherOptions = {}): FetchDocument {
+  const resolve = options.resolve ?? resolveWithDns;
+  const allowed = options.allowed ?? isPublicAddress;
+  const send = options.send ?? ((url, requestOptions, onResponse) => httpsRequest(url, requestOptions, onResponse));
+  const deadlineMs = options.deadlineMs ?? DEADLINE_MS;
+  return async (url) => {
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => {
+        controller.abort();
+        reject(new DocumentError("deadline"));
+      }, deadlineMs);
+    });
+    const fetchOnce = async () => {
+      const addresses = await resolve(url.hostname);
+      const [chosen] = addresses;
+      if (chosen === undefined || !addresses.every((each) => allowed(each.address))) throw new DocumentError("not a public host");
+      return JSON.parse(await readBody(url, pinned(chosen), send, controller.signal)) as unknown;
+    };
+    try {
+      return await Promise.race([fetchOnce(), deadline]);
+    } finally {
+      clearTimeout(timer);
+      controller.abort();
+    }
+  };
+}
+
+/** Fetches a client ID metadata document from a public host, or throws. */
+export const fetchClientDocument: FetchDocument = documentFetcher();
 
 /** Reads a client ID metadata document into a client, or `null` when it is not one Kin can trust (the draft's section 4). */
 export function clientFromDocument(url: URL, document: unknown): OAuthClient | null {
@@ -126,12 +137,29 @@ export function clientFromDocument(url: URL, document: unknown): OAuthClient | n
 
 /**
  * The resolver the routes use. `signingKey` signs registered clients' IDs;
- * without one, only metadata-document clients are known. Documents are
- * cached ten minutes, so a consent screen and its answer read the same one.
+ * without one, only metadata-document clients are known. A document is
+ * fetched once however many requests name it at the same moment, at most a
+ * few documents are fetched at once, and each is cached ten minutes, so a
+ * consent screen and its answer read the same one.
  */
-export function clientResolver(signingKey: string | null, fetchDocument: FetchDocument = fetchClientDocument, now: () => number = Date.now): ClientResolver {
+export function clientResolver(signingKey: string | null, fetchDocument: FetchDocument = fetchClientDocument, now: () => number = Date.now, maxConcurrent = MAX_CONCURRENT_FETCHES): ClientResolver {
   const key = signingKey === null ? null : clientRegistrationKey(signingKey);
   const cache = new Map<string, { readonly at: number; readonly client: OAuthClient | null }>();
+  const inFlight = new Map<string, Promise<OAuthClient | null>>();
+
+  const fetchClient = async (url: URL): Promise<OAuthClient | null> => {
+    let client: OAuthClient | null;
+    try {
+      client = clientFromDocument(url, await fetchDocument(url));
+    } catch {
+      // Unreachable, private, too slow, too large or not JSON: an unknown client, and nothing about why.
+      client = null;
+    }
+    if (cache.size >= CACHE_ENTRIES) cache.delete(cache.keys().next().value ?? "");
+    cache.set(url.href, { at: now(), client });
+    return client;
+  };
+
   return async (clientId) => {
     if (isRegisteredClientId(clientId)) {
       const registration = key === null ? null : readClientRegistration(key, clientId);
@@ -141,15 +169,12 @@ export function clientResolver(signingKey: string | null, fetchDocument: FetchDo
     if (url === null) return null;
     const cached = cache.get(clientId);
     if (cached !== undefined && now() - cached.at < CACHE_MS) return cached.client;
-    let client: OAuthClient | null;
-    try {
-      client = clientFromDocument(url, await fetchDocument(url));
-    } catch {
-      // Unreachable, private, too slow, too large or not JSON: an unknown client, and nothing about why.
-      client = null;
-    }
-    if (cache.size >= CACHE_ENTRIES) cache.delete(cache.keys().next().value ?? "");
-    cache.set(clientId, { at: now(), client });
-    return client;
+    const running = inFlight.get(clientId);
+    if (running !== undefined) return running;
+    // Too many strangers' documents at once: this one is unknown for now, and nothing is cached, so a later try can succeed.
+    if (inFlight.size >= maxConcurrent) return null;
+    const started = fetchClient(url).finally(() => inFlight.delete(clientId));
+    inFlight.set(clientId, started);
+    return started;
   };
 }

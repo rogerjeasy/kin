@@ -165,6 +165,11 @@ for (const viewport of viewports) {
     await expect(page.getByRole("heading", { level: 1, name: english.developers.hero.title })).toBeVisible();
     await expect(page.getByText("/api/mcp").first()).toBeVisible();
     await expect(page.getByText("propose_refill").first()).toBeVisible();
+    // Signing in through OAuth is built: the page shows how, and no longer lists it as next.
+    await expect(page.getByRole("heading", { name: english.developers.mcp.oauth.title })).toBeVisible();
+    await expect(page.getByText(/^claude mcp add --transport http kin http:\/\/\S+\/api\/mcp$/u)).toBeVisible();
+    await expect(page.getByText("/.well-known/oauth-authorization-server").first()).toBeVisible();
+    await expect(page.getByText(/Signing in through OAuth 2\.1 with PKCE, so a client/u)).toHaveCount(0);
     await maybeScreenshot(page, "developers");
     await expectNoHorizontalOverflow(page);
   });

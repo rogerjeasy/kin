@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { authConfig } from "@/server/auth/config";
-import { CONSENT_PAGE, checkAuthorization, oauthClients } from "@/server/open-kin/oauth";
+import { CONSENT_PAGE, allowAuthorization, checkAuthorization, oauthClients } from "@/server/open-kin/oauth";
 
 // A code or an error on its way back to the client is never stored, and the client's address never learns Kin's pages.
 const PRIVATE = { "cache-control": "no-store", "referrer-policy": "no-referrer" } as const;
@@ -14,6 +14,9 @@ const PRIVATE = { "cache-control": "no-store", "referrer-policy": "no-referrer" 
  * client or redirect URI is told only to the person, here.
  */
 export async function GET(request: NextRequest): Promise<Response> {
+  if (!allowAuthorization(request.headers)) {
+    return new Response("Too many authorization requests. Try again in a few minutes.\n", { status: 429, headers: { ...PRIVATE, "content-type": "text/plain; charset=utf-8", "retry-after": "600" } });
+  }
   const origin = authConfig().webOrigin;
   const check = await checkAuthorization(request.nextUrl.searchParams, { origin, clients: oauthClients() });
   if (check.kind === "refuse") {

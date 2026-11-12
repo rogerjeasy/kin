@@ -29,6 +29,8 @@ import { OAuthConsentError, asPerson, createAuthorizationCode, redeemAuthorizati
 import { oauthConsentRoute } from "@/content/dashboard-routes";
 import { routes } from "@/content/site-routes";
 
+import { clientKey } from "../check-link";
+import { createRateLimiter } from "../model";
 import { agencySigningKey } from "./agency";
 import { MCP_PATH } from "./mcp";
 import { clientResolver, type ClientResolver, type OAuthClient } from "./oauth-clients";
@@ -56,6 +58,21 @@ export const CONSENT_PAGE = oauthConsentRoute;
 
 /** The one resource Kin's tokens are for (RFC 8707): its MCP endpoint. */
 export const mcpResource = (origin: string): string => `${origin}${MCP_PATH}`;
+
+/**
+ * Each address may open 120 authorization requests in ten minutes, at the
+ * endpoint, the consent screen and its answer together: each one may make
+ * Kin fetch a stranger's client ID metadata document.
+ */
+const authorizationLimiter = createRateLimiter(120, 10 * 60_000, { whenFull: "forgetOldest" });
+
+/** Counts one authorization request from the address the headers name, or says it is one too many. */
+export function allowAuthorization(headers: Headers, now = Date.now()): boolean {
+  const from = clientKey(headers);
+  if (!authorizationLimiter.allows(from, now)) return false;
+  authorizationLimiter.record(from, now);
+  return true;
+}
 
 let resolver: ClientResolver | undefined;
 

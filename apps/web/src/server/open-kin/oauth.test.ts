@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { checkAuthorization, registerClient } from "./oauth";
-import { clientResolver, isPublicAddress } from "./oauth-clients";
+import { clientResolver } from "./oauth-clients";
+import { isPublicAddress } from "./public-address";
 
 /**
  * Kin's authorization server (decision 111), the parts that need no database:

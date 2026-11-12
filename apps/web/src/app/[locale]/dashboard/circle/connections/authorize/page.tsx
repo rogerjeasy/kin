@@ -1,5 +1,6 @@
 import { DELEGATION_LIFETIME_DAYS } from "@kin/auth";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 import { OAuthClientPanel } from "@/components/dashboard/connections/oauth-client-panel";
 import { OAuthConsentForm } from "@/components/dashboard/connections/oauth-consent-form";
@@ -13,7 +14,7 @@ import { fill } from "@/i18n/template";
 import { authConfig } from "@/server/auth/config";
 import { signInPath } from "@/server/auth/next-path";
 import { dashboardContext, may } from "@/server/dashboard-context";
-import { checkAuthorization, oauthClients } from "@/server/open-kin/oauth";
+import { allowAuthorization, checkAuthorization, oauthClients } from "@/server/open-kin/oauth";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/dashboard/circle/connections/authorize">): Promise<Metadata> {
   const { dictionary } = await pageContext(params);
@@ -42,6 +43,7 @@ export default async function OAuthConsentPage({ params, searchParams }: PagePro
   const copy = dictionary.openKin.oauth;
   const query = queryOf(await searchParams);
   const origin = authConfig().webOrigin;
+  if (!allowAuthorization(await headers())) return <OAuthNotice title={copy.invalid.title} text={copy.errors.too_many_codes} />;
   const check = await checkAuthorization(new URLSearchParams(query), { origin, clients: oauthClients() });
 
   if (viewer.kind !== "person") {
