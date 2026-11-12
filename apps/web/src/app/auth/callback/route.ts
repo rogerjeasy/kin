@@ -7,6 +7,7 @@ import { withOwedAccountTypes } from "@/server/auth/account-groups";
 import { startEnrolment } from "@/server/auth/authenticator";
 import { authConfig, sessionVerifier } from "@/server/auth/config";
 import { COOKIES, clearedSignInCookie, sessionCookies } from "@/server/auth/cookies";
+import { clearedDemoCookie } from "@/server/auth/demo-cookie";
 import { signInPath } from "@/server/auth/next-path";
 import { redirectWithCookies } from "@/server/auth/respond";
 import { decodeFlow } from "@/server/auth/sign-in-flow";
@@ -46,7 +47,8 @@ export async function GET(request: NextRequest) {
     }
     // The nonce is checked on the tokens of this sign-in; renewed tokens carry the same person and sign-in.
     const { tokens } = await withOwedAccountTypes({ session, tokens: exchanged }, exchanged.refreshToken);
-    const cookies = [clearedSignInCookie(), ...sessionCookies(tokens)];
+    // Signing in ends any demo in this browser, so the person lands in their own account.
+    const cookies = [clearedSignInCookie(), clearedDemoCookie(), ...sessionCookies(tokens)];
     if (!flow.stepUp) return redirectWithCookies(flow.next, config.webOrigin, cookies);
     // A step-up counts only for the person who asked for it. Someone else
     // signing in on this browser is not their yes, and keeps the old session.

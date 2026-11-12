@@ -13,6 +13,7 @@ import { routes } from "@/content/site-routes";
 import { localizedPath } from "@/i18n/routing";
 
 import { clearedDemoCookie, demoCookie } from "./auth/demo-cookie";
+import { currentSession } from "./auth/session";
 import { joinDemo } from "./circle";
 import { sectionsForRole } from "./dashboard-context";
 import { databases } from "./database";
@@ -32,6 +33,8 @@ export async function startDemo(form: FormData): Promise<void> {
   const locale = formLocale(form);
   const demo = demoConfig();
   if (!demo.enabled) redirect(localizedPath(locale, routes.home));
+  // A person who is signed in stays in their own account: the demo is for visitors, and the two never share a screen.
+  if ((await currentSession()) !== null) redirect(localizedPath(locale, dashboardRoutes.overview));
   let visitor = await currentVisitor();
   if (visitor === null) {
     visitor = await createDemoVisitor(databases().app);

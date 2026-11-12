@@ -33,7 +33,7 @@ export const circleOf = cache(async (viewer: Viewer): Promise<CircleSnapshot | n
   } catch (error) {
     // The seat changed between the two reads, by "start again" in another tab. Read the new one, once.
     if (!(error instanceof CircleNotFoundError)) throw error;
-    const [current] = await memberships(viewer.userId);
+    const [current] = (await memberships(viewer.userId)).filter((seat) => (viewer.kind === "person" ? !seat.demo : seat.demo));
     return current ? read(current.circleId) : null;
   }
 });
@@ -44,7 +44,8 @@ function memberships(userId: string): Promise<Membership[]> {
 
 /** Records the person's visit, joins the circles that invited them, and returns their first. */
 async function arrive(viewer: Extract<Viewer, { kind: "person" }>): Promise<Membership | null> {
-  const [first] = await joinInvitedCircles(viewer.session);
+  // A person's own circles only: a demo circle is never theirs to see as themselves.
+  const [first] = (await joinInvitedCircles(viewer.session)).filter((seat) => !seat.demo);
   return first ?? null;
 }
 
