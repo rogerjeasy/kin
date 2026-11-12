@@ -1,36 +1,63 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-import type { PayPalRequest } from "./client.ts";
 import { PayPalShapeError } from "./json.ts";
 import { paypalPool } from "./pool.ts";
-import { parseSubscriptionRevised, reviseBody } from "./subscription.ts";
+import { parsePlan, parseSubscriptionPlanId, parseSubscriptionRevised, reviseBody } from "./subscription.ts";
 import { fakePool } from "./testing/index.ts";
+import { readFixture, replayPool, type RecordedExchange } from "./testing/replay.ts";
 
-/** Derived from PayPal's documentation of Subscriptions v1 revise, not recorded: see fixtures/README.md. */
-const documented = JSON.parse(readFileSync(new URL("./fixtures/subscription-revise-documented-2026-11-10.json", import.meta.url), "utf8")) as { request: unknown; revised: unknown };
+// Recorded from the PayPal sandbox on 11 November 2026: see fixtures/README.md.
+const recording = readFixture<{ revise: RecordedExchange[]; activateWhileRevisionPending: RecordedExchange[] }>("subscription-sandbox-2026-11-11.json");
+const ID = "I-CUXNGCY1VJKR";
+const RETURN = "https://kin.example.com/dashboard/shares";
 
-describe("revising a monthly share's subscription to a new amount", () => {
-  it("prices the plan's one regular cycle again, exactly, and sends the payer back to Kin", () => {
-    expect(JSON.parse(reviseBody({ cents: 39_000, currency: "USD" }, "https://kin.example/dashboard/fairness/quiet-shares"))).toEqual(documented.request);
+describe("revising a monthly share's subscription to a new amount, as the sandbox answered", () => {
+  it("makes a sibling plan for the amount on the circle's product, then moves the subscription onto it", async () => {
+    const { pool, sent } = replayPool(recording.revise.slice(0, 4));
+    const revised = await pool.reviseSubscription(ID, { cents: 200, currency: "USD" }, RETURN, "kin-quiet-revise-1");
+    expect(revised.approvalUrl).toBe("https://www.sandbox.paypal.com/webapps/billing/subscriptions/update?ba_token=BA-5J3310331N293425F");
+    expect(sent.map((each) => [each.method, each.path, each.requestId])).toEqual([
+      ["GET", `/v1/billing/subscriptions/${ID}`, null],
+      ["GET", "/v1/billing/plans/P-229450167E6731234NL2PKEA", null],
+      ["POST", "/v1/billing/plans", `kin-plan-${ID}-USD-200`],
+      // PayPal takes no request ID on revise.
+      ["POST", `/v1/billing/subscriptions/${ID}/revise`, null],
+    ]);
+    // Exactly what the sandbox accepted.
+    expect(sent[2]?.body).toEqual(recording.revise[2]?.request);
+    expect(sent[3]?.body).toEqual(recording.revise[3]?.request);
+  });
+
+  it("sends the new plan, never a price override, which the sandbox refuses on the subscription's own plan", () => {
+    expect(JSON.parse(reviseBody("P-5HL13463MH0673805NL2PKVA", RETURN))).toEqual(recording.revise[3]?.request);
+    expect(parsePlan(recording.revise[1]?.body)).toEqual({ productId: "KIN-2e9f4001-652d-4466-8c6d-bd1884971119", name: "Kin sandbox check: monthly share" });
+    expect(parseSubscriptionPlanId(recording.revise[0]?.body)).toBe("P-229450167E6731234NL2PKEA");
+    expect(() => parseSubscriptionPlanId({ plan_id: "P-../../payouts" })).toThrow(PayPalShapeError);
   });
 
   it("reads the page where the payer approves the new price, and only a PayPal page over HTTPS", () => {
-    expect(parseSubscriptionRevised(documented.revised)).toEqual({
-      planOverridden: true,
-      approvalUrl: "https://www.sandbox.paypal.com/webapps/billing/subscriptions/update?ba_token=BA-2M539689T3856352J",
+    expect(parseSubscriptionRevised(recording.revise[3]?.body)).toEqual({
+      planOverridden: false,
+      approvalUrl: "https://www.sandbox.paypal.com/webapps/billing/subscriptions/update?ba_token=BA-5J3310331N293425F",
     });
     expect(parseSubscriptionRevised({ plan_overridden: true, links: [] })).toEqual({ planOverridden: true, approvalUrl: null });
     expect(() => parseSubscriptionRevised({ links: [{ rel: "approve", href: "https://paypal.com.evil.example/x" }] })).toThrow(PayPalShapeError);
     expect(() => parseSubscriptionRevised("nope")).toThrow(PayPalShapeError);
   });
 
-  it("posts to the subscription's own revise path with the request ID, and never puts anything but a subscription ID in it", async () => {
-    const sent: PayPalRequest[] = [];
-    const pool = paypalPool({ send: async (request) => (sent.push(request), documented.revised) }, "WH-ID");
-    const revised = await pool.reviseSubscription("I-BW452GLLEP1G", { cents: 39_000, currency: "USD" }, "https://kin.example/back", "kin-quiet-revise-1");
-    expect(revised.approvalUrl).toContain("ba_token=BA-2M539689T3856352J");
-    expect(sent.map((request) => [request.method, request.path, request.requestId, request.operation])).toEqual([["POST", "/v1/billing/subscriptions/I-BW452GLLEP1G/revise", "kin-quiet-revise-1", "subscriptions.revise"]]);
+  it("leaves the old amount running until the payer approves: the subscription still reads its first plan", async () => {
+    const { pool } = replayPool(recording.revise.slice(4));
+    expect((await pool.getSubscription(ID)).status).toBe("ACTIVE");
+    expect(parseSubscriptionPlanId(recording.revise[4]?.body)).toBe("P-229450167E6731234NL2PKEA");
+  });
+
+  it("is told plainly that a subscription with a revision waiting cannot be resumed until the payer answers it", async () => {
+    const { pool } = replayPool(recording.activateWhileRevisionPending);
+    await expect(pool.changeSubscription(ID, "activate", "Kin sandbox check", "resume")).rejects.toMatchObject({ outcome: "rejected", status: 422, issue: "SESSION_STATE_NOT_VALID" });
+  });
+
+  it("never puts anything but a subscription ID in a URL", async () => {
+    const pool = paypalPool({ send: async () => ({}) }, "WH-ID");
     await expect(pool.reviseSubscription("I-../../payouts", { cents: 1, currency: "USD" }, "https://kin.example", "x")).rejects.toThrow("Not a PayPal subscription ID");
   });
 

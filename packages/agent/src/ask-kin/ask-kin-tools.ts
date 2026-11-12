@@ -1,11 +1,12 @@
 import type { CircleAction } from "@kin/auth";
 
+import { PAYPAL_TOOLKIT_TOOLS } from "./paypal-toolkit-tools.ts";
 import type { ObjectSchema } from "./tool-schema.ts";
 
 /**
  * Every tool Ask Kin may offer, and the role table: the circle action each one
  * needs, decided by `authorize` in packages/auth like every other access
- * check. Nine tools only read. One proposes a refill, which still waits for
+ * check. Twelve tools only read, three of them through PayPal's Agent Toolkit. One proposes a refill, which still waits for
  * the yeses the family agreement names, and one, for the parent alone,
  * proposes a payment from her Purse, which waits for her own yes after Kin
  * reads it back. None approves, pays, moves money or edits a record, and no
@@ -105,6 +106,8 @@ export const ASK_KIN_TOOLS = {
       additionalProperties: false,
     },
   },
+  // Three more reads, of PayPal's own record through PayPal's Agent Toolkit.
+  ...PAYPAL_TOOLKIT_TOOLS,
   propose_refill: {
     kind: "propose",
     action: "refill.propose",

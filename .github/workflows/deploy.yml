@@ -64,10 +64,12 @@ jobs:
         working-directory: infra
         run: pnpm run migrate
       # KinWorker exists once kin:paypal in infra/cdk.json switches top-ups on,
-      # and KinVoice once kin:voice does; until then the app has no such stack.
-      - name: Build and roll out the web, worker and voice images
+      # KinVoice once kin:voice does, and KinDemoMerchant once kin:demoMerchant
+      # does; until then the app has no such stack. KinWorker reads the
+      # pharmacy's address from KinDemoMerchant, so CDK deploys that first.
+      - name: Build and roll out the web, worker, voice and pharmacy images
         working-directory: infra
-        run: pnpm exec cdk deploy KinWeb $(pnpm exec cdk list 2>/dev/null | grep -x -e KinWorker -e KinVoice || true) --require-approval never --outputs-file cdk-outputs.json
+        run: pnpm exec cdk deploy KinWeb $(pnpm exec cdk list 2>/dev/null | grep -x -e KinWorker -e KinVoice -e KinDemoMerchant || true) --require-approval never --outputs-file cdk-outputs.json
         env:
           KIN_ALERT_EMAIL: ${{ secrets.KIN_ALERT_EMAIL }}
           KIN_SENDER_EMAIL: ${{ secrets.KIN_SENDER_EMAIL }}
@@ -75,6 +77,8 @@ jobs:
           KIN_TWILIO_SMS_FROM: ${{ secrets.KIN_TWILIO_SMS_FROM }}
           # The number(s) a parent rings to ask "is it really you?", as JSON. Unset (an empty secret), the line is off.
           KIN_PRESENCE_LINE_NUMBERS: ${{ secrets.KIN_PRESENCE_LINE_NUMBERS }}
+          # AG Studio's licence key, built into the web image. Unset, the studio runs unlicensed.
+          KIN_AG_STUDIO_LICENSE: ${{ secrets.AG_STUDIO_LICENSE }}
       # The web app, and the phone service when this deployment made one.
       - name: Check the live app
         working-directory: infra

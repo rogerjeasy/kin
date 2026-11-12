@@ -17,11 +17,11 @@ This document says what to build with and why. It is not a design or an implemen
 | Data grid | AG Grid Community for the family ledger and audit screens |
 | Care calendar | Bryntum Scheduler, the trial build, read-only, for the family's week of care shifts |
 | Checkout | PayPal JavaScript SDK v6 |
-| PayPal server side | Direct REST calls from `packages/paypal` (built). The PayPal Agent Toolkit and sandbox MCP server are **Planned, not built** |
+| PayPal server side | Direct REST calls from `packages/paypal` (built). The PayPal Agent Toolkit `@paypal/agent-toolkit` 1.11.0 for Ask Kin's reads of PayPal's own record, read actions only (built, architecture decision 106). The sandbox MCP server is **Planned, not built** |
 | AI model | Claude through the Anthropic TypeScript SDK on Amazon Bedrock: Opus 4.6 by InvokeModel today, Opus 5.5 when the account is granted it |
 | Speech | Amazon Transcribe and Amazon Polly (built, switched on; architecture decision 59) |
-| Phone calls | Twilio voice, as a webhook service (`apps/voice`) hosted on App Runner by the `KinVoice` stack once `kin:voice` is on (architecture decision 85); no Twilio account or number is connected yet, so no live call has been placed |
-| Containers | Docker, one image for all three services, Docker Compose locally |
+| Phone calls | Twilio voice, as a webhook service (`apps/voice`) hosted on App Runner by the `KinVoice` stack, with `kin:voice` on (architecture decision 85); a call through a real Twilio number is not yet verified |
+| Containers | Docker, one image per service (`apps/web`, `apps/worker` and `apps/voice` each have a Dockerfile); locally, PostgreSQL and the queue stand-in run in Docker (`pnpm db:up`, `pnpm queue:up`) |
 | Compute | AWS App Runner for the web app and the voice service (architecture decisions 35 and 85); ECS on Fargate for the worker |
 | Database | Amazon Aurora Serverless v2, PostgreSQL-compatible |
 | Authentication and authorization | Amazon Cognito |
@@ -40,7 +40,7 @@ This document says what to build with and why. It is not a design or an implemen
 - **Required:** the PayPal developer platform in the free sandbox, and an AI tool, model or platform of your choice. PayPal must be central to the project.
 - **Optional:** sponsor tools from AG Grid, APIMatic, Astropods, Bryntum, Channel3, Elastic, KERNEL, Postman, Render and Zapier.
 - **Not restricted:** language, framework, database and hosting. AWS is permitted.
-- **Submission needs:** a public open-source repository with a visible license, a working build that judges can reach free of charge until 15 December 2026, and a video under three minutes.
+- **Submission needs:** a public open-source repository with a visible license, a working build that judges can reach free of charge, with its demo, credentials and trials kept up until winners are announced on 21 December 2026, and a video under three minutes. No edits after the submission deadline.
 
 ---
 
@@ -116,7 +116,7 @@ Three small services share one codebase:
 
 **Status in this build.** Called by the code today, all by direct REST calls from `packages/paypal`: Orders v2 with the JavaScript SDK v6 (and Pay Later when PayPal offers it), Payments v2 (reading a capture or a refund back), Subscriptions with Catalog products and plans (create, read, transactions, suspend, activate, cancel, revise), Payouts (batch and item), Invoicing v2, Transaction Search (the nightly reconciliation of real Purse payments, architecture section 8.6a), webhooks with signature verification (including refunds, decision 97), and the vault-backed Orders request in the demo pharmacy. Shipment tracking, Disputes, creating a refund and Log in with PayPal are **Planned, not built**. Invoicing is covered in `architecture.md` section 8.2.
 
-**Packages and endpoints (the toolkit and MCP lines are Planned, not built; neither has a Payouts tool, and the model never holds a PayPal write, so Kin exposes its own MCP server instead, architecture decision 93):**
+**Packages and endpoints (the toolkit is built for four read actions, architecture decision 106; the MCP line is Planned, not built; neither has a Payouts tool, and the model never holds a PayPal write, so Kin exposes its own MCP server instead, architecture decision 93):**
 
 - `@paypal/agent-toolkit` for the agent's PayPal tools.
 - The hosted sandbox MCP server at `https://mcp.sandbox.paypal.com`, with `/sse` and `/http` transports. It can also run locally with `npx @paypal/mcp --tools=all`.
@@ -140,7 +140,7 @@ Three small services share one codebase:
 
 **Settings to get right from the start:**
 
-- Set the effort level explicitly. Its default on this model is medium. Use low for short spoken turns and high for the monthly statement and for reading difficult documents.
+- Set the effort level explicitly. Its default on this model is medium. Use low for short spoken turns and high for the monthly statement and for reading difficult documents. **As built:** every structured read, including documents, runs at low effort (`packages/agent/src/bedrock-model.ts`), and Ask Kin and the calendar assistant at medium; no call uses high, and the monthly statement is plain code with no model.
 - Do not force a specific tool call. Opus 5.5 rejects forced tool choice. Use automatic tool choice with strict tool schemas.
 - Check the stop reason on every response and handle a refusal cleanly (built: a refusal or a cut-off falls back to fixed wording). Server-side fallbacks are not configured (decision 58).
 - If spoken replies feel slow at low effort, test Claude Haiku 5.5 (`claude-haiku-5-5`) for those turns only. Not done: every call uses one model.
@@ -149,7 +149,7 @@ Three small services share one codebase:
 
 **What AI is not used for:** the ledger arithmetic, the settlement calculation and the decision that a payment happened. Those are plain deterministic code reading PayPal's records.
 
-**Where Kin reaches Claude: Amazon Bedrock** (decisions 58 and 67 in `architecture.md`). The project owner runs Anthropic's models on Bedrock, with AWS credentials and no Anthropic key, through `@anthropic-ai/bedrock-sdk`. `KIN_BEDROCK_API` picks the endpoint: `mantle` (the default; `AnthropicBedrockMantle`, model ID `anthropic.claude-opus-5-5`) or `invoke` (Bedrock Runtime InvokeModel, `AnthropicBedrock`, model ID `us.anthropic.claude-opus-4-6-v1`). The hosted app uses `invoke` because its AWS account is not entitled to Opus 5.5 on the Mantle endpoint; moving to Opus 5.5 is setting `KIN_BEDROCK_API=mantle` and `KIN_BEDROCK_MODEL=anthropic.claude-opus-5-5` once AWS grants it, then re-running both evaluation sets. Both adapters send the same Messages body (low effort, `output_config.format` json_schema, no tools, no prefill, which Opus 4.6 refuses), and the reply is validated by the caller. The settings above apply unchanged on Bedrock, except that Opus 4.6 is not the model those lines were written for: re-check the effort and tool-choice lines against it.
+**Where Kin reaches Claude: Amazon Bedrock** (decisions 58 and 67 in `architecture.md`). The project owner runs Anthropic's models on Bedrock, with AWS credentials and no Anthropic key, through `@anthropic-ai/bedrock-sdk`. `KIN_BEDROCK_API` picks the endpoint: `mantle` (the default; `AnthropicBedrockMantle`, model ID `anthropic.claude-opus-5-5`) or `invoke` (Bedrock Runtime InvokeModel, `AnthropicBedrock`, model ID `us.anthropic.claude-opus-4-6-v1`). The hosted app uses `invoke` because its AWS account is not entitled to Opus 5.5 on the Mantle endpoint; moving to Opus 5.5 is setting `KIN_BEDROCK_API=mantle` and `KIN_BEDROCK_MODEL=anthropic.claude-opus-5-5` once AWS grants it, then re-running every evaluation set in `packages/agent/evals`. Both adapters send the same Messages body (low effort, `output_config.format` json_schema, no tools, no prefill, which Opus 4.6 refuses), and the reply is validated by the caller. The settings above apply unchanged on Bedrock, except that Opus 4.6 is not the model those lines were written for: re-check the effort and tool-choice lines against it.
 
 ---
 
@@ -174,7 +174,7 @@ Claude's API takes text and images, not audio, so speech needs its own services.
 
 ## 8. Compute: AWS ECS on Fargate
 
-> **Today:** the web app runs on AWS App Runner (architecture decision 35), which serves https at its own address without a domain. The design below still applies to voice and worker, which need long-lived connections.
+> **Today:** the web app and the voice service run on AWS App Runner (architecture decisions 35 and 85), each serving https at its own address without a domain, and there is no load balancer. Only the worker runs on Fargate. The design below is the target for live audio, which needs long-lived connections; Twilio's webhooks, as built, are short requests.
 
 - **Three Fargate services** from one container image: web, voice and worker.
 - **Application Load Balancer** in front of web and voice, with HTTPS certificates from AWS Certificate Manager and a domain in Route 53.
@@ -333,7 +333,7 @@ Each of these should be tried against the real services before the build depends
 
 ## 18. Cost and running through judging
 
-- The environment must stay up from submission on 12 November until judging ends on 15 December 2026.
+- The environment must stay up from submission on 12 November until winners are announced on 21 December 2026: the demo, its credentials and any trials it relies on. No edits after the submission deadline.
 - Keep Fargate tasks small and Aurora's maximum capacity low.
 - Set an AWS billing alarm before deploying anything.
 - Set spending limits on the Claude, speech and telephony accounts, since the demo is public.
@@ -348,7 +348,7 @@ Each of these should be tried against the real services before the build depends
 - The PayPal Agent Toolkit's tool list, including the absence of a payout tool.
 - The PayPal sandbox MCP server address and transports.
 - The Claude model identifiers and the behavior notes in section 6.
-- Claude in the hosted app: `kin:claude` is `true` and the deployed model is `us.anthropic.claude-opus-4-6-v1` through Bedrock InvokeModel (`infra/src/web-stack.ts`). The fixed evaluation sets (12 visit cases, 6 document cases in `packages/agent/evals`) are run by hand with `pnpm --filter @kin/agent run eval` and `run eval:documents`; the git history shows the document prompt was adjusted for Opus 4.6, but no recorded result is kept in the repository.
+- Claude in the hosted app: `kin:claude` is `true` and the deployed model is `us.anthropic.claude-opus-4-6-v1` through Bedrock InvokeModel (`infra/src/web-stack.ts`). The fixed evaluation sets in `packages/agent/evals` are run by hand against the real model (`pnpm --filter @kin/agent run eval`, `eval:documents`, `eval:agent` and the others in its `package.json`), and each run is kept in `packages/agent/evals/results/`: on Opus 4.6 through InvokeModel, visits 12 of 12 and documents 8 of 8 (10 November 2026), Ask Kin 15 of 15 (11 November 2026), and every other set passing in full.
 
 **Written from general knowledge and to be confirmed before relying on it:**
 

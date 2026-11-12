@@ -35,10 +35,13 @@
       "clientId": "BAATjOObFGda34lAUzZzBd43bazhUHcRf9GbRKzF1ZiTJl5x0WSIz0Q3fGJ_1rtBYd_BmJZrTQ1-9VfGkA",
       "webhookId": "3PS4036436315174J"
     },
+    "kin:demoSandboxPayeeEmail": "amara-doe@personal.example.com",
+    "kin:demoInvoiceRecipientEmail": "sb-gjhqx53353312@personal.example.com",
     "kin:speech": true,
     "kin:claude": true,
     "kin:voice": true,
     "kin:voicePublicUrl": "https://cvtt7m6dmj.us-east-1.awsapprunner.com",
+    "kin:demoMerchant": true,
     "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
     "@aws-cdk/aws-apigateway:authorizerChangeDeploymentLogicalId": true,
     "@aws-cdk/aws-apigateway:disableCloudWatchRole": true,

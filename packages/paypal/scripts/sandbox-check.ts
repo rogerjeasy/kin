@@ -5,7 +5,8 @@
  *   pnpm --filter @kin/paypal run sandbox:check capabilities [payee email]
  *   pnpm --filter @kin/paypal run sandbox:check balance
  *   pnpm --filter @kin/paypal run sandbox:check subscription <subscription id>
- *   pnpm --filter @kin/paypal run sandbox:check vault-start
+ *   pnpm --filter @kin/paypal run sandbox:check vault-start [consumer]
+ *   pnpm --filter @kin/paypal run sandbox:check vault-card
  *   pnpm --filter @kin/paypal run sandbox:check vault-finish <setup token id>
  *   pnpm --filter @kin/paypal run sandbox:check invoice <recipient email> [cents] [--record <file>]
  *   pnpm --filter @kin/paypal run sandbox:check invoice-read <invoice id> [--record <file>]
@@ -14,7 +15,7 @@ import { checkBalance, checkCapabilities } from "./sandbox/capabilities.ts";
 import { signIn } from "./sandbox/client.ts";
 import { makeInvoice, readInvoice, saveRecording } from "./sandbox/invoicing.ts";
 import { checkSubscriptionPayments } from "./sandbox/subscription.ts";
-import { finishVault, startVault } from "./sandbox/vault.ts";
+import { finishVault, saveTestCard, startVault } from "./sandbox/vault.ts";
 
 const [command, argument] = process.argv.slice(2);
 
@@ -36,7 +37,10 @@ switch (command) {
     await checkSubscriptionPayments(needs(argument, "subscription ID"));
     break;
   case "vault-start":
-    await startVault();
+    await startVault(argument === "consumer" ? "CONSUMER" : "BUSINESS");
+    break;
+  case "vault-card":
+    await saveTestCard();
     break;
   case "vault-finish":
     await finishVault(needs(argument, "setup token ID"));
@@ -50,5 +54,5 @@ switch (command) {
     saveRecording(process.argv);
     break;
   default:
-    console.log("Commands: capabilities [payee], balance, subscription <id>, vault-start, vault-finish <setup token>, invoice <recipient> [cents], invoice-read <invoice id>");
+    console.log("Commands: capabilities [payee], balance, subscription <id>, vault-start [consumer], vault-card, vault-finish <setup token>, invoice <recipient> [cents], invoice-read <invoice id>");
 }

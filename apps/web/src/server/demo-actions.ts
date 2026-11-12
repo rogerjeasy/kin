@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 
 import { dashboardRoutes } from "@/content/dashboard-routes";
 import { withNotice } from "@/content/dashboard-notices";
+import { guideDestination } from "@/content/demo-guide";
 import { routes } from "@/content/site-routes";
 import { localizedPath } from "@/i18n/routing";
 
@@ -16,6 +17,7 @@ import { joinDemo } from "./circle";
 import { sectionsForRole } from "./dashboard-context";
 import { databases } from "./database";
 import { demoConfig } from "./demo-config";
+import { rememberDemoGuide } from "./demo-guide-cookie";
 import { formLocale, formText } from "./form";
 import { currentVisitor } from "./viewer";
 
@@ -69,11 +71,16 @@ export async function startDemoAgain(form: FormData): Promise<void> {
   redirect(withNotice(localizedPath(locale, dashboardRoutes.overview), "restarted"));
 }
 
-/** Sees the demo circle from another persona's seat, and so from their role. */
+/**
+ * Sees the demo circle from another persona's seat, and so from their role.
+ * A step of the demo guide also names the screen to open in the new seat;
+ * only the guide's own screens are accepted (`guideDestination`).
+ */
 export async function switchDemoRole(form: FormData): Promise<void> {
   const locale = formLocale(form);
   const visitor = await requireVisitor(locale);
   const memberId = formText(form, "member");
+  const next = guideDestination(formText(form, "next", 600));
   const { app } = databases();
   const [seat] = await asPerson(app, visitor, (tx) => membershipsOf(tx, visitor));
   if (memberId && seat) {
@@ -83,7 +90,13 @@ export async function switchDemoRole(form: FormData): Promise<void> {
   const [now] = await asPerson(app, visitor, (tx) => membershipsOf(tx, visitor));
   const [landing = "overview"] = now ? sectionsForRole(now.role) : [];
   revalidatePath("/[locale]/dashboard", "layout");
-  redirect(withNotice(localizedPath(locale, dashboardRoutes[landing]), "roleChanged"));
+  redirect(withNotice(next ?? localizedPath(locale, dashboardRoutes[landing]), "roleChanged"));
+}
+
+/** Puts the demo's five-step guide away for this visitor, or brings it back. */
+export async function setDemoGuide(form: FormData): Promise<void> {
+  await rememberDemoGuide(formText(form, "guide") === "hide");
+  revalidatePath("/[locale]/dashboard", "layout");
 }
 
 async function requireVisitor(locale: Parameters<typeof localizedPath>[0]): Promise<string> {

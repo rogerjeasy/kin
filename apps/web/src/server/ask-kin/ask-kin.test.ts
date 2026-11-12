@@ -1,7 +1,7 @@
 import { fakeToolModel, finalTurn, toolCalls, type FakeToolModel } from "@kin/agent/testing";
 import type { ToolCallRecord, ToolTurn } from "@kin/agent";
 import { asPerson, readCircle, readExecutions, type CircleSnapshot } from "@kin/db";
-import { seatPerson, serviceRows, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
+import { endMandates, seatPerson, serviceRows, visitorWithCircle, type VisitorCircle } from "@kin/db/testing";
 import { describe, expect, it } from "vitest";
 
 import { createRateLimiter } from "../model";
@@ -98,12 +98,54 @@ describe("Ask Kin in a demo circle", () => {
 
   it("lets the parent's question raise a refill proposal that waits for a yes, at the rule's price", async () => {
     const circle = await visitorWithCircle(db);
+    // The demo's standing permission would approve it at once; without it the refill truly waits.
+    await endMandates(db, circle.circleId);
     const rose = await seatPerson(db, circle.circleId, circle.members.rose);
     const model = turns(toolCalls({ name: "propose_refill", input: { item: "refill" } }), finalTurn("Kin proposed the refill."));
     const result = await runAskKin(context(await snapshot(circle, rose), rose, model), ask("Reorder my refill"));
     expect(result).toMatchObject({ ok: true, proposal: { href: "/dashboard/approvals" }, steps: [{ tool: "propose_refill", outcome: "ok" }] });
     expect(toolResult(model, 1)).toMatchObject({ proposed: true, item: "Monthly prescription refill (30 days)", price: "$64.00" });
     expect(await serviceRows(db, circle.circleId, "select cents::int as cents from purchases where circle_id = $1", [circle.circleId])).toEqual([{ cents: 6400 }]);
+  });
+
+  it("says a refill the parent's standing permission covers was approved and ordered, not that it waits, as the card under the answer", async () => {
+    const circle = await visitorWithCircle(db);
+    const model = turns(toolCalls({ name: "propose_refill", input: {} }), finalTurn("Rose's standing permission approved the refill at $64.00, and the order is being placed."));
+    const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, model), ask("Reorder Rose's refill"));
+    const [proposal] = await serviceRows(db, circle.circleId, "select id, state from proposals where circle_id = $1 and kind = 'purchase'", [circle.circleId]);
+    expect(proposal).toMatchObject({ state: "approved" });
+    expect(result).toMatchObject({
+      ok: true,
+      source: "claude",
+      proposal: { kind: "standing_permission", href: `/dashboard/approvals#${String(proposal?.id)}`, words: { parent: "Rose", amount: "$64.00", seller: "Elm Street Pharmacy" } },
+    });
+    // Nothing is charged while Kin answers, so the model is told neither "simulated" nor "sandbox" as a fact about this payment.
+    expect(toolResult(model, 1)).toMatchObject({ proposed: true, price: "$64.00", seller: "Elm Street Pharmacy", parent: "Rose", approval: expect.stringContaining("Kin did not approve it"), charged: expect.stringMatching(/^not charged yet/u) });
+    expect(toolResult(model, 1)).not.toHaveProperty("simulated");
+    expect(JSON.stringify(toolResult(model, 1))).not.toMatch(/waits|waiting/u);
+  });
+
+  it("says a refill outside the standing permission waits for a yes, and the card says so", async () => {
+    const circle = await visitorWithCircle(db);
+    await endMandates(db, circle.circleId);
+    const model = turns(toolCalls({ name: "propose_refill", input: {} }), finalTurn("Kin proposed the refill at $64.00. It waits for the family's yes."));
+    const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, model), ask("Reorder Rose's refill"));
+    expect(result).toMatchObject({ ok: true, source: "claude", proposal: { kind: "proposal", href: "/dashboard/approvals" } });
+    expect(toolResult(model, 1)).toMatchObject({ proposed: true, price: "$64.00", approval: expect.stringContaining("waiting for the yeses") });
+    expect(await serviceRows(db, circle.circleId, "select state from proposals where circle_id = $1 and kind = 'purchase'", [circle.circleId])).toEqual([{ state: "pending_approval" }]);
+  });
+
+  it("falls back to the record's own sentence for a covered refill, which names who approved it", async () => {
+    const circle = await visitorWithCircle(db);
+    const model = turns(toolCalls({ name: "propose_refill", input: {} }), finalTurn("Kin approved the refill at $46.00."));
+    const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, model), ask("Reorder Rose's refill"));
+    expect(result).toMatchObject({
+      ok: true,
+      source: "template",
+      templateReason: "guard",
+      answer: "Here is what the record says: Rose's standing permission approved Monthly prescription refill (30 days) at $64.00 from Elm Street Pharmacy, so nobody needs to say yes, and the order is being placed. Kin did not approve it.",
+      proposal: { kind: "standing_permission" },
+    });
   });
 
   it("reorders the circle's only refill when the model passes the parent's name as the item, as Opus 4.6 did live", async () => {
@@ -259,5 +301,52 @@ describe("a demo visitor's questions", () => {
     for (let index = 0; index < 7; index++) {
       expect(await runAskKin(context(seen, circle.userId, model), ask(`Question ${index + 1}`))).toMatchObject({ ok: true, questionsLeft: null });
     }
+  });
+});
+
+describe("Ask Kin when Claude is unavailable", () => {
+  // A fake with no turns left fails on its first request, as Bedrock does when it throttles past the SDK's retries.
+  const down = () => turns();
+
+  it("answers each suggested question with Kin's own routing and fixed wording, and says Claude was unavailable", async () => {
+    const circle = await visitorWithCircle(db);
+    const seen = await snapshot(circle, circle.userId);
+    const asked = [
+      ["Has Amara been paid?", "get_paypal_payout_status", "Amara was paid"],
+      ["Who owes whom this month?", "get_fairness", "by the agreement's shares"],
+      ["Is a $300.00 demand from Harbor Gas real?", "check_claim", "Nobody the circle pays is called Harbor Gas"],
+    ] as const;
+    for (const [question, tool, words] of asked) {
+      const result = await runAskKin(context(seen, circle.userId, down()), ask(question));
+      expect(result).toMatchObject({ ok: true, source: "template", templateReason: "no_claude", steps: [{ tool, outcome: "ok" }] });
+      expect(result.ok && result.answer).toContain(words);
+    }
+  });
+
+  it("reorders the parent's refill without Claude, and the proposal still waits for a yes", async () => {
+    const circle = await visitorWithCircle(db);
+    // The demo's standing permission would approve it at once; without it the refill truly waits.
+    await endMandates(db, circle.circleId);
+    const rose = await seatPerson(db, circle.circleId, circle.members.rose);
+    const result = await runAskKin(context(await snapshot(circle, rose), rose, down()), ask("Reorder Rose's refill"));
+    expect(result).toMatchObject({ ok: true, templateReason: "no_claude", steps: [{ tool: "propose_refill", outcome: "ok" }], proposal: { kind: "proposal" } });
+  });
+
+  it("routes a suggestion in the listener's own language", async () => {
+    const circle = await visitorWithCircle(db);
+    const result = await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, down()), { question: "Qui doit quoi à qui ce mois-ci ?", locale: "fr" });
+    expect(result).toMatchObject({ ok: true, templateReason: "no_claude", steps: [{ tool: "get_fairness", outcome: "ok" }] });
+  });
+
+  it("still keeps a caregiver to their own seat", async () => {
+    const circle = await visitorWithCircle(db);
+    const amara = await seatPerson(db, circle.circleId, circle.members.amara);
+    const result = await runAskKin(context(await snapshot(circle, amara), amara, down()), ask("How much is in the pool?"));
+    expect(result).toMatchObject({ ok: true, templateReason: "no_claude", answer: "Kin could not answer that from the record. Try one of the suggestions.", steps: [{ tool: "get_pool", outcome: "refused" }] });
+  });
+
+  it("is unavailable for a question Kin's own routing does not recognise", async () => {
+    const circle = await visitorWithCircle(db);
+    expect(await runAskKin(context(await snapshot(circle, circle.userId), circle.userId, down()), ask("Tell me a story"))).toEqual({ ok: false, reason: "unavailable" });
   });
 });

@@ -31,7 +31,7 @@ async function standInRoutes(page: Page, options: { recordedAfter?: number } = {
 }
 
 async function openSheet(page: Page) {
-  await page.getByRole("button", { name: copy.trigger }).click();
+  await page.getByRole("button", { name: copy.trigger, exact: true }).click();
   const sheet = page.getByRole("dialog", { name: copy.title });
   await expect(sheet.getByRole("button", { name: "Pay with PayPal" })).toBeVisible();
   return sheet;
@@ -107,16 +107,16 @@ test.describe("adding money", () => {
   test("is offered only to the members who share the cost", async ({ page }) => {
     await standInPayPal(page, "approve");
     await startDemo(page);
-    await expect(page.getByRole("button", { name: copy.trigger })).toBeVisible();
+    await expect(page.getByRole("button", { name: copy.trigger, exact: true })).toBeVisible();
     for (const name of ["Rose", "Daniel"]) {
       await seatAs(page, name);
       await page.goto("/dashboard");
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-      await expect(page.getByRole("button", { name: copy.trigger })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: copy.trigger, exact: true })).toHaveCount(0);
     }
     await seatAs(page, "Marcus");
     await page.goto("/dashboard");
-    await expect(page.getByRole("button", { name: copy.trigger })).toBeVisible();
+    await expect(page.getByRole("button", { name: copy.trigger, exact: true })).toBeVisible();
   });
 
   test("refuses another site's request to open an order, and a visitor with no session", async ({ request }) => {

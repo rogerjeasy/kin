@@ -1,0 +1,127 @@
+{
+  "recordedOn": "2026-11-11",
+  "environment": "PayPal sandbox, Payouts v1 and Transaction Search v1, through Kin's adapter",
+  "exchanges": [
+    {
+      "method": "GET",
+      "path": "/v1/payments/payouts-item/DA9N36VBMB3UN",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "payout_item_id": "DA9N36VBMB3UN",
+        "transaction_id": "0X8758998N995083U",
+        "activity_id": "4W4201958K6275126",
+        "transaction_status": "SUCCESS",
+        "payout_item_fee": {
+          "currency": "USD",
+          "value": "0.25"
+        },
+        "payout_batch_id": "F3JKKBGQ5NHJE",
+        "sender_batch_id": "kin-payout-54a9335c-635b-4f0d-8a1c-37fcccb749f4",
+        "payout_item": {
+          "recipient_type": "EMAIL",
+          "amount": {
+            "currency": "USD",
+            "value": "5.00"
+          },
+          "note": "Payment for your care visits, approved by the family in Kin",
+          "receiver": "someone@personal.example.com",
+          "sender_item_id": "kin-payout-54a9335c-635b-4f0d-8a1c-37fcccb749f4",
+          "recipient_wallet": "PAYPAL",
+          "purpose": "GOODS"
+        },
+        "time_processed": "2026-11-11T18:59:08Z",
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/payments/payouts-item/DA9N36VBMB3UN",
+            "rel": "self",
+            "method": "GET",
+            "encType": "application/json"
+          },
+          {
+            "href": "https://api.sandbox.paypal.com/v1/payments/payouts/F3JKKBGQ5NHJE",
+            "rel": "batch",
+            "method": "GET",
+            "encType": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/reporting/transactions?start_date=2026-10-27T23%3A08%3A58Z&end_date=2026-11-26T23%3A08%3A58Z&transaction_id=0X8758998N995083U&fields=transaction_info%2Cpayer_info",
+      "requestId": null,
+      "request": null,
+      "httpStatus": 200,
+      "body": {
+        "transaction_details": [
+          {
+            "transaction_info": {
+              "paypal_account_id": "PLACEHOLDER",
+              "transaction_id": "0X8758998N995083U",
+              "paypal_reference_id": "0B530307RX0847820",
+              "paypal_reference_id_type": "TXN",
+              "transaction_event_code": "T0001",
+              "transaction_initiation_date": "2026-11-11T18:59:08Z",
+              "transaction_updated_date": "2026-11-11T18:59:08Z",
+              "transaction_amount": {
+                "currency_code": "USD",
+                "value": "-5.00"
+              },
+              "fee_amount": {
+                "currency_code": "USD",
+                "value": "-0.25"
+              },
+              "transaction_status": "S",
+              "transaction_subject": "You have a payment from Kin",
+              "transaction_note": "Payment for your care visits, approved by the family in Kin",
+              "custom_field": "kin-payout-54a9335c-635b-4f0d-8a1c-37fcccb749f4",
+              "protection_eligibility": "02",
+              "instrument_type": "PayPal",
+              "instrument_sub_type": "PayPal Wallet"
+            },
+            "payer_info": {
+              "account_id": "PLACEHOLDER",
+              "email_address": "someone@personal.example.com",
+              "phone_number": {
+                "country_code": "1",
+                "national_number": "5555550100"
+              },
+              "address_status": "N",
+              "payer_status": "Y",
+              "payer_name": {
+                "given_name": "Placeholder",
+                "surname": "Placeholder",
+                "alternate_full_name": "Placeholder"
+              },
+              "country_code": "US",
+              "address": {
+                "line1": "Placeholder",
+                "city": "Placeholder",
+                "state": "Placeholder",
+                "country_code": "US",
+                "postal_code": "Placeholder"
+              }
+            }
+          }
+        ],
+        "account_number": "PLACEHOLDER",
+        "start_date": "2026-10-27T23:08:58Z",
+        "end_date": "2026-11-11T20:59:59Z",
+        "last_refreshed_datetime": "2026-11-11T20:59:59Z",
+        "page": 1,
+        "total_items": 1,
+        "total_pages": 1,
+        "links": [
+          {
+            "href": "https://api.sandbox.paypal.com/v1/reporting/transactions?transaction_id=0X8758998N995083U&start_date=2026-10-27T23%3A08%3A58Z&end_date=2026-11-26T23%3A08%3A58Z&fields=transaction_info%2Cpayer_info&page_size=100&page=1",
+            "rel": "self",
+            "method": "GET",
+            "encType": "application/json"
+          }
+        ]
+      }
+    }
+  ]
+}

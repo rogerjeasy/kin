@@ -2,7 +2,7 @@ import type { CircleRole } from "@kin/domain";
 import { describe, expect, it, vi } from "vitest";
 
 import { fakeToolModel, finalTurn, toolCalls } from "../testing/fake-tool-model.ts";
-import { answerPassesGuard, askKin, figuresOf, MAX_MODEL_TURNS } from "./ask-kin.ts";
+import { askKin, MAX_MODEL_TURNS } from "./ask-kin.ts";
 import { ASK_KIN_TOOL_NAMES } from "./ask-kin-tools.ts";
 import { toolGateway, type ToolCallRecord, type ToolImplementations, type ToolOutput } from "./tool-gateway.ts";
 import type { ToolResultBlock } from "./tool-model.ts";
@@ -125,23 +125,75 @@ describe("Ask Kin's loop", () => {
   });
 });
 
-describe("the answer's number guard", () => {
-  const figures = figuresOf({ pool: "$1,412.60", members: [{ name: "Elena", owes: "$37.50" }], count: 2 });
+describe("Ask Kin when Claude cannot answer", () => {
+  const route = () => [{ name: "get_paypal_payout_status" as const, input: { payee: "Amara" } }];
 
-  it("collects every text and number a tool returned", () => {
-    expect(figures).toEqual(["$1,412.60", "Elena", "$37.50", "2"]);
+  it("routes the question to its tool with plain code, through the gateway, and says Claude was unavailable", async () => {
+    const payout = vi.fn(async () => PAYOUT);
+    const s = setup("organizer", { get_paypal_payout_status: payout });
+    const result = await askKin(fakeToolModel(new Error("throttled")), { ...ask("Has Amara been paid?", s), route });
+    expect(result).toEqual({
+      kind: "answered",
+      text: "Here is what the record says: Amara was paid $264.00 on Oct 6 (simulated).",
+      source: "template",
+      templateReason: "no_claude",
+      calls: [{ tool: "get_paypal_payout_status", outcome: "ok", raised: false }],
+      proposal: null,
+    });
+    expect(payout).toHaveBeenCalledWith({ payee: "Amara" }, expect.objectContaining({ role: "organizer" }));
+    expect(s.records).toMatchObject([{ tool: "get_paypal_payout_status", args: { payee: "[text:5]" }, outcome: "ok" }]);
   });
 
-  it("accepts figures from the tools, sentence by sentence", () => {
-    expect(answerPassesGuard("The pool holds $1,412.60. Elena is owed $37.50 by 2 people.", figures, "English")).toBe(true);
-    const long = `${"Elena is owed $37.50. ".repeat(20)}`;
-    expect(answerPassesGuard(long, figures, "English")).toBe(true);
+  it("still holds a routed call to the role table", async () => {
+    const pool = vi.fn(async () => POOL);
+    const s = setup("caregiver", { get_pool: pool });
+    const result = await askKin(fakeToolModel(new Error("throttled")), { ...ask("How much is in the pool?", s), route: () => [{ name: "get_pool", input: {} }] });
+    expect(pool).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ source: "template", templateReason: "no_claude", text: "Kin could not answer that from the record.", calls: [{ tool: "get_pool", outcome: "refused" }] });
   });
 
-  it("refuses a changed digit, a new amount, a link or an empty answer", () => {
-    expect(answerPassesGuard("The pool holds $1,412.50.", figures, "English")).toBe(false);
-    expect(answerPassesGuard("Elena owes $40.", figures, "English")).toBe(false);
-    expect(answerPassesGuard("See https://kin.example for $37.50.", figures, "English")).toBe(false);
-    expect(answerPassesGuard("  ", figures, "English")).toBe(false);
+  it("is unavailable when Kin's own routing finds no tool for the question", async () => {
+    const s = setup("organizer");
+    expect(await askKin(fakeToolModel(new Error("throttled")), { ...ask("Tell me a story", s), route: () => [] })).toEqual({ kind: "unavailable" });
+  });
+
+  it("stops waiting for a model that never answers at the question's deadline, and routes the question instead", async () => {
+    const s = setup("organizer", { get_paypal_payout_status: vi.fn(async () => PAYOUT) });
+    const silent = Object.assign(async () => new Promise<never>(() => undefined), { label: "silent" });
+    const started = Date.now();
+    const result = await askKin(silent, { ...ask("Has Amara been paid?", s), route, deadlineMs: 20 });
+    expect(Date.now() - started).toBeLessThan(2_000);
+    expect(result).toMatchObject({ source: "template", templateReason: "no_claude", calls: [{ tool: "get_paypal_payout_status", outcome: "ok" }] });
+  });
+
+  it("aborts the model's request when the deadline passes", async () => {
+    const s = setup("organizer");
+    let seen: AbortSignal | undefined;
+    const silent = Object.assign(
+      async (request: { readonly signal?: AbortSignal }) => {
+        seen = request.signal;
+        return new Promise<never>(() => undefined);
+      },
+      { label: "silent" },
+    );
+    await askKin(silent, { ...ask("How much?", s), deadlineMs: 10 });
+    expect(seen?.aborted).toBe(true);
+  });
+
+  it("past the deadline, keeps what the tools found and starts no further call", async () => {
+    const pool = vi.fn(async () => POOL);
+    const s = setup("organizer", { get_pool: pool });
+    let turns = 0;
+    const slow = Object.assign(
+      async () => {
+        turns += 1;
+        if (turns === 1) return toolCalls({ name: "get_pool" });
+        return new Promise<never>(() => undefined);
+      },
+      { label: "slow" },
+    );
+    const result = await askKin(slow, { ...ask("How much?", s), route, deadlineMs: 20 });
+    expect(result).toMatchObject({ source: "template", templateReason: "unavailable", text: "Here is what the record says: The pool holds $1,412.60.", calls: [{ tool: "get_pool", outcome: "ok" }] });
+    expect(pool).toHaveBeenCalledTimes(1);
   });
 });

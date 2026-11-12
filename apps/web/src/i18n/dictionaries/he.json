@@ -11,8 +11,9 @@
       "label": "נסו לשאול",
       "paid": "האם {caregiver} קיבלה תשלום?",
       "owes": "מי חייב למי החודש?",
-      "demand": "האם דרישה של {amount} מ־Harbor Gas אמיתית?",
-      "refill": "להזמין שוב את המרשם של {parent}"
+      "demand": "האם דרישה של {amount} מ־{payee} אמיתית?",
+      "refill": "להזמין שוב את המרשם של {parent}",
+      "paypalRecord": "הראה לי את הרישום של PayPal על ההפקדה האחרונה"
     },
     "form": {
       "label": "השאלה שלכם",
@@ -31,7 +32,8 @@
         "refused": "Claude סירב לנסח את התשובה, לכן Kin השתמש בניסוח הקבוע שלו",
         "cut_off": "התשובה של Claude הייתה ארוכה מדי, לכן Kin השתמש בניסוח הקבוע שלו",
         "turns": "Claude נזקק ליותר צעדים ממה ש-Kin מאפשר, לכן Kin השתמש בניסוח הקבוע שלו",
-        "unavailable": "Claude הפסיק לענות באמצע, לכן Kin השתמש בניסוח הקבוע שלו"
+        "unavailable": "Claude הפסיק לענות באמצע, לכן Kin השתמש בניסוח הקבוע שלו",
+        "no_claude": "נענה בניסוח הקבוע של Kin; Claude לא היה זמין"
       },
       "trace": "איך Kin מצא את זה",
       "traceEmpty": "Kin ענה בלי לקרוא את הרישום."
@@ -58,6 +60,9 @@
       "get_paypal_payout_status": "בדק את התשלומים מול PayPal",
       "get_paypal_topup_status": "בדק את ההפקדות מול PayPal",
       "get_subscription_status": "בדק את החלקים החודשיים מול PayPal",
+      "get_paypal_order": "קרא את הרישום של PayPal על ההפקדה (PayPal Agent Toolkit)",
+      "get_paypal_invoice": "קרא את הרישום של PayPal על החשבונית (PayPal Agent Toolkit)",
+      "list_paypal_disputes": "בדק ב־PayPal אם יש מחלוקות על ההפקדות (PayPal Agent Toolkit)",
       "propose_refill": "הציע הזמנה חוזרת",
       "unknown": "ביקש כלי ש־Kin אינו מחזיק"
     },
@@ -110,13 +115,22 @@
       "topUp": "{member} הפקיד {amount} ב־{day}.",
       "topUpSimulated": "{member} הפקיד {amount} ב־{day}. זה היה מדומה.",
       "topUpNone": "ברישום אין הפקדות.",
+      "paypalOrder": "לפי הרישום של PayPal, ההפקדה של {member} בסך {amount} ב־{day}: ההזמנה במצב {status}.",
+      "paypalOrderSimulated": "ההפקדה של {member} בסך {amount} ב־{day} הייתה מדומה, ולכן אין ל־PayPal רישום שלה.",
+      "paypalUnread": "לא ניתן היה לקרוא את PayPal כרגע, ולכן Kin מציג רק את הרישום שלו.",
+      "paypalInvoice": "החשבונית של PayPal ל{member} בסך {amount} במצב {status}.",
+      "paypalInvoiceSimulated": "החשבונית ל{member} בסך {amount} הייתה מדומה, ולכן אין ל־PayPal רישום שלה.",
+      "paypalInvoiceNone": "Kin לא שלח חשבוניות.",
+      "paypalDispute": "PayPal מציג מחלוקת על ההפקדה של {member} בסך {amount}: {status}.",
+      "paypalDisputesNone": "PayPal לא מציג מחלוקת על ההפקדות האמיתיות האחרונות של המעגל.",
+      "paypalDisputesSimulated": "ההפקדות של המעגל היו מדומות, ולכן אין ל־PayPal מחלוקות עליהן.",
       "share": "החלק החודשי של {member} הוא {amount}.",
       "shareNone": "לא הוגדרו חלקים חודשיים.",
       "refillNone": "המשפחה לא הגדירה הזמנות חוזרות.",
       "refillChoose": "איזו הזמנה חוזרת? המשפחה מתירה: {items}.",
       "refillWaiting": "הזמנה חוזרת של {item} כבר ממתינה, או שהמעגל מושהה, ולכן Kin לא הציע דבר.",
       "refillRefused": "Kin לא הצליח להציע {item} במחיר {price}. כללי המשפחה לא התירו זאת.",
-      "refillCovered": "Kin הציע {item} במחיר {price}. ההרשאה הקבועה של ההורה מכסה זאת.",
+      "refillCovered": "ההרשאה הקבועה של {parent} אישרה את {item} במחיר {price} מ-{seller}, כך שאיש אינו צריך לאשר, וההזמנה מתבצעת. Kin לא אישר זאת.",
       "refillProposed": "Kin הציע {item} במחיר {price}. ההזמנה ממתינה לאישור.",
       "giftProposed": "Kin הקריא לך {amount} ל‑{payee} מהארנק שלך. זה ממתין לכן שלך.",
       "giftHeld": "Kin הקריא לך {amount} ל‑{payee}. אם תגידי כן, Kin ימתין יום ויודיע למשפחה שלך.",
@@ -134,6 +148,11 @@
       "text": "מבקרים בהדגמה יכולים לשאול את Kin כמה שאלות, כדי שכולם יוכלו לנסות. במעגל משלכם, Kin עונה על כל השאלות שהמשפחה צריכה.",
       "signUp": "הרשמה",
       "stay": "להמשיך לסייר בהדגמה"
+    },
+    "orderedProposal": {
+      "title": "אושר במסגרת ההרשאה הקבועה של {parent}",
+      "text": "{amount} מ-{seller}, וההזמנה מתבצעת. Kin לא אישר זאת: ההרשאה הקבועה של {parent} עצמה אישרה.",
+      "link": "לצפות בהזמנה באישורים"
     }
   },
   "meta": {
@@ -1285,7 +1304,28 @@
         "restartNote": "תקבלו עותק חדש של המעגל של רוז. העותק הנוכחי נשמר בארכיון ולא נמחק.",
         "viewAs": "לראות את המעגל בתור",
         "seat": "אתם {name}, {role}",
-        "leave": "יציאה מההדגמה"
+        "leave": "יציאה מההדגמה",
+        "guide": {
+          "title": "נסו ב-{count} צעדים",
+          "show": "הצגת הצעדים",
+          "hide": "הסתרת הצעדים",
+          "dismiss": "הסתרת המדריך",
+          "reopen": "הצגת המדריך",
+          "steps": {
+            "topUp": "הוספת כסף לקופה",
+            "ask": "שאלו את Kin: „{question}”",
+            "approve": "בתור {parent}, אשרו את התשלום של {caregiver}",
+            "listen": "הקשיבו בתור {parent}",
+            "verify": "בדיקת הרישום"
+          },
+          "badges": {
+            "sandbox": "ארגז החול של PayPal",
+            "claude": "סוכן Claude",
+            "spoken": "מוקרא בקול",
+            "provable": "ניתן להוכחה",
+            "simulated": "מדומה"
+          }
+        }
       },
       "visitor": "מבקר בהדגמה",
       "presenceHold": {
@@ -1441,6 +1481,10 @@
       "comingUp": {
         "title": "בקרוב",
         "link": "כל החשבונות"
+      },
+      "protects": {
+        "title": "איך Kin מגן על {parent}",
+        "text": "בדיקות, משאלות ועוזרים סביב הכסף. כל אחד פותח מסך משלו."
       }
     },
     "topUp": {
@@ -2395,6 +2439,10 @@
       "ordersTitle": "הזמנות",
       "ordersEmpty": "עדיין לא הוצעה הזמנה.",
       "simulated": "סימולציה: בית המרקחת הוא תחליף ואין כסף אמיתי שזז.",
+      "sandbox": "בית המרקחת הוא תחליף להדגמה. החיובים שלו עוברים בסביבת הבדיקה של PayPal, בכסף לבדיקה ובלי כסף אמיתי; המשלוח מדומה.",
+      "paidSandbox": "סביבת הבדיקה של PayPal",
+      "paidSimulated": "מדומה",
+      "capture": "מזהה החיוב ב-PayPal {id}",
       "trackLabel": "איפה ההזמנה",
       "states": {
         "awaiting": "ממתינה לכן",
@@ -4251,6 +4299,106 @@
       },
       "alerted": "Kin התריע ל{alerted}.",
       "said": "מה שנאמר: ״{claim}״"
+    },
+    "studio": {
+      "title": "סטודיו הכספים של המשפחה",
+      "lede": "הרישום של המעגל כלוח בקרה שאפשר לעצב: כסף נכנס ויוצא, הנתינה של כל אחד מול החלק שסוכם, שכר טיפול, עמלות PayPal ומה ש-PayPal אישר. הוא קורא את אותן רשומות שברישום ואינו משנה אף אחת מהן.",
+      "link": "סטודיו הכספים",
+      "eyebrow": "נבנה עם AG Studio",
+      "readOnly": "אפשר לצפות, לסנן ולשאול. בהרשאת צפייה בלבד אי אפשר להוסיף או להזיז רכיבים בסטודיו.",
+      "tables": {
+        "ledger": "ספר החשבונות",
+        "fairness": "הגינות"
+      },
+      "fields": {
+        "id": "מזהה רשומה",
+        "day": "יום",
+        "month": "חודש",
+        "kind": "סוג",
+        "person": "מי או מה",
+        "category": "קטגוריה",
+        "amount": "סכום",
+        "moneyIn": "כסף נכנס",
+        "moneyOut": "כסף יוצא",
+        "fee": "עמלת PayPal",
+        "caregiverPay": "שכר טיפול",
+        "caregiver": "צוות טיפול",
+        "proof": "סביבת ניסוי או מדומה",
+        "simulated": "מדומה",
+        "paypalVerified": "אושר על ידי PayPal",
+        "paypalId": "מזהה PayPal",
+        "member": "חבר",
+        "share": "החלק שסוכם",
+        "shareIndex": "צבע החלק",
+        "given": "נתינה",
+        "agreed": "סוכם",
+        "position": "סכום ההתחשבנות"
+      },
+      "widgets": {
+        "inOut": "כסף נכנס ויוצא, לפי חודש",
+        "caregiverPay": "שכר טיפול, לפי חודש",
+        "proof": "סביבת הניסוי של PayPal מול מדומה",
+        "fees": "עמלות PayPal, לפי חודש",
+        "ledger": "כל הרשומות",
+        "group": "Kin",
+        "fairnessGap": {
+          "label": "פער ההגינות",
+          "title": "הנתינה של כל אחד מול מה שסוכם",
+          "description": "מציג את הנתינה של כל חבר במעגל לצד החלק שסוכם לו, ומה ההתחשבנות תעביר.",
+          "given": "נתינה {amount}",
+          "agreed": "סוכם {amount}",
+          "owed": "הקופה חייבת ל{name} {amount}",
+          "owes": "על {name} לשלם {amount}",
+          "even": "אצל {name} הכול מאוזן"
+        },
+        "verified": {
+          "label": "מאומת ב-PayPal",
+          "title": "אושר על ידי PayPal",
+          "description": "סופר את הרשומות שמאחוריהן עומד אירוע אמיתי בסביבת הניסוי של PayPal, עם המזהים של PayPal עצמה.",
+          "count": "רשומות ש-PayPal אישר",
+          "none": "עדיין אין. כל הרשומות במעגל הזה מדומות, ומסומנות כך.",
+          "more": "ועוד {count}"
+        }
+      },
+      "summary": {
+        "title": "הרישום במבט אחד",
+        "moneyIn": "כסף נכנס",
+        "moneyOut": "כסף יוצא",
+        "fees": "עמלות PayPal",
+        "caregiverPay": "שכר טיפול",
+        "sandbox": "רשומות מסביבת הניסוי של PayPal",
+        "simulated": "רשומות מדומות",
+        "fairness": "החלקים ב{month}",
+        "noFairness": "אין הסכם בתוקף, ולכן אין חלקים להשוות.",
+        "allTime": "מאז שהמעגל התחיל"
+      },
+      "notes": {
+        "lapsed": "הרישיון של הסטודיו הסתיים, ולכן Kin מציג סיכום משלו של אותו רישום.",
+        "narrow": "במסך קטן Kin מציג את הסיכום שלו. פתחו את הסטודיו במסך רחב יותר כדי לבנות תצוגות משלכם.",
+        "failed": "לא ניתן היה לפתוח את הסטודיו, ולכן Kin מציג סיכום משלו של אותו רישום.",
+        "loading": "פותחים את הסטודיו…"
+      },
+      "assistant": {
+        "unavailable": "העוזר של הסטודיו אינו זמין כרגע. לוח הבקרה עדיין עובד.",
+        "cannot": "את זה אני לא יכול לעשות כאן. אני יכול רק לקרוא את הרישום ולשנות את מה שלוח הבקרה הזה מציג.",
+        "limit": "שאלתם את העוזר של הסטודיו הרבה בשעה האחרונה. נסו שוב מאוחר יותר.",
+        "unchecked": "ביצעתי את השינויים בלוח הבקרה, אבל לא הצלחתי לבדוק סיכום מול הרישום, ולכן לא אנסח אותו במילים.",
+        "failed": "העוזר לא הצליח לענות. נסו שוב.",
+        "starters": {
+          "caregiverPay": {
+            "label": "שכר טיפול לפי חודש",
+            "prompt": "הצג את שכר הטיפול לפי חודש בגרף קווי."
+          },
+          "fairness": {
+            "label": "מי עוד לא השלים את החלק שלו?",
+            "prompt": "מי נתן פחות מהחלק שסוכם לו, ובכמה?"
+          },
+          "fees": {
+            "label": "עמלות PayPal",
+            "prompt": "הוסף תרשים של עמלות PayPal לפי סוג הרשומה."
+          }
+        }
+      }
     }
   },
   "aiProvenance": {

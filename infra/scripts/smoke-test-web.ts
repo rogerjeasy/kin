@@ -20,6 +20,7 @@ if (!base) {
 type Check = { name: string; base: string; path: string; method?: "GET" | "POST"; expect: (response: Response, body: string) => string | null };
 
 const voiceBase = outputs["KinVoice"]?.["Url"];
+const merchantBase = outputs["KinDemoMerchant"]?.["Url"];
 
 const checks: Check[] = [
   { name: "the home page loads", base, path: "/", expect: (r) => (r.status === 200 ? null : `status ${r.status}`) },
@@ -57,6 +58,14 @@ const checks: Check[] = [
           expect: (r: Response) => (r.status === 403 ? null : `status ${r.status}`),
         },
       ]),
+  // The demo pharmacy, when this deployment made one (KinDemoMerchant, once kin:demoMerchant is on): it is up, and it
+  // takes no order Kin's worker did not sign. The unsigned order is refused before its body is read, so it buys nothing.
+  ...(merchantBase === undefined
+    ? []
+    : [
+        { name: "the demo pharmacy is healthy", base: merchantBase, path: "/health", expect: (r: Response) => (r.status === 200 ? null : `status ${r.status}`) },
+        { name: "the demo pharmacy refuses an order Kin did not sign", base: merchantBase, path: "/orders", method: "POST" as const, expect: (r: Response) => (r.status === 401 ? null : `status ${r.status}`) },
+      ]),
 ];
 
 const ATTEMPTS = 20;
@@ -78,6 +87,6 @@ for (const check of checks) {
   console.log(`${problem === null ? "ok  " : "FAIL"} ${check.name}${problem === null ? "" : `: ${problem}`}`);
   failed ||= problem !== null;
 }
-const where = voiceBase === undefined ? base : `${base} and ${voiceBase}`;
+const where = [base, voiceBase, merchantBase].filter((each) => each !== undefined).join(" and ");
 console.log(failed ? `The deployed app at ${where} failed its smoke test.` : `The deployed app at ${where} is healthy.`);
 process.exit(failed ? 1 : 0);

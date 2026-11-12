@@ -4,6 +4,7 @@ import { payoutStatus, shareStatus, topUpStatus } from "./paypal-tools";
 import { checkDemand, getFairness, getPool, getRecord, listBills, listProposals } from "./record-tools";
 import { proposeGift } from "./gift-tool";
 import { proposeRefill } from "./refill-tool";
+import { paypalDisputes, paypalInvoice, paypalOrder } from "./toolkit-tools";
 import type { AskKinWorld } from "./world";
 
 /** How many record entries `get_record` returns when the model does not say. */
@@ -55,6 +56,19 @@ export function askKinTools(world: AskKinWorld): ToolImplementations {
     get_subscription_status: async (args, context) => {
       ownCircle(context);
       return shareStatus(world, args.member);
+    },
+    // PayPal's own record, read through PayPal's Agent Toolkit with IDs from the circle's record.
+    get_paypal_order: async (args, context) => {
+      ownCircle(context);
+      return paypalOrder(world, args.member);
+    },
+    get_paypal_invoice: async (args, context) => {
+      ownCircle(context);
+      return paypalInvoice(world, args.member);
+    },
+    list_paypal_disputes: async (_, context) => {
+      ownCircle(context);
+      return paypalDisputes(world);
     },
     propose_refill: async (args, context) => {
       ownCircle(context);

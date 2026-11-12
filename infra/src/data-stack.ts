@@ -10,6 +10,7 @@ import { createDemoSessionKey } from "./demo-session-key.ts";
 import { Database } from "./database.ts";
 import { createEncryptionKey } from "./encryption-key.ts";
 import { Identity } from "./identity.ts";
+import { createDemoMerchantSettings } from "./merchant-secrets.ts";
 import { createPayPalSettings } from "./paypal-secret.ts";
 import { Queues } from "./queues.ts";
 import { createPrivateBucket } from "./storage.ts";
@@ -49,6 +50,7 @@ export class DataStack extends Stack {
     const queues = new Queues(this, "Queues", { config, key, alerts: props.alerts });
     createPayPalSettings(this, config, key, queues.byName["paypal-events"]);
     createTwilioSettings(this, config, key);
+    createDemoMerchantSettings(this, config, key);
     new Identity(this, "Identity", config, key);
 
     // Period closes, reminders and calling times are created in this group at

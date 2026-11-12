@@ -1,6 +1,6 @@
 import type { CircleRole } from "@kin/domain";
 
-import { answerPassesGuard } from "./ask-kin/ask-kin.ts";
+import { answerPassesGuard } from "./ask-kin/answer-guard.ts";
 import { SHIFT_LANGUAGE_NAMES, type ShiftLanguage } from "./shift-templates.ts";
 
 /**
@@ -20,6 +20,11 @@ export const SHIFT_ASSISTANT_PROMPT_VERSION = "shift-assistant-2026-11-08";
 export const MAX_TOOL_ROUNDS = 6;
 /** The longest answer shown. */
 export const MAX_ASSISTANT_TEXT = 800;
+
+/** How far one question may go: model requests since the person last wrote, and the longest answer shown. */
+export type AssistantLimits = { readonly maxRounds: number; readonly maxText: number };
+
+const SHIFT_LIMITS: AssistantLimits = { maxRounds: MAX_TOOL_ROUNDS, maxText: MAX_ASSISTANT_TEXT };
 
 export type AssistantTool = { readonly name: string; readonly description: string; readonly inputSchema: Readonly<Record<string, unknown>> };
 
@@ -118,8 +123,8 @@ function plain(text: string): string {
  * the model may call (only those it was offered), that a final answer holds
  * no figure the conversation did not, and that nothing it says can be markup.
  */
-export async function shiftAssistantTurn(model: AssistantModel, request: AssistantRequest, language: ShiftLanguage): Promise<AssistantReply> {
-  if (toolRounds(request.messages) >= MAX_TOOL_ROUNDS) return { kind: "fallback", reason: "too_many_rounds" };
+export async function shiftAssistantTurn(model: AssistantModel, request: AssistantRequest, language: ShiftLanguage, limits: AssistantLimits = SHIFT_LIMITS): Promise<AssistantReply> {
+  if (toolRounds(request.messages) >= limits.maxRounds) return { kind: "fallback", reason: "too_many_rounds" };
   let turn: AssistantModelTurn;
   try {
     turn = await model(request);
@@ -137,6 +142,6 @@ export async function shiftAssistantTurn(model: AssistantModel, request: Assista
   }
   const text = plain(turn.blocks.flatMap((block) => (block.type === "text" ? [block.text] : [])).join(" "));
   if (text === "") return { kind: "fallback", reason: "unusable" };
-  if (text.length > MAX_ASSISTANT_TEXT || !answerPassesGuard(text, figuresOfConversation(request.messages), SHIFT_LANGUAGE_NAMES[language])) return { kind: "fallback", reason: "unchecked" };
+  if (text.length > limits.maxText || !answerPassesGuard(text, figuresOfConversation(request.messages), SHIFT_LANGUAGE_NAMES[language])) return { kind: "fallback", reason: "unchecked" };
   return { kind: "turn", stopReason: "end_turn", blocks: [{ type: "text", text }], usage: turn.usage };
 }

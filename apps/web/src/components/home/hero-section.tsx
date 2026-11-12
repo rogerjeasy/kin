@@ -46,13 +46,13 @@ export function HeroSection({ locale, copy, nav, limit }: HeroSectionProps) {
             </Heading>
             <Lede className="mt-6">{copy.lede}</Lede>
             <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <ButtonLink href={localizedPath(locale, routes.start)} variant="inverse">
-                {nav.startLong}
-              </ButtonLink>
               <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
-                <DemoButton locale={locale} label={nav.demo} className="border-band-border bg-foreground/5 hover:bg-foreground/10" />
+                <DemoButton locale={locale} label={nav.demo} variant="inverse" />
                 <span className="text-sm text-muted-foreground">{nav.demoNote}</span>
               </span>
+              <ButtonLink href={localizedPath(locale, routes.start)} variant="outline" className="border-band-border bg-foreground/5 hover:bg-foreground/10">
+                {nav.startLong}
+              </ButtonLink>
             </div>
             <TextLink href={localizedPath(locale, routes.howItWorks)} className="mt-2">
               {nav.seeMonth}

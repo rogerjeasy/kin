@@ -53,12 +53,12 @@ export function MobileMenu({ locale, common, className }: MobileMenuProps) {
             </SheetClose>
           ))}
         </nav>
+        <DemoButton locale={locale} label={nav.demo} variant="default" className="mt-6" />
         <SheetClose asChild>
-          <Button asChild className="mt-6">
+          <Button asChild variant="outline" className="mt-3">
             <Link href={localizedPath(locale, routes.start)}>{nav.startLong}</Link>
           </Button>
         </SheetClose>
-        <DemoButton locale={locale} label={nav.demo} className="mt-3" />
         <div className="mt-8 flex flex-col items-start gap-4">
           <LanguageList locale={locale} label={common.language.label} />
           <ThemeSelect labels={common.theme} />

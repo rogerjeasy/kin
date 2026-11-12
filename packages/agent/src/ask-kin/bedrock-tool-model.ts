@@ -53,16 +53,20 @@ export function messagesToolModel(client: MessagesClient, model: string): ToolMo
   const call = async (request: Parameters<ToolModel>[0]): Promise<ToolTurn> => {
     let response;
     try {
-      response = await client.messages.create({
-        model,
-        max_tokens: MAX_TOKENS,
-        system: request.system,
-        messages: request.messages.map(messageParam),
-        tools: request.tools.map(toolParam),
-        tool_choice: { type: "auto" },
-        thinking: { type: "adaptive" },
-        output_config: { effort: EFFORT },
-      });
+      response = await client.messages.create(
+        {
+          model,
+          max_tokens: MAX_TOKENS,
+          system: request.system,
+          messages: request.messages.map(messageParam),
+          tools: request.tools.map(toolParam),
+          tool_choice: { type: "auto" },
+          thinking: { type: "adaptive" },
+          output_config: { effort: EFFORT },
+        },
+        // The question's deadline ends the request, and any retry the SDK would still make, so a throttled model cannot hold a question for minutes.
+        { signal: request.signal ?? null },
+      );
     } catch (error) {
       // The SDK has already retried what can be retried; the loop decides what to tell the person.
       throw new ModelUnavailableError("Claude on Bedrock could not answer", { cause: error });

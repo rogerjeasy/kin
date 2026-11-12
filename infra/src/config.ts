@@ -63,6 +63,14 @@ export type InfraConfig = {
    */
   readonly demoSandboxPayeeEmail: string | null;
   /**
+   * Kin's own PayPal sandbox personal account that stands in for a demo
+   * circle's member when the demo asks for money by PayPal invoice, or `null`
+   * to keep demo invoices simulated. Only a `…@personal.example.com` address
+   * is accepted, as the web app requires, so a demo never emails a real
+   * person. Needs `kin:paypal`, since the invoice is sent with the pool's app.
+   */
+  readonly demoInvoiceRecipientEmail: string | null;
+  /**
    * Whether the phone service (apps/voice) runs on App Runner as KinVoice.
    * Off unless `kin:voice` is `true`. Switching it on creates the service
    * and nothing else: Kin places no call until the Twilio credentials are
@@ -96,6 +104,19 @@ export type InfraConfig = {
    * Needs `kin:voice`.
    */
   readonly presenceLineNumbers: string | null;
+  /**
+   * Whether the demo pharmacy (apps/demo-merchant) runs on App Runner as KinDemoMerchant, and the worker buys a demo
+   * circle's approved refills from it. Off unless `kin:demoMerchant` is `true`. Needs `kin:paypal`, since only the worker
+   * buys. Its secrets are stored with `merchant:store`; until then it charges nothing and the refill waits.
+   */
+  readonly demoMerchant: boolean;
+  /**
+   * AG Studio's licence key, built into the web image for the family money
+   * studio. A browser licence is public once deployed, but it is never
+   * committed, so it is read only from KIN_AG_STUDIO_LICENSE (in the pipeline,
+   * the AG_STUDIO_LICENSE secret). Unset, the studio runs unlicensed.
+   */
+  readonly agStudioLicense: string | null;
 };
 
 /**
@@ -158,8 +179,25 @@ export function readConfig({ context, env }: Source): InfraConfig {
     speech: flag(context("kin:speech"), "kin:speech"),
     claude: flag(context("kin:claude"), "kin:claude"),
     demoSandboxPayeeEmail: demoSandboxPayee(context("kin:demoSandboxPayeeEmail"), context("kin:paypal")),
+    demoInvoiceRecipientEmail: demoInvoiceRecipient(context("kin:demoInvoiceRecipientEmail"), context("kin:paypal")),
     ...twilio({ context, env }),
+    demoMerchant: demoMerchant(context("kin:demoMerchant"), context("kin:paypal")),
+    agStudioLicense: optionalLicence(env["KIN_AG_STUDIO_LICENSE"]),
   };
+}
+
+function demoMerchant(value: unknown, paypal: unknown): boolean {
+  const on = flag(value, "kin:demoMerchant");
+  if (on && (paypal === undefined || paypal === null)) throw new InfraConfigError("kin:demoMerchant needs kin:paypal: only the worker buys from the demo pharmacy");
+  return on;
+}
+
+/** A licence key is one line of printable text; an empty secret reads as unset. */
+function optionalLicence(value: string | undefined): string | null {
+  const key = value?.trim() ?? "";
+  if (key === "") return null;
+  if (!/^[\x21-\x7e]+$/u.test(key)) throw new InfraConfigError("KIN_AG_STUDIO_LICENSE must be one line of printable text, or unset.");
+  return key;
 }
 
 function twilio({ context, env }: Source): Pick<InfraConfig, "voice" | "voicePublicUrl" | "twilioCallerNumber" | "twilioSmsFrom" | "presenceLineNumbers"> {
@@ -232,6 +270,20 @@ function demoSandboxPayee(value: unknown, paypal: unknown): string | null {
     throw new InfraConfigError("kin:demoSandboxPayeeEmail needs kin:paypal: only the worker pays demo payouts through PayPal's sandbox");
   }
   return payee;
+}
+
+// The domain PayPal's sandbox gives its personal test accounts: the check @kin/config makes when the web app starts.
+const SANDBOX_PERSONAL = /^[^@\s]+@personal\.example\.com$/i;
+
+function demoInvoiceRecipient(value: unknown, paypal: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string" || !SANDBOX_PERSONAL.test(value)) {
+    throw new InfraConfigError("kin:demoInvoiceRecipientEmail must be a PayPal sandbox personal account (…@personal.example.com), or unset.");
+  }
+  if (paypal === undefined || paypal === null) {
+    throw new InfraConfigError("kin:demoInvoiceRecipientEmail needs kin:paypal: the web app sends invoices with the pool's PayPal app");
+  }
+  return value;
 }
 
 function flag(value: unknown, key: string): boolean {

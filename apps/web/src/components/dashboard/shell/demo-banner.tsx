@@ -1,9 +1,9 @@
-import { LogOutIcon, RotateCcwIcon } from "lucide-react";
+import { LogOutIcon, MapIcon, RotateCcwIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/i18n/dictionary";
 import type { Locale } from "@/i18n/locales";
-import { leaveDemo, startDemoAgain } from "@/server/demo-actions";
+import { leaveDemo, setDemoGuide, startDemoAgain } from "@/server/demo-actions";
 
 import { DemoBannerFrame } from "./demo-banner-frame";
 import { RoleSwitcher } from "./role-switcher";
@@ -29,6 +29,15 @@ export function DemoBanner({ locale, copy, demo }: DemoBannerProps) {
       explanation={demo.text}
       actions={
         <>
+          {demo.guide.hidden ? (
+            <form action={setDemoGuide}>
+              <input type="hidden" name="guide" value="show" />
+              <Button type="submit" variant="ghost" size="sm" className="min-h-11">
+                <MapIcon aria-hidden="true" />
+                {copy.guide.reopen}
+              </Button>
+            </form>
+          ) : null}
           <form action={startDemoAgain}>
             <input type="hidden" name="locale" value={locale} />
             <Button type="submit" variant="ghost" size="sm" className="min-h-11" title={copy.restartNote}>

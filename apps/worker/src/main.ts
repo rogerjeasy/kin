@@ -1,4 +1,4 @@
-import { readDatabaseConfig, readInboxConfig, readPayPalConfig, readPresenceTextConfig, readSandboxPayoutConfig, readShiftCallConfig } from "@kin/config";
+import { readDatabaseConfig, readDemoMerchantConfig, readInboxConfig, readPayPalConfig, readPresenceTextConfig, readSandboxPayoutConfig, readShiftCallConfig } from "@kin/config";
 import { connect } from "@kin/db";
 import { payoutFeeReserve, poolFor, sqsInbox } from "@kin/paypal";
 import { createTwilioTextSender } from "@kin/notify";
@@ -56,6 +56,8 @@ const sandboxPayouts = readSandboxPayoutConfig(process.env);
 const shiftCalls = readShiftCallConfig(process.env);
 // The "is it really you?" texts need a Twilio account, a sender and the web app's address; without them they stay queued.
 const presenceTexts = readPresenceTextConfig(process.env);
+// The demo pharmacy service, when one is named, with the secret every request to it is signed with.
+const demoMerchant = readDemoMerchantConfig(process.env);
 if (!paypal.enabled || inboxConfig === null) throw new Error("The worker needs the PayPal settings and the inbox queue");
 
 const deps = {
@@ -105,8 +107,7 @@ async function payoutLoop(): Promise<void> {
 // Approved refills and the orders on their way. The demo pharmacy service, when one is named, is the seller;
 // otherwise the seller is simulated in process, and everything recorded says so.
 async function purchaseLoop(): Promise<void> {
-  const merchantUrl = process.env["KIN_DEMO_MERCHANT_URL"];
-  const purchases = { db: deps.db, merchant: merchantUrl ? httpMerchant(merchantUrl) : simulatedMerchant, now: () => new Date() };
+  const purchases = { db: deps.db, merchant: demoMerchant === null ? simulatedMerchant : httpMerchant(demoMerchant), now: () => new Date() };
   while (running) {
     try {
       const turns = (await runPurchaseBatch(purchases, log)) + (await runDeliveryBatch(purchases, log));

@@ -1,6 +1,6 @@
 import { readPayPalConfig, readSandboxPayoutConfig } from "@kin/config";
 import { asPerson, answerProposal, configureCaregiver, sendCaregiverBill, submitCaregiverBill, takeDemoSeat } from "@kin/db";
-import { seatPerson, serviceRows, testDatabases, visitorWithCircle } from "@kin/db/testing";
+import { agreeAtRate, seatPerson, serviceRows, testDatabases, visitorWithCircle } from "@kin/db/testing";
 import { payoutFeeReserve, poolFor } from "@kin/paypal";
 import { randomUUID } from "node:crypto";
 import { writeFileSync } from "node:fs";
@@ -30,6 +30,8 @@ describe.runIf(live)("a demo caregiver payout through the real PayPal sandbox", 
     const caregiver = await seatPerson(db, circle.circleId, circle.members.amara);
     // Half an hour at 10.00: a 5.00 payout.
     await asPerson(db.app, circle.userId, (tx) => configureCaregiver(tx, { circleId: circle.circleId, memberId: circle.members.amara, payeeId: circle.payees.amara, name: "Amara", rateCentsPerHour: 1000 }));
+    // Kin pays only at the rate a signed care agreement states.
+    await agreeAtRate(db, circle.circleId, circle.payees.amara, 1000);
     const billId = await asPerson(db.app, caregiver, (tx) =>
       submitCaregiverBill(tx, { circleId: circle.circleId, details: { version: 1, currency: "USD", rateCentsPerHour: 1000, visits: [{ date: "2026-10-20", minutes: 30 }] }, submissionKey: randomUUID() }),
     );
