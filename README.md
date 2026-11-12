@@ -2,7 +2,7 @@
 
 **Nothing about Mom's money without Mom.** Kin is a shared money layer for families caring for an aging parent. Siblings pay into one family pool through PayPal. Claude reads the bills and the caregiver's week and proposes each payment. The family approves, PayPal moves the money, and Kin tells the parent about every dollar, out loud. Built for the PayPal AI Hackathon 2026, in the PayPal sandbox with test money.
 
-- **Video (under 3 minutes):** VIDEO_URL
+- **Video:** https://youtu.be/7OPYLoxiM7k
 - **Try it, no account:** https://mzdg4f3stk.us-east-1.awsapprunner.com → **Try the demo**. You get your own copy of Rose's circle: Rose, 81, her three children and her caregiver Amara. The banner shows a five-step path; each step says what is real.
 - **PayPal sandbox buyer for the top-up:** `sb-myskz53353349@personal.example.com` / `G_8h$[X+` (a PayPal sandbox test account: test money only).
 - **Licence:** MIT (`LICENSE`).
