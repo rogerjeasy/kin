@@ -78,19 +78,21 @@ export async function recordBillPaidOutside(tx: Transaction, input: { readonly c
 
 async function planFor(tx: Transaction, { circleId, billId, review, now }: BillReviewInput) {
   const [row] = await tx
-    .select({ status: payees.status, pausedUntil: circles.pausedUntil, timezone: circles.timezone })
+    .select({ status: payees.status, receiver: payees.paypalReceiver, pausedUntil: circles.pausedUntil, timezone: circles.timezone, reviewer: sql<string | null>`kin_private.my_member_id(${circleId}::uuid)` })
     .from(bills)
     .innerJoin(payees, and(eq(payees.circleId, bills.circleId), eq(payees.id, bills.payeeId)))
     .innerJoin(circles, eq(circles.id, bills.circleId))
     .where(and(eq(bills.circleId, circleId), eq(bills.id, billId)));
-  if (!row) throw new BillPaymentError("refused");
+  if (!row || row.reviewer === null) throw new BillPaymentError("refused");
   // Planned against the version in force, never one still waiting for acceptance.
   const { versions } = await readAgreementVersions(tx, circleId, calendarDay(now, row.timezone).occurredOn);
   const agreement = versions.find((version) => version.status === "in_force");
   if (!agreement) throw new BillPaymentError("no_agreement");
   const plan = planBillPayment({
     cents: review.cents,
-    payeeStatus: row.status,
+    // A payee given an address it did not have is new again, as the database records it: everyone is told.
+    payeeStatus: review.receiver !== row.receiver ? "new" : row.status,
+    reviewerMemberId: row.reviewer,
     agreement: { version: agreement.version, approvals: agreement.approvals },
     parentLevel: await parentLevel(tx, circleId),
     pausedUntil: row.pausedUntil,

@@ -1,4 +1,4 @@
-import { HELP_PURPOSE, SHIFT_PURPOSE, billApproved, calendarDay, canPayOut, formatMoney, isPaused, payoutConfirmed, settlementPaidOut, wishHoldFor, type ExecutionState, type SpendKind } from "@kin/domain";
+import { HELP_PURPOSE, SHIFT_PURPOSE, billApproved, calendarDay, canPayOut, formatMoney, isPaused, speakableName, payoutConfirmed, settlementPaidOut, wishHoldFor, type ExecutionState, type SpendKind } from "@kin/domain";
 import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
@@ -309,6 +309,8 @@ async function tellParentBillPaid(tx: Transaction, job: PayoutJob, paid: { reado
   const [told] = await tx.select({ id: narrations.id }).from(narrations).where(and(eq(narrations.circleId, job.circleId), eq(narrations.entryId, entry.id), eq(narrations.memberId, parent.id)));
   if (told) return;
   const amount = formatMoney({ cents: job.cents, currency: job.currency }, "en-US");
+  // The name came from a letter or was typed: only a name Kin may speak is spoken, and otherwise none.
+  const name = speakableName(payee.name);
   await tx.insert(narrations).values({
     id: randomUUID(),
     circleId: job.circleId,
@@ -316,7 +318,7 @@ async function tellParentBillPaid(tx: Transaction, job: PayoutJob, paid: { reado
     topic: BILL_PAID_TOPIC,
     cents: job.cents,
     entryId: entry.id,
-    spokenText: `Your ${payee.name} bill of ${amount} was paid from the family pool.`,
+    spokenText: name === null ? `Your bill of ${amount} was paid from the family pool.` : `Your ${name} bill of ${amount} was paid from the family pool.`,
     saidOn: calendarDay(paid.at, job.timezone).occurredOn,
   });
 }

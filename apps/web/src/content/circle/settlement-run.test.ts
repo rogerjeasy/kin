@@ -37,7 +37,7 @@ describe("the receipts list", () => {
   it("lists a filed receipt once, not again for the entry it was credited by", () => {
     const [credited] = pocketEntries();
     if (!credited) throw new Error("The demo holds Elena's pharmacy receipts");
-    const filed: ReceiptRecord = { id: "filed", memberId: elena, category: "pharmacy", cents: 7200, description: "Elm Street Pharmacy", spentOn: credited.occurredOn, state: "credited", decidedBy: null, entryId: credited.id };
+    const filed: ReceiptRecord = { id: "filed", memberId: elena, category: "pharmacy", cents: 7200, description: "Elm Street Pharmacy", spentOn: credited.occurredOn, state: "credited", decidedBy: null, entryId: credited.id, billId: null };
     const rows = rowsOf({ ...circle, receipts: [filed] });
     expect(rows).toHaveLength(3);
     expect(rows[0]?.title).toBe("Elm Street Pharmacy");

@@ -1541,6 +1541,10 @@
         "shift": {
           "title": "Lohn für den Einsatz von {name}",
           "text": "Ein Pflegeeinsatz, belegt durch zwei Schlüssel: das eigene Ein- und Ausstempeln der Pflegekraft und das Wort der Familie, dass der Besuch stattgefunden hat."
+        },
+        "letter_bill": {
+          "title": "Rechnung von {name}",
+          "text": "Aus einem Brief gelesen und von der Familie geprüft. Sie wird erst nach jedem Ja, das die Vereinbarung verlangt, mit PayPal aus der Kasse bezahlt."
         }
       },
       "raisedBy": "Eingereicht von {name}, {date}",
@@ -1564,7 +1568,8 @@
           "mandate": "durch dauerhafte Erlaubnis"
         },
         "open": "Wartet auf {names}",
-        "parentCall": "Kin fragt {parent} beim nächsten Anruf."
+        "parentCall": "Kin fragt {parent} beim nächsten Anruf.",
+        "independent": "Jemand anderes, der die Kosten teilt"
       },
       "notes": {
         "newPayee": "Ein neuer Zahlungsempfänger. Alle im Kreis wurden benachrichtigt.",
@@ -1574,7 +1579,9 @@
         "noReceiver": "{name} hat noch keine PayPal-Adresse angegeben. Die Zahlung wartet darauf.",
         "settlementBasis": "Berechnet für {month} am {day}, nach der Aufzeichnung von damals.",
         "settlementMoved": "Die Fairness hat sich seitdem verschoben: {name} stehen jetzt {amount} zu.",
-        "fairnessLink": "Fairness von heute ansehen"
+        "fairnessLink": "Fairness von heute ansehen",
+        "billReceiver": "Mit PayPal an {address}, die Adresse, die die Familie für {name} eingegeben hat",
+        "raiserNotAlone": "{name} hat bestätigt, wohin dieses Geld geht, deshalb muss auch jemand anderes Ja sagen."
       },
       "answered": {
         "title": "Entschieden",
@@ -2543,9 +2550,54 @@
         "states": {
           "needs_review": "Wartet auf Prüfung",
           "extracted": "Wird gelesen",
-          "duplicate": "Steht schon auf der Liste"
+          "duplicate": "Steht schon auf der Liste",
+          "ready": "Außerhalb von Kin zu zahlen",
+          "proposed": "Wartet auf das Ja der Familie",
+          "paid": "Bezahlt"
         },
-        "due": "Fällig am {day}"
+        "due": "Fällig am {day}",
+        "review": {
+          "open": "Diese Rechnung prüfen",
+          "text": "Vergleichen Sie, was Kin gelesen hat, mit dem Brief. Bezahlt wird erst, wenn die Familie Ja sagt.",
+          "name": "Absender",
+          "amount": "Betrag",
+          "due": "Fälligkeitsdatum",
+          "how": "Wie wird sie bezahlt?",
+          "paypal": "Mit PayPal, aus der Familienkasse",
+          "paypalHint": "Nur wenn das Unternehmen PayPal annimmt. Die Familie genehmigt, wohin das Geld geht, und alle erfahren von einem neuen Empfänger.",
+          "email": "Die PayPal-E-Mail-Adresse des Unternehmens",
+          "outside": "Außerhalb von Kin",
+          "outsideHint": "Die meisten Versorger nehmen kein PayPal. Jemand zahlt selbst und trägt es hier ein; das Ja eines anderen Mitglieds schreibt es ihm gut.",
+          "submit": "Rechnung bestätigen",
+          "submitting": "Wird bestätigt …",
+          "cancel": "Jetzt nicht"
+        },
+        "outside": {
+          "due": "Außerhalb von Kin zahlen bis {day}",
+          "noDue": "Außerhalb von Kin zahlen",
+          "paidOn": "Tag der Zahlung",
+          "record": "Ich habe diese Rechnung bezahlt",
+          "recording": "Wird eingetragen …",
+          "waiting": "{name} hat die Zahlung eingetragen. Sie wartet auf der Seite Fairness auf das Ja eines anderen Mitglieds."
+        },
+        "proposedText": "Wartet auf der Seite Genehmigungen auf jedes Ja, das die Vereinbarung verlangt.",
+        "approvalsLink": "Genehmigungen öffnen",
+        "errors": {
+          "refused": "Ihre Rolle darf das nicht.",
+          "invalid": "Etwas an der Anfrage war ungültig.",
+          "not_waiting": "Diese Rechnung wartet nicht mehr darauf.",
+          "above_ceiling": "Der Betrag liegt über der größten Einzelzahlung der Vereinbarung.",
+          "paused": "Der Kreis ist pausiert. Versuchen Sie es nach der Pause erneut.",
+          "no_agreement": "Der Kreis braucht eine gültige Familienvereinbarung, bevor eine Rechnung bezahlt werden kann.",
+          "payment_in_progress": "Eine Zahlung an diesen Empfänger wartet oder läuft, daher kann seine PayPal-Adresse jetzt nicht geändert werden.",
+          "payee_fixed": "Die Familie hat diesen Empfänger bereits genehmigt: Name und PayPal-Adresse bleiben, wie sie sind.",
+          "key_reused": "Dieser Eintrag wurde schon für etwas anderes verwendet. Laden Sie neu und versuchen Sie es erneut.",
+          "name": "Geben Sie den Absender der Rechnung an, höchstens 80 Zeichen.",
+          "amount": "Geben Sie den Betrag wie im Brief an, etwa 61.00.",
+          "due": "Wählen Sie ein gültiges Datum.",
+          "receiver": "Geben Sie eine PayPal-E-Mail-Adresse an oder wählen Sie Außerhalb von Kin.",
+          "unavailable": "Kin ist nicht erreichbar. Versuchen Sie es erneut."
+        }
       }
     },
     "mandates": {

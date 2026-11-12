@@ -67,6 +67,8 @@ export type BillPaymentRequest = {
   readonly cents: number;
   /** Whether the family has approved this payee before. A new payee is announced to the whole circle. */
   readonly payeeStatus: "approved" | "new";
+  /** The member reviewing the bill, who raises the proposal and confirms where the money goes. */
+  readonly reviewerMemberId: string;
   readonly agreement: Pick<Agreement, "version" | "approvals">;
   readonly parentLevel: ParentLevel;
   readonly pausedUntil: Date | null;
@@ -77,10 +79,12 @@ export type BillPaymentRequest = {
  * Who must say yes before a reviewed bill is paid from the pool. A bill a
  * person has just reviewed is never paid on a standing rule: the family
  * answers it as the agreement says, so a reading can never pay itself. The
- * payee is a company, never a member, so the plan names no member being paid.
+ * payee is a company, never a member, so the plan names no member being paid;
+ * the reviewer confirmed where the money goes, so, like a member being paid,
+ * their yes alone can never complete it (`interestedMembers`).
  */
 export function planBillPayment(request: BillPaymentRequest): ApprovalPlan {
-  return planApprovals({
+  const plan = planApprovals({
     kind: "bill_payment",
     cents: request.cents,
     payee: { status: request.payeeStatus, member: null, autoPay: null },
@@ -89,6 +93,24 @@ export function planBillPayment(request: BillPaymentRequest): ApprovalPlan {
     pausedUntil: request.pausedUntil,
     now: request.now,
   });
+  return plan.outcome === "needs_approval" ? { ...plan, raiserMemberId: request.reviewerMemberId } : plan;
+}
+
+/** The longest payee name Kin speaks aloud. */
+export const MAX_SPOKEN_NAME = 40;
+// Letters in any script, their marks, spaces and the punctuation of a company's name; no digits, links or symbols.
+const SPEAKABLE = /^[\p{L}\p{M}][\p{L}\p{M} .,'’&-]*$/u;
+
+/**
+ * A payee's name as Kin may speak it to the parent, or `null` when it may not.
+ * The name came from a letter or was typed, so it is untrusted: anything but
+ * letters, spaces and a company's punctuation, or a name longer than
+ * `MAX_SPOKEN_NAME`, is never spoken. With no digits, it can carry no amount
+ * the number guard did not supply; with no symbols, no link or address.
+ */
+export function speakableName(name: string): string | null {
+  const trimmed = name.normalize("NFC").replace(/\s+/gu, " ").trim();
+  return trimmed.length <= MAX_SPOKEN_NAME && SPEAKABLE.test(trimmed) ? trimmed : null;
 }
 
 /** The receipt category a bill paid outside Kin is credited under: the payee's, when receipts know it. */

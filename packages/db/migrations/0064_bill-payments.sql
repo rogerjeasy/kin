@@ -42,6 +42,8 @@ CREATE FUNCTION kin_private.review_bill(
     v_first jsonb;
     v_slots jsonb;
     v_proposal uuid;
+    v_readdressed boolean;
+    v_status public.payee_status;
   BEGIN
     IF kin_private.my_role(p_circle) IS NULL OR kin_private.my_role(p_circle) NOT IN ('organizer', 'contributor') THEN
       RAISE EXCEPTION 'kin: bill review refused' USING ERRCODE = 'insufficient_privilege';
@@ -89,6 +91,10 @@ CREATE FUNCTION kin_private.review_bill(
     ) THEN
       RAISE EXCEPTION 'kin: a payment to this payee is in progress' USING ERRCODE = 'KB009';
     END IF;
+    -- Saying where a payee's money goes, its first address included, makes it a new payee again: the family
+    -- approves it afresh and everyone is told (section 7.5, rule 8). A standing rule never survives it.
+    v_readdressed := v_receiver IS NOT NULL AND v_receiver IS DISTINCT FROM v_payee.paypal_receiver;
+    v_status := CASE WHEN v_readdressed THEN 'new'::public.payee_status ELSE v_payee.status END;
 
     v_now := coalesce(v_circle.clock_at, now());
     IF v_receiver IS NOT NULL THEN
@@ -117,19 +123,29 @@ CREATE FUNCTION kin_private.review_bill(
         v_expires := NULL;
       END;
       IF jsonb_typeof(p_plan) IS DISTINCT FROM 'object'
-         OR p_plan - ARRAY['outcome', 'slots', 'payeeMemberId', 'announceToCircle', 'expiresAt'] <> '{}'::jsonb
+         OR p_plan - ARRAY['outcome', 'slots', 'payeeMemberId', 'raiserMemberId', 'announceToCircle', 'expiresAt'] <> '{}'::jsonb
          OR p_plan ->> 'outcome' IS DISTINCT FROM 'needs_approval'
          OR p_plan -> 'slots' IS DISTINCT FROM v_slots
          OR p_plan -> 'payeeMemberId' IS DISTINCT FROM 'null'::jsonb
-         OR p_plan -> 'announceToCircle' IS DISTINCT FROM to_jsonb(v_payee.status = 'new')
+         -- The reviewer said where the money goes, so their yes alone never completes it (assert_raiser_not_alone).
+         OR p_plan ->> 'raiserMemberId' IS DISTINCT FROM v_member::text
+         OR p_plan -> 'announceToCircle' IS DISTINCT FROM to_jsonb(v_status = 'new')
          OR v_expires IS NULL
          OR v_expires NOT BETWEEN v_now + interval '71 hours 55 minutes' AND v_now + interval '72 hours 5 minutes' THEN
         RAISE EXCEPTION 'kin: the approval plan does not match the agreement' USING ERRCODE = 'check_violation';
       END IF;
     END IF;
 
-    UPDATE public.payees SET name = v_name, paypal_receiver = coalesce(v_receiver, paypal_receiver)
-      WHERE circle_id = p_circle AND id = v_payee.id AND (name <> v_name OR (v_receiver IS NOT NULL AND paypal_receiver IS DISTINCT FROM v_receiver));
+    IF v_payee.name <> v_name THEN
+      UPDATE public.payees SET name = v_name WHERE circle_id = p_circle AND id = v_payee.id;
+    END IF;
+    IF v_readdressed THEN
+      UPDATE public.payees SET paypal_receiver = v_receiver, status = 'new', auto_pay_rule_id = NULL, auto_pay_min_cents = NULL, auto_pay_max_cents = NULL
+        WHERE circle_id = p_circle AND id = v_payee.id;
+      INSERT INTO public.audit_log (id, circle_id, actor, member_id, action, subject_type, subject_id, details, origin)
+        VALUES (gen_random_uuid(), p_circle, 'member', v_member, 'payee.readdressed', 'payee', v_payee.id,
+                jsonb_build_object('billId', p_bill, 'wasApproved', v_payee.status = 'approved'), 'web');
+    END IF;
     UPDATE public.bills SET amount_cents = p_cents, due_on = p_due WHERE circle_id = p_circle AND id = p_bill;
     IF v_bill.state <> 'ready' THEN
       UPDATE public.bills SET state = 'ready' WHERE circle_id = p_circle AND id = p_bill;
@@ -145,7 +161,7 @@ CREATE FUNCTION kin_private.review_bill(
     INSERT INTO public.audit_log (id, circle_id, actor, member_id, action, subject_type, subject_id, details, origin)
       VALUES (gen_random_uuid(), p_circle, 'member', v_member, 'bill.reviewed', 'bill', p_bill,
               jsonb_build_object('proposalId', v_proposal, 'route', CASE WHEN v_receiver IS NULL THEN 'outside' ELSE 'paypal' END,
-                                 'cents', p_cents, 'newPayee', v_payee.status = 'new'), 'web');
+                                 'cents', p_cents, 'newPayee', v_status = 'new'), 'web');
     RETURN jsonb_build_object('proposalId', v_proposal, 'route', CASE WHEN v_receiver IS NULL THEN 'outside' ELSE 'paypal' END);
   END
   $$;
@@ -205,6 +221,35 @@ CREATE FUNCTION kin_private.record_bill_paid_outside(
   $$;
 --> statement-breakpoint
 
+-- The member who raised a payment and said where it goes, as a bill's
+-- reviewer does, is never the only yes: like the member being paid (section
+-- 7.5, rule 7), someone other than them, and other than any member being
+-- paid, must say yes too. interestedMembers in packages/domain decides the
+-- same; this holds it whatever writes the state. Only a plan that names a
+-- raiser is touched, so every other proposal is decided as before.
+CREATE FUNCTION kin_private.assert_raiser_not_alone() RETURNS trigger
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+  AS $$
+  BEGIN
+    IF NOT EXISTS (
+      SELECT 1 FROM public.approvals a
+      WHERE a.proposal_id = NEW.id AND a.circle_id = NEW.circle_id AND a.decision = 'approve'
+        AND a.member_id::text IS DISTINCT FROM NEW.plan ->> 'raiserMemberId'
+        AND a.member_id::text IS DISTINCT FROM NEW.plan ->> 'payeeMemberId'
+    ) THEN
+      RAISE EXCEPTION 'kin: the member who said where proposal % pays cannot be the only one to approve it', NEW.id
+        USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN NEW;
+  END
+  $$;
+--> statement-breakpoint
+CREATE TRIGGER raiser_not_alone BEFORE UPDATE OF state ON public.proposals
+  FOR EACH ROW
+  WHEN (OLD.state = 'pending_approval' AND NEW.state = 'approved' AND NEW.plan ? 'raiserMemberId')
+  EXECUTE FUNCTION kin_private.assert_raiser_not_alone();
+--> statement-breakpoint
+
 -- An approved bill payment is carried out like a caregiver's or a member's
 -- payout: the same execution keyed by the proposal and the same outbox
 -- message, written in the approval's own transaction (queue_payout, 0033).
@@ -216,6 +261,7 @@ CREATE TRIGGER queue_payout AFTER UPDATE OF state ON public.proposals
   EXECUTE FUNCTION kin_private.queue_payout();
 --> statement-breakpoint
 
+REVOKE ALL ON FUNCTION kin_private.assert_raiser_not_alone() FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.review_bill(uuid, uuid, text, bigint, date, text, jsonb) FROM PUBLIC;
 REVOKE ALL ON FUNCTION kin_private.record_bill_paid_outside(uuid, uuid, uuid, text, date) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION kin_private.review_bill(uuid, uuid, text, bigint, date, text, jsonb) TO kin_app;

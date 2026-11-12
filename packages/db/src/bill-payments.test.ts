@@ -106,6 +106,47 @@ describe("reviewing a bill read from a letter, to be paid through PayPal", () =>
     await expect(review(circle, billId, "elena", { name: "Lakeside Water" })).resolves.toMatchObject({ route: "paypal" });
   });
 
+  it("makes an approved payee new again when it is given an address, so the family approves it and everyone is told", async () => {
+    const circle = await visitorWithCircle(db);
+    // Northfield Electric is approved and paid on a standing rule; it has no PayPal address.
+    const { billId } = await letterBill(circle, circle.payees.electricity);
+    const { proposalId } = await review(circle, billId, "elena", { name: "Northfield Electric" });
+    const rows = await service(circle, async (tx) => ({
+      payee: (await tx.select().from(payees).where(eq(payees.id, circle.payees.electricity)))[0],
+      proposal: (await tx.select().from(proposals).where(eq(proposals.id, proposalId ?? "")))[0],
+      audit: await tx.select().from(auditLog).where(and(eq(auditLog.subjectId, circle.payees.electricity), eq(auditLog.action, "payee.readdressed"))),
+    }));
+    expect(rows.payee).toMatchObject({ status: "new", paypalReceiver: EMAIL, autoPayRuleId: null, autoPayMinCents: null, autoPayMaxCents: null });
+    expect(rows.proposal?.plan).toMatchObject({ announceToCircle: true, raiserMemberId: circle.members.elena });
+    expect(rows.audit.map((row) => row.details)).toEqual([{ billId, wasApproved: true }]);
+  });
+
+  it("refuses a plan that leaves out who confirmed where the money goes, or tells nobody about a payee given an address", async () => {
+    const circle = await visitorWithCircle(db);
+    const { billId } = await letterBill(circle, circle.payees.water, 4_000);
+    const base = { outcome: "needs_approval", slots: [{ reason: "organizer", roles: ["organizer"] }], payeeMemberId: null, expiresAt: new Date(CLOCK.getTime() + 72 * 3_600_000).toISOString() };
+    for (const plan of [{ ...base, announceToCircle: true }, { ...base, announceToCircle: false, raiserMemberId: circle.members.elena }, { ...base, announceToCircle: true, raiserMemberId: circle.members.marcus }]) {
+      const code = await errorCode(asPersona(circle, "elena", (tx) => tx.execute(sql`select kin_private.review_bill(${circle.circleId}::uuid, ${billId}::uuid, 'Lakeside Water', 4000, '2026-11-30'::date, ${EMAIL}, ${JSON.stringify(plan)}::jsonb)`)));
+      expect(code).toBe("23514");
+    }
+  });
+
+  it("never lets the reviewer's own yes complete it: another member who shares the cost must say yes too", async () => {
+    const circle = await visitorWithCircle(db);
+    // 40.00 is below Rose's 50.00, so only the organizer's place is asked for, and Elena, who reviewed it, is the organizer.
+    const { billId } = await letterBill(circle, null, 4_000);
+    const { proposalId } = await review(circle, billId, "elena", { cents: 4_000 });
+    if (!proposalId) throw new Error("No proposal was raised");
+    const answer = (persona: "elena" | "marcus", role: "organizer" | "contributor") =>
+      asPersona(circle, persona, (tx) => answerProposal(tx, { circleId: circle.circleId, memberId: circle.members[persona], role }, { proposalId, decision: "approve", method: "app", now: CLOCK, pausedUntil: null }));
+    expect(await answer("elena", "organizer")).toBe("pending");
+    // Writing the state directly is refused by the database too.
+    expect(await errorCode(asPersona(circle, "elena", (tx) => tx.update(proposals).set({ state: "approved" }).where(eq(proposals.id, proposalId))))).toBe("23514");
+    expect(await service(circle, (tx) => tx.select().from(executions).where(eq(executions.proposalId, proposalId)))).toHaveLength(0);
+    expect(await answer("marcus", "contributor")).toBe("approved");
+    expect(await service(circle, (tx) => tx.select().from(executions).where(eq(executions.proposalId, proposalId)))).toHaveLength(1);
+  });
+
   it("never points a payee with a payment under way at another address", async () => {
     const circle = await visitorWithCircle(db);
     // The stairlift's repair waits for the family's yes in Rose's circle.
