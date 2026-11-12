@@ -16,7 +16,11 @@ import { openTrigger } from "@/content/circle/wishes";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
 import { may, sectionsFor, shellData } from "@/server/dashboard-context";
+import { demoGuideHidden } from "@/server/demo-guide-cookie";
+import { topUpServices } from "@/server/paypal";
 import { demoPayeeOf } from "@/server/sandbox-payout";
+import { demoGuideWords } from "@/components/dashboard/words/demo-guide-words";
+import { demoGuide } from "@/content/demo-guide";
 
 /**
  * The circle's screens, read from the database as the viewer. A demo visitor
@@ -73,6 +77,11 @@ export default async function DashboardLayout({ children, params }: LayoutProps<
           link: { href: localizedPath(locale, wishesRoute), label: wishesCopy.banner.link },
         };
 
+  // The demo guide's people and question: the parent, the caregiver she pays, and the reorder Ask Kin suggests.
+  const active = circle.members.filter((member) => member.status === "active");
+  const caregiver = active.find((member) => member.role === "caregiver");
+  const refillQuestion = fill(dictionary.askKin.suggestions.refill, { parent: slots.parent });
+
   return (
     <AppShell
       wishesNotice={wishesNotice}
@@ -88,9 +97,11 @@ export default async function DashboardLayout({ children, params }: LayoutProps<
           ? {
               seat: fill(shell.demo.seat, { name: me.displayName, role: common.roles[me.role] }),
               text: fill(shell.demo.text, { name: me.displayName, role: common.roles[me.role] }),
-              personas: circle.members
-                .filter((member) => member.status === "active")
-                .map((member) => ({ memberId: member.id, name: member.displayName, role: common.roles[member.role], portrait: member.portrait, current: member.id === me.id })),
+              personas: active.map((member) => ({ memberId: member.id, name: member.displayName, role: common.roles[member.role], portrait: member.portrait, current: member.id === me.id })),
+              guide: demoGuideWords(
+                demoGuide({ locale, personas: active.map((member) => ({ memberId: member.id, role: member.role })), current: me.id, refillQuestion, topUps: topUpServices() !== null, payee: demoPayeeOf(circle) }),
+                { copy: shell.demo.guide, slots: { parent: slots.parent, caregiver: caregiver?.displayName ?? common.roles.caregiver, question: refillQuestion }, count: format.count, hidden: await demoGuideHidden() },
+              ),
             }
           : null
       }

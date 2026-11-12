@@ -6,7 +6,7 @@ import { KinThinking } from "@/components/dashboard/ai/kin-thinking";
 import type { Dictionary } from "@/i18n/dictionary";
 
 import { AskKinAnswer } from "./ask-kin-answer";
-import { AskKinProposal } from "./ask-kin-proposal";
+import { AskKinRaisedCard } from "./ask-kin-raised-card";
 import { AskKinTrace } from "./ask-kin-trace";
 import type { AskKinState } from "./use-ask-kin";
 
@@ -56,7 +56,7 @@ export function AskKinResult({ state, copy }: Props) {
             <>
               <AskKinAnswer question={state.question} answer={state.answer} copy={copy.answer} />
               <div className="min-w-0 space-y-4 sm:ps-12">
-                {state.answer.proposal ? <AskKinProposal href={state.answer.proposal.href} copy={state.answer.proposal.kind === "purse_payment" ? copy.purseProposal : copy.proposal} /> : null}
+                <AskKinRaisedCard raised={state.answer.proposal} copy={copy} />
                 <AskKinTrace steps={state.answer.steps} copy={copy.answer} />
               </div>
             </>

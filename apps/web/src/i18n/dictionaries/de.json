@@ -130,7 +130,7 @@
       "refillChoose": "Welche Nachbestellung? Die Familie erlaubt: {items}.",
       "refillWaiting": "Eine Nachbestellung von {item} wartet schon, oder der Kreis ist pausiert, daher hat Kin nichts vorgeschlagen.",
       "refillRefused": "Kin konnte {item} für {price} nicht vorschlagen. Die Regeln der Familie erlaubten es nicht.",
-      "refillCovered": "Kin hat {item} für {price} vorgeschlagen. Die dauerhafte Erlaubnis des Elternteils deckt es.",
+      "refillCovered": "Die dauerhafte Erlaubnis von {parent} hat {item} für {price} bei {seller} genehmigt. Niemand muss zustimmen, und die Bestellung wird aufgegeben. Kin hat es nicht genehmigt.",
       "refillProposed": "Kin hat {item} für {price} vorgeschlagen. Es wartet auf ein Ja.",
       "giftProposed": "Kin hat {amount} an {payee} aus deiner Geldbörse vorgelesen. Es wartet auf dein Ja.",
       "giftHeld": "Kin hat {amount} an {payee} vorgelesen. Wenn du Ja sagst, wartet Kin einen Tag und sagt deiner Familie Bescheid.",
@@ -148,6 +148,11 @@
       "text": "Besucher der Demo können Kin einige Fragen stellen, damit alle es ausprobieren können. In Ihrem eigenen Kreis beantwortet Kin so viele Fragen, wie Ihre Familie braucht.",
       "signUp": "Registrieren",
       "stay": "Die Demo weiter erkunden"
+    },
+    "orderedProposal": {
+      "title": "Genehmigt durch die dauerhafte Erlaubnis von {parent}",
+      "text": "{amount} bei {seller}, und die Bestellung wird aufgegeben. Kin hat es nicht genehmigt: Das hat die dauerhafte Erlaubnis von {parent} selbst getan.",
+      "link": "Bestellung in den Freigaben ansehen"
     }
   },
   "meta": {
@@ -1299,7 +1304,28 @@
         "restartNote": "Sie erhalten eine neue Kopie von Roses Kreis. Die jetzige wird archiviert, nicht gelöscht.",
         "viewAs": "Den Kreis sehen als",
         "seat": "Sie sind {name}, {role}",
-        "leave": "Demo verlassen"
+        "leave": "Demo verlassen",
+        "guide": {
+          "title": "In {count} Schritten ausprobieren",
+          "show": "Schritte zeigen",
+          "hide": "Schritte ausblenden",
+          "dismiss": "Anleitung ausblenden",
+          "reopen": "Anleitung zeigen",
+          "steps": {
+            "topUp": "Geld in den Topf einzahlen",
+            "ask": "Kin fragen: „{question}“",
+            "approve": "Als {parent} die Bezahlung von {caregiver} genehmigen",
+            "listen": "Als {parent} zuhören",
+            "verify": "Aufzeichnung prüfen"
+          },
+          "badges": {
+            "sandbox": "PayPal-Sandbox",
+            "claude": "Claude-Agent",
+            "spoken": "Laut vorgelesen",
+            "provable": "Nachprüfbar",
+            "simulated": "Simuliert"
+          }
+        }
       },
       "visitor": "Demo-Besuch",
       "presenceHold": {
@@ -1455,6 +1481,10 @@
       "comingUp": {
         "title": "Demnächst fällig",
         "link": "Alle Rechnungen"
+      },
+      "protects": {
+        "title": "Wie Kin {parent} schützt",
+        "text": "Prüfungen, Wünsche und Helfer rund ums Geld. Jedes öffnet seinen eigenen Bildschirm."
       }
     },
     "topUp": {

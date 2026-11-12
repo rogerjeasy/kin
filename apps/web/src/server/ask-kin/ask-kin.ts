@@ -1,4 +1,4 @@
-import { MAX_HISTORY_TURNS, MAX_QUESTION_LENGTH, askKin, routeQuestion, toolGateway, type AskKinCall, type AskKinTurn, type RoutedCall, type TemplateReason, type ToolModel, type ToolOutcome, type ToolRecorder } from "@kin/agent";
+import { MAX_HISTORY_TURNS, MAX_QUESTION_LENGTH, askKin, routeQuestion, toolGateway, type AskKinCall, type AskKinTurn, type RaisedProposal, type RoutedCall, type TemplateReason, type ToolModel, type ToolOutcome, type ToolRecorder } from "@kin/agent";
 import { authorize, type BillingAccount } from "@kin/auth";
 import { asPerson, readExecutions, type CircleSnapshot, type Database } from "@kin/db";
 
@@ -15,7 +15,7 @@ import { fill } from "@/i18n/template";
 import { spendUse, type Allowance, type RateLimiter } from "../model";
 import { questionsLeft } from "./demo-questions";
 import { askKinTools, logToolCall } from "./tools";
-import { askKinWorld, type PayPalReader } from "./world";
+import { askKinWorld, type AskKinWorld, type PayPalReader } from "./world";
 
 export type AskKinContext = {
   readonly db: Database;
@@ -35,6 +35,23 @@ export type AskKinContext = {
 
 export type AskKinStep = { readonly tool: string; readonly label: string; readonly outcome: ToolOutcome; readonly outcomeLabel: string };
 
+/**
+ * What a question raised, as the card under the answer words it. A proposal
+ * waits for the family on Approvals and a Purse payment for the parent on her
+ * Purse. One her standing permission approved at once names what was ordered,
+ * from the record, and links to it on Approvals, where the order says once it
+ * is paid whether that was a PayPal sandbox charge or simulated: nothing is
+ * charged yet when the card is shown, so the card does not say either.
+ */
+export type AskKinRaised =
+  | { readonly id: string; readonly href: string; readonly kind: "proposal" | "purse_payment" }
+  | {
+      readonly id: string;
+      readonly href: string;
+      readonly kind: "standing_permission";
+      readonly words: { readonly parent: string; readonly amount: string; readonly seller: string };
+    };
+
 export type AskKinResponse =
   | {
       readonly ok: true;
@@ -45,7 +62,7 @@ export type AskKinResponse =
       /** The model that chose the tools, even when its wording was replaced. */
       readonly model: string;
       readonly steps: readonly AskKinStep[];
-      readonly proposal: { readonly id: string; readonly href: string; readonly kind: "proposal" | "purse_payment" } | null;
+      readonly proposal: AskKinRaised | null;
       /** Questions left after this one, or `null` when this person's questions are not counted. */
       readonly questionsLeft: number | null;
     }
@@ -161,13 +178,20 @@ export async function runAskKin(context: AskKinContext, input: unknown): Promise
     templateReason: result.templateReason,
     model: context.model.label,
     steps: steps(copy, result.calls),
-    // A payment from her Purse waits for her own yes on her Purse screen; anything else for the family's on Approvals.
-    proposal:
-      result.proposal === null
-        ? null
-        : result.proposal.kind === "purse_payment"
-          ? { id: result.proposal.id, href: localizedPath(parsed.locale, purseRoute), kind: "purse_payment" }
-          : { id: result.proposal.id, href: localizedPath(parsed.locale, dashboardRoutes.approvals), kind: "proposal" },
+    proposal: result.proposal === null ? null : raised(result.proposal, parsed.locale, world),
     questionsLeft: questionsLeft(context.questions, context.userId, now()),
+  };
+}
+
+/** A payment from her Purse waits for her own yes on her Purse screen; one her standing permission approved waits for nobody; anything else for the family's on Approvals. */
+function raised(proposal: RaisedProposal, locale: Locale, world: AskKinWorld): AskKinRaised {
+  if (proposal.kind === "purse_payment") return { id: proposal.id, href: localizedPath(locale, purseRoute), kind: "purse_payment" };
+  const approvals = localizedPath(locale, dashboardRoutes.approvals);
+  if (proposal.standing === undefined) return { id: proposal.id, href: approvals, kind: "proposal" };
+  return {
+    id: proposal.id,
+    href: `${approvals}#${proposal.id}`,
+    kind: "standing_permission",
+    words: { parent: world.names.parent, amount: proposal.standing.amount, seller: proposal.standing.seller },
   };
 }

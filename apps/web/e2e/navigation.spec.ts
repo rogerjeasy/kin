@@ -61,13 +61,33 @@ test.describe("on a laptop", () => {
     await expect(page).toHaveURL("/");
   });
 
-  test("the hero's main button opens the start page", async ({ page }) => {
+  test("the hero's main button is the demo, and its second button opens the start page", async ({ page }) => {
     await page.goto("/");
+    const hero = page.getByRole("main").locator("section").first();
 
-    await page.getByRole("main").getByRole("link", { name: nav.startLong }).first().click();
+    await expect(hero.getByRole("button", { name: nav.demo })).toHaveAttribute("data-variant", "inverse");
+    const start = hero.getByRole("link", { name: nav.startLong });
+    await expect(start).toHaveAttribute("data-variant", "outline");
+    await start.click();
 
     await expect(page).toHaveURL("/start");
   });
+
+  test("the header's filled button is the demo", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.getByRole("banner").getByRole("button", { name: nav.demo })).toHaveAttribute("data-variant", "default");
+  });
+
+  for (const path of ["/", "/how-it-works", "/safety", "/caregivers", "/pricing"]) {
+    test(`the closing band on ${path} leads with the demo and keeps a way to start`, async ({ page }) => {
+      await page.goto(path);
+      const closing = page.getByRole("region", { name: english.home.closing.title });
+
+      await expect(closing.getByRole("button", { name: nav.demo })).toHaveAttribute("data-variant", "inverse");
+      await expect(closing.getByRole("link", { name: nav.startLong })).toHaveAttribute("href", "/start");
+    });
+  }
 
   test("the footer links to every page", async ({ page }) => {
     await page.goto("/");

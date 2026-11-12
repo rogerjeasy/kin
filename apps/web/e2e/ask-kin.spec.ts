@@ -23,7 +23,7 @@ for (const viewport of viewports) {
     await expect(page.getByLabel(copy.form.label)).toHaveValue("Has Amara been paid?");
     await expectNoHorizontalOverflow(page);
 
-    await page.getByRole("button", { name: copy.form.ask }).click();
+    await page.getByRole("button", { name: copy.form.ask, exact: true }).click();
     await expect(page.getByText("Kin read the record for you.")).toBeVisible();
     await expect(page.getByText(/^Written by Claude/)).toBeVisible();
     await expect(page.getByText(copy.answer.trace)).toBeVisible();
@@ -32,14 +32,52 @@ for (const viewport of viewports) {
   });
 }
 
-test("a suggestion asks at once, and a reorder shows the proposal waiting for a yes", async ({ page }) => {
+const ordered = {
+  title: "Approved under Rose’s standing permission",
+  text: "$64.00 at Elm Street Pharmacy, and the order is being placed. Kin did not approve it: Rose’s own standing permission did.",
+};
+
+for (const viewport of viewports) {
+  test(`a reorder Rose's standing permission covers says it was approved and ordered, never that it waits, at ${viewport.width}×${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await startDemo(page);
+    await seatAs(page, "Rose");
+    await page.goto("/dashboard/ask");
+    await page.getByRole("button", { name: "Reorder Rose's refill", exact: true }).click();
+
+    const card = page.getByRole("region", { name: ordered.title });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText(ordered.text);
+    // Nothing is charged yet: the order on Approvals says later whether its payment was a sandbox charge or simulated.
+    await expect(card).not.toContainText(english.dashboard.common.simulated);
+    await expect(page.getByText(copy.proposal.text)).toHaveCount(0);
+    await expect(page.getByRole("listitem").filter({ hasText: copy.tools.propose_refill })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await maybeScreenshot(page, `ask-kin-ordered-${viewport.width}`);
+
+    // The link leads to the order itself on Approvals, approved by the permission.
+    const link = card.getByRole("link", { name: copy.orderedProposal.link });
+    await expect(link).toHaveAttribute("href", /^\/dashboard\/approvals#[0-9a-f-]{36}$/u);
+    const anchor = ((await link.getAttribute("href")) ?? "").split("#")[1] ?? "";
+    await link.click();
+    await expect(page).toHaveURL(/\/dashboard\/approvals#/u);
+    await expect(page.locator(`[id="${anchor}"]`)).toContainText("Rose’s standing permission");
+  });
+}
+
+test("with the standing permission paused, a reorder shows the proposal waiting for a yes", async ({ page }) => {
   await startDemo(page);
-  await seatAs(page, "Rose");
+  await page.goto("/dashboard/circle/mandates");
+  // The permission's own Pause, not the top bar's pause of every payment.
+  await page.getByRole("main").getByRole("button", { name: english.dashboard.mandates.actions.pause, exact: true }).first().click();
+  await expect(page.getByRole("status").filter({ hasText: english.dashboard.mandates.actions.paused })).toBeVisible();
+
   await page.goto("/dashboard/ask");
-  await page.getByRole("button", { name: "Reorder Rose's refill" }).click();
+  await page.getByLabel(copy.form.label).fill("Reorder Rose's refill");
+  await page.getByRole("button", { name: copy.form.ask, exact: true }).click();
   await expect(page.getByText(copy.proposal.text)).toBeVisible();
   await expect(page.getByRole("link", { name: copy.proposal.link })).toHaveAttribute("href", "/dashboard/approvals");
-  await expect(page.getByRole("listitem").filter({ hasText: copy.tools.propose_refill })).toBeVisible();
+  await expect(page.getByRole("region", { name: ordered.title })).toHaveCount(0);
 });
 
 test("a caregiver can ask, and is offered only what concerns their own pay", async ({ page }) => {
@@ -62,7 +100,7 @@ test("a demo visitor has ten questions, sees what is left, and is then invited t
   const box = page.getByLabel(copy.form.label);
   for (let asked = 1; asked <= QUESTIONS; asked += 1) {
     await box.fill(`Has Amara been paid? (${asked})`);
-    await page.getByRole("button", { name: copy.form.ask }).click();
+    await page.getByRole("button", { name: copy.form.ask, exact: true }).click();
     await expect(page.getByText("Kin read the record for you.")).toBeVisible();
     if (asked < QUESTIONS) await expect(status).toHaveText(`${QUESTIONS - asked} of ${QUESTIONS} questions left in this demo`);
   }
@@ -105,7 +143,7 @@ test("the window for the last demo question fits a 320 pixel phone and closes wi
   const box = page.getByLabel(copy.form.label);
   for (let asked = 1; asked <= QUESTIONS; asked += 1) {
     await box.fill(`Has Amara been paid? (${asked})`);
-    await page.getByRole("button", { name: copy.form.ask }).click();
+    await page.getByRole("button", { name: copy.form.ask, exact: true }).click();
     await expect(page.getByRole("button", { name: copy.form.asking })).toHaveCount(0);
   }
   const dialog = page.getByRole("dialog", { name: `You have asked this demo's ${QUESTIONS} questions` });

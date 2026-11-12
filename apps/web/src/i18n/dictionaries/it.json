@@ -130,7 +130,7 @@
       "refillChoose": "Quale rinnovo? La famiglia consente: {items}.",
       "refillWaiting": "Un rinnovo di {item} è già in attesa, o il cerchio è in pausa, quindi Kin non ha proposto nulla.",
       "refillRefused": "Kin non ha potuto proporre {item} a {price}. Le regole della famiglia non lo consentivano.",
-      "refillCovered": "Kin ha proposto {item} a {price}. Il permesso permanente del genitore lo copre.",
+      "refillCovered": "Il permesso permanente di {parent} ha approvato {item} a {price} da {seller}: nessuno deve dire sì e l'ordine è in corso. Non l'ha approvato Kin.",
       "refillProposed": "Kin ha proposto {item} a {price}. Attende un sì.",
       "giftProposed": "Kin ti ha riletto {amount} per {payee} dal tuo borsellino. Aspetta il tuo sì.",
       "giftHeld": "Kin ti ha riletto {amount} per {payee}. Se dici sì, Kin aspetta un giorno e avvisa la tua famiglia.",
@@ -148,6 +148,11 @@
       "text": "Chi visita la demo può fare a Kin qualche domanda, così tutti possono provarlo. Nel tuo cerchio, Kin risponde a tutte le domande di cui la tua famiglia ha bisogno.",
       "signUp": "Registrati",
       "stay": "Continua a esplorare la demo"
+    },
+    "orderedProposal": {
+      "title": "Approvato dal permesso permanente di {parent}",
+      "text": "{amount} da {seller}, e l’ordine è in corso. Non l’ha approvato Kin: l’ha approvato il permesso permanente di {parent}.",
+      "link": "Vedi l’ordine nelle approvazioni"
     }
   },
   "meta": {
@@ -1299,7 +1304,28 @@
         "restartNote": "Ricevi una nuova copia della cerchia di Rose. Quella attuale viene archiviata, non cancellata.",
         "viewAs": "Vedi la cerchia come",
         "seat": "Sei {name}, {role}",
-        "leave": "Esci dalla demo"
+        "leave": "Esci dalla demo",
+        "guide": {
+          "title": "Provalo in {count} passaggi",
+          "show": "Mostra i passaggi",
+          "hide": "Nascondi i passaggi",
+          "dismiss": "Metti via la guida",
+          "reopen": "Mostra la guida",
+          "steps": {
+            "topUp": "Aggiungi denaro al fondo",
+            "ask": "Chiedi a Kin: «{question}»",
+            "approve": "Come {parent}, approva la paga di {caregiver}",
+            "listen": "Ascolta come {parent}",
+            "verify": "Verifica il registro"
+          },
+          "badges": {
+            "sandbox": "Sandbox PayPal",
+            "claude": "Agente Claude",
+            "spoken": "Letto ad alta voce",
+            "provable": "Verificabile",
+            "simulated": "Simulato"
+          }
+        }
       },
       "visitor": "Visitatore della demo",
       "presenceHold": {
@@ -1455,6 +1481,10 @@
       "comingUp": {
         "title": "In arrivo",
         "link": "Tutte le bollette"
+      },
+      "protects": {
+        "title": "Come Kin protegge {parent}",
+        "text": "Controlli, desideri e aiuti intorno ai soldi. Ognuno apre la propria schermata."
       }
     },
     "topUp": {
