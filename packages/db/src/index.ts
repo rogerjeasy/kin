@@ -195,7 +195,9 @@ export {
   revokeAgencyKey,
   revokeDelegation,
 } from "./open-kin.ts";
-export { DELEGATION_CALL_OUTCOMES } from "./schema/open-kin.ts";
+export { DELEGATION_CALL_OUTCOMES, OAUTH_CODE_SECONDS } from "./schema/open-kin.ts";
+export { OAuthConsentError, createAuthorizationCode, redeemAuthorizationCode } from "./oauth.ts";
+export type { AuthorizationCodeInput, OAuthConsentRefusal, RedeemInput, Redeemed } from "./oauth.ts";
 export type { DelegationCallOutcome } from "./schema/open-kin.ts";
 export type { AgencyKeyRecord, AgencyReportRecord, DelegationCallInput, DelegationCallRecord, DelegationRecord, GrantDelegation, OpenKinReason, ReceivedVisit, ResolvedDelegation } from "./open-kin.ts";
 export {

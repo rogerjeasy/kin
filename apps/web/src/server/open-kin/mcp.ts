@@ -42,7 +42,7 @@ export const mcpLimiter = createRateLimiter(60, 10 * 60 * 1000);
 
 /** The protected resource metadata document for the MCP endpoint. */
 export function mcpMetadata(origin: string): JsonValue {
-  return protectedResourceMetadata({ resource: `${origin}${MCP_PATH}`, documentation: `${origin}${routes.developers}` });
+  return protectedResourceMetadata({ resource: `${origin}${MCP_PATH}`, documentation: `${origin}${routes.developers}`, authorizationServer: origin });
 }
 
 /** The member a live token names, as an MCP caller whose tools read the circle as them. */

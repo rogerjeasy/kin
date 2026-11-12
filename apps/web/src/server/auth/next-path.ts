@@ -1,4 +1,4 @@
-import { dashboardRoutes } from "@/content/dashboard-routes";
+import { dashboardRoutes, oauthConsentRoute } from "@/content/dashboard-routes";
 import { defaultLocale, isLocale, type Locale } from "@/i18n/locales";
 import { localizedPath, pagePath } from "@/i18n/routing";
 
@@ -22,7 +22,8 @@ export function safeNextPath(raw: string | null | undefined): string {
   if (url.origin !== PLACEHOLDER_ORIGIN || !isDashboardPage(url.pathname)) {
     return dashboardRoutes.overview;
   }
-  return url.pathname;
+  // The OAuth consent screen's query is the client's authorization request, which the screen checks again; every other query is dropped.
+  return pagePath(url.pathname) === oauthConsentRoute ? `${url.pathname}${url.search}` : url.pathname;
 }
 
 /** True for /dashboard and every screen under it, in any language. */

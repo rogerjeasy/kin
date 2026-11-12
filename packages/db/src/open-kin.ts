@@ -103,6 +103,8 @@ export type DelegationRecord = {
   readonly tokenHint: string;
   readonly console: boolean;
   readonly seeded: boolean;
+  /** The OAuth client the member authorized in the browser, or null for a token copied from the screen. */
+  readonly oauthClient: string | null;
   readonly expiresAt: Date;
   readonly revokedAt: Date | null;
   readonly lastUsedAt: Date | null;
@@ -126,6 +128,7 @@ export async function readDelegations(tx: Transaction, circleId: string): Promis
       tokenHint: delegations.tokenHint,
       console: delegations.console,
       seeded: delegations.seeded,
+      oauthClient: delegations.oauthClient,
       expiresAt: delegations.expiresAt,
       revokedAt: delegations.revokedAt,
       lastUsedAt: delegations.lastUsedAt,

@@ -1,6 +1,7 @@
 import { readDemoSession } from "@kin/auth";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { oauthConsentRoute } from "./content/dashboard-routes";
 import { pagePath, routeLocale } from "./i18n/routing";
 import { sessionVerifier } from "./server/auth/config";
 import { COOKIES } from "./server/auth/cookies";
@@ -16,7 +17,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   if (isDashboardPage(pathname) && !hasDemoSession(request) && !(await hasSession(request))) {
     // The refresh path renews an expired session, or sends the person to sign in.
     const url = new URL("/auth/refresh", request.url);
-    url.searchParams.set("next", pathname);
+    // Only the OAuth consent screen keeps its query through signing in (safeNextPath).
+    url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(url, SEE_OTHER);
   }
 
@@ -32,7 +34,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 // A check-in link's, an "is this you?" link's and an invitation's address holds a secret, and the page is
 // public: the person taps it with nobody signed in. It is never stored by a cache or a
 // browser history that shares, never sent on as a referrer, never indexed.
-const SECRET_PAGES = ["/c/", "/v/", "/t/", "/join/"] as const;
+// The OAuth consent screen is kept the same way: its address carries a client's request, for no one else to replay or read.
+const SECRET_PAGES = ["/c/", "/v/", "/t/", "/join/", oauthConsentRoute] as const;
 
 function keepSecret(response: NextResponse, pathname: string): NextResponse {
   const page = pagePath(pathname);

@@ -7,11 +7,12 @@ import { ToolCatalogue } from "@/components/developers/tool-catalogue";
 import { CopyBlock } from "@/components/shared/copy-block";
 import { ClosingBand } from "@/components/shared/closing-band";
 import { StatusNote } from "@/components/shared/status-note";
-import { claudeCodeCommand, curlToolsList, curlVisit, mcpJsonConfig } from "@/content/open-kin/connect-snippets";
+import { claudeCodeCommand, claudeCodeOAuthCommand, curlToolsList, curlVisit, mcpJsonConfig } from "@/content/open-kin/connect-snippets";
 import { pageContext, pageMetadata } from "@/i18n/page-context";
 import { fill } from "@/i18n/template";
 import { authConfig } from "@/server/auth/config";
 import { MCP_PATH } from "@/server/open-kin/mcp";
+import { OAUTH_PATHS } from "@/server/open-kin/oauth";
 
 // The commands name this deployment's own address, read when the page is served, never at build time.
 export const dynamic = "force-dynamic";
@@ -38,6 +39,12 @@ export default async function DevelopersPage({ params }: PageProps<"/[locale]/de
         <div className="grid min-w-0 gap-6 lg:grid-cols-2">
           <div className="grid min-w-0 content-start gap-5">
             <CopyBlock label={copy.mcp.endpoint} value={endpoint} {...labels} />
+            <div className="grid min-w-0 gap-3 rounded-2xl border bg-card p-4">
+              <h3 className="text-lg font-semibold">{copy.mcp.oauth.title}</h3>
+              <p className="text-pretty text-muted-foreground">{copy.mcp.oauth.lede}</p>
+              <CopyBlock label={copy.mcp.oauth.command} value={claudeCodeOAuthCommand(endpoint)} {...labels} />
+              <CopyBlock label={copy.mcp.oauth.metadata} value={`${origin}${OAUTH_PATHS.metadata}`} {...labels} />
+            </div>
             <CopyBlock label={copy.mcp.claudeCode} value={claudeCodeCommand(endpoint, TOKEN)} {...labels} />
             <CopyBlock label={copy.mcp.config} value={mcpJsonConfig(endpoint, TOKEN)} {...labels} />
             <CopyBlock label={copy.mcp.curl} value={curlToolsList(endpoint, TOKEN)} {...labels} />

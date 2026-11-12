@@ -99,14 +99,15 @@ export async function handleMcpHttp(request: McpHttpRequest, options: McpHttpOpt
 
 /**
  * The OAuth 2.0 Protected Resource Metadata document (RFC 9728) for the MCP
- * endpoint. It names no authorization server: Kin issues delegation tokens
- * from its own screen, to a member who is signed in, so a client is
- * configured with the token as a bearer header. The scopes are the
- * delegation's.
+ * endpoint. Its authorization server is Kin itself (decision 111): a client
+ * discovers it here, registers, and sends the member to Kin's consent screen;
+ * the token it gets back is a delegation, exactly like one copied from the
+ * Connected assistants screen. The scopes are the delegation's.
  */
-export function protectedResourceMetadata(input: { readonly resource: string; readonly documentation: string }): JsonValue {
+export function protectedResourceMetadata(input: { readonly resource: string; readonly documentation: string; readonly authorizationServer: string }): JsonValue {
   return {
     resource: input.resource,
+    authorization_servers: [input.authorizationServer],
     resource_name: "Kin",
     bearer_methods_supported: ["header"],
     scopes_supported: [DELEGATION_OAUTH_SCOPES.read, DELEGATION_OAUTH_SCOPES.propose],

@@ -22,6 +22,12 @@ describe("where to go after signing in", () => {
   it("drops any query or fragment carried along", () => {
     expect(safeNextPath("/dashboard/bills?x=1#y")).toBe("/dashboard/bills");
   });
+
+  it("keeps the query of the OAuth consent screen only, which is the client's request and is checked again there", () => {
+    expect(safeNextPath("/fr/dashboard/circle/connections/authorize?client_id=kin_cli_x&state=s#frag")).toBe("/fr/dashboard/circle/connections/authorize?client_id=kin_cli_x&state=s");
+    expect(safeNextPath("//evil.example/dashboard/circle/connections/authorize?x=1")).toBe("/dashboard");
+    expect(safeNextPath("/dashboard/circle/connections?x=1")).toBe("/dashboard/circle/connections");
+  });
 });
 
 describe("the circle's screens", () => {

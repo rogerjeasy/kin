@@ -21,6 +21,8 @@ export type DelegationView = {
   readonly lastUsed: string | null;
   readonly console: boolean;
   readonly seeded: boolean;
+  /** Authorized by signing in from the client (OAuth), not by a token copied from this screen. */
+  readonly viaOAuth: boolean;
   readonly canRevoke: boolean;
   readonly calls: readonly CallView[];
 };
@@ -49,6 +51,7 @@ export function DelegationCard({ delegation, copy, toolLabels }: Props) {
           <StatusPill tone={delegation.scope === "propose" ? "waiting" : "neutral"}>{copy.scope[delegation.scope]}</StatusPill>
           <StatusPill tone={delegation.status === "live" ? "positive" : "neutral"}>{status}</StatusPill>
           {delegation.seeded ? <Tag>{copy.sample}</Tag> : null}
+          {delegation.viaOAuth ? <Tag>{copy.oauth}</Tag> : null}
         </div>
       </div>
       <div className="mt-4 grid min-w-0 gap-2">

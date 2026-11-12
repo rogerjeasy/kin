@@ -32,6 +32,7 @@ export function delegationViews(input: { readonly delegations: readonly Delegati
     lastUsed: delegation.lastUsedAt === null ? null : format.dateTime(delegation.lastUsedAt),
     console: delegation.console,
     seeded: delegation.seeded,
+    viaOAuth: delegation.oauthClient !== null,
     canRevoke: delegation.memberId === me || organizer,
     calls: delegation.calls.map((call): CallView => ({ id: call.id, tool: call.tool, outcome: call.outcome, at: format.dateTime(call.at), proposed: call.proposalId !== null })),
   }));

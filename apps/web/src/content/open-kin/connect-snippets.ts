@@ -7,6 +7,9 @@
 /** Claude Code's command for a remote MCP server over Streamable HTTP, with the token as a header. */
 export const claudeCodeCommand = (endpoint: string, token: string) => `claude mcp add --transport http kin ${endpoint} --header "Authorization: Bearer ${token}"`;
 
+/** Claude Code's command with no token: it finds Kin's authorization server from the 401 and opens the consent screen in the browser. */
+export const claudeCodeOAuthCommand = (endpoint: string) => `claude mcp add --transport http kin ${endpoint}`;
+
 /** The `.mcp.json` shape Claude Code and clients that share it read. */
 export const mcpJsonConfig = (endpoint: string, token: string) =>
   JSON.stringify({ mcpServers: { kin: { type: "http", url: endpoint, headers: { Authorization: `Bearer ${token}` } } } }, null, 2);
