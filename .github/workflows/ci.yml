@@ -73,6 +73,24 @@ jobs:
       # The worker's image (apps/worker/Dockerfile) too, for the Arm task it
       # runs as. Its last stage only copies files, so no emulation is needed.
       - run: docker build --platform linux/arm64 -f apps/worker/Dockerfile -t kin-worker:ci .
+      # Every package the worker imports must be in its image, or the task
+      # dies on start (12 November 2026: @kin/auth was missing). Built for this
+      # runner's own architecture, so it runs without emulation.
+      - run: |
+          docker build -f apps/worker/Dockerfile -t kin-worker:imports .
+          # Load every module the worker has, not only main's static graph:
+          # some are imported only when their loop starts.
+          docker run --rm --entrypoint node kin-worker:imports --input-type=module -e "
+            const { readdirSync } = await import('node:fs');
+            const files = readdirSync('/repo/apps/worker/src', { recursive: true })
+              .filter((f) => f.endsWith('.ts') && !/test/i.test(f) && f !== 'main.ts');
+            for (const f of files) {
+              try { await import('/repo/apps/worker/src/' + f); }
+              catch (error) { if (error.code === 'ERR_MODULE_NOT_FOUND') { console.error(f, error.message); process.exit(1); } }
+            }
+            console.log('loaded', files.length, 'worker modules');
+            process.exit(0);
+          "
       # The phone service's image (apps/voice/Dockerfile) must start with only
       # the settings of Kin's call about a shift, no office line, and answer its
       # health check, as App Runner will run it. It connects to the database

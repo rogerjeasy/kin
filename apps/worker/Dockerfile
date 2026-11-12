@@ -24,6 +24,7 @@ COPY --from=build --chown=node:node /repo/node_modules ./node_modules
 COPY --from=build --chown=node:node /repo/packages/config ./packages/config
 COPY --from=build --chown=node:node /repo/packages/domain ./packages/domain
 COPY --from=build --chown=node:node /repo/packages/db ./packages/db
+COPY --from=build --chown=node:node /repo/packages/auth ./packages/auth
 COPY --from=build --chown=node:node /repo/packages/paypal ./packages/paypal
 COPY --from=build --chown=node:node /repo/packages/notify ./packages/notify
 COPY --from=build --chown=node:node /repo/packages/telephony ./packages/telephony
