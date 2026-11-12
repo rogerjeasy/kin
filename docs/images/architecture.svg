@@ -52,7 +52,7 @@
       <text x="336" y="248">PayPal JS SDK v6 checkout</text>
       <text x="336" y="268">webhook intake: raw bytes to</text>
       <text x="336" y="286">SQS FIFO, nothing written</text>
-      <text x="336" y="306">MCP server, agency API</text>
+      <text x="336" y="306">MCP (OAuth 2.1), agency API</text>
     </g>
     <rect x="570" y="160" width="230" height="160" rx="12" fill="#2b2140"/>
     <text x="586" y="186" font-size="15" font-weight="700" fill="#ffffff">Agent layer</text>
@@ -60,9 +60,9 @@
       <text x="586" y="208">Ask Kin: Claude picks tools</text>
       <text x="586" y="228">tool gateway: role, schema,</text>
       <text x="586" y="248">call and time limits, log</text>
-      <text x="586" y="268">9 tools read, 2 propose</text>
+      <text x="586" y="268">12 tools read, 2 propose</text>
       <text x="586" y="288">number guard, 7 languages</text>
-      <text x="586" y="308">8 eval sets, all recorded</text>
+      <text x="586" y="308">PayPal Agent Toolkit reads</text>
     </g>
     <rect x="320" y="338" width="230" height="194" rx="12" fill="#f5c76b"/>
     <text x="336" y="364" font-size="15" font-weight="700" fill="#14213d">Money core (no I/O, no AI)</text>
@@ -104,12 +104,12 @@
     <text x="880" y="142" font-size="16" font-weight="700" fill="#003087">PayPal (sandbox)</text>
     <g font-size="13" fill="#1f2937">
       <text x="880" y="166">Orders v2 + JS SDK v6, Pay Later</text>
-      <text x="880" y="188">Payouts: caregivers, settlements</text>
+      <text x="880" y="188">Payouts: caregivers, bills, invoices</text>
       <text x="880" y="210">Invoicing v2: shares asked of siblings</text>
       <text x="880" y="232">Subscriptions + Catalog: monthly shares</text>
       <text x="880" y="254">Webhooks, verified signature</text>
-      <text x="880" y="276">Transaction Search: reconciliation</text>
-      <text x="880" y="298">Payments v2: capture read-back</text>
+      <text x="880" y="276">Payments v2 + Transaction Search</text>
+      <text x="880" y="298">Vault + Orders: the agent's refill</text>
       <text x="880" y="326" font-weight="700" fill="#003087">PayPal's record decides what happened</text>
     </g>
     <rect x="860" y="380" width="300" height="110" rx="16" fill="#ffffff" stroke="#c96442" stroke-width="3"/>
