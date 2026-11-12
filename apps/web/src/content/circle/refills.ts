@@ -42,6 +42,11 @@ export function anyPaidInSandbox(orders: readonly OrderView[]): boolean {
   return orders.some((order) => order.payment?.kind === "sandbox");
 }
 
+/** The proposals whose purchase PayPal's sandbox really charged: their answer must not call the payment simulated. */
+export function proposalsPaidInSandbox(orders: readonly OrderView[]): ReadonlySet<string> {
+  return new Set(orders.filter((order) => order.payment?.kind === "sandbox").map((order) => order.purchase.proposalId));
+}
+
 const WAITING: readonly string[] = ["pending_approval", "approved", "executing"];
 
 /** Every refill rule of the circle as the viewer sees it, and the purchases raised from them, newest first. */

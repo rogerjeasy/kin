@@ -3,7 +3,7 @@ import { snapshotFor, testDatabases, visitorWithCircle } from "@kin/db/testing";
 import type { CircleSnapshot, PurchaseRecord } from "@kin/db";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { anyPaidInSandbox, refillViews } from "./refills";
+import { anyPaidInSandbox, proposalsPaidInSandbox, refillViews } from "./refills";
 
 const db = testDatabases();
 let circle: CircleSnapshot;
@@ -36,12 +36,15 @@ describe("how a bought refill was paid", () => {
     const snapshot = withOrder(CAPTURE, [bought(CAPTURE, false)]);
     expect(newest(snapshot)?.payment).toEqual({ kind: "sandbox", captureId: CAPTURE });
     expect(anyPaidInSandbox(refillViews(snapshot).orders)).toBe(true);
+    // Its answered proposal must not call the payment simulated (seen live on 12 November 2026).
+    expect(proposalsPaidInSandbox(refillViews(snapshot).orders).has("proposal-new")).toBe(true);
   });
 
   it("is simulated when its ledger entry says so, whatever its ID looks like", () => {
     const snapshot = withOrder(CAPTURE, [bought(CAPTURE, true)]);
     expect(newest(snapshot)?.payment).toEqual({ kind: "simulated" });
     expect(anyPaidInSandbox(refillViews(snapshot).orders)).toBe(false);
+    expect(proposalsPaidInSandbox(refillViews(snapshot).orders).has("proposal-new")).toBe(false);
   });
 
   it("is not claimed before the purchase is recorded in the ledger", () => {
