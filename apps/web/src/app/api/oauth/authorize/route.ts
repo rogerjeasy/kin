@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { authConfig } from "@/server/auth/config";
+import { clientKey } from "@/server/check-link";
 import { CONSENT_PAGE, allowAuthorization, checkAuthorization, oauthClients } from "@/server/open-kin/oauth";
 
 // A code or an error on its way back to the client is never stored, and the client's address never learns Kin's pages.
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     return new Response("Too many authorization requests. Try again in a few minutes.\n", { status: 429, headers: { ...PRIVATE, "content-type": "text/plain; charset=utf-8", "retry-after": "600" } });
   }
   const origin = authConfig().webOrigin;
-  const check = await checkAuthorization(request.nextUrl.searchParams, { origin, clients: oauthClients() });
+  const check = await checkAuthorization(request.nextUrl.searchParams, { origin, clients: oauthClients(), from: clientKey(request.headers) });
   if (check.kind === "refuse") {
     return new Response(`Kin cannot authorize this request. ${check.description}\n`, { status: 400, headers: { ...PRIVATE, "content-type": "text/plain; charset=utf-8" } });
   }

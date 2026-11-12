@@ -12,6 +12,7 @@ import { pageContext } from "@/i18n/page-context";
 import { localizedPath } from "@/i18n/routing";
 import { fill } from "@/i18n/template";
 import { authConfig } from "@/server/auth/config";
+import { clientKey } from "@/server/check-link";
 import { signInPath } from "@/server/auth/next-path";
 import { dashboardContext, may } from "@/server/dashboard-context";
 import { allowAuthorization, checkAuthorization, oauthClients } from "@/server/open-kin/oauth";
@@ -43,8 +44,9 @@ export default async function OAuthConsentPage({ params, searchParams }: PagePro
   const copy = dictionary.openKin.oauth;
   const query = queryOf(await searchParams);
   const origin = authConfig().webOrigin;
-  if (!allowAuthorization(await headers())) return <OAuthNotice title={copy.invalid.title} text={copy.errors.too_many_codes} />;
-  const check = await checkAuthorization(new URLSearchParams(query), { origin, clients: oauthClients() });
+  const requestHeaders = await headers();
+  if (!allowAuthorization(requestHeaders)) return <OAuthNotice title={copy.invalid.title} text={copy.errors.too_many_codes} />;
+  const check = await checkAuthorization(new URLSearchParams(query), { origin, clients: oauthClients(), from: clientKey(requestHeaders) });
 
   if (viewer.kind !== "person") {
     const signIn = signInPath(`${localizedPath(locale, oauthConsentRoute)}?${query}`);

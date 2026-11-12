@@ -110,7 +110,7 @@ export type AuthorizationCheck =
   /** The client or its redirect URI cannot be trusted: shown to the person, never redirected to. */
   | { readonly kind: "refuse"; readonly description: string };
 
-export type OAuthServices = { readonly origin: string; readonly clients: ClientResolver };
+export type OAuthServices = { readonly origin: string; readonly clients: ClientResolver; /** The requesting address, which may wait on one stranger's document at a time. */ readonly from?: string };
 
 const printableState = (params: ParamReader): string | null => {
   const [state, ...more] = params.getAll("state");
@@ -125,7 +125,7 @@ const printableState = (params: ParamReader): string | null => {
 export async function checkAuthorization(params: ParamReader, services: OAuthServices): Promise<AuthorizationCheck> {
   const named = clientOfRequest(params);
   if (!named.ok) return { kind: "refuse", description: named.description };
-  const client = await services.clients(named.clientId);
+  const client = await services.clients(named.clientId, services.from);
   if (client === null) return { kind: "refuse", description: "Kin does not know this client." };
   if (!redirectUriAllowed(client.redirectUris, named.redirectUri)) return { kind: "refuse", description: "The redirect URI is not one this client registered." };
   const parsed = parseAuthorizationRequest(params, named, mcpResource(services.origin));
@@ -211,7 +211,7 @@ export async function exchangeToken(context: OAuthServices & { readonly db: Data
   const parsed = parseTokenRequest(form, authorization);
   if (!parsed.ok) return oauthError(parsed.error === "invalid_client" ? 401 : 400, parsed.error, parsed.description);
   const { request } = parsed;
-  if ((await context.clients(request.clientId)) === null) return oauthError(401, "invalid_client", "Kin does not know this client.");
+  if ((await context.clients(request.clientId, context.from)) === null) return oauthError(401, "invalid_client", "Kin does not know this client.");
   const resource = mcpResource(context.origin);
   if (!resourceMatches(request.resource, resource)) return oauthError(400, "invalid_target", "The resource must be Kin's MCP server.");
   const token = newDelegationToken();

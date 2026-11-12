@@ -29,20 +29,13 @@ for (const [network, prefix] of [
   IPV4_BLOCKED.addSubnet(network, prefix, "ipv4");
 }
 
-// No rule for IPv4-mapped addresses (::ffff:0:0/96): BlockList would match every IPv4 address with one, so they are unwrapped below instead.
+// Only global unicast (2000::/3) is ever allowed (see isPublicAddress); these are the special ranges inside it.
 const IPV6_BLOCKED = new BlockList();
 for (const [network, prefix] of [
-  ["::", 96],
-  ["64:ff9b::", 96],
-  ["64:ff9b:1::", 48],
-  ["100::", 64],
-  ["2001::", 32],
+  ["2001::", 23],
   ["2001:db8::", 32],
   ["2002::", 16],
-  ["fc00::", 7],
-  ["fe80::", 10],
-  ["fec0::", 10],
-  ["ff00::", 8],
+  ["3fff::", 20],
 ] as const) {
   IPV6_BLOCKED.addSubnet(network, prefix, "ipv6");
 }
@@ -72,7 +65,7 @@ const ipv4Of = (high: number, low: number) => `${high >> 8}.${high & 0xff}.${low
 
 /**
  * Every IPv4 address an IPv6 address carries inside it: IPv4-mapped
- * (::ffff:a.b.c.d), IPv4-compatible (::a.b.c.d), NAT64 (64:ff9b::/96), 6to4
+ * (::ffff:a.b.c.d), IPv4-translated (::ffff:0:a.b.c.d), IPv4-compatible (::a.b.c.d), NAT64 (64:ff9b::/96), 6to4
  * (2002:AABB:CCDD::/16) and Teredo (2001::/32: the server, and the client
  * with its bits inverted).
  */
@@ -81,7 +74,7 @@ export function embeddedIPv4(address: string): string[] {
   if (groups === null) return [];
   const [g0 = 0, g1 = 0, g2 = 0, g3 = 0, g4 = 0, g5 = 0, g6 = 0, g7 = 0] = groups;
   const found: string[] = [];
-  if (g0 === 0 && g1 === 0 && g2 === 0 && g3 === 0 && g4 === 0 && (g5 === 0xffff || g5 === 0)) found.push(ipv4Of(g6, g7));
+  if (g0 === 0 && g1 === 0 && g2 === 0 && g3 === 0 && ((g4 === 0 && (g5 === 0xffff || g5 === 0)) || (g4 === 0xffff && g5 === 0))) found.push(ipv4Of(g6, g7));
   if (g0 === 0x64 && g1 === 0xff9b) found.push(ipv4Of(g6, g7));
   if (g0 === 0x2002) found.push(ipv4Of(g1, g2));
   if (g0 === 0x2001 && g1 === 0) found.push(ipv4Of(g2, g3), ipv4Of(g6 ^ 0xffff, g7 ^ 0xffff));
@@ -93,6 +86,11 @@ export function isPublicAddress(address: string): boolean {
   const family = isIP(address);
   if (family === 4) return !IPV4_BLOCKED.check(address, "ipv4");
   if (family !== 6) return false;
+  // IPv6: global unicast (2000::/3) only. Everything else (unspecified, loopback, every IPv4-mapped, -compatible or
+  // -translated form, NAT64, discard, unique and link or site local, multicast) is refused outright.
+  const first = hextets(address)?.[0];
+  if (first === undefined || (first & 0xe000) !== 0x2000) return false;
+  // Inside it, an address that wraps a refused IPv4 address (6to4, Teredo) is refused as that address would be; the ranges are refused anyway.
   if (embeddedIPv4(address).some((inner) => IPV4_BLOCKED.check(inner, "ipv4"))) return false;
   return !IPV6_BLOCKED.check(address, "ipv6");
 }

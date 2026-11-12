@@ -35,6 +35,11 @@ describe("the addresses a document may be fetched from", () => {
     ["IPv4-compatible, public inside", "::5db8:d822"],
     ["IPv4-mapped loopback", "::ffff:127.0.0.1"],
     ["IPv4-mapped metadata service, hex", "::ffff:a9fe:a9fe"],
+    ["IPv4-mapped, public inside: outside global unicast", "::ffff:93.184.216.34"],
+    ["IPv4-translated loopback", "::ffff:0:127.0.0.1"],
+    ["IPv4-translated, public inside", "::ffff:0:93.184.216.34"],
+    ["benchmarking", "2001:2::1"],
+    ["IPv6 documentation (2024)", "3fff::1"],
     ["NAT64", "64:ff9b::7f00:1"],
     ["NAT64, public inside", "64:ff9b::5db8:d822"],
     ["local-use NAT64", "64:ff9b:1::1"],
@@ -52,7 +57,7 @@ describe("the addresses a document may be fetched from", () => {
     expect(isPublicAddress(address)).toBe(false);
   });
 
-  it.each(["93.184.216.34", "1.1.1.1", "2606:4700::1111", "2a00:1450:4001:80b::200e", "::ffff:93.184.216.34"])("allows the public address %s", (address) => {
+  it.each(["93.184.216.34", "1.1.1.1", "2606:4700::1111", "2a00:1450:4001:80b::200e"])("allows the public address %s", (address) => {
     expect(isPublicAddress(address)).toBe(true);
   });
 
@@ -60,6 +65,7 @@ describe("the addresses a document may be fetched from", () => {
     expect(embeddedIPv4("::ffff:10.0.0.1")).toEqual(["10.0.0.1"]);
     expect(embeddedIPv4("::ffff:a00:1")).toEqual(["10.0.0.1"]);
     expect(embeddedIPv4("::10.0.0.1")).toEqual(["10.0.0.1"]);
+    expect(embeddedIPv4("::ffff:0:127.0.0.1")).toEqual(["127.0.0.1"]);
     expect(embeddedIPv4("64:ff9b::a9fe:a9fe")).toEqual(["169.254.169.254"]);
     expect(embeddedIPv4("2002:a9fe:a9fe::1")).toEqual(["169.254.169.254"]);
     // Teredo: the server's address, and the client's with every bit inverted.
@@ -101,6 +107,18 @@ describe("one fetch of a document", () => {
     expect(Date.now() - started).toBeLessThan(2_000);
   });
 
+  it("is cut off early when the host is slow to start answering, before the whole deadline", async () => {
+    server = createServer((_request, response) => {
+      setTimeout(() => response.end(JSON.stringify(document)), 1_500);
+    });
+    await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve));
+    const { port } = server.address() as AddressInfo;
+    const fetchDocument = documentFetcher({ resolve: async () => [{ address: "127.0.0.1", family: 4 }], allowed: () => true, send: (url, options, onResponse) => httpRequest(url, options, onResponse), firstByteMs: 200, deadlineMs: 5_000 });
+    const started = Date.now();
+    await expect(fetchDocument(new URL(`http://app.example:${String(port)}/client.json`))).rejects.toThrow("slow to answer");
+    expect(Date.now() - started).toBeLessThan(1_000);
+  });
+
   it("is cut off at the deadline when the name lookup never answers", async () => {
     const fetchDocument = documentFetcher({ resolve: () => new Promise(() => undefined), allowed: () => true, deadlineMs: 200 });
     const started = Date.now();
@@ -139,21 +157,50 @@ describe("fetches at once", () => {
     expect(fetched).toBe(1);
   });
 
-  it("are capped per server: one more is unknown for now, and nothing is cached against it", async () => {
+  /** A fetch that holds documents on hosts named slow… until the test releases them. */
+  function gated() {
     let release: () => void = () => undefined;
     const gate = new Promise<void>((resolve) => {
       release = resolve;
     });
     const fetchDocument = async (url: URL) => {
-      await gate;
+      if (url.hostname.startsWith("slow")) await gate;
       return { ...document, client_id: url.href };
     };
-    const clients = clientResolver(KEY, fetchDocument, Date.now, 2);
-    const first = clients("https://one.example/client.json");
-    const second = clients("https://two.example/client.json");
-    expect(await clients("https://three.example/client.json")).toBeNull();
+    return { fetchDocument, release: () => release() };
+  }
+
+  it("are budgeted per host, so slow hosts cannot block another host's client, and nothing is cached against a refusal", async () => {
+    const { fetchDocument, release } = gated();
+    const clients = clientResolver(KEY, fetchDocument);
+    const held = [clients("https://slow.example/one.json", "10.0.0.1"), clients("https://slow.example/two.json", "10.0.0.2")];
+    // The slow host has its two; a third document there is unknown for now.
+    expect(await clients("https://slow.example/three.json", "10.0.0.3")).toBeNull();
+    // Another host's client is still read at once.
+    expect(await clients("https://fast.example/client.json", "10.0.0.4")).toMatchObject({ clientId: "https://fast.example/client.json" });
     release();
-    await Promise.all([first, second]);
-    expect(await clients("https://three.example/client.json")).toMatchObject({ clientId: "https://three.example/client.json" });
+    await Promise.all(held);
+    expect(await clients("https://slow.example/three.json", "10.0.0.3")).toMatchObject({ clientId: "https://slow.example/three.json" });
+  });
+
+  it("let one requesting address wait on one stranger's document at a time", async () => {
+    const { fetchDocument, release } = gated();
+    const clients = clientResolver(KEY, fetchDocument);
+    const first = clients("https://slow.example/one.json", "10.0.0.9");
+    expect(await clients("https://slow-other.example/two.json", "10.0.0.9")).toBeNull();
+    // Another address asking for the same document is not refused.
+    const other = clients("https://slow-other.example/two.json", "10.0.0.10");
+    release();
+    await first;
+    expect(await other).toMatchObject({ clientId: "https://slow-other.example/two.json" });
+  });
+
+  it("stop at a server-wide ceiling, whatever the hosts and addresses", async () => {
+    const { fetchDocument, release } = gated();
+    const clients = clientResolver(KEY, fetchDocument, Date.now, { perHost: 2, perRequester: 1, total: 2 });
+    const held = [clients("https://slow-a.example/c.json", "1"), clients("https://slow-b.example/c.json", "2")];
+    expect(await clients("https://slow-c.example/c.json", "3")).toBeNull();
+    release();
+    await Promise.all(held);
   });
 });

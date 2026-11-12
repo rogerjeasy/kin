@@ -21,7 +21,7 @@ export async function POST(request: Request): Promise<Response> {
   const text = await readCappedText(request, MAX_BYTES);
   if (text === null) return oauthResponse({ status: 413, body: { error: "invalid_request", error_description: "The request is too large." } });
   try {
-    return oauthResponse(await exchangeToken({ db: databases().app, origin: authConfig().webOrigin, clients: oauthClients() }, new URLSearchParams(text), request.headers.get("authorization")));
+    return oauthResponse(await exchangeToken({ db: databases().app, origin: authConfig().webOrigin, clients: oauthClients(), from }, new URLSearchParams(text), request.headers.get("authorization")));
   } catch (error) {
     // Nothing about the fault reaches the client, and nothing of the request reaches the log.
     console.error(JSON.stringify({ message: "oauth.token.unavailable", error: error instanceof Error ? error.name : "unknown" }));
