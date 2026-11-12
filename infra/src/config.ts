@@ -196,7 +196,8 @@ function demoMerchant(value: unknown, paypal: unknown): boolean {
 function optionalLicence(value: string | undefined): string | null {
   const key = value?.trim() ?? "";
   if (key === "") return null;
-  if (!/^[\x21-\x7e]+$/u.test(key)) throw new InfraConfigError("KIN_AG_STUDIO_LICENSE must be one line of printable text, or unset.");
+  // AG Grid's keys carry spaces ("This_key_will_deactivate_on_{13 December 2026}"), so a space is allowed; a line break is not.
+  if (!/^[\x20-\x7e]+$/u.test(key)) throw new InfraConfigError("KIN_AG_STUDIO_LICENSE must be one line of printable text, or unset.");
   return key;
 }
 
